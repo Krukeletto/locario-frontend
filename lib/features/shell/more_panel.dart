@@ -41,7 +41,7 @@ class MorePanel extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Odkrywaj wiecej',
+                      'Odkryj więcej',
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
                             fontWeight: FontWeight.w800,
@@ -53,12 +53,12 @@ class MorePanel extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Twoje centrum lokalnej spolecznosci',
+                'Twoje centrum lokalnych wydarzeń',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: scheme.onSurface.withValues(alpha: 0.78),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 2),
               // Secondary actions are shown as a fixed 2-column grid.
               GridView.builder(
                 shrinkWrap: true,
@@ -81,7 +81,7 @@ class MorePanel extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               // Primary CTA stays at the bottom of the panel content.
               _PrimaryActionCard(
                 item: primaryItem,
@@ -211,37 +211,44 @@ class _SecondaryActionTile extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Stack(
           children: [
-            Icon(item.iconData, color: accent, size: 24),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  item.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: accent,
-                    fontWeight: FontWeight.w700,
-                    height: 1.05,
-                  ),
+            Align(
+              alignment: Alignment.topLeft,
+              child: Icon(item.iconData, color: accent, size: 24),
+            ),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 8, bottom: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      item.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: accent,
+                        fontWeight: FontWeight.w700,
+                        height: 1.05,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.subtitle.toUpperCase(),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: accent.withValues(alpha: 0.92),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.35,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  item.subtitle.toUpperCase(),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: accent.withValues(alpha: 0.92),
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.35,
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
