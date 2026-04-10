@@ -4,22 +4,22 @@ import 'package:go_router/go_router.dart';
 import 'app_header/app_header.dart';
 import 'app_header/app_header_controller.dart';
 import 'app_header/app_header_scope.dart';
+import 'hub/hub_action_item.dart';
+import 'hub/hub_panel.dart';
 import 'nav/app_bottom_nav.dart';
 import 'nav/app_tab.dart';
-import 'more/more_action_item.dart';
-import 'more/more_panel.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({
     super.key,
     required this.navigationShell,
-    required this.moreItems,
+    required this.hubItems,
     required this.showHeader,
     required this.showViewToggle,
   });
 
   final StatefulNavigationShell navigationShell;
-  final List<MoreActionItem> moreItems;
+  final List<HubActionItem> hubItems;
   final bool showHeader;
   final bool showViewToggle;
 
@@ -27,18 +27,18 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
-// Main app shell widget, which includes the bottom navigation bar and the "more" layer.
+// Main app shell widget, which includes the bottom navigation bar and the hub layer.
 class _AppShellState extends State<AppShell>
     with SingleTickerProviderStateMixin {
-  bool _moreOpen = false;
-  late final AnimationController _moreController;
+  bool _hubOpen = false;
+  late final AnimationController _hubController;
   late final AppHeaderController _appHeaderController;
 
   @override
   void initState() {
     super.initState();
     _appHeaderController = AppHeaderController();
-    _moreController = AnimationController(
+    _hubController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 320),
       reverseDuration: const Duration(milliseconds: 220),
@@ -50,76 +50,74 @@ class _AppShellState extends State<AppShell>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.navigationShell.currentIndex !=
             widget.navigationShell.currentIndex &&
-        _moreOpen) {
-      _closeMore();
+        _hubOpen) {
+      _closeHub();
     }
   }
 
   @override
   void dispose() {
     _appHeaderController.dispose();
-    _moreController.dispose();
+    _hubController.dispose();
     super.dispose();
   }
 
   void _handleTabSelected(AppTab tab) {
     final targetIndex = switch (tab) {
       AppTab.explore => 0,
-      AppTab.saved => 1,
-      AppTab.inbox => 2,
-      AppTab.profile => 3,
+      AppTab.inbox => 1,
+      AppTab.profile => 2,
     };
 
     widget.navigationShell.goBranch(targetIndex);
-    if (_moreOpen) {
-      _closeMore();
+    if (_hubOpen) {
+      _closeHub();
     }
   }
 
-  void _handleMoreToggle() {
-    if (_moreOpen) {
-      _closeMore();
+  void _handleHubToggle() {
+    if (_hubOpen) {
+      _closeHub();
       return;
     }
 
     setState(() {
-      _moreOpen = true;
+      _hubOpen = true;
     });
-    _moreController.forward(from: 0);
+    _hubController.forward(from: 0);
   }
 
-  void _handleMoreItemSelected(MoreActionItem item) {
-    _closeMore();
+  void _handleHubItemSelected(HubActionItem item) {
+    _closeHub();
     context.push(item.routePath);
   }
 
-  void _closeMore() {
-    if (!_moreOpen && _moreController.status == AnimationStatus.dismissed) {
+  void _closeHub() {
+    if (!_hubOpen && _hubController.status == AnimationStatus.dismissed) {
       return;
     }
 
     setState(() {
-      _moreOpen = false;
+      _hubOpen = false;
     });
-    _moreController.reverse();
+    _hubController.reverse();
   }
 
   @override
   Widget build(BuildContext context) {
     final activeTab = switch (widget.navigationShell.currentIndex) {
       0 => AppTab.explore,
-      1 => AppTab.saved,
-      2 => AppTab.inbox,
-      3 => AppTab.profile,
+      1 => AppTab.inbox,
+      2 => AppTab.profile,
       _ => AppTab.explore,
     };
-    const morePanelBottom = 16.0;
+    const hubPanelBottom = 16.0;
 
     return Scaffold(
       body: AnimatedBuilder(
-        animation: Listenable.merge([_moreController, _appHeaderController]),
+        animation: Listenable.merge([_hubController, _appHeaderController]),
         builder: (context, child) {
-          final showMoreLayer = _moreOpen || _moreController.value > 0;
+          final showHubLayer = _hubOpen || _hubController.value > 0;
 
           return AppHeaderScope(
             controller: _appHeaderController,
@@ -145,23 +143,23 @@ class _AppShellState extends State<AppShell>
                           child: widget.navigationShell,
                         ),
                       ),
-                      if (showMoreLayer)
+                      if (showHubLayer)
                         Positioned.fill(
                           child: GestureDetector(
                             behavior: HitTestBehavior.opaque,
-                            onTap: _closeMore,
+                            onTap: _closeHub,
                             child: Container(
                               color: Colors.black.withValues(
-                                alpha: 0.10 * _moreController.value,
+                                alpha: 0.10 * _hubController.value,
                               ),
                             ),
                           ),
                         ),
-                      if (showMoreLayer)
+                      if (showHubLayer)
                         Positioned(
                           left: 16,
                           right: 16,
-                          bottom: morePanelBottom,
+                          bottom: hubPanelBottom,
                           child: Builder(
                             builder: (context) {
                               final panelProgress = Curves.easeOutCubic
@@ -169,7 +167,7 @@ class _AppShellState extends State<AppShell>
                                     Interval(
                                       0.18,
                                       1,
-                                    ).transform(_moreController.value),
+                                    ).transform(_hubController.value),
                                   );
 
                               return Transform.translate(
@@ -182,9 +180,9 @@ class _AppShellState extends State<AppShell>
                                         .toDouble(),
                                     child: Opacity(
                                       opacity: panelProgress,
-                                      child: MorePanel(
-                                        items: widget.moreItems,
-                                        onItemSelected: _handleMoreItemSelected,
+                                      child: HubPanel(
+                                        items: widget.hubItems,
+                                        onItemSelected: _handleHubItemSelected,
                                       ),
                                     ),
                                   ),
@@ -203,9 +201,9 @@ class _AppShellState extends State<AppShell>
       ),
       bottomNavigationBar: AppBottomNav(
         activeTab: activeTab,
-        moreOpen: _moreOpen,
+        hubOpen: _hubOpen,
         onTabSelected: _handleTabSelected,
-        onMoreToggle: _handleMoreToggle,
+        onHubToggle: _handleHubToggle,
       ),
     );
   }

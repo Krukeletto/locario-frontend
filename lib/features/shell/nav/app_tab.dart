@@ -7,12 +7,6 @@ enum AppTab {
     selectedIcon: Icons.explore,
     routePath: '/explore',
   ),
-  saved(
-    label: 'Saved',
-    icon: Icons.bookmark_border_rounded,
-    selectedIcon: Icons.bookmark_rounded,
-    routePath: '/saved',
-  ),
   inbox(
     label: 'Inbox',
     icon: Icons.notifications_none_rounded,

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
-import 'more_action_item.dart';
+import 'hub_action_item.dart';
 
-class MorePanel extends StatelessWidget {
-  const MorePanel({
+class HubPanel extends StatelessWidget {
+  const HubPanel({
     super.key,
     required this.items,
     required this.onItemSelected,
   });
 
-  final List<MoreActionItem> items;
-  final ValueChanged<MoreActionItem> onItemSelected;
+  final List<HubActionItem> items;
+  final ValueChanged<HubActionItem> onItemSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +19,8 @@ class MorePanel extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     const panelBackground = Color(0xFFF7F8EF);
     const tileBackground = Color(0xFFEAEDE1);
-    const premiumBackground = Color(0xFFF6E8EC);
-    final rawHeight = MediaQuery.sizeOf(context).height * 0.62;
-    final maxHeight = rawHeight.clamp(360.0, 560.0);
+    final rawHeight = MediaQuery.sizeOf(context).height * 0.68;
+    final maxHeight = rawHeight.clamp(420.0, 620.0);
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: maxHeight),
@@ -41,7 +40,7 @@ class MorePanel extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Discover more',
+                      'Hub',
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
                             fontWeight: FontWeight.w800,
@@ -53,12 +52,11 @@ class MorePanel extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Your local events hub',
+                'Shortcuts for creating and managing your local circle',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: scheme.onSurface.withValues(alpha: 0.78),
                 ),
               ),
-              const SizedBox(height: 2),
               // Secondary actions are shown as a fixed 2-column grid.
               GridView.builder(
                 shrinkWrap: true,
@@ -68,15 +66,12 @@ class MorePanel extends StatelessWidget {
                   crossAxisCount: 2,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: 1.28,
                 ),
                 itemBuilder: (context, index) {
                   final item = secondaryItems[index];
                   return _SecondaryActionTile(
                     item: item,
-                    backgroundColor: item.accent != null
-                        ? premiumBackground
-                        : tileBackground,
+                    backgroundColor: tileBackground,
                     onTap: () => onItemSelected(item),
                   );
                 },
@@ -98,7 +93,7 @@ class MorePanel extends StatelessWidget {
 class _PrimaryActionCard extends StatelessWidget {
   const _PrimaryActionCard({required this.item, required this.onTap});
 
-  final MoreActionItem item;
+  final HubActionItem item;
   final VoidCallback onTap;
 
   @override
@@ -108,7 +103,7 @@ class _PrimaryActionCard extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(32),
-      // Hero-like primary action card for the highlighted More item.
+      // Hero-like primary action card for the highlighted hub item.
       child: Container(
         decoration: BoxDecoration(
           color: scheme.primary,
@@ -180,7 +175,7 @@ class _SecondaryActionTile extends StatelessWidget {
     required this.onTap,
   });
 
-  final MoreActionItem item;
+  final HubActionItem item;
   final Color backgroundColor;
   final VoidCallback onTap;
 
@@ -194,7 +189,8 @@ class _SecondaryActionTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(28),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        constraints: const BoxConstraints(minHeight: 156),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(22),
@@ -211,43 +207,39 @@ class _SecondaryActionTile extends StatelessWidget {
             ),
           ],
         ),
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: Icon(item.iconData, color: accent, size: 24),
-            ),
-            Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 8, bottom: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      item.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: accent,
-                        fontWeight: FontWeight.w700,
-                        height: 1.05,
-                      ),
+            Icon(item.iconData, color: accent, size: 24),
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.only(right: 8, bottom: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: accent,
+                      fontWeight: FontWeight.w700,
+                      height: 1.05,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      item.subtitle.toUpperCase(),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: accent.withValues(alpha: 0.92),
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.35,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.subtitle.toUpperCase(),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: accent.withValues(alpha: 0.92),
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.35,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class MoreActionItem {
-  const MoreActionItem({
+class HubActionItem {
+  const HubActionItem({
     required this.id,
     required this.title,
     required this.subtitle,

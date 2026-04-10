@@ -6,22 +6,22 @@ class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
     super.key,
     required this.activeTab,
-    required this.moreOpen,
+    required this.hubOpen,
     required this.onTabSelected,
-    required this.onMoreToggle,
+    required this.onHubToggle,
   });
 
   final AppTab activeTab;
-  final bool moreOpen;
+  final bool hubOpen;
   final ValueChanged<AppTab> onTabSelected;
-  final VoidCallback onMoreToggle;
+  final VoidCallback onHubToggle;
 
-  // Navigation bar with 5 items: Explore, Saved, More (center), Inbox, Profile.
+  // Navigation bar with 4 items: Explore, Inbox, Hub and Profile.
   @override
   Widget build(BuildContext context) {
     final safeBottom = MediaQuery.paddingOf(context).bottom;
     final scheme = Theme.of(context).colorScheme;
-    const contentHeight = 64.0;
+    const contentHeight = 72.0;
 
     return Container(
       height: contentHeight + safeBottom,
@@ -47,22 +47,13 @@ class AppBottomNav extends StatelessWidget {
         ),
         child: SizedBox(
           height: contentHeight,
-          // Five equal slots: 4 tabs + More action button as last item.
           child: Row(
             children: [
               Expanded(
                 child: _NavItem(
                   tab: AppTab.explore,
                   activeTab: activeTab,
-                  moreOpen: moreOpen,
-                  onTap: onTabSelected,
-                ),
-              ),
-              Expanded(
-                child: _NavItem(
-                  tab: AppTab.saved,
-                  activeTab: activeTab,
-                  moreOpen: moreOpen,
+                  hubOpen: hubOpen,
                   onTap: onTabSelected,
                 ),
               ),
@@ -70,20 +61,20 @@ class AppBottomNav extends StatelessWidget {
                 child: _NavItem(
                   tab: AppTab.inbox,
                   activeTab: activeTab,
-                  moreOpen: moreOpen,
+                  hubOpen: hubOpen,
                   onTap: onTabSelected,
                 ),
+              ),
+              Expanded(
+                child: _HubNavItem(open: hubOpen, onTap: onHubToggle),
               ),
               Expanded(
                 child: _NavItem(
                   tab: AppTab.profile,
                   activeTab: activeTab,
-                  moreOpen: moreOpen,
+                  hubOpen: hubOpen,
                   onTap: onTabSelected,
                 ),
-              ),
-              Expanded(
-                child: _MoreNavItem(open: moreOpen, onTap: onMoreToggle),
               ),
             ],
           ),
@@ -98,20 +89,20 @@ class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.tab,
     required this.activeTab,
-    required this.moreOpen,
+    required this.hubOpen,
     required this.onTap,
   });
 
   final AppTab tab;
   final AppTab activeTab;
-  final bool moreOpen;
+  final bool hubOpen;
   final ValueChanged<AppTab> onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final isActive = activeTab == tab && !moreOpen;
+    final isActive = activeTab == tab && !hubOpen;
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -119,7 +110,7 @@ class _NavItem extends StatelessWidget {
       // Animated active state bubble behind each tab item.
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
         decoration: BoxDecoration(
           color: isActive
               ? scheme.primary.withValues(alpha: 0.12)
@@ -133,16 +124,16 @@ class _NavItem extends StatelessWidget {
             Icon(
               isActive ? tab.selectedIcon : tab.icon,
               color: isActive ? scheme.primary : scheme.secondary,
-              size: 21,
+              size: 24,
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 5),
             Text(
               tab.label,
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelSmall?.copyWith(
-                fontSize: 11,
+                fontSize: 12,
                 height: 1,
                 color: isActive ? scheme.primary : scheme.secondary,
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
@@ -155,9 +146,8 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// "More" button at the end of the nav bar, which toggles the "more" layer when tapped.
-class _MoreNavItem extends StatelessWidget {
-  const _MoreNavItem({required this.open, required this.onTap});
+class _HubNavItem extends StatelessWidget {
+  const _HubNavItem({required this.open, required this.onTap});
 
   final bool open;
   final VoidCallback onTap;
@@ -172,7 +162,7 @@ class _MoreNavItem extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
         decoration: BoxDecoration(
           color: open
               ? scheme.primary.withValues(alpha: 0.12)
@@ -184,18 +174,18 @@ class _MoreNavItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.more_horiz,
+              Icons.grid_view_rounded,
               color: open ? scheme.primary : scheme.secondary,
-              size: 21,
+              size: 24,
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 5),
             Text(
-              'More',
+              'Hub',
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelSmall?.copyWith(
-                fontSize: 11,
+                fontSize: 12,
                 height: 1,
                 color: open ? scheme.primary : scheme.secondary,
                 fontWeight: open ? FontWeight.w700 : FontWeight.w600,

@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../../explore/explore_ui_models.dart';
 
 class AppHeader extends StatelessWidget {
+  static const _headerContentHeight = 48.0;
+  static const _viewToggleWidth = 196.0;
+  static const _viewToggleGap = 12.0;
+
   const AppHeader({
     super.key,
     required this.selectedView,
@@ -30,25 +34,46 @@ class AppHeader extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 14),
-              child: Text(
-                'Locario',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.8,
+      child: SizedBox(
+        height: _headerContentHeight,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 14,
+                  right: showViewToggle ? _viewToggleWidth + _viewToggleGap : 0,
+                ),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Locario',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.8,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-          if (showViewToggle) ...[
-            const SizedBox(width: 12),
-            _ViewToggle(selectedView: selectedView, onChanged: onViewChanged),
+            if (showViewToggle)
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(width: _viewToggleGap),
+                    _ViewToggle(
+                      selectedView: selectedView,
+                      onChanged: onViewChanged,
+                    ),
+                  ],
+                ),
+              ),
           ],
-        ],
+        ),
       ),
     );
   }
