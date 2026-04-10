@@ -12,6 +12,7 @@ class ExploreListView extends StatelessWidget {
     required this.selectedFilterSummary,
     required this.selectedArea,
     required this.selectedSort,
+    required this.isSearchActive,
     required this.onAreaPressed,
     required this.onSortChanged,
   });
@@ -21,6 +22,7 @@ class ExploreListView extends StatelessWidget {
   final String selectedFilterSummary;
   final ExploreAreaSelection selectedArea;
   final ExploreSortOption selectedSort;
+  final bool isSearchActive;
   final VoidCallback onAreaPressed;
   final ValueChanged<ExploreSortOption> onSortChanged;
 
@@ -28,27 +30,35 @@ class ExploreListView extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final isKeyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final hideToolbar = isKeyboardVisible || isSearchActive;
 
     return ColoredBox(
       color: colorScheme.surface,
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-            child: _ListToolbar(
-              eventsCount: events.length,
-              selectedFilterSummary: selectedFilterSummary,
-              allFilterLabel: l10n.filterAll,
-              selectedArea: selectedArea,
-              selectedSort: selectedSort,
-              onAreaPressed: onAreaPressed,
-              onSortChanged: onSortChanged,
+          if (!hideToolbar)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: _ListToolbar(
+                eventsCount: events.length,
+                selectedFilterSummary: selectedFilterSummary,
+                allFilterLabel: l10n.filterAll,
+                selectedArea: selectedArea,
+                selectedSort: selectedSort,
+                onAreaPressed: onAreaPressed,
+                onSortChanged: onSortChanged,
+              ),
             ),
-          ),
           Expanded(
             child: ListView.separated(
               key: const Key('explore-event-list'),
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                hideToolbar ? 12 : 8,
+                16,
+                20,
+              ),
               itemCount: events.length,
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {

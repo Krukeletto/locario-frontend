@@ -34,12 +34,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
   late final MapStyleRepository _styleRepository;
   late final bool _ownsController;
   late final ShellHeaderController _localHeaderController;
+  late final TextEditingController _searchController;
 
   ExploreSortOption _selectedSort = ExploreSortOption.distance;
   bool _isPickingAreaOnMap = false;
   String? _typedAreaLabel;
   LatLng? _selectedAreaCenter;
   LatLng? _mapViewportCenter;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -50,6 +52,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ExploreMapViewModel(locationService: GeolocatorLocationService());
     _styleRepository = widget._styleRepository ?? const MapStyleRepository();
     _localHeaderController = ShellHeaderController();
+    _searchController = TextEditingController();
     _controller.loadInitialLocation();
   }
 
@@ -58,6 +61,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     if (_ownsController) {
       _controller.dispose();
     }
+    _searchController.dispose();
     _localHeaderController.dispose();
     super.dispose();
   }
@@ -115,44 +119,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Future<void> _promptForAddress() async {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: _typedAreaLabel ?? '');
     final result = await showDialog<String>(
       context: context,
-      builder: (context) {
-        final scheme = Theme.of(context).colorScheme;
-        return AlertDialog(
-          title: Text(l10n.areaAddressDialogTitle),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            textInputAction: TextInputAction.done,
-            decoration: InputDecoration(
-              hintText: l10n.areaAddressDialogHint,
-              filled: true,
-              fillColor: scheme.surfaceContainerLow,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            onSubmitted: (value) => Navigator.of(context).pop(value.trim()),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.areaDialogCancel),
-            ),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.of(context).pop(controller.text.trim()),
-              child: Text(l10n.areaDialogConfirm),
-            ),
-          ],
-        );
-      },
+      builder: (context) => _AddressInputDialog(initialValue: _typedAreaLabel),
     );
-
-    controller.dispose();
 
     if (!mounted || result == null || result.isEmpty) {
       return;
@@ -235,6 +205,34 @@ class _ExploreScreenState extends State<ExploreScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  void _handleSearchChanged(String value) {
+    setState(() {
+      _searchQuery = value;
+    });
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() {
+      _searchQuery = '';
+    });
+  }
+
+  void _handleSearchResultSelected(ExploreEvent event) {
+    _searchController.value = TextEditingValue(
+      text: event.title,
+      selection: TextSelection.collapsed(offset: event.title.length),
+    );
+    setState(() {
+      _searchQuery = event.title;
+    });
+
+    if (_headerController.selectedView == ExploreContentView.map) {
+      _controller.setPreferredMapCenter(event.location);
+      _mapViewportCenter = event.location;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final headerController = _headerController;
@@ -254,6 +252,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           allFilter,
         );
         final visibleEvents = _visibleEvents(selectedFilters, l10n);
+        final searchResults = _searchResults(selectedFilters, l10n);
         final referenceLocation = _referenceLocation;
         final showShellHeader = ShellHeaderScope.maybeOf(context) == null;
 
@@ -271,6 +270,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   selectedFilterIndices: headerController.selectedFilterIndices,
                   filters: filters,
                   onFilterToggled: _toggleFilter,
+                  searchController: _searchController,
+                  searchResults: searchResults,
+                  onSearchChanged: _handleSearchChanged,
+                  onSearchResultSelected: _handleSearchResultSelected,
+                  onSearchCleared: _clearSearch,
                 ),
                 Expanded(
                   child: AnimatedSwitcher(
@@ -320,6 +324,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             selectedFilterSummary: selectedFilterSummary,
                             selectedArea: selectedArea,
                             selectedSort: _selectedSort,
+                            isSearchActive: _searchQuery.trim().isNotEmpty,
                             onAreaPressed: _handleAreaPressed,
                             onSortChanged: (sort) {
                               setState(() {
@@ -358,6 +363,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     List<ExploreFilter> selectedFilters,
     AppLocalizations l10n,
   ) {
+    final query = _searchQuery.trim().toLowerCase();
     final selectedCategories = selectedFilters
         .where((filter) => filter.category != ExploreCategory.all)
         .map((filter) => filter.category)
@@ -368,6 +374,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
       events = events.where(
         (event) => selectedCategories.contains(event.category),
       );
+    }
+
+    if (query.isNotEmpty) {
+      events = events.where((event) {
+        final haystack = [
+          event.title,
+          event.venue,
+          event.categoryLabel,
+          event.timeLabel,
+        ].join(' ').toLowerCase();
+        return haystack.contains(query);
+      });
     }
 
     final sorted = events.toList();
@@ -390,9 +408,80 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     return sorted;
   }
+
+  List<ExploreEvent> _searchResults(
+    List<ExploreFilter> selectedFilters,
+    AppLocalizations l10n,
+  ) {
+    if (_searchQuery.trim().isEmpty) {
+      return const [];
+    }
+
+    return _visibleEvents(selectedFilters, l10n);
+  }
 }
 
 enum _AreaSelectionAction { currentLocation, enterAddress, pickOnMap }
+
+class _AddressInputDialog extends StatefulWidget {
+  const _AddressInputDialog({this.initialValue});
+
+  final String? initialValue;
+
+  @override
+  State<_AddressInputDialog> createState() => _AddressInputDialogState();
+}
+
+class _AddressInputDialogState extends State<_AddressInputDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue ?? '');
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+
+    return AlertDialog(
+      title: Text(l10n.areaAddressDialogTitle),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        textInputAction: TextInputAction.done,
+        decoration: InputDecoration(
+          hintText: l10n.areaAddressDialogHint,
+          filled: true,
+          fillColor: scheme.surfaceContainerLow,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        onSubmitted: (value) => Navigator.of(context).pop(value.trim()),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.areaDialogCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          child: Text(l10n.areaDialogConfirm),
+        ),
+      ],
+    );
+  }
+}
 
 class _AreaSelectionSheet extends StatelessWidget {
   const _AreaSelectionSheet({
