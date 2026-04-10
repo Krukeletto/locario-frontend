@@ -7,7 +7,7 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const LocarioApp());
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(find.text('Explore'), findsOneWidget);
     expect(find.text('Saved'), findsOneWidget);

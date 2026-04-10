@@ -66,5 +66,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Location permissions for geolocator -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Locario needs access to your location to show you on the map.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Locario needs access to your location to show you on the map.</string>
 </dict>
 </plist>

@@ -41,7 +41,7 @@ class MorePanel extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Odkryj więcej',
+                      'Discover more',
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
                             fontWeight: FontWeight.w800,
@@ -53,7 +53,7 @@ class MorePanel extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Twoje centrum lokalnych wydarzeń',
+                'Your local events hub',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: scheme.onSurface.withValues(alpha: 0.78),
                 ),

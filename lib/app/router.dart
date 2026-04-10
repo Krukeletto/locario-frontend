@@ -10,43 +10,41 @@ import '../features/shell/app_shell.dart';
 import '../features/shell/more_action_item.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _shellNavigatorKey =
-    GlobalKey<NavigatorState>();
 
 final List<MoreActionItem> moreActionItems = [
   const MoreActionItem(
     id: 'create-event',
-    title: 'Dodaj wydarzenie',
-    subtitle: 'Stwórz coś nowego',
+    title: 'Create event',
+    subtitle: 'Start something new',
     icon: 'add_box',
     routePath: '/more/create-event',
     isPrimary: true,
   ),
   const MoreActionItem(
     id: 'community',
-    title: 'Społeczność',
-    subtitle: 'Lokalne wiadomości',
+    title: 'Community',
+    subtitle: 'Local updates',
     icon: 'groups',
     routePath: '/more/community',
   ),
   const MoreActionItem(
     id: 'friends',
-    title: 'Znajomi',
-    subtitle: 'Twoja sieć',
+    title: 'Friends',
+    subtitle: 'Your network',
     icon: 'person_add',
     routePath: '/more/friends',
   ),
   const MoreActionItem(
     id: 'groups',
-    title: 'Grupy',
-    subtitle: 'Zainteresowania',
+    title: 'Groups',
+    subtitle: 'Shared interests',
     icon: 'group_work',
     routePath: '/more/groups',
   ),
   const MoreActionItem(
     id: 'premium',
     title: 'Premium',
-    subtitle: 'Wyjątkowe funkcje',
+    subtitle: 'Extra features',
     icon: 'auto_awesome',
     routePath: '/more/premium',
     accentColor: 0xFFB14B6F,
@@ -57,36 +55,50 @@ final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/explore',
   routes: [
-    // Shell keeps bottom navigation persistent across main tabs.
-    ShellRoute(
-      navigatorKey: _shellNavigatorKey,
-      builder: (context, state, child) {
+    // Indexed stack keeps tab navigator state alive between tab switches.
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
         return AppShell(
-          location: state.uri.path,
+          navigationShell: navigationShell,
           moreItems: moreActionItems,
-          child: child,
         );
       },
-      routes: [
-        GoRoute(
-          path: '/explore',
-          pageBuilder: (context, state) =>
-              const NoTransitionPage(child: ExploreScreen()),
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/explore',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: ExploreScreen()),
+            ),
+          ],
         ),
-        GoRoute(
-          path: '/saved',
-          pageBuilder: (context, state) =>
-              const NoTransitionPage(child: SavedScreen()),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/saved',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: SavedScreen()),
+            ),
+          ],
         ),
-        GoRoute(
-          path: '/inbox',
-          pageBuilder: (context, state) =>
-              const NoTransitionPage(child: InboxScreen()),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/inbox',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: InboxScreen()),
+            ),
+          ],
         ),
-        GoRoute(
-          path: '/profile',
-          pageBuilder: (context, state) =>
-              const NoTransitionPage(child: ProfileScreen()),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/profile',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: ProfileScreen()),
+            ),
+          ],
         ),
       ],
     ),

@@ -1,0 +1,184 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
+
+import '../../shared/location/location_service.dart';
+
+enum ExploreMapStatus {
+  loading,
+  ready,
+  permissionDenied,
+  serviceDisabled,
+  error,
+}
+
+class ExploreMapViewModel extends ChangeNotifier {
+  ExploreMapViewModel({
+    required LocationService locationService,
+    LatLng? fallbackCenter,
+  }) : _locationService = locationService,
+       fallbackCenter = fallbackCenter ?? _warsawCenter;
+
+  static const String mapStyleUrl =
+      'https://vector.openstreetmap.org/styles/shortbread/colorful.json';
+  static const LatLng _warsawCenter = LatLng(52.237, 21.017);
+
+  final LocationService _locationService;
+  final LatLng fallbackCenter;
+
+  ExploreMapStatus _status = ExploreMapStatus.loading;
+  LatLng? _currentLocation;
+  String? _message;
+  Future<void>? _pendingLoad;
+  bool _hasLoadedInitialLocation = false;
+
+  ExploreMapStatus get status => _status;
+  LatLng? get currentLocation => _currentLocation;
+  String? get message => _message;
+  bool get isLoading => _status == ExploreMapStatus.loading;
+  LatLng get mapCenter => _currentLocation ?? fallbackCenter;
+  bool get canOpenAppSettings => _locationService.supportsAppSettings;
+  bool get canOpenLocationSettings => _locationService.supportsLocationSettings;
+
+  Future<void> loadInitialLocation() {
+    if (_hasLoadedInitialLocation) {
+      return _pendingLoad ?? Future.value();
+    }
+
+    _hasLoadedInitialLocation = true;
+    return refreshLocation();
+  }
+
+  Future<void> refreshLocation() {
+    final currentLoad = _pendingLoad;
+    if (currentLoad != null) {
+      return currentLoad;
+    }
+
+    final future = _refreshLocationInternal();
+    _pendingLoad = future;
+
+    return future.whenComplete(() {
+      if (identical(_pendingLoad, future)) {
+        _pendingLoad = null;
+      }
+    });
+  }
+
+  Future<void> openAppSettings() async {
+    if (!canOpenAppSettings) {
+      return;
+    }
+
+    await _locationService.openAppSettings();
+  }
+
+  Future<void> openLocationSettings() async {
+    if (!canOpenLocationSettings) {
+      return;
+    }
+
+    await _locationService.openLocationSettings();
+  }
+
+  Future<void> _refreshLocationInternal() async {
+    _setState(status: ExploreMapStatus.loading, message: null);
+
+    try {
+      final serviceEnabled = await _locationService.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _setState(
+          status: ExploreMapStatus.serviceDisabled,
+          message: 'Enable location services to see your position.',
+        );
+        return;
+      }
+
+      var permission = await _locationService.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await _locationService.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        _setState(
+          status: ExploreMapStatus.permissionDenied,
+          message: permission == LocationPermission.deniedForever
+              ? 'Location access is blocked in system settings.'
+              : 'Allow location access to center the map on you.',
+        );
+        return;
+      }
+
+      final freshLocation = await _locationService.getCurrentLocation();
+      if (freshLocation != null) {
+        _setState(
+          status: ExploreMapStatus.ready,
+          currentLocation: freshLocation,
+          message: null,
+        );
+        return;
+      }
+
+      final fallbackLocation = await _loadLastKnownLocation();
+      if (fallbackLocation != null) {
+        _setState(
+          status: ExploreMapStatus.ready,
+          currentLocation: fallbackLocation,
+          message: null,
+        );
+        return;
+      }
+
+      _setState(
+        status: ExploreMapStatus.error,
+        message: 'Unable to determine your location.',
+      );
+    } on TimeoutException {
+      final fallbackLocation = await _loadLastKnownLocation();
+      if (fallbackLocation != null) {
+        _setState(
+          status: ExploreMapStatus.ready,
+          currentLocation: fallbackLocation,
+          message: null,
+        );
+        return;
+      }
+
+      _setState(
+        status: ExploreMapStatus.error,
+        message: 'Location request timed out. Try again.',
+      );
+    } catch (_) {
+      _setState(
+        status: ExploreMapStatus.error,
+        message: 'Unable to load your location.',
+      );
+    }
+  }
+
+  Future<LatLng?> _loadLastKnownLocation() async {
+    if (!_locationService.supportsLastKnownLocation) {
+      return null;
+    }
+
+    try {
+      return await _locationService.getLastKnownLocation();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _setState({
+    required ExploreMapStatus status,
+    LatLng? currentLocation,
+    required String? message,
+  }) {
+    _status = status;
+    _currentLocation = currentLocation ?? _currentLocation;
+    _message = message;
+    notifyListeners();
+  }
+}

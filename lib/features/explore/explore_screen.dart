@@ -1,7 +1,40 @@
 import 'package:flutter/material.dart';
 
-class ExploreScreen extends StatelessWidget {
-  const ExploreScreen({super.key});
+import '../../shared/location/location_service.dart';
+import 'explore_map_view_model.dart';
+import 'widgets/map_widget.dart';
+
+class ExploreScreen extends StatefulWidget {
+  const ExploreScreen({super.key, ExploreMapViewModel? controller})
+    : _controller = controller;
+
+  final ExploreMapViewModel? _controller;
+
+  @override
+  State<ExploreScreen> createState() => _ExploreScreenState();
+}
+
+class _ExploreScreenState extends State<ExploreScreen> {
+  late final ExploreMapViewModel _controller;
+  late final bool _ownsController;
+
+  @override
+  void initState() {
+    super.initState();
+    _ownsController = widget._controller == null;
+    _controller =
+        widget._controller ??
+        ExploreMapViewModel(locationService: GeolocatorLocationService());
+    _controller.loadInitialLocation();
+  }
+
+  @override
+  void dispose() {
+    if (_ownsController) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +45,7 @@ class ExploreScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: const SizedBox.expand(
-        // TODO: Implement Explore screen content.
-        child: SizedBox.shrink(),
-      ),
+      body: MapWidget(controller: _controller),
     );
   }
 }

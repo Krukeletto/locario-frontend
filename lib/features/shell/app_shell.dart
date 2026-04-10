@@ -9,14 +9,12 @@ import 'more_panel.dart';
 class AppShell extends StatefulWidget {
   const AppShell({
     super.key,
-    required this.location,
+    required this.navigationShell,
     required this.moreItems,
-    required this.child,
   });
 
-  final String location;
+  final StatefulNavigationShell navigationShell;
   final List<MoreActionItem> moreItems;
-  final Widget child;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -46,7 +44,9 @@ class _AppShellState extends State<AppShell>
   @override
   void didUpdateWidget(covariant AppShell oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.location != widget.location && _moreOpen) {
+    if (oldWidget.navigationShell.currentIndex !=
+            widget.navigationShell.currentIndex &&
+        _moreOpen) {
       _closeMore();
     }
   }
@@ -58,9 +58,14 @@ class _AppShellState extends State<AppShell>
   }
 
   void _handleTabSelected(AppTab tab) {
-    if (tab.routePath != widget.location) {
-      context.go(tab.routePath);
-    }
+    final targetIndex = switch (tab) {
+      AppTab.explore => 0,
+      AppTab.saved => 1,
+      AppTab.inbox => 2,
+      AppTab.profile => 3,
+    };
+
+    widget.navigationShell.goBranch(targetIndex);
     if (_moreOpen) {
       _closeMore();
     }
@@ -96,14 +101,20 @@ class _AppShellState extends State<AppShell>
 
   @override
   Widget build(BuildContext context) {
-    final activeTab = AppTab.fromLocation(widget.location);
+    final activeTab = switch (widget.navigationShell.currentIndex) {
+      0 => AppTab.explore,
+      1 => AppTab.saved,
+      2 => AppTab.inbox,
+      3 => AppTab.profile,
+      _ => AppTab.explore,
+    };
     const morePanelBottom = 16.0;
 
     return Scaffold(
       body: Stack(
         clipBehavior: Clip.none,
         children: [
-          Positioned.fill(child: widget.child),
+          Positioned.fill(child: widget.navigationShell),
           // Dismiss backdrop shown only while the More layer is animating/visible.
           if (_showMoreLayer)
             Positioned.fill(
