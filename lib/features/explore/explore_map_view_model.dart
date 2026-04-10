@@ -21,23 +21,22 @@ class ExploreMapViewModel extends ChangeNotifier {
   }) : _locationService = locationService,
        fallbackCenter = fallbackCenter ?? _warsawCenter;
 
-  static const String mapStyleUrl =
-      'https://vector.openstreetmap.org/styles/shortbread/colorful.json';
   static const LatLng _warsawCenter = LatLng(52.237, 21.017);
 
   final LocationService _locationService;
   final LatLng fallbackCenter;
 
-  ExploreMapStatus _status = ExploreMapStatus.loading;
+  ExploreMapStatus _status = ExploreMapStatus.ready;
   LatLng? _currentLocation;
   String? _message;
   Future<void>? _pendingLoad;
   bool _hasLoadedInitialLocation = false;
+  bool _isLocating = false;
 
   ExploreMapStatus get status => _status;
   LatLng? get currentLocation => _currentLocation;
   String? get message => _message;
-  bool get isLoading => _status == ExploreMapStatus.loading;
+  bool get isLocating => _isLocating;
   LatLng get mapCenter => _currentLocation ?? fallbackCenter;
   bool get canOpenAppSettings => _locationService.supportsAppSettings;
   bool get canOpenLocationSettings => _locationService.supportsLocationSettings;
@@ -84,7 +83,7 @@ class ExploreMapViewModel extends ChangeNotifier {
   }
 
   Future<void> _refreshLocationInternal() async {
-    _setState(status: ExploreMapStatus.loading, message: null);
+    _setState(status: _status, message: null, isLocating: true);
 
     try {
       final serviceEnabled = await _locationService.isLocationServiceEnabled();
@@ -92,6 +91,7 @@ class ExploreMapViewModel extends ChangeNotifier {
         _setState(
           status: ExploreMapStatus.serviceDisabled,
           message: 'Enable location services to see your position.',
+          isLocating: false,
         );
         return;
       }
@@ -108,8 +108,19 @@ class ExploreMapViewModel extends ChangeNotifier {
           message: permission == LocationPermission.deniedForever
               ? 'Location access is blocked in system settings.'
               : 'Allow location access to center the map on you.',
+          isLocating: false,
         );
         return;
+      }
+
+      final provisionalLocation = await _loadLastKnownLocation();
+      if (provisionalLocation != null) {
+        _setState(
+          status: ExploreMapStatus.ready,
+          currentLocation: provisionalLocation,
+          message: null,
+          isLocating: true,
+        );
       }
 
       final freshLocation = await _locationService.getCurrentLocation();
@@ -118,31 +129,34 @@ class ExploreMapViewModel extends ChangeNotifier {
           status: ExploreMapStatus.ready,
           currentLocation: freshLocation,
           message: null,
+          isLocating: false,
         );
         return;
       }
 
-      final fallbackLocation = await _loadLastKnownLocation();
-      if (fallbackLocation != null) {
+      if (provisionalLocation != null) {
         _setState(
           status: ExploreMapStatus.ready,
-          currentLocation: fallbackLocation,
+          currentLocation: provisionalLocation,
           message: null,
+          isLocating: false,
         );
-        return;
+      } else {
+        _setState(
+          status: ExploreMapStatus.error,
+          message: 'Unable to determine your location.',
+          isLocating: false,
+        );
       }
-
-      _setState(
-        status: ExploreMapStatus.error,
-        message: 'Unable to determine your location.',
-      );
     } on TimeoutException {
-      final fallbackLocation = await _loadLastKnownLocation();
+      final fallbackLocation =
+          _currentLocation ?? await _loadLastKnownLocation();
       if (fallbackLocation != null) {
         _setState(
           status: ExploreMapStatus.ready,
           currentLocation: fallbackLocation,
           message: null,
+          isLocating: false,
         );
         return;
       }
@@ -150,11 +164,13 @@ class ExploreMapViewModel extends ChangeNotifier {
       _setState(
         status: ExploreMapStatus.error,
         message: 'Location request timed out. Try again.',
+        isLocating: false,
       );
     } catch (_) {
       _setState(
         status: ExploreMapStatus.error,
         message: 'Unable to load your location.',
+        isLocating: false,
       );
     }
   }
@@ -175,10 +191,12 @@ class ExploreMapViewModel extends ChangeNotifier {
     required ExploreMapStatus status,
     LatLng? currentLocation,
     required String? message,
+    required bool isLocating,
   }) {
     _status = status;
     _currentLocation = currentLocation ?? _currentLocation;
     _message = message;
+    _isLocating = isLocating;
     notifyListeners();
   }
 }

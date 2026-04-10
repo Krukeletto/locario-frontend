@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../../shared/location/location_service.dart';
+import 'explore_map_style_repository.dart';
 import 'explore_map_view_model.dart';
 import 'widgets/map_widget.dart';
 
 class ExploreScreen extends StatefulWidget {
-  const ExploreScreen({super.key, ExploreMapViewModel? controller})
-    : _controller = controller;
+  const ExploreScreen({
+    super.key,
+    ExploreMapViewModel? controller,
+    ExploreMapStyleRepository? styleRepository,
+  }) : _controller = controller,
+       _styleRepository = styleRepository;
 
   final ExploreMapViewModel? _controller;
+  final ExploreMapStyleRepository? _styleRepository;
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
@@ -16,6 +22,7 @@ class ExploreScreen extends StatefulWidget {
 
 class _ExploreScreenState extends State<ExploreScreen> {
   late final ExploreMapViewModel _controller;
+  late final ExploreMapStyleRepository _styleRepository;
   late final bool _ownsController;
 
   @override
@@ -25,6 +32,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _controller =
         widget._controller ??
         ExploreMapViewModel(locationService: GeolocatorLocationService());
+    _styleRepository =
+        widget._styleRepository ?? const ExploreMapStyleRepository();
     _controller.loadInitialLocation();
   }
 
@@ -45,7 +54,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: MapWidget(controller: _controller),
+      body: MapWidget(
+        controller: _controller,
+        styleRepository: _styleRepository,
+      ),
     );
   }
 }

@@ -17,7 +17,7 @@ abstract class LocationService {
 }
 
 class GeolocatorLocationService implements LocationService {
-  static const _locationTimeout = Duration(seconds: 20);
+  static const _locationTimeout = Duration(seconds: 8);
 
   @override
   bool get supportsLastKnownLocation => !kIsWeb;
@@ -75,7 +75,7 @@ class GeolocatorLocationService implements LocationService {
   LocationSettings _buildLocationSettings() {
     if (defaultTargetPlatform == TargetPlatform.android) {
       return AndroidSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
+        accuracy: LocationAccuracy.high,
         timeLimit: _locationTimeout,
       );
     }
@@ -83,13 +83,13 @@ class GeolocatorLocationService implements LocationService {
     if (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
       return AppleSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
+        accuracy: LocationAccuracy.high,
         timeLimit: _locationTimeout,
       );
     }
 
     return const LocationSettings(
-      accuracy: LocationAccuracy.high,
+      accuracy: LocationAccuracy.medium,
       timeLimit: _locationTimeout,
     );
   }

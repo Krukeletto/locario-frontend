@@ -8,6 +8,17 @@ import 'package:locario/shared/location/location_service.dart';
 
 void main() {
   group('ExploreMapViewModel', () {
+    test('starts in ready state and locates in the background', () {
+      final controller = ExploreMapViewModel(
+        locationService: FakeLocationService(),
+      );
+
+      expect(controller.status, ExploreMapStatus.ready);
+      expect(controller.currentLocation, isNull);
+      expect(controller.mapCenter, controller.fallbackCenter);
+      expect(controller.isLocating, isFalse);
+    });
+
     test('sets permissionDenied when location permission is denied', () async {
       final service = FakeLocationService(
         serviceEnabled: true,
@@ -21,6 +32,7 @@ void main() {
       expect(controller.status, ExploreMapStatus.permissionDenied);
       expect(controller.currentLocation, isNull);
       expect(controller.mapCenter, controller.fallbackCenter);
+      expect(controller.isLocating, isFalse);
       expect(service.requestPermissionCallCount, 1);
     });
 
@@ -34,6 +46,7 @@ void main() {
       expect(controller.status, ExploreMapStatus.serviceDisabled);
       expect(controller.currentLocation, isNull);
       expect(controller.mapCenter, controller.fallbackCenter);
+      expect(controller.isLocating, isFalse);
     });
 
     test('sets ready when current location is available', () async {
@@ -51,6 +64,7 @@ void main() {
       expect(controller.status, ExploreMapStatus.ready);
       expect(controller.currentLocation, currentLocation);
       expect(controller.message, isNull);
+      expect(controller.isLocating, isFalse);
     });
 
     test('uses last known location after current location timeout', () async {
@@ -68,7 +82,39 @@ void main() {
 
       expect(controller.status, ExploreMapStatus.ready);
       expect(controller.currentLocation, lastKnownLocation);
+      expect(controller.isLocating, isFalse);
     });
+
+    test(
+      'uses last known location immediately while waiting for fresh GPS',
+      () async {
+        const lastKnownLocation = LatLng(54.352, 18.6466);
+        const freshLocation = LatLng(54.3722, 18.6383);
+        final currentLocationCompleter = Completer<LatLng?>();
+        final controller = ExploreMapViewModel(
+          locationService: FakeLocationService(
+            serviceEnabled: true,
+            checkPermissionResult: LocationPermission.whileInUse,
+            lastKnownLocation: lastKnownLocation,
+            currentLocationCompleter: currentLocationCompleter,
+          ),
+        );
+
+        final loadFuture = controller.loadInitialLocation();
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.currentLocation, lastKnownLocation);
+        expect(controller.mapCenter, lastKnownLocation);
+        expect(controller.isLocating, isTrue);
+
+        currentLocationCompleter.complete(freshLocation);
+        await loadFuture;
+
+        expect(controller.currentLocation, freshLocation);
+        expect(controller.isLocating, isFalse);
+      },
+    );
 
     test('skips last known lookup when platform does not support it', () async {
       final service = FakeLocationService(
@@ -85,6 +131,7 @@ void main() {
       expect(controller.currentLocation, isNull);
       expect(service.getLastKnownLocationCallCount, 0);
       expect(controller.mapCenter, controller.fallbackCenter);
+      expect(controller.isLocating, isFalse);
     });
 
     test(
@@ -102,6 +149,7 @@ void main() {
         expect(controller.status, ExploreMapStatus.error);
         expect(controller.currentLocation, isNull);
         expect(controller.mapCenter, controller.fallbackCenter);
+        expect(controller.isLocating, isFalse);
       },
     );
   });
@@ -113,6 +161,7 @@ class FakeLocationService implements LocationService {
     this.checkPermissionResult = LocationPermission.whileInUse,
     LocationPermission? requestPermissionResult,
     this.currentLocation,
+    this.currentLocationCompleter,
     this.lastKnownLocation,
     this.currentLocationError,
     this.supportsLastKnownLocation = true,
@@ -125,6 +174,7 @@ class FakeLocationService implements LocationService {
   final LocationPermission checkPermissionResult;
   final LocationPermission requestPermissionResult;
   final LatLng? currentLocation;
+  final Completer<LatLng?>? currentLocationCompleter;
   final LatLng? lastKnownLocation;
   final Object? currentLocationError;
 
@@ -145,6 +195,11 @@ class FakeLocationService implements LocationService {
 
   @override
   Future<LatLng?> getCurrentLocation() async {
+    final currentLocationCompleter = this.currentLocationCompleter;
+    if (currentLocationCompleter != null) {
+      return currentLocationCompleter.future;
+    }
+
     if (currentLocationError != null) {
       throw currentLocationError!;
     }

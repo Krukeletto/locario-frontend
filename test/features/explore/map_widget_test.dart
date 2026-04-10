@@ -2,23 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:locario/features/explore/explore_map_style_repository.dart';
 import 'package:locario/features/explore/explore_map_view_model.dart';
 import 'package:locario/features/explore/widgets/map_widget.dart';
 import 'package:locario/shared/location/location_service.dart';
 
 void main() {
   group('MapWidget', () {
-    testWidgets('shows loading overlay while controller is loading', (
-      tester,
-    ) async {
-      final controller = ExploreMapViewModel(
-        locationService: _WidgetFakeLocationService(),
-      );
+    testWidgets(
+      'does not show an error banner while location is still resolving',
+      (tester) async {
+        final controller = ExploreMapViewModel(
+          locationService: _WidgetFakeLocationService(
+            currentLocationDelay: const Duration(seconds: 1),
+          ),
+        );
 
-      await tester.pumpWidget(_buildTestApp(controller));
+        controller.loadInitialLocation();
+        await tester.pumpWidget(_buildTestApp(controller));
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    });
+        expect(find.byKey(const Key('map-message-banner')), findsNothing);
+
+        await tester.pump(const Duration(seconds: 1));
+        await tester.pump();
+      },
+    );
 
     testWidgets('shows error banner when controller resolves to an error', (
       tester,
@@ -58,18 +66,44 @@ void main() {
 
 Widget _buildTestApp(ExploreMapViewModel controller) {
   return MaterialApp(
-    home: Scaffold(body: MapWidget(controller: controller)),
+    home: Scaffold(
+      body: MapWidget(
+        controller: controller,
+        styleRepository: const ExploreMapStyleRepository(
+          inlineStyleJson: _testStyleJson,
+        ),
+      ),
+    ),
   );
 }
+
+const _testStyleJson = '''
+{
+  "version": 8,
+  "name": "test-style",
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#ffffff"
+      }
+    }
+  ]
+}
+''';
 
 class _WidgetFakeLocationService implements LocationService {
   _WidgetFakeLocationService({
     this.serviceEnabled = true,
     this.currentLocation,
+    this.currentLocationDelay = Duration.zero,
   });
 
   final bool serviceEnabled;
   final LatLng? currentLocation;
+  final Duration currentLocationDelay;
 
   @override
   bool get supportsAppSettings => true;
@@ -85,7 +119,13 @@ class _WidgetFakeLocationService implements LocationService {
       LocationPermission.whileInUse;
 
   @override
-  Future<LatLng?> getCurrentLocation() async => currentLocation;
+  Future<LatLng?> getCurrentLocation() async {
+    if (currentLocationDelay > Duration.zero) {
+      await Future<void>.delayed(currentLocationDelay);
+    }
+
+    return currentLocation;
+  }
 
   @override
   Future<LatLng?> getLastKnownLocation() async => null;
