@@ -40,6 +40,7 @@ class _MapWidgetState extends State<MapWidget> {
   MapController? _mapController;
   bool _isStyleLoaded = false;
   LatLng? _lastSyncedCenter;
+  bool? _isUserLocationVisible;
   late Future<String> _styleFuture;
 
   static bool _detectMapLibreSupport() {
@@ -115,6 +116,7 @@ class _MapWidgetState extends State<MapWidget> {
         : _fallbackZoom;
     _moveTo(targetCenter, targetZoom);
     _lastSyncedCenter = targetCenter;
+    _updateUserLocationVisibility();
   }
 
   void _handleMapCreated(MapController controller) {
@@ -128,12 +130,32 @@ class _MapWidgetState extends State<MapWidget> {
     if (currentLocation != null) {
       _moveTo(currentLocation, _userLocationZoom);
       _lastSyncedCenter = currentLocation;
+      _updateUserLocationVisibility();
       return;
     }
 
     final targetCenter = widget.controller.mapCenter;
     _moveTo(targetCenter, _fallbackZoom);
     _lastSyncedCenter = targetCenter;
+    _updateUserLocationVisibility();
+  }
+
+  bool _isLocationVisible(LatLng location) {
+    final mapController = _mapController;
+    if (mapController == null) {
+      return false;
+    }
+
+    try {
+      final visibleRegion = mapController.getVisibleRegion();
+      return location.latitude >= visibleRegion.latitudeSouth &&
+          location.latitude <= visibleRegion.latitudeNorth &&
+          location.longitude >= visibleRegion.longitudeWest &&
+          location.longitude <= visibleRegion.longitudeEast;
+    } catch (e) {
+      // If we can't determine visibility, assume it's not visible to show the button
+      return false;
+    }
   }
 
   Future<void> _moveTo(
@@ -173,6 +195,31 @@ class _MapWidgetState extends State<MapWidget> {
     _moveTo(location, _userLocationZoom, animate: true);
   }
 
+  void _updateUserLocationVisibility() {
+    final currentLocation = widget.controller.currentLocation;
+    if (currentLocation == null) {
+      setState(() {
+        _isUserLocationVisible = false;
+      });
+      return;
+    }
+
+    final isVisible = _isLocationVisible(currentLocation);
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isUserLocationVisible = isVisible;
+    });
+  }
+
+  void _handleMapEvent(MapEvent event) {
+    if (event is MapEventCameraIdle) {
+      _updateUserLocationVisibility();
+    }
+  }
+
   Geographic _toGeographic(LatLng latLng) {
     return Geographic(lat: latLng.latitude, lon: latLng.longitude);
   }
@@ -199,6 +246,22 @@ class _MapWidgetState extends State<MapWidget> {
     return MapLibreMap(
       onMapCreated: _handleMapCreated,
       onStyleLoaded: _handleStyleLoaded,
+      onEvent: _handleMapEvent,
+      layers: currentLocation == null
+          ? const []
+          : [
+              CircleLayer(
+                points: [
+                  Feature(
+                    geometry: Point(_toGeographic(currentLocation)),
+                  ),
+                ],
+                radius: 8,
+                color: colorScheme.primary,
+                strokeWidth: 3,
+                strokeColor: colorScheme.onPrimary,
+              ),
+            ],
       options: MapOptions(
         initCenter: _toGeographic(widget.controller.mapCenter),
         initZoom: currentLocation != null ? _userLocationZoom : _fallbackZoom,
@@ -212,16 +275,6 @@ class _MapWidgetState extends State<MapWidget> {
           alignment: widget.attributionAlignment,
           showMapLibre: false,
         ),
-        if (currentLocation != null)
-          WidgetLayer(
-            markers: [
-              Marker(
-                point: _toGeographic(currentLocation),
-                size: const Size(24, 24),
-                child: _CurrentLocationMarker(colorScheme: colorScheme),
-              ),
-            ],
-          ),
       ],
     );
   }
@@ -286,56 +339,57 @@ class _MapWidgetState extends State<MapWidget> {
                     right: 16,
                     child: _MapMessageBanner(controller: controller),
                   ),
-                Align(
-                  alignment: widget.recenterAlignment,
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: widget.recenterPadding.left,
-                      top:
-                          widget.recenterPadding.top +
-                          widget.overlayPadding.top,
-                      right: widget.recenterPadding.right,
-                      bottom:
-                          widget.recenterPadding.bottom +
-                          widget.overlayPadding.bottom +
-                          _mapControlBottomOffset,
-                    ),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.18),
-                            blurRadius: 16,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
+                if (_isUserLocationVisible == false)
+                  Align(
+                    alignment: widget.recenterAlignment,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: widget.recenterPadding.left,
+                        top:
+                            widget.recenterPadding.top +
+                            widget.overlayPadding.top,
+                        right: widget.recenterPadding.right,
+                        bottom:
+                            widget.recenterPadding.bottom +
+                            widget.overlayPadding.bottom +
+                            _mapControlBottomOffset,
                       ),
-                      child: SizedBox(
-                        width: 56,
-                        height: 56,
-                        child: FloatingActionButton(
-                          key: const Key('map-recenter-button'),
-                          heroTag: 'recenter',
-                          backgroundColor: colorScheme.primaryContainer,
-                          foregroundColor: colorScheme.onPrimaryContainer,
-                          elevation: 2,
-                          focusElevation: 4,
-                          hoverElevation: 4,
-                          highlightElevation: 6,
-                          tooltip: 'Return to my location',
-                          onPressed: currentLocation == null
-                              ? null
-                              : _recenterMap,
-                          child: const Icon(
-                            Icons.my_location_rounded,
-                            size: 26,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.18),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: SizedBox(
+                          width: 56,
+                          height: 56,
+                          child: FloatingActionButton(
+                            key: const Key('map-recenter-button'),
+                            heroTag: 'recenter',
+                            backgroundColor: colorScheme.primaryContainer,
+                            foregroundColor: colorScheme.onPrimaryContainer,
+                            elevation: 2,
+                            focusElevation: 4,
+                            hoverElevation: 4,
+                            highlightElevation: 6,
+                            tooltip: 'Return to my location',
+                            onPressed: currentLocation == null
+                                ? null
+                                : _recenterMap,
+                            child: const Icon(
+                              Icons.my_location_rounded,
+                              size: 26,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
               ],
             );
           },
