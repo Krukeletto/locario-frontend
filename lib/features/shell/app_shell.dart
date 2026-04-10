@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../explore/explore_ui_models.dart';
 import 'app_header/app_header.dart';
 import 'app_header/app_header_controller.dart';
 import 'app_header/app_header_scope.dart';
