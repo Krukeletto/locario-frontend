@@ -60,6 +60,7 @@ void main() {
       await tester.pump();
 
       expect(find.byKey(const Key('current-location-marker')), findsOneWidget);
+      expect(find.byKey(const Key('map-recenter-button')), findsOneWidget);
     });
   });
 }
@@ -72,6 +73,7 @@ Widget _buildTestApp(ExploreMapViewModel controller) {
         styleRepository: const ExploreMapStyleRepository(
           inlineStyleJson: _testStyleJson,
         ),
+        overlayPadding: const EdgeInsets.only(top: 12, bottom: 24),
       ),
     ),
   );

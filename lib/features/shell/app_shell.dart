@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'app_bottom_nav.dart';
-import 'app_tab.dart';
-import 'more_action_item.dart';
-import 'more_panel.dart';
+import '../explore/explore_ui_models.dart';
+import 'app_header/app_header.dart';
+import 'app_header/app_header_controller.dart';
+import 'app_header/app_header_scope.dart';
+import 'nav/app_bottom_nav.dart';
+import 'nav/app_tab.dart';
+import 'more/more_action_item.dart';
+import 'more/more_panel.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({
@@ -25,15 +29,12 @@ class _AppShellState extends State<AppShell>
     with SingleTickerProviderStateMixin {
   bool _moreOpen = false;
   late final AnimationController _moreController;
-
-  bool get _showMoreLayer =>
-      _moreOpen ||
-      _moreController.status == AnimationStatus.forward ||
-      _moreController.status == AnimationStatus.reverse;
+  late final AppHeaderController _appHeaderController;
 
   @override
   void initState() {
     super.initState();
+    _appHeaderController = AppHeaderController();
     _moreController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 320),
@@ -53,6 +54,7 @@ class _AppShellState extends State<AppShell>
 
   @override
   void dispose() {
+    _appHeaderController.dispose();
     _moreController.dispose();
     super.dispose();
   }
@@ -111,62 +113,88 @@ class _AppShellState extends State<AppShell>
     const morePanelBottom = 16.0;
 
     return Scaffold(
-      body: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned.fill(
-            child: SafeArea(bottom: false, child: widget.navigationShell),
-          ),
-          // Dismiss backdrop shown only while the More layer is animating/visible.
-          if (_showMoreLayer)
-            Positioned.fill(
-              child: AnimatedBuilder(
-                animation: _moreController,
-                builder: (context, child) {
-                  return GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: _closeMore,
-                    child: Container(
-                      color: Colors.black.withValues(
-                        alpha: 0.10 * _moreController.value,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          if (_showMoreLayer)
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: morePanelBottom,
-              child: AnimatedBuilder(
-                animation: _moreController,
-                builder: (context, child) {
-                  final panelProgress = Curves.easeOutCubic.transform(
-                    Interval(0.18, 1).transform(_moreController.value),
-                  );
+      body: AnimatedBuilder(
+        animation: Listenable.merge([_moreController, _appHeaderController]),
+        builder: (context, child) {
+          final showMoreLayer = _moreOpen || _moreController.value > 0;
 
-                  return Transform.translate(
-                    offset: Offset(0, (1 - panelProgress) * 24),
-                    child: ClipRect(
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        heightFactor: panelProgress.clamp(0.001, 1).toDouble(),
-                        child: Opacity(
-                          opacity: panelProgress,
-                          child: MorePanel(
-                            items: widget.moreItems,
-                            onItemSelected: _handleMoreItemSelected,
-                          ),
+          return AppHeaderScope(
+            controller: _appHeaderController,
+            child: Column(
+              children: [
+                if (activeTab == AppTab.explore)
+                  SafeArea(
+                    bottom: false,
+                    child: AppHeader(
+                      selectedView: _appHeaderController.selectedView,
+                      onViewChanged: _appHeaderController.setSelectedView,
+                    ),
+                  ),
+                Expanded(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned.fill(
+                        child: SafeArea(
+                          bottom: false,
+                          child: widget.navigationShell,
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
+                      if (showMoreLayer)
+                        Positioned.fill(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: _closeMore,
+                            child: Container(
+                              color: Colors.black.withValues(
+                                alpha: 0.10 * _moreController.value,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (showMoreLayer)
+                        Positioned(
+                          left: 16,
+                          right: 16,
+                          bottom: morePanelBottom,
+                          child: Builder(
+                            builder: (context) {
+                              final panelProgress = Curves.easeOutCubic
+                                  .transform(
+                                    Interval(
+                                      0.18,
+                                      1,
+                                    ).transform(_moreController.value),
+                                  );
+
+                              return Transform.translate(
+                                offset: Offset(0, (1 - panelProgress) * 24),
+                                child: ClipRect(
+                                  child: Align(
+                                    alignment: Alignment.bottomCenter,
+                                    heightFactor: panelProgress
+                                        .clamp(0.001, 1)
+                                        .toDouble(),
+                                    child: Opacity(
+                                      opacity: panelProgress,
+                                      child: MorePanel(
+                                        items: widget.moreItems,
+                                        onItemSelected: _handleMoreItemSelected,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-        ],
+          );
+        },
       ),
       bottomNavigationBar: AppBottomNav(
         activeTab: activeTab,

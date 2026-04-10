@@ -7,7 +7,7 @@ import '../features/more/more_placeholder_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/saved/saved_screen.dart';
 import '../features/shell/app_shell.dart';
-import '../features/shell/more_action_item.dart';
+import '../features/shell/more/more_action_item.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 

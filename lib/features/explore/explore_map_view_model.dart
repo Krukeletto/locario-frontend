@@ -28,6 +28,7 @@ class ExploreMapViewModel extends ChangeNotifier {
 
   ExploreMapStatus _status = ExploreMapStatus.ready;
   LatLng? _currentLocation;
+  LatLng? _preferredMapCenter;
   String? _message;
   Future<void>? _pendingLoad;
   bool _hasLoadedInitialLocation = false;
@@ -37,9 +38,19 @@ class ExploreMapViewModel extends ChangeNotifier {
   LatLng? get currentLocation => _currentLocation;
   String? get message => _message;
   bool get isLocating => _isLocating;
-  LatLng get mapCenter => _currentLocation ?? fallbackCenter;
+  LatLng get mapCenter =>
+      _preferredMapCenter ?? _currentLocation ?? fallbackCenter;
   bool get canOpenAppSettings => _locationService.supportsAppSettings;
   bool get canOpenLocationSettings => _locationService.supportsLocationSettings;
+
+  void setPreferredMapCenter(LatLng? center) {
+    if (_preferredMapCenter == center) {
+      return;
+    }
+
+    _preferredMapCenter = center;
+    notifyListeners();
+  }
 
   Future<void> loadInitialLocation() {
     if (_hasLoadedInitialLocation) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../shell/more_action_item.dart';
+import '../shell/more/more_action_item.dart';
 
 class MorePlaceholderScreen extends StatelessWidget {
   const MorePlaceholderScreen({super.key, required this.item});

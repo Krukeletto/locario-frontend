@@ -10,10 +10,20 @@ class MapWidget extends StatefulWidget {
     super.key,
     required this.controller,
     this.styleRepository = const ExploreMapStyleRepository(),
+    this.overlayPadding = EdgeInsets.zero,
+    this.attributionAlignment = Alignment.bottomRight,
+    this.attributionPadding = const EdgeInsets.only(right: 8, bottom: 8),
+    this.recenterAlignment = Alignment.bottomRight,
+    this.recenterPadding = const EdgeInsets.only(right: 16, bottom: 16),
   });
 
   final ExploreMapViewModel controller;
   final ExploreMapStyleRepository styleRepository;
+  final EdgeInsets overlayPadding;
+  final Alignment attributionAlignment;
+  final EdgeInsets attributionPadding;
+  final Alignment recenterAlignment;
+  final EdgeInsets recenterPadding;
 
   @override
   State<MapWidget> createState() => _MapWidgetState();
@@ -126,8 +136,31 @@ class _MapWidgetState extends State<MapWidget> {
     _lastSyncedCenter = targetCenter;
   }
 
-  Future<void> _moveTo(LatLng center, double zoom) async {
-    await _mapController?.moveCamera(center: _toGeographic(center), zoom: zoom);
+  Future<void> _moveTo(
+    LatLng center,
+    double zoom, {
+    bool animate = false,
+    Duration duration = const Duration(milliseconds: 650),
+  }) async {
+    final mapController = _mapController;
+    if (mapController == null) {
+      return;
+    }
+
+    if (animate) {
+      try {
+        await mapController.animateCamera(
+          center: _toGeographic(center),
+          zoom: zoom,
+          nativeDuration: duration,
+        );
+      } catch (error) {
+        debugPrint('Map camera animation interrupted: $error');
+      }
+      return;
+    }
+
+    await mapController.moveCamera(center: _toGeographic(center), zoom: zoom);
   }
 
   void _recenterMap() {
@@ -136,7 +169,8 @@ class _MapWidgetState extends State<MapWidget> {
       return;
     }
 
-    _moveTo(location, _userLocationZoom);
+    widget.controller.setPreferredMapCenter(location);
+    _moveTo(location, _userLocationZoom, animate: true);
   }
 
   Geographic _toGeographic(LatLng latLng) {
@@ -174,8 +208,8 @@ class _MapWidgetState extends State<MapWidget> {
       ),
       children: [
         SourceAttribution(
-          padding: const EdgeInsets.only(right: 8, bottom: 8),
-          alignment: Alignment.bottomRight,
+          padding: widget.attributionPadding,
+          alignment: widget.attributionAlignment,
           showMapLibre: false,
         ),
         if (currentLocation != null)
@@ -235,7 +269,7 @@ class _MapWidgetState extends State<MapWidget> {
                   ),
                 if (styleLoadFailed)
                   Positioned(
-                    top: 16,
+                    top: 16 + widget.overlayPadding.top,
                     left: 16,
                     right: 16,
                     child: _StaticMapMessageBanner(
@@ -247,24 +281,58 @@ class _MapWidgetState extends State<MapWidget> {
                     controller.message != null &&
                     !controller.isLocating)
                   Positioned(
-                    top: 16,
+                    top: 16 + widget.overlayPadding.top,
                     left: 16,
                     right: 16,
                     child: _MapMessageBanner(controller: controller),
                   ),
-                Positioned(
-                  bottom: _mapControlBottomOffset,
-                  left: 16,
-                  child: SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: FloatingActionButton(
-                      heroTag: 'recenter',
-                      backgroundColor: colorScheme.surface,
-                      foregroundColor: colorScheme.onSurface,
-                      tooltip: 'Return to my location',
-                      onPressed: currentLocation == null ? null : _recenterMap,
-                      child: const Icon(Icons.my_location, size: 24),
+                Align(
+                  alignment: widget.recenterAlignment,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: widget.recenterPadding.left,
+                      top:
+                          widget.recenterPadding.top +
+                          widget.overlayPadding.top,
+                      right: widget.recenterPadding.right,
+                      bottom:
+                          widget.recenterPadding.bottom +
+                          widget.overlayPadding.bottom +
+                          _mapControlBottomOffset,
+                    ),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.18),
+                            blurRadius: 16,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: FloatingActionButton(
+                          key: const Key('map-recenter-button'),
+                          heroTag: 'recenter',
+                          backgroundColor: colorScheme.primaryContainer,
+                          foregroundColor: colorScheme.onPrimaryContainer,
+                          elevation: 2,
+                          focusElevation: 4,
+                          hoverElevation: 4,
+                          highlightElevation: 6,
+                          tooltip: 'Return to my location',
+                          onPressed: currentLocation == null
+                              ? null
+                              : _recenterMap,
+                          child: const Icon(
+                            Icons.my_location_rounded,
+                            size: 26,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
