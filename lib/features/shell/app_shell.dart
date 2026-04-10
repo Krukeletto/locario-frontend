@@ -14,10 +14,14 @@ class AppShell extends StatefulWidget {
     super.key,
     required this.navigationShell,
     required this.moreItems,
+    required this.showHeader,
+    required this.showViewToggle,
   });
 
   final StatefulNavigationShell navigationShell;
   final List<MoreActionItem> moreItems;
+  final bool showHeader;
+  final bool showViewToggle;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -121,12 +125,13 @@ class _AppShellState extends State<AppShell>
             controller: _appHeaderController,
             child: Column(
               children: [
-                if (activeTab == AppTab.explore)
+                if (widget.showHeader)
                   SafeArea(
                     bottom: false,
                     child: AppHeader(
                       selectedView: _appHeaderController.selectedView,
                       onViewChanged: _appHeaderController.setSelectedView,
+                      showViewToggle: widget.showViewToggle,
                     ),
                   ),
                 Expanded(
@@ -135,6 +140,7 @@ class _AppShellState extends State<AppShell>
                     children: [
                       Positioned.fill(
                         child: SafeArea(
+                          top: false,
                           bottom: false,
                           child: widget.navigationShell,
                         ),

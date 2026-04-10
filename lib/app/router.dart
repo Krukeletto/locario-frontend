@@ -58,9 +58,17 @@ final GoRouter appRouter = GoRouter(
     // Indexed stack keeps tab navigator state alive between tab switches.
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
+        final showHeader = state.uri.queryParameters['header'] != 'false';
+        final showViewToggle =
+            showHeader &&
+            state.uri.pathSegments.isNotEmpty &&
+            state.uri.pathSegments.first == 'explore';
+
         return AppShell(
           navigationShell: navigationShell,
           moreItems: moreActionItems,
+          showHeader: showHeader,
+          showViewToggle: showViewToggle,
         );
       },
       branches: [

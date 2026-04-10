@@ -7,10 +7,12 @@ class AppHeader extends StatelessWidget {
     super.key,
     required this.selectedView,
     required this.onViewChanged,
+    this.showViewToggle = true,
   });
 
   final ExploreContentView selectedView;
   final ValueChanged<ExploreContentView> onViewChanged;
+  final bool showViewToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +44,10 @@ class AppHeader extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          _ViewToggle(selectedView: selectedView, onChanged: onViewChanged),
+          if (showViewToggle) ...[
+            const SizedBox(width: 12),
+            _ViewToggle(selectedView: selectedView, onChanged: onViewChanged),
+          ],
         ],
       ),
     );
