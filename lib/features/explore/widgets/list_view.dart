@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
 import '../models.dart';
@@ -7,22 +8,20 @@ class ExploreListView extends StatelessWidget {
   const ExploreListView({
     super.key,
     required this.events,
+    required this.referenceLocation,
     required this.selectedFilterSummary,
-    required this.areaOptions,
-    required this.selectedAreaIndex,
     required this.selectedArea,
     required this.selectedSort,
-    required this.onAreaSelected,
+    required this.onAreaPressed,
     required this.onSortChanged,
   });
 
   final List<ExploreEvent> events;
+  final LatLng referenceLocation;
   final String selectedFilterSummary;
-  final List<ExploreAreaOption> areaOptions;
-  final int selectedAreaIndex;
-  final ExploreAreaOption selectedArea;
+  final ExploreAreaSelection selectedArea;
   final ExploreSortOption selectedSort;
-  final ValueChanged<int> onAreaSelected;
+  final VoidCallback onAreaPressed;
   final ValueChanged<ExploreSortOption> onSortChanged;
 
   @override
@@ -40,11 +39,9 @@ class ExploreListView extends StatelessWidget {
               eventsCount: events.length,
               selectedFilterSummary: selectedFilterSummary,
               allFilterLabel: l10n.filterAll,
-              areaOptions: areaOptions,
-              selectedAreaIndex: selectedAreaIndex,
               selectedArea: selectedArea,
               selectedSort: selectedSort,
-              onAreaSelected: onAreaSelected,
+              onAreaPressed: onAreaPressed,
               onSortChanged: onSortChanged,
             ),
           ),
@@ -56,7 +53,10 @@ class ExploreListView extends StatelessWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final event = events[index];
-                return _EventCard(event: event);
+                return _EventCard(
+                  event: event,
+                  referenceLocation: referenceLocation,
+                );
               },
             ),
           ),
@@ -71,22 +71,18 @@ class _ListToolbar extends StatelessWidget {
     required this.eventsCount,
     required this.selectedFilterSummary,
     required this.allFilterLabel,
-    required this.areaOptions,
-    required this.selectedAreaIndex,
     required this.selectedArea,
     required this.selectedSort,
-    required this.onAreaSelected,
+    required this.onAreaPressed,
     required this.onSortChanged,
   });
 
   final int eventsCount;
   final String selectedFilterSummary;
   final String allFilterLabel;
-  final List<ExploreAreaOption> areaOptions;
-  final int selectedAreaIndex;
-  final ExploreAreaOption selectedArea;
+  final ExploreAreaSelection selectedArea;
   final ExploreSortOption selectedSort;
-  final ValueChanged<int> onAreaSelected;
+  final VoidCallback onAreaPressed;
   final ValueChanged<ExploreSortOption> onSortChanged;
 
   @override
@@ -136,52 +132,41 @@ class _ListToolbar extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Container(
+                child: InkWell(
                   key: const Key('explore-area-button'),
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: colorScheme.outlineVariant),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<int>(
-                      isExpanded: true,
-                      value: selectedAreaIndex,
-                      icon: Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        color: colorScheme.secondary,
-                      ),
-                      onChanged: (value) {
-                        if (value != null) {
-                          onAreaSelected(value);
-                        }
-                      },
-                      items: [
-                        for (var i = 0; i < areaOptions.length; i++)
-                          DropdownMenuItem<int>(
-                            value: i,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  areaOptions[i].icon,
-                                  size: 15,
-                                  color: colorScheme.primary,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    areaOptions[i].label,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge
-                                        ?.copyWith(fontWeight: FontWeight.w700),
-                                  ),
-                                ),
-                              ],
-                            ),
+                  onTap: onAreaPressed,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 9,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: colorScheme.outlineVariant),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          selectedArea.icon,
+                          size: 16,
+                          color: colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            selectedArea.label,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(fontWeight: FontWeight.w700),
                           ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: colorScheme.secondary,
+                        ),
                       ],
                     ),
                   ),
@@ -266,9 +251,10 @@ class _SortMenu extends StatelessWidget {
 }
 
 class _EventCard extends StatelessWidget {
-  const _EventCard({required this.event});
+  const _EventCard({required this.event, required this.referenceLocation});
 
   final ExploreEvent event;
+  final LatLng referenceLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -318,7 +304,7 @@ class _EventCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${event.categoryLabel} • ${event.distanceLabel(l10n)}',
+                  '${event.categoryLabel} • ${event.distanceLabel(l10n, referenceLocation)}',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: event.accentColor,
                     fontWeight: FontWeight.w700,

@@ -154,6 +154,65 @@ class AppLocalizationsEn extends AppLocalizations {
   String get areaMyLocationDescription => 'Events closest to you by default';
 
   @override
+  String get areaTypedAddressDescription => 'Address entered manually';
+
+  @override
+  String get areaPinnedOnMap => 'Pinned on map';
+
+  @override
+  String get areaPickerTitle => 'Choose area';
+
+  @override
+  String get areaPickerSubtitle => 'You can type an address, point to a spot on the map or go back to your current location.';
+
+  @override
+  String get areaUseCurrentLocation => 'My location';
+
+  @override
+  String get areaUseCurrentLocationSubtitle => 'Use your current position as the reference point';
+
+  @override
+  String get areaEnterAddress => 'Enter address';
+
+  @override
+  String get areaEnterAddressSubtitle => 'Type a street, district or exact place';
+
+  @override
+  String get areaPickOnMap => 'Pick on map';
+
+  @override
+  String get areaPickOnMapTitle => 'Pick a point on the map';
+
+  @override
+  String get areaPickOnMapSubtitle => 'Move the map so the chosen point sits under the center marker.';
+
+  @override
+  String get areaPickOnMapConfirm => 'Use this point';
+
+  @override
+  String get areaAddressDialogTitle => 'Enter address';
+
+  @override
+  String get areaAddressDialogHint => 'For example 12 Old Town Sq, Poznan';
+
+  @override
+  String get areaAddressNotFound => 'We couldn\'t find that address.';
+
+  @override
+  String get areaAddressLookupFailed => 'Address lookup failed. Try again.';
+
+  @override
+  String get areaDialogCancel => 'Cancel';
+
+  @override
+  String get areaDialogConfirm => 'Done';
+
+  @override
+  String areaPinnedCoordinates(String lat, String lon) {
+    return '$lat, $lon';
+  }
+
+  @override
   String get areaWarsawCenter => 'Warsaw center';
 
   @override
@@ -251,4 +310,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapUnableLoadLocation => 'Unable to load your location.';
+
+  @override
+  String mapClusterSheetTitle(int count) {
+    return 'Choose an event ($count)';
+  }
+
+  @override
+  String mapEventOpenSoon(String title) {
+    return 'The event screen for “$title” will be added later.';
+  }
 }

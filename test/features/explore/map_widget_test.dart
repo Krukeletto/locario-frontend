@@ -69,6 +69,7 @@ Widget _buildTestApp(ExploreMapViewModel controller) {
   return MaterialApp(
     home: Scaffold(
       body: MapWidget(
+        events: [],
         controller: controller,
         styleRepository: const MapStyleRepository(
           inlineStyleJson: _testStyleJson,

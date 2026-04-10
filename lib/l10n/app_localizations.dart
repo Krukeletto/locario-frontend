@@ -377,6 +377,120 @@ abstract class AppLocalizations {
   /// **'Events closest to you by default'**
   String get areaMyLocationDescription;
 
+  /// No description provided for @areaTypedAddressDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Address entered manually'**
+  String get areaTypedAddressDescription;
+
+  /// No description provided for @areaPinnedOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned on map'**
+  String get areaPinnedOnMap;
+
+  /// No description provided for @areaPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose area'**
+  String get areaPickerTitle;
+
+  /// No description provided for @areaPickerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You can type an address, point to a spot on the map or go back to your current location.'**
+  String get areaPickerSubtitle;
+
+  /// No description provided for @areaUseCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'My location'**
+  String get areaUseCurrentLocation;
+
+  /// No description provided for @areaUseCurrentLocationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your current position as the reference point'**
+  String get areaUseCurrentLocationSubtitle;
+
+  /// No description provided for @areaEnterAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter address'**
+  String get areaEnterAddress;
+
+  /// No description provided for @areaEnterAddressSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a street, district or exact place'**
+  String get areaEnterAddressSubtitle;
+
+  /// No description provided for @areaPickOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick on map'**
+  String get areaPickOnMap;
+
+  /// No description provided for @areaPickOnMapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a point on the map'**
+  String get areaPickOnMapTitle;
+
+  /// No description provided for @areaPickOnMapSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the map so the chosen point sits under the center marker.'**
+  String get areaPickOnMapSubtitle;
+
+  /// No description provided for @areaPickOnMapConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this point'**
+  String get areaPickOnMapConfirm;
+
+  /// No description provided for @areaAddressDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter address'**
+  String get areaAddressDialogTitle;
+
+  /// No description provided for @areaAddressDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example 12 Old Town Sq, Poznan'**
+  String get areaAddressDialogHint;
+
+  /// No description provided for @areaAddressNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find that address.'**
+  String get areaAddressNotFound;
+
+  /// No description provided for @areaAddressLookupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Address lookup failed. Try again.'**
+  String get areaAddressLookupFailed;
+
+  /// No description provided for @areaDialogCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get areaDialogCancel;
+
+  /// No description provided for @areaDialogConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get areaDialogConfirm;
+
+  /// No description provided for @areaPinnedCoordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'{lat}, {lon}'**
+  String areaPinnedCoordinates(String lat, String lon);
+
   /// No description provided for @areaWarsawCenter.
   ///
   /// In en, this message translates to:
@@ -562,6 +676,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unable to load your location.'**
   String get mapUnableLoadLocation;
+
+  /// No description provided for @mapClusterSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an event ({count})'**
+  String mapClusterSheetTitle(int count);
+
+  /// No description provided for @mapEventOpenSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'The event screen for “{title}” will be added later.'**
+  String mapEventOpenSoon(String title);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

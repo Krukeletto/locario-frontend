@@ -154,6 +154,65 @@ class AppLocalizationsPl extends AppLocalizations {
   String get areaMyLocationDescription => 'Domyślnie wydarzenia najbliżej Ciebie';
 
   @override
+  String get areaTypedAddressDescription => 'Adres wpisany ręcznie';
+
+  @override
+  String get areaPinnedOnMap => 'Punkt na mapie';
+
+  @override
+  String get areaPickerTitle => 'Wybierz obszar';
+
+  @override
+  String get areaPickerSubtitle => 'Możesz wpisać adres, wskazać punkt na mapie albo wrócić do bieżącej lokalizacji.';
+
+  @override
+  String get areaUseCurrentLocation => 'Moja lokalizacja';
+
+  @override
+  String get areaUseCurrentLocationSubtitle => 'Użyj Twojej aktualnej pozycji jako punktu odniesienia';
+
+  @override
+  String get areaEnterAddress => 'Wpisz adres';
+
+  @override
+  String get areaEnterAddressSubtitle => 'Podaj ulicę, dzielnicę albo konkretne miejsce';
+
+  @override
+  String get areaPickOnMap => 'Wskaż na mapie';
+
+  @override
+  String get areaPickOnMapTitle => 'Wskaż punkt na mapie';
+
+  @override
+  String get areaPickOnMapSubtitle => 'Przesuń mapę tak, aby wybrany punkt był pod znacznikiem na środku.';
+
+  @override
+  String get areaPickOnMapConfirm => 'Użyj tego punktu';
+
+  @override
+  String get areaAddressDialogTitle => 'Wpisz adres';
+
+  @override
+  String get areaAddressDialogHint => 'Np. Stary Rynek 12, Poznań';
+
+  @override
+  String get areaAddressNotFound => 'Nie udało się znaleźć tego adresu.';
+
+  @override
+  String get areaAddressLookupFailed => 'Nie udało się wyszukać adresu. Spróbuj ponownie.';
+
+  @override
+  String get areaDialogCancel => 'Anuluj';
+
+  @override
+  String get areaDialogConfirm => 'Gotowe';
+
+  @override
+  String areaPinnedCoordinates(String lat, String lon) {
+    return '$lat, $lon';
+  }
+
+  @override
   String get areaWarsawCenter => 'Centrum Warszawy';
 
   @override
@@ -251,4 +310,14 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get mapUnableLoadLocation => 'Nie udało się wczytać Twojej lokalizacji.';
+
+  @override
+  String mapClusterSheetTitle(int count) {
+    return 'Wybierz wydarzenie ($count)';
+  }
+
+  @override
+  String mapEventOpenSoon(String title) {
+    return 'Ekran wydarzenia „$title” dodamy później.';
+  }
 }

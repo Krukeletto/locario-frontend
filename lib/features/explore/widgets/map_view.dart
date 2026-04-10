@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../../shared/map/style_repository.dart';
+import '../models.dart';
 import '../map_view_model.dart';
 import 'map_widget.dart';
 
@@ -9,10 +11,14 @@ class ExploreMapView extends StatelessWidget {
     super.key,
     required this.controller,
     required this.styleRepository,
+    required this.events,
+    this.onCameraCenterChanged,
   });
 
   final ExploreMapViewModel controller;
   final MapStyleRepository styleRepository;
+  final List<ExploreEvent> events;
+  final ValueChanged<LatLng>? onCameraCenterChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +28,9 @@ class ExploreMapView extends StatelessWidget {
       color: colorScheme.surfaceContainerLowest,
       child: MapWidget(
         controller: controller,
+        events: events,
         styleRepository: styleRepository,
+        onCameraCenterChanged: onCameraCenterChanged,
         overlayPadding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
         attributionAlignment: Alignment.bottomRight,
         attributionPadding: const EdgeInsets.only(right: 8, bottom: 8),

@@ -61,6 +61,35 @@
   "filterFood": "Food",
   "areaMyLocation": "My location",
   "areaMyLocationDescription": "Events closest to you by default",
+  "areaTypedAddressDescription": "Address entered manually",
+  "areaPinnedOnMap": "Pinned on map",
+  "areaPickerTitle": "Choose area",
+  "areaPickerSubtitle": "You can type an address, point to a spot on the map or go back to your current location.",
+  "areaUseCurrentLocation": "My location",
+  "areaUseCurrentLocationSubtitle": "Use your current position as the reference point",
+  "areaEnterAddress": "Enter address",
+  "areaEnterAddressSubtitle": "Type a street, district or exact place",
+  "areaPickOnMap": "Pick on map",
+  "areaPickOnMapTitle": "Pick a point on the map",
+  "areaPickOnMapSubtitle": "Move the map so the chosen point sits under the center marker.",
+  "areaPickOnMapConfirm": "Use this point",
+  "areaAddressDialogTitle": "Enter address",
+  "areaAddressDialogHint": "For example 12 Old Town Sq, Poznan",
+  "areaAddressNotFound": "We couldn't find that address.",
+  "areaAddressLookupFailed": "Address lookup failed. Try again.",
+  "areaDialogCancel": "Cancel",
+  "areaDialogConfirm": "Done",
+  "areaPinnedCoordinates": "{lat}, {lon}",
+  "@areaPinnedCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
   "areaWarsawCenter": "Warsaw center",
   "areaWarsawCenterDescription": "Address or pin set manually",
   "areaPowisle": "Powisle",
@@ -112,5 +141,21 @@
   "mapPermissionDeniedForever": "Location access is blocked in system settings.",
   "mapUnableDetermineLocation": "Unable to determine your location.",
   "mapLocationTimeout": "Location request timed out. Try again.",
-  "mapUnableLoadLocation": "Unable to load your location."
+  "mapUnableLoadLocation": "Unable to load your location.",
+  "mapClusterSheetTitle": "Choose an event ({count})",
+  "@mapClusterSheetTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEventOpenSoon": "The event screen for “{title}” will be added later.",
+  "@mapEventOpenSoon": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

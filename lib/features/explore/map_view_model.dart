@@ -28,9 +28,9 @@ class ExploreMapViewModel extends ChangeNotifier {
     required LocationService locationService,
     LatLng? fallbackCenter,
   }) : _locationService = locationService,
-       fallbackCenter = fallbackCenter ?? _warsawCenter;
+       fallbackCenter = fallbackCenter ?? _lodzPinsCenter;
 
-  static const LatLng _warsawCenter = LatLng(52.237, 21.017);
+  static const LatLng _lodzPinsCenter = LatLng(51.695664, 19.416611);
 
   final LocationService _locationService;
   final LatLng fallbackCenter;

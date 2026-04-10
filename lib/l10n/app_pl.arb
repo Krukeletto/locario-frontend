@@ -61,6 +61,35 @@
   "filterFood": "Food",
   "areaMyLocation": "Moja lokalizacja",
   "areaMyLocationDescription": "Domyślnie wydarzenia najbliżej Ciebie",
+  "areaTypedAddressDescription": "Adres wpisany ręcznie",
+  "areaPinnedOnMap": "Punkt na mapie",
+  "areaPickerTitle": "Wybierz obszar",
+  "areaPickerSubtitle": "Możesz wpisać adres, wskazać punkt na mapie albo wrócić do bieżącej lokalizacji.",
+  "areaUseCurrentLocation": "Moja lokalizacja",
+  "areaUseCurrentLocationSubtitle": "Użyj Twojej aktualnej pozycji jako punktu odniesienia",
+  "areaEnterAddress": "Wpisz adres",
+  "areaEnterAddressSubtitle": "Podaj ulicę, dzielnicę albo konkretne miejsce",
+  "areaPickOnMap": "Wskaż na mapie",
+  "areaPickOnMapTitle": "Wskaż punkt na mapie",
+  "areaPickOnMapSubtitle": "Przesuń mapę tak, aby wybrany punkt był pod znacznikiem na środku.",
+  "areaPickOnMapConfirm": "Użyj tego punktu",
+  "areaAddressDialogTitle": "Wpisz adres",
+  "areaAddressDialogHint": "Np. Stary Rynek 12, Poznań",
+  "areaAddressNotFound": "Nie udało się znaleźć tego adresu.",
+  "areaAddressLookupFailed": "Nie udało się wyszukać adresu. Spróbuj ponownie.",
+  "areaDialogCancel": "Anuluj",
+  "areaDialogConfirm": "Gotowe",
+  "areaPinnedCoordinates": "{lat}, {lon}",
+  "@areaPinnedCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
   "areaWarsawCenter": "Centrum Warszawy",
   "areaWarsawCenterDescription": "Adres lub pin ustawiony ręcznie",
   "areaPowisle": "Powiśle",
@@ -112,5 +141,21 @@
   "mapPermissionDeniedForever": "Dostęp do lokalizacji jest zablokowany w ustawieniach systemu.",
   "mapUnableDetermineLocation": "Nie udało się ustalić Twojej lokalizacji.",
   "mapLocationTimeout": "Żądanie lokalizacji przekroczyło limit czasu. Spróbuj ponownie.",
-  "mapUnableLoadLocation": "Nie udało się wczytać Twojej lokalizacji."
+  "mapUnableLoadLocation": "Nie udało się wczytać Twojej lokalizacji.",
+  "mapClusterSheetTitle": "Wybierz wydarzenie ({count})",
+  "@mapClusterSheetTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEventOpenSoon": "Ekran wydarzenia „{title}” dodamy później.",
+  "@mapEventOpenSoon": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }
