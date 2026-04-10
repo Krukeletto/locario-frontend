@@ -114,7 +114,9 @@ class _AppShellState extends State<AppShell>
       body: Stack(
         clipBehavior: Clip.none,
         children: [
-          Positioned.fill(child: widget.navigationShell),
+          Positioned.fill(
+            child: SafeArea(bottom: false, child: widget.navigationShell),
+          ),
           // Dismiss backdrop shown only while the More layer is animating/visible.
           if (_showMoreLayer)
             Positioned.fill(
