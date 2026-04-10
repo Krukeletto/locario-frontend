@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
 class HubActionItem {
   const HubActionItem({
     required this.id,
-    required this.title,
-    required this.subtitle,
     required this.icon,
     required this.routePath,
     this.accentColor,
@@ -12,12 +11,36 @@ class HubActionItem {
   });
 
   final String id;
-  final String title;
-  final String subtitle;
   final String icon;
   final String routePath;
   final int? accentColor;
   final bool isPrimary;
+
+  String title(AppLocalizations l10n) {
+    switch (id) {
+      case 'create-event':
+        return l10n.hubCreateEventTitle;
+      case 'community':
+        return l10n.hubCommunityTitle;
+      case 'friends':
+        return l10n.hubFriendsTitle;
+      default:
+        return id;
+    }
+  }
+
+  String subtitle(AppLocalizations l10n) {
+    switch (id) {
+      case 'create-event':
+        return l10n.hubCreateEventSubtitle;
+      case 'community':
+        return l10n.hubCommunitySubtitle;
+      case 'friends':
+        return l10n.hubFriendsSubtitle;
+      default:
+        return id;
+    }
+  }
 
   IconData get iconData {
     switch (icon) {

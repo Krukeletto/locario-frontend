@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -8,6 +9,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8EF),
@@ -16,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
           children: [
             Text(
-              'Profile',
+              l10n.profileTitle,
               style: theme.textTheme.headlineMedium?.copyWith(
                 color: scheme.primary,
                 fontWeight: FontWeight.w800,
@@ -24,7 +26,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Account, preferences and your saved places in one calmer section.',
+              l10n.profileDescription,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: scheme.onSurface.withValues(alpha: 0.72),
               ),
@@ -32,9 +34,16 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _ProfileActionCard(
               icon: Icons.bookmark_rounded,
-              title: 'Saved',
-              subtitle: 'Places, events and lists you want to revisit',
+              title: l10n.savedTitle,
+              subtitle: l10n.savedSubtitle,
               onTap: () => context.push('/profile/saved'),
+            ),
+            const SizedBox(height: 14),
+            _ProfileActionCard(
+              icon: Icons.settings_outlined,
+              title: l10n.settingsTitle,
+              subtitle: l10n.settingsSubtitle,
+              onTap: () => context.push('/profile/settings'),
             ),
           ],
         ),

@@ -14,6 +14,15 @@ enum ExploreMapStatus {
   error,
 }
 
+enum ExploreMapMessage {
+  serviceDisabled,
+  permissionDenied,
+  permissionDeniedForever,
+  unableDetermineLocation,
+  timeout,
+  unableLoadLocation,
+}
+
 class ExploreMapViewModel extends ChangeNotifier {
   ExploreMapViewModel({
     required LocationService locationService,
@@ -29,14 +38,14 @@ class ExploreMapViewModel extends ChangeNotifier {
   ExploreMapStatus _status = ExploreMapStatus.ready;
   LatLng? _currentLocation;
   LatLng? _preferredMapCenter;
-  String? _message;
+  ExploreMapMessage? _message;
   Future<void>? _pendingLoad;
   bool _hasLoadedInitialLocation = false;
   bool _isLocating = false;
 
   ExploreMapStatus get status => _status;
   LatLng? get currentLocation => _currentLocation;
-  String? get message => _message;
+  ExploreMapMessage? get message => _message;
   bool get isLocating => _isLocating;
   LatLng get mapCenter =>
       _preferredMapCenter ?? _currentLocation ?? fallbackCenter;
@@ -101,7 +110,7 @@ class ExploreMapViewModel extends ChangeNotifier {
       if (!serviceEnabled) {
         _setState(
           status: ExploreMapStatus.serviceDisabled,
-          message: 'Enable location services to see your position.',
+          message: ExploreMapMessage.serviceDisabled,
           isLocating: false,
         );
         return;
@@ -117,8 +126,8 @@ class ExploreMapViewModel extends ChangeNotifier {
         _setState(
           status: ExploreMapStatus.permissionDenied,
           message: permission == LocationPermission.deniedForever
-              ? 'Location access is blocked in system settings.'
-              : 'Allow location access to center the map on you.',
+              ? ExploreMapMessage.permissionDeniedForever
+              : ExploreMapMessage.permissionDenied,
           isLocating: false,
         );
         return;
@@ -155,7 +164,7 @@ class ExploreMapViewModel extends ChangeNotifier {
       } else {
         _setState(
           status: ExploreMapStatus.error,
-          message: 'Unable to determine your location.',
+          message: ExploreMapMessage.unableDetermineLocation,
           isLocating: false,
         );
       }
@@ -174,13 +183,13 @@ class ExploreMapViewModel extends ChangeNotifier {
 
       _setState(
         status: ExploreMapStatus.error,
-        message: 'Location request timed out. Try again.',
+        message: ExploreMapMessage.timeout,
         isLocating: false,
       );
     } catch (_) {
       _setState(
         status: ExploreMapStatus.error,
-        message: 'Unable to load your location.',
+        message: ExploreMapMessage.unableLoadLocation,
         isLocating: false,
       );
     }
@@ -201,7 +210,7 @@ class ExploreMapViewModel extends ChangeNotifier {
   void _setState({
     required ExploreMapStatus status,
     LatLng? currentLocation,
-    required String? message,
+    required ExploreMapMessage? message,
     required bool isLocating,
   }) {
     _status = status;

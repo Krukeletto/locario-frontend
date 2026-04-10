@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
 import 'app_tab.dart';
 
@@ -102,6 +103,7 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final isActive = activeTab == tab && !hubOpen;
 
     return InkWell(
@@ -128,7 +130,7 @@ class _NavItem extends StatelessWidget {
             ),
             const SizedBox(height: 5),
             Text(
-              tab.label,
+              tab.label(l10n),
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.ellipsis,
@@ -156,6 +158,7 @@ class _HubNavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -180,7 +183,7 @@ class _HubNavItem extends StatelessWidget {
             ),
             const SizedBox(height: 5),
             Text(
-              'Hub',
+              l10n.tabHub,
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.ellipsis,

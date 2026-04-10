@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
 import '../../shared/location/location_service.dart';
 import 'explore_map_style_repository.dart';
@@ -57,8 +58,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     super.dispose();
   }
 
-  ExploreAreaOption get _selectedArea => exploreAreaOptions[_selectedAreaIndex];
-
   AppHeaderController get _headerController {
     final scopedController = AppHeaderScope.maybeOf(context);
     if (scopedController != null) {
@@ -67,27 +66,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return _localHeaderController;
   }
 
-  List<ExploreFilter> get _selectedFilters {
-    final selected = _headerController.selectedFilterIndices.toList()..sort();
-    return selected.map((index) => exploreFilters[index]).toList();
-  }
-
-  String get _selectedFilterSummary {
-    final filters = _selectedFilters;
-    if (filters.isEmpty ||
-        (filters.length == 1 && filters.first.label == 'Wszystkie')) {
-      return 'Wszystkie';
-    }
-
-    return filters.map((filter) => filter.label).join(' + ');
-  }
-
   void _toggleFilter(int index) {
     _headerController.toggleFilter(index);
   }
 
-  void _applyAreaSelection(int nextIndex) {
-    if (nextIndex < 0 || nextIndex >= exploreAreaOptions.length) {
+  void _applyAreaSelection(int nextIndex, List<ExploreAreaOption> areaOptions) {
+    if (nextIndex < 0 || nextIndex >= areaOptions.length) {
       return;
     }
 
@@ -95,7 +79,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       _selectedAreaIndex = nextIndex;
     });
 
-    final selectedArea = exploreAreaOptions[nextIndex];
+    final selectedArea = areaOptions[nextIndex];
     if (selectedArea.usesCurrentLocation) {
       _controller.setPreferredMapCenter(_controller.currentLocation);
       return;
@@ -104,39 +88,25 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _controller.setPreferredMapCenter(selectedArea.center);
   }
 
-  List<ExploreEvent> get _visibleEvents {
-    final selectedCategories = _selectedFilters
-        .where((filter) => filter.label != 'Wszystkie')
-        .map((filter) => filter.label)
-        .toSet();
-    Iterable<ExploreEvent> events = exploreEvents;
-
-    if (selectedCategories.isNotEmpty) {
-      events = events.where(
-        (event) => selectedCategories.contains(event.category),
-      );
-    }
-
-    final sorted = events.toList();
-    if (_selectedSort == ExploreSortOption.distance) {
-      sorted.sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
-    } else if (_selectedSort == ExploreSortOption.soonest) {
-      sorted.sort((a, b) => a.timeLabel.compareTo(b.timeLabel));
-    } else {
-      sorted.sort((a, b) => b.distanceMeters.compareTo(a.distanceMeters));
-    }
-
-    return sorted;
-  }
-
   @override
   Widget build(BuildContext context) {
     final headerController = _headerController;
+    final l10n = AppLocalizations.of(context)!;
+    final filters = buildExploreFilters(l10n);
+    final areaOptions = buildExploreAreaOptions(l10n);
+    final allFilter = filters.firstWhere(
+      (filter) => filter.category == ExploreCategory.all,
+    );
 
     return AnimatedBuilder(
       animation: headerController,
       builder: (context, _) {
-        final visibleEvents = _visibleEvents;
+        final selectedFilters = _selectedFilters(filters);
+        final selectedFilterSummary = _selectedFilterSummary(
+          selectedFilters,
+          allFilter,
+        );
+        final visibleEvents = _visibleEvents(selectedFilters, l10n);
         final showShellHeader = AppHeaderScope.maybeOf(context) == null;
 
         return Scaffold(
@@ -151,7 +121,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   ),
                 ExploreHeader(
                   selectedFilterIndices: headerController.selectedFilterIndices,
-                  filters: exploreFilters,
+                  filters: filters,
                   onFilterToggled: _toggleFilter,
                 ),
                 Expanded(
@@ -181,12 +151,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         : ExploreListView(
                             key: const ValueKey('explore-list-view'),
                             events: visibleEvents,
-                            selectedFilterSummary: _selectedFilterSummary,
-                            areaOptions: exploreAreaOptions,
+                            selectedFilterSummary: selectedFilterSummary,
+                            areaOptions: areaOptions,
                             selectedAreaIndex: _selectedAreaIndex,
-                            selectedArea: _selectedArea,
+                            selectedArea: _selectedArea(areaOptions),
                             selectedSort: _selectedSort,
-                            onAreaSelected: _applyAreaSelection,
+                            onAreaSelected: (nextIndex) {
+                              _applyAreaSelection(nextIndex, areaOptions);
+                            },
                             onSortChanged: (sort) {
                               setState(() {
                                 _selectedSort = sort;
@@ -201,5 +173,53 @@ class _ExploreScreenState extends State<ExploreScreen> {
         );
       },
     );
+  }
+
+  ExploreAreaOption _selectedArea(List<ExploreAreaOption> areaOptions) =>
+      areaOptions[_selectedAreaIndex];
+
+  List<ExploreFilter> _selectedFilters(List<ExploreFilter> filters) {
+    final selected = _headerController.selectedFilterIndices.toList()..sort();
+    return selected.map((index) => filters[index]).toList();
+  }
+
+  String _selectedFilterSummary(
+    List<ExploreFilter> filters,
+    ExploreFilter allFilter,
+  ) {
+    if (filters.isEmpty ||
+        (filters.length == 1 && filters.first.category == allFilter.category)) {
+      return allFilter.label;
+    }
+
+    return filters.map((filter) => filter.label).join(' + ');
+  }
+
+  List<ExploreEvent> _visibleEvents(
+    List<ExploreFilter> selectedFilters,
+    AppLocalizations l10n,
+  ) {
+    final selectedCategories = selectedFilters
+        .where((filter) => filter.category != ExploreCategory.all)
+        .map((filter) => filter.category)
+        .toSet();
+    Iterable<ExploreEvent> events = buildExploreEvents(l10n);
+
+    if (selectedCategories.isNotEmpty) {
+      events = events.where(
+        (event) => selectedCategories.contains(event.category),
+      );
+    }
+
+    final sorted = events.toList();
+    if (_selectedSort == ExploreSortOption.distance) {
+      sorted.sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
+    } else if (_selectedSort == ExploreSortOption.soonest) {
+      sorted.sort((a, b) => a.timeLabel.compareTo(b.timeLabel));
+    } else {
+      sorted.sort((a, b) => b.distanceMeters.compareTo(a.distanceMeters));
+    }
+
+    return sorted;
   }
 }

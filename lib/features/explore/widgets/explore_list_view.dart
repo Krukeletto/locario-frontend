@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
 import '../explore_ui_models.dart';
 
@@ -27,6 +28,7 @@ class ExploreListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return ColoredBox(
       color: colorScheme.surface,
@@ -37,6 +39,7 @@ class ExploreListView extends StatelessWidget {
             child: _ListToolbar(
               eventsCount: events.length,
               selectedFilterSummary: selectedFilterSummary,
+              allFilterLabel: l10n.filterAll,
               areaOptions: areaOptions,
               selectedAreaIndex: selectedAreaIndex,
               selectedArea: selectedArea,
@@ -67,6 +70,7 @@ class _ListToolbar extends StatelessWidget {
   const _ListToolbar({
     required this.eventsCount,
     required this.selectedFilterSummary,
+    required this.allFilterLabel,
     required this.areaOptions,
     required this.selectedAreaIndex,
     required this.selectedArea,
@@ -77,6 +81,7 @@ class _ListToolbar extends StatelessWidget {
 
   final int eventsCount;
   final String selectedFilterSummary;
+  final String allFilterLabel;
   final List<ExploreAreaOption> areaOptions;
   final int selectedAreaIndex;
   final ExploreAreaOption selectedArea;
@@ -87,6 +92,7 @@ class _ListToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -101,9 +107,9 @@ class _ListToolbar extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  selectedFilterSummary == 'Wszystkie'
-                      ? 'Wydarzenia w pobliżu'
-                      : '$selectedFilterSummary w pobliżu',
+                  selectedFilterSummary == allFilterLabel
+                      ? l10n.exploreNearbyEvents
+                      : l10n.exploreNearbyWithFilter(selectedFilterSummary),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.3,
@@ -122,7 +128,7 @@ class _ListToolbar extends StatelessWidget {
               Icon(Icons.tune_rounded, size: 16, color: colorScheme.primary),
               const SizedBox(width: 6),
               Text(
-                '$eventsCount wynikow',
+                l10n.resultsCount(eventsCount),
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
@@ -195,20 +201,21 @@ class _SortMenu extends StatelessWidget {
   final ExploreSortOption selectedSort;
   final ValueChanged<ExploreSortOption> onSortChanged;
 
-  String _labelFor(ExploreSortOption option) {
+  String _labelFor(AppLocalizations l10n, ExploreSortOption option) {
     return switch (option) {
-      ExploreSortOption.distance => 'Odległość',
-      ExploreSortOption.soonest => 'Najbliższy termin',
-      ExploreSortOption.trending => 'Popularność',
+      ExploreSortOption.distance => l10n.sortDistance,
+      ExploreSortOption.soonest => l10n.sortSoonest,
+      ExploreSortOption.trending => l10n.sortTrending,
     };
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return PopupMenuButton<ExploreSortOption>(
-      tooltip: 'Sortowanie',
+      tooltip: l10n.sortTooltip,
       onSelected: onSortChanged,
       itemBuilder: (context) => ExploreSortOption.values
           .map(
@@ -226,7 +233,7 @@ class _SortMenu extends StatelessWidget {
                     color: colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
-                  Text(_labelFor(option)),
+                  Text(_labelFor(l10n, option)),
                 ],
               ),
             ),
@@ -246,7 +253,7 @@ class _SortMenu extends StatelessWidget {
             Icon(Icons.swap_vert_rounded, color: colorScheme.primary, size: 17),
             const SizedBox(width: 6),
             Text(
-              _labelFor(selectedSort),
+              _labelFor(l10n, selectedSort),
               style: Theme.of(
                 context,
               ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
@@ -266,6 +273,7 @@ class _EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -305,7 +313,7 @@ class _EventCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${event.category} • ${event.distanceLabel}',
+                  '${event.categoryLabel} • ${event.distanceLabel(l10n)}',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: event.accentColor,
                     fontWeight: FontWeight.w700,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
 import 'hub_action_item.dart';
 
@@ -17,6 +18,7 @@ class HubPanel extends StatelessWidget {
     final primaryItem = items.firstWhere((item) => item.isPrimary);
     final secondaryItems = items.where((item) => !item.isPrimary).toList();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     const panelBackground = Color(0xFFF7F8EF);
     const tileBackground = Color(0xFFEAEDE1);
     final rawHeight = MediaQuery.sizeOf(context).height * 0.68;
@@ -40,7 +42,7 @@ class HubPanel extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Hub',
+                      l10n.hubTitle,
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
                             fontWeight: FontWeight.w800,
@@ -52,7 +54,7 @@ class HubPanel extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Shortcuts for creating and managing your local circle',
+                l10n.hubDescription,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: scheme.onSurface.withValues(alpha: 0.78),
                 ),
@@ -66,11 +68,13 @@ class HubPanel extends StatelessWidget {
                   crossAxisCount: 2,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
+                  childAspectRatio: 0.9,
                 ),
                 itemBuilder: (context, index) {
                   final item = secondaryItems[index];
                   return _SecondaryActionTile(
                     item: item,
+                    l10n: l10n,
                     backgroundColor: tileBackground,
                     onTap: () => onItemSelected(item),
                   );
@@ -80,6 +84,7 @@ class HubPanel extends StatelessWidget {
               // Primary CTA stays at the bottom of the panel content.
               _PrimaryActionCard(
                 item: primaryItem,
+                l10n: l10n,
                 onTap: () => onItemSelected(primaryItem),
               ),
             ],
@@ -91,9 +96,14 @@ class HubPanel extends StatelessWidget {
 }
 
 class _PrimaryActionCard extends StatelessWidget {
-  const _PrimaryActionCard({required this.item, required this.onTap});
+  const _PrimaryActionCard({
+    required this.item,
+    required this.l10n,
+    required this.onTap,
+  });
 
   final HubActionItem item;
+  final AppLocalizations l10n;
   final VoidCallback onTap;
 
   @override
@@ -136,7 +146,7 @@ class _PrimaryActionCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    item.title,
+                    item.title(l10n),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
@@ -145,7 +155,7 @@ class _PrimaryActionCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    item.subtitle.toUpperCase(),
+                    item.subtitle(l10n).toUpperCase(),
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       color: Colors.white.withValues(alpha: 0.95),
                       fontWeight: FontWeight.w700,
@@ -171,11 +181,13 @@ class _PrimaryActionCard extends StatelessWidget {
 class _SecondaryActionTile extends StatelessWidget {
   const _SecondaryActionTile({
     required this.item,
+    required this.l10n,
     required this.backgroundColor,
     required this.onTap,
   });
 
   final HubActionItem item;
+  final AppLocalizations l10n;
   final Color backgroundColor;
   final VoidCallback onTap;
 
@@ -219,7 +231,7 @@ class _SecondaryActionTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    item.title,
+                    item.title(l10n),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -230,7 +242,7 @@ class _SecondaryActionTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    item.subtitle.toUpperCase(),
+                    item.subtitle(l10n).toUpperCase(),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(

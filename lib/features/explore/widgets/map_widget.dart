@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:maplibre/maplibre.dart';
 
@@ -252,9 +253,7 @@ class _MapWidgetState extends State<MapWidget> {
           : [
               CircleLayer(
                 points: [
-                  Feature(
-                    geometry: Point(_toGeographic(currentLocation)),
-                  ),
+                  Feature(geometry: Point(_toGeographic(currentLocation))),
                 ],
                 radius: 8,
                 color: colorScheme.primary,
@@ -282,6 +281,7 @@ class _MapWidgetState extends State<MapWidget> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return FutureBuilder<String>(
       future: _styleFuture,
@@ -326,8 +326,7 @@ class _MapWidgetState extends State<MapWidget> {
                     left: 16,
                     right: 16,
                     child: _StaticMapMessageBanner(
-                      message:
-                          'Unable to load the local map style.\n$styleLoadError',
+                      message: l10n.mapStyleLoadFailed('$styleLoadError'),
                     ),
                   )
                 else if (controller.status != ExploreMapStatus.ready &&
@@ -377,7 +376,7 @@ class _MapWidgetState extends State<MapWidget> {
                             focusElevation: 4,
                             hoverElevation: 4,
                             highlightElevation: 6,
-                            tooltip: 'Return to my location',
+                            tooltip: l10n.mapReturnToLocation,
                             onPressed: currentLocation == null
                                 ? null
                                 : _recenterMap,
@@ -444,6 +443,7 @@ class _MapMessageBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       key: const Key('map-message-banner'),
@@ -464,7 +464,7 @@ class _MapMessageBanner extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  controller.message!,
+                  _messageFor(l10n, controller.message!),
                   style: TextStyle(
                     color: colorScheme.onErrorContainer,
                     fontSize: 12,
@@ -479,25 +479,38 @@ class _MapMessageBanner extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: controller.refreshLocation,
-                child: const Text('Retry'),
+                child: Text(l10n.mapRetry),
               ),
               if (controller.status == ExploreMapStatus.permissionDenied &&
                   controller.canOpenAppSettings)
                 TextButton(
                   onPressed: controller.openAppSettings,
-                  child: const Text('App settings'),
+                  child: Text(l10n.mapAppSettings),
                 ),
               if (controller.status == ExploreMapStatus.serviceDisabled &&
                   controller.canOpenLocationSettings)
                 TextButton(
                   onPressed: controller.openLocationSettings,
-                  child: const Text('Location settings'),
+                  child: Text(l10n.mapLocationSettings),
                 ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  String _messageFor(AppLocalizations l10n, ExploreMapMessage message) {
+    return switch (message) {
+      ExploreMapMessage.serviceDisabled => l10n.mapServiceDisabled,
+      ExploreMapMessage.permissionDenied => l10n.mapPermissionDenied,
+      ExploreMapMessage.permissionDeniedForever =>
+        l10n.mapPermissionDeniedForever,
+      ExploreMapMessage.unableDetermineLocation =>
+        l10n.mapUnableDetermineLocation,
+      ExploreMapMessage.timeout => l10n.mapLocationTimeout,
+      ExploreMapMessage.unableLoadLocation => l10n.mapUnableLoadLocation,
+    };
   }
 }
 

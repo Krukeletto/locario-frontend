@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
 import '../explore_ui_models.dart';
 
@@ -93,6 +94,7 @@ class _SearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       key: const Key('explore-search-field'),
@@ -109,7 +111,7 @@ class _SearchField extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Szukaj wydarzeń...',
+              l10n.exploreSearchHint,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: colorScheme.onSurface.withValues(alpha: 0.54),
                 fontWeight: FontWeight.w500,

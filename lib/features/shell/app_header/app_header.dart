@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
 import '../../explore/explore_ui_models.dart';
 
@@ -21,6 +22,7 @@ class AppHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
@@ -66,6 +68,8 @@ class AppHeader extends StatelessWidget {
                   children: [
                     const SizedBox(width: _viewToggleGap),
                     _ViewToggle(
+                      mapLabel: l10n.headerMap,
+                      listLabel: l10n.headerList,
                       selectedView: selectedView,
                       onChanged: onViewChanged,
                     ),
@@ -80,10 +84,17 @@ class AppHeader extends StatelessWidget {
 }
 
 class _ViewToggle extends StatelessWidget {
-  const _ViewToggle({required this.selectedView, required this.onChanged});
+  const _ViewToggle({
+    required this.selectedView,
+    required this.onChanged,
+    required this.mapLabel,
+    required this.listLabel,
+  });
 
   final ExploreContentView selectedView;
   final ValueChanged<ExploreContentView> onChanged;
+  final String mapLabel;
+  final String listLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -137,14 +148,14 @@ class _ViewToggle extends StatelessWidget {
                 children: [
                   _ViewToggleButton(
                     icon: Icons.map_outlined,
-                    label: 'Mapa',
+                    label: mapLabel,
                     selected: isMapSelected,
                     colorScheme: colorScheme,
                     onTap: () => onChanged(ExploreContentView.map),
                   ),
                   _ViewToggleButton(
                     icon: Icons.view_list_rounded,
-                    label: 'Lista',
+                    label: listLabel,
                     selected: !isMapSelected,
                     colorScheme: colorScheme,
                     onTap: () => onChanged(ExploreContentView.list),
