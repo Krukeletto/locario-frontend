@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:locario/features/explore/explore_map_style_repository.dart';
-import 'package:locario/features/explore/explore_map_view_model.dart';
+import 'package:locario/features/explore/map_view_model.dart';
 import 'package:locario/features/explore/widgets/map_widget.dart';
+import 'package:locario/shared/map/style_repository.dart';
 import 'package:locario/shared/location/location_service.dart';
 
 void main() {
@@ -70,7 +70,7 @@ Widget _buildTestApp(ExploreMapViewModel controller) {
     home: Scaffold(
       body: MapWidget(
         controller: controller,
-        styleRepository: const ExploreMapStyleRepository(
+        styleRepository: const MapStyleRepository(
           inlineStyleJson: _testStyleJson,
         ),
         overlayPadding: const EdgeInsets.only(top: 12, bottom: 24),

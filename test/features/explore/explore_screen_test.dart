@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:locario/features/explore/explore_map_style_repository.dart';
-import 'package:locario/features/explore/explore_map_view_model.dart';
+import 'package:locario/features/explore/map_view_model.dart';
 import 'package:locario/features/explore/explore_screen.dart';
+import 'package:locario/shared/map/style_repository.dart';
 import 'package:locario/shared/location/location_service.dart';
 
 void main() {
@@ -75,7 +75,7 @@ Widget _buildScreen({required LocationService locationService}) {
   return MaterialApp(
     home: ExploreScreen(
       controller: controller,
-      styleRepository: const ExploreMapStyleRepository(
+      styleRepository: const MapStyleRepository(
         inlineStyleJson: _testStyleJson,
       ),
     ),

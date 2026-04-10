@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
-import '../explore_ui_models.dart';
+import '../models.dart';
 
 class ExploreHeader extends StatelessWidget {
   const ExploreHeader({
@@ -25,7 +25,11 @@ class ExploreHeader extends StatelessWidget {
         color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(
+              alpha: Theme.of(context).brightness == Brightness.dark
+                  ? 0.18
+                  : 0.04,
+            ),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -101,7 +105,7 @@ class _SearchField extends StatelessWidget {
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: colorScheme.outline.withValues(alpha: 0.15)),
       ),

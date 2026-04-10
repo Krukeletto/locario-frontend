@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../explore/explore_ui_models.dart';
+import '../../explore/models.dart';
 
-class AppHeaderController extends ChangeNotifier {
+class ShellHeaderController extends ChangeNotifier {
   static const int allFilterIndex = 0;
 
   ExploreContentView _selectedView = ExploreContentView.map;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../explore_map_style_repository.dart';
-import '../explore_map_view_model.dart';
+import '../../../shared/map/style_repository.dart';
+import '../map_view_model.dart';
 import 'map_widget.dart';
 
 class ExploreMapView extends StatelessWidget {
@@ -12,7 +12,7 @@ class ExploreMapView extends StatelessWidget {
   });
 
   final ExploreMapViewModel controller;
-  final ExploreMapStyleRepository styleRepository;
+  final MapStyleRepository styleRepository;
 
   @override
   Widget build(BuildContext context) {

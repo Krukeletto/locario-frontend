@@ -18,16 +18,16 @@ class AppLocalizationsPl extends AppLocalizations {
   String get localePolish => 'Polski';
 
   @override
-  String get tabExplore => 'Explore';
+  String get tabExplore => 'Odkrywaj';
 
   @override
-  String get tabInbox => 'Inbox';
+  String get tabInbox => 'Skrzynka';
 
   @override
   String get tabHub => 'Hub';
 
   @override
-  String get tabProfile => 'Profile';
+  String get tabProfile => 'Profil';
 
   @override
   String get headerMap => 'Mapa';
@@ -42,25 +42,25 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubDescription => 'Skróty do tworzenia i ogarniania Twojej lokalnej społeczności';
 
   @override
-  String get hubCreateEventTitle => 'Create event';
+  String get hubCreateEventTitle => 'Stwórz wydarzenie';
 
   @override
-  String get hubCreateEventSubtitle => 'Start something new';
+  String get hubCreateEventSubtitle => 'Zorganizuj coś fajnego';
 
   @override
-  String get hubCommunityTitle => 'Community';
+  String get hubCommunityTitle => 'Społeczność';
 
   @override
-  String get hubCommunitySubtitle => 'Local updates';
+  String get hubCommunitySubtitle => 'Lokalne aktualizacje';
 
   @override
-  String get hubFriendsTitle => 'Friends';
+  String get hubFriendsTitle => 'Znajomi';
 
   @override
-  String get hubFriendsSubtitle => 'Your network';
+  String get hubFriendsSubtitle => 'Twoja sieć';
 
   @override
-  String get profileTitle => 'Profile';
+  String get profileTitle => 'Profil';
 
   @override
   String get profileDescription => 'Konto, preferencje i zapisane miejsca w jednej spokojniejszej sekcji.';
@@ -78,7 +78,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get settingsScreenDescription => 'Tu możesz ogarnąć podstawy aplikacji, zanim sekcja ustawień bardziej urośnie.';
 
   @override
-  String get savedTitle => 'Saved';
+  String get savedTitle => 'Zapisane';
 
   @override
   String get savedSubtitle => 'Miejsca, wydarzenia i listy, do których chcesz wrócić';
@@ -88,6 +88,21 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get languageSectionSubtitle => 'Wybierz, w jakim języku aplikacja ma z Tobą rozmawiać';
+
+  @override
+  String get themeSectionTitle => 'Wygląd';
+
+  @override
+  String get themeSectionSubtitle => 'Wybierz, czy aplikacja ma podążać za systemem czy trzymać stały motyw';
+
+  @override
+  String get themeModeSystem => 'System';
+
+  @override
+  String get themeModeLight => 'Jasny';
+
+  @override
+  String get themeModeDark => 'Ciemny';
 
   @override
   String get exploreSearchHint => 'Szukaj wydarzeń...';

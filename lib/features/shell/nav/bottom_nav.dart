@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
-import 'app_tab.dart';
+import 'tab.dart';
 
-class AppBottomNav extends StatelessWidget {
-  const AppBottomNav({
+class ShellBottomNav extends StatelessWidget {
+  const ShellBottomNav({
     super.key,
     required this.activeTab,
     required this.hubOpen,
@@ -12,9 +12,9 @@ class AppBottomNav extends StatelessWidget {
     required this.onHubToggle,
   });
 
-  final AppTab activeTab;
+  final ShellTab activeTab;
   final bool hubOpen;
-  final ValueChanged<AppTab> onTabSelected;
+  final ValueChanged<ShellTab> onTabSelected;
   final VoidCallback onHubToggle;
 
   // Navigation bar with 4 items: Explore, Inbox, Hub and Profile.
@@ -27,7 +27,9 @@ class AppBottomNav extends StatelessWidget {
     return Container(
       height: contentHeight + safeBottom,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.98),
+        color: scheme.surface.withValues(
+          alpha: Theme.of(context).brightness == Brightness.dark ? 0.98 : 0.98,
+        ),
         border: Border(
           top: BorderSide(color: scheme.outline.withValues(alpha: 0.35)),
         ),
@@ -52,7 +54,7 @@ class AppBottomNav extends StatelessWidget {
             children: [
               Expanded(
                 child: _NavItem(
-                  tab: AppTab.explore,
+                  tab: ShellTab.explore,
                   activeTab: activeTab,
                   hubOpen: hubOpen,
                   onTap: onTabSelected,
@@ -60,7 +62,7 @@ class AppBottomNav extends StatelessWidget {
               ),
               Expanded(
                 child: _NavItem(
-                  tab: AppTab.inbox,
+                  tab: ShellTab.inbox,
                   activeTab: activeTab,
                   hubOpen: hubOpen,
                   onTap: onTabSelected,
@@ -71,7 +73,7 @@ class AppBottomNav extends StatelessWidget {
               ),
               Expanded(
                 child: _NavItem(
-                  tab: AppTab.profile,
+                  tab: ShellTab.profile,
                   activeTab: activeTab,
                   hubOpen: hubOpen,
                   onTap: onTabSelected,
@@ -94,10 +96,10 @@ class _NavItem extends StatelessWidget {
     required this.onTap,
   });
 
-  final AppTab tab;
-  final AppTab activeTab;
+  final ShellTab tab;
+  final ShellTab activeTab;
   final bool hubOpen;
-  final ValueChanged<AppTab> onTap;
+  final ValueChanged<ShellTab> onTap;
 
   @override
   Widget build(BuildContext context) {

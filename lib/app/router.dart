@@ -7,7 +7,7 @@ import '../features/inbox/inbox_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/profile/settings_screen.dart';
 import '../features/saved/saved_screen.dart';
-import '../features/shell/app_shell.dart';
+import '../features/shell/shell.dart';
 import '../features/shell/hub/hub_action_item.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -38,13 +38,16 @@ final GoRouter appRouter = GoRouter(
     // Indexed stack keeps tab navigator state alive between tab switches.
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
-        final showHeader = state.uri.queryParameters['header'] != 'false';
-        final showViewToggle =
-            showHeader &&
-            state.uri.pathSegments.isNotEmpty &&
-            state.uri.pathSegments.first == 'explore';
+        final currentSection = state.uri.pathSegments.isNotEmpty
+            ? state.uri.pathSegments.first
+            : '';
+        final isRootSectionScreen = state.uri.pathSegments.length <= 1;
+        final showHeader =
+            state.uri.queryParameters['header'] != 'false' &&
+            isRootSectionScreen;
+        final showViewToggle = showHeader && currentSection == 'explore';
 
-        return AppShell(
+        return Shell(
           navigationShell: navigationShell,
           hubItems: hubActionItems,
           showHeader: showHeader,

@@ -90,6 +90,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageSectionSubtitle => 'Choose how the app should speak to you';
 
   @override
+  String get themeSectionTitle => 'Appearance';
+
+  @override
+  String get themeSectionSubtitle => 'Choose whether the app should follow the system or stay fixed';
+
+  @override
+  String get themeModeSystem => 'System';
+
+  @override
+  String get themeModeLight => 'Light';
+
+  @override
+  String get themeModeDark => 'Dark';
+
+  @override
   String get exploreSearchHint => 'Search events...';
 
   @override

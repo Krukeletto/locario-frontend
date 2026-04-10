@@ -17,10 +17,15 @@ class HubPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final primaryItem = items.firstWhere((item) => item.isPrimary);
     final secondaryItems = items.where((item) => !item.isPrimary).toList();
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    const panelBackground = Color(0xFFF7F8EF);
-    const tileBackground = Color(0xFFEAEDE1);
+    final panelBackground = theme.brightness == Brightness.dark
+        ? scheme.surfaceContainerLow
+        : scheme.surface;
+    final tileBackground = theme.brightness == Brightness.dark
+        ? scheme.surfaceContainer
+        : scheme.surfaceContainerHigh;
     final rawHeight = MediaQuery.sizeOf(context).height * 0.68;
     final maxHeight = rawHeight.clamp(420.0, 620.0);
 
@@ -33,36 +38,32 @@ class HubPanel extends StatelessWidget {
         ),
         // Scrollable body keeps panel usable on shorter screens.
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      l10n.hubTitle,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: scheme.primary,
-                          ),
-                    ),
-                  ),
-                ],
+              Text(
+                l10n.hubTitle,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: scheme.primary,
+                ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 2),
               Text(
                 l10n.hubDescription,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: scheme.onSurface.withValues(alpha: 0.78),
+                  height: 1.15,
                 ),
               ),
+              const SizedBox(height: 16),
               // Secondary actions are shown as a fixed 2-column grid.
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
                 itemCount: secondaryItems.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
@@ -213,7 +214,11 @@ class _SecondaryActionTile extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
+              color: Colors.black.withValues(
+                alpha: Theme.of(context).brightness == Brightness.dark
+                    ? 0.18
+                    : 0.03,
+              ),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),

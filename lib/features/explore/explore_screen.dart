@@ -2,26 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
 import '../../shared/location/location_service.dart';
-import 'explore_map_style_repository.dart';
-import 'explore_map_view_model.dart';
-import 'explore_ui_models.dart';
-import '../shell/app_header/app_header.dart';
-import '../shell/app_header/app_header_controller.dart';
-import '../shell/app_header/app_header_scope.dart';
-import 'widgets/explore_header.dart';
-import 'widgets/explore_list_view.dart';
-import 'widgets/explore_map_view.dart';
+import '../../shared/map/style_repository.dart';
+import 'map_view_model.dart';
+import 'models.dart';
+import '../shell/header/header.dart';
+import '../shell/header/header_controller.dart';
+import '../shell/header/header_scope.dart';
+import 'widgets/header.dart';
+import 'widgets/list_view.dart';
+import 'widgets/map_view.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({
     super.key,
     ExploreMapViewModel? controller,
-    ExploreMapStyleRepository? styleRepository,
+    MapStyleRepository? styleRepository,
   }) : _controller = controller,
        _styleRepository = styleRepository;
 
   final ExploreMapViewModel? _controller;
-  final ExploreMapStyleRepository? _styleRepository;
+  final MapStyleRepository? _styleRepository;
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
@@ -29,9 +29,9 @@ class ExploreScreen extends StatefulWidget {
 
 class _ExploreScreenState extends State<ExploreScreen> {
   late final ExploreMapViewModel _controller;
-  late final ExploreMapStyleRepository _styleRepository;
+  late final MapStyleRepository _styleRepository;
   late final bool _ownsController;
-  late final AppHeaderController _localHeaderController;
+  late final ShellHeaderController _localHeaderController;
 
   ExploreSortOption _selectedSort = ExploreSortOption.distance;
   int _selectedAreaIndex = 0;
@@ -43,9 +43,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _controller =
         widget._controller ??
         ExploreMapViewModel(locationService: GeolocatorLocationService());
-    _styleRepository =
-        widget._styleRepository ?? const ExploreMapStyleRepository();
-    _localHeaderController = AppHeaderController();
+    _styleRepository = widget._styleRepository ?? const MapStyleRepository();
+    _localHeaderController = ShellHeaderController();
     _controller.loadInitialLocation();
   }
 
@@ -58,8 +57,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
     super.dispose();
   }
 
-  AppHeaderController get _headerController {
-    final scopedController = AppHeaderScope.maybeOf(context);
+  ShellHeaderController get _headerController {
+    final scopedController = ShellHeaderScope.maybeOf(context);
     if (scopedController != null) {
       return scopedController;
     }
@@ -107,7 +106,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           allFilter,
         );
         final visibleEvents = _visibleEvents(selectedFilters, l10n);
-        final showShellHeader = AppHeaderScope.maybeOf(context) == null;
+        final showShellHeader = ShellHeaderScope.maybeOf(context) == null;
 
         return Scaffold(
           body: ColoredBox(
@@ -115,7 +114,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
             child: Column(
               children: [
                 if (showShellHeader)
-                  AppHeader(
+                  ShellHeader(
                     selectedView: headerController.selectedView,
                     onViewChanged: headerController.setSelectedView,
                   ),

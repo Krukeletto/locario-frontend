@@ -257,6 +257,36 @@ abstract class AppLocalizations {
   /// **'Choose how the app should speak to you'**
   String get languageSectionSubtitle;
 
+  /// No description provided for @themeSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get themeSectionTitle;
+
+  /// No description provided for @themeSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose whether the app should follow the system or stay fixed'**
+  String get themeSectionSubtitle;
+
+  /// No description provided for @themeModeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeModeSystem;
+
+  /// No description provided for @themeModeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeModeLight;
+
+  /// No description provided for @themeModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeModeDark;
+
   /// No description provided for @exploreSearchHint.
   ///
   /// In en, this message translates to:

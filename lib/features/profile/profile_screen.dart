@@ -12,41 +12,39 @@ class ProfileScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8EF),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-          children: [
-            Text(
-              l10n.profileTitle,
-              style: theme.textTheme.headlineMedium?.copyWith(
-                color: scheme.primary,
-                fontWeight: FontWeight.w800,
-              ),
+      backgroundColor: scheme.surface,
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+        children: [
+          Text(
+            l10n.profileTitle,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              color: scheme.primary,
+              fontWeight: FontWeight.w800,
             ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.profileDescription,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.72),
-              ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.profileDescription,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurface.withValues(alpha: 0.72),
             ),
-            const SizedBox(height: 24),
-            _ProfileActionCard(
-              icon: Icons.bookmark_rounded,
-              title: l10n.savedTitle,
-              subtitle: l10n.savedSubtitle,
-              onTap: () => context.push('/profile/saved'),
-            ),
-            const SizedBox(height: 14),
-            _ProfileActionCard(
-              icon: Icons.settings_outlined,
-              title: l10n.settingsTitle,
-              subtitle: l10n.settingsSubtitle,
-              onTap: () => context.push('/profile/settings'),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 24),
+          _ProfileActionCard(
+            icon: Icons.bookmark_rounded,
+            title: l10n.savedTitle,
+            subtitle: l10n.savedSubtitle,
+            onTap: () => context.push('/profile/saved'),
+          ),
+          const SizedBox(height: 14),
+          _ProfileActionCard(
+            icon: Icons.settings_outlined,
+            title: l10n.settingsTitle,
+            subtitle: l10n.settingsSubtitle,
+            onTap: () => context.push('/profile/settings'),
+          ),
+        ],
       ),
     );
   }
@@ -76,12 +74,14 @@ class _ProfileActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: scheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(28),
           border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: Colors.black.withValues(
+                alpha: theme.brightness == Brightness.dark ? 0.22 : 0.04,
+              ),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -121,10 +121,18 @@ class _ProfileActionCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: scheme.primary,
-              size: 18,
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: scheme.primary.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: scheme.primary,
+                size: 16,
+              ),
             ),
           ],
         ),

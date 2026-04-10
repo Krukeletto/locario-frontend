@@ -3,14 +3,14 @@ import 'package:locario/l10n/app_localizations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:maplibre/maplibre.dart';
 
-import '../explore_map_style_repository.dart';
-import '../explore_map_view_model.dart';
+import '../../../shared/map/style_repository.dart';
+import '../map_view_model.dart';
 
 class MapWidget extends StatefulWidget {
   const MapWidget({
     super.key,
     required this.controller,
-    this.styleRepository = const ExploreMapStyleRepository(),
+    this.styleRepository = const MapStyleRepository(),
     this.overlayPadding = EdgeInsets.zero,
     this.attributionAlignment = Alignment.bottomRight,
     this.attributionPadding = const EdgeInsets.only(right: 8, bottom: 8),
@@ -19,7 +19,7 @@ class MapWidget extends StatefulWidget {
   });
 
   final ExploreMapViewModel controller;
-  final ExploreMapStyleRepository styleRepository;
+  final MapStyleRepository styleRepository;
   final EdgeInsets overlayPadding;
   final Alignment attributionAlignment;
   final EdgeInsets attributionPadding;
@@ -42,6 +42,7 @@ class _MapWidgetState extends State<MapWidget> {
   bool _isStyleLoaded = false;
   LatLng? _lastSyncedCenter;
   bool? _isUserLocationVisible;
+  Brightness? _resolvedBrightness;
   late Future<String> _styleFuture;
 
   static bool _detectMapLibreSupport() {
@@ -53,28 +54,44 @@ class _MapWidgetState extends State<MapWidget> {
     }
   }
 
-  Future<String> _loadStyleJson() {
+  Future<String> _loadStyleJson(Brightness brightness) {
     if (!_supportsMapLibre) {
       return Future.value('');
     }
 
-    return widget.styleRepository.loadStyleJson();
+    return widget.styleRepository.loadStyleJson(brightness: brightness);
+  }
+
+  void _refreshStyle(Brightness brightness) {
+    _resolvedBrightness = brightness;
+    _styleFuture = _loadStyleJson(brightness);
+    _isStyleLoaded = false;
+    _mapController = null;
+    _lastSyncedCenter = null;
+    _isUserLocationVisible = null;
   }
 
   @override
   void initState() {
     super.initState();
-    _styleFuture = _loadStyleJson();
+    _styleFuture = Future.value('');
     widget.controller.addListener(_handleControllerChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final brightness = Theme.of(context).brightness;
+    if (_resolvedBrightness != brightness) {
+      _refreshStyle(brightness);
+    }
   }
 
   @override
   void didUpdateWidget(covariant MapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.styleRepository != widget.styleRepository) {
-      _styleFuture = _loadStyleJson();
-      _isStyleLoaded = false;
-      _mapController = null;
+      _refreshStyle(_resolvedBrightness ?? Theme.of(context).brightness);
     }
 
     if (oldWidget.controller == widget.controller) {
@@ -228,6 +245,7 @@ class _MapWidgetState extends State<MapWidget> {
   Widget _buildMapSurface(
     BuildContext context,
     ColorScheme colorScheme,
+    Brightness brightness,
     LatLng? currentLocation,
     String? styleJson,
   ) {
@@ -245,6 +263,7 @@ class _MapWidgetState extends State<MapWidget> {
     }
 
     return MapLibreMap(
+      key: ValueKey('map-style-${brightness.name}'),
       onMapCreated: _handleMapCreated,
       onStyleLoaded: _handleStyleLoaded,
       onEvent: _handleMapEvent,
@@ -281,6 +300,7 @@ class _MapWidgetState extends State<MapWidget> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final brightness = Theme.of(context).brightness;
     final l10n = AppLocalizations.of(context)!;
 
     return FutureBuilder<String>(
@@ -306,6 +326,7 @@ class _MapWidgetState extends State<MapWidget> {
                 _buildMapSurface(
                   context,
                   colorScheme,
+                  brightness,
                   currentLocation,
                   styleJson,
                 ),

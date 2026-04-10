@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:go_router/go_router.dart';
 
-import 'app_header/app_header.dart';
-import 'app_header/app_header_controller.dart';
-import 'app_header/app_header_scope.dart';
+import 'header/header.dart';
+import 'header/header_controller.dart';
+import 'header/header_scope.dart';
 import 'hub/hub_action_item.dart';
 import 'hub/hub_panel.dart';
-import 'nav/app_bottom_nav.dart';
-import 'nav/app_tab.dart';
+import 'nav/bottom_nav.dart';
+import 'nav/tab.dart';
 
-class AppShell extends StatefulWidget {
-  const AppShell({
+class Shell extends StatefulWidget {
+  const Shell({
     super.key,
     required this.navigationShell,
     required this.hubItems,
@@ -24,20 +25,19 @@ class AppShell extends StatefulWidget {
   final bool showViewToggle;
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  State<Shell> createState() => _ShellState();
 }
 
 // Main app shell widget, which includes the bottom navigation bar and the hub layer.
-class _AppShellState extends State<AppShell>
-    with SingleTickerProviderStateMixin {
+class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
   bool _hubOpen = false;
   late final AnimationController _hubController;
-  late final AppHeaderController _appHeaderController;
+  late final ShellHeaderController _headerController;
 
   @override
   void initState() {
     super.initState();
-    _appHeaderController = AppHeaderController();
+    _headerController = ShellHeaderController();
     _hubController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 320),
@@ -46,7 +46,7 @@ class _AppShellState extends State<AppShell>
   }
 
   @override
-  void didUpdateWidget(covariant AppShell oldWidget) {
+  void didUpdateWidget(covariant Shell oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.navigationShell.currentIndex !=
             widget.navigationShell.currentIndex &&
@@ -57,16 +57,16 @@ class _AppShellState extends State<AppShell>
 
   @override
   void dispose() {
-    _appHeaderController.dispose();
+    _headerController.dispose();
     _hubController.dispose();
     super.dispose();
   }
 
-  void _handleTabSelected(AppTab tab) {
+  void _handleTabSelected(ShellTab tab) {
     final targetIndex = switch (tab) {
-      AppTab.explore => 0,
-      AppTab.inbox => 1,
-      AppTab.profile => 2,
+      ShellTab.explore => 0,
+      ShellTab.inbox => 1,
+      ShellTab.profile => 2,
     };
 
     widget.navigationShell.goBranch(targetIndex);
@@ -105,30 +105,31 @@ class _AppShellState extends State<AppShell>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final activeTab = switch (widget.navigationShell.currentIndex) {
-      0 => AppTab.explore,
-      1 => AppTab.inbox,
-      2 => AppTab.profile,
-      _ => AppTab.explore,
+      0 => ShellTab.explore,
+      1 => ShellTab.inbox,
+      2 => ShellTab.profile,
+      _ => ShellTab.explore,
     };
     const hubPanelBottom = 16.0;
 
     return Scaffold(
       body: AnimatedBuilder(
-        animation: Listenable.merge([_hubController, _appHeaderController]),
+        animation: Listenable.merge([_hubController, _headerController]),
         builder: (context, child) {
           final showHubLayer = _hubOpen || _hubController.value > 0;
 
-          return AppHeaderScope(
-            controller: _appHeaderController,
+          return ShellHeaderScope(
+            controller: _headerController,
             child: Column(
               children: [
                 if (widget.showHeader)
                   SafeArea(
                     bottom: false,
-                    child: AppHeader(
-                      selectedView: _appHeaderController.selectedView,
-                      onViewChanged: _appHeaderController.setSelectedView,
+                    child: ShellHeader(
+                      selectedView: _headerController.selectedView,
+                      onViewChanged: _headerController.setSelectedView,
                       showViewToggle: widget.showViewToggle,
                     ),
                   ),
@@ -148,9 +149,24 @@ class _AppShellState extends State<AppShell>
                           child: GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: _closeHub,
-                            child: Container(
-                              color: Colors.black.withValues(
-                                alpha: 0.10 * _hubController.value,
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(
+                                sigmaX: 4 * _hubController.value,
+                                sigmaY: 4 * _hubController.value,
+                              ),
+                              child: Container(
+                                color:
+                                    (theme.brightness == Brightness.dark
+                                            ? Colors.black
+                                            : theme.colorScheme.primary)
+                                        .withValues(
+                                          alpha:
+                                              (theme.brightness ==
+                                                      Brightness.dark
+                                                  ? 0.34
+                                                  : 0.12) *
+                                              _hubController.value,
+                                        ),
                               ),
                             ),
                           ),
@@ -199,7 +215,7 @@ class _AppShellState extends State<AppShell>
           );
         },
       ),
-      bottomNavigationBar: AppBottomNav(
+      bottomNavigationBar: ShellBottomNav(
         activeTab: activeTab,
         hubOpen: _hubOpen,
         onTabSelected: _handleTabSelected,

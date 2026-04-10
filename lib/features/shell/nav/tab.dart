@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
-enum AppTab {
+enum ShellTab {
   explore(
     icon: Icons.explore_outlined,
     selectedIcon: Icons.explore,
@@ -18,7 +18,7 @@ enum AppTab {
     routePath: '/profile',
   );
 
-  const AppTab({
+  const ShellTab({
     required this.icon,
     required this.selectedIcon,
     required this.routePath,
@@ -30,16 +30,16 @@ enum AppTab {
 
   String label(AppLocalizations l10n) {
     return switch (this) {
-      AppTab.explore => l10n.tabExplore,
-      AppTab.inbox => l10n.tabInbox,
-      AppTab.profile => l10n.tabProfile,
+      ShellTab.explore => l10n.tabExplore,
+      ShellTab.inbox => l10n.tabInbox,
+      ShellTab.profile => l10n.tabProfile,
     };
   }
 
-  static AppTab fromLocation(String location) {
-    return AppTab.values.firstWhere(
+  static ShellTab fromLocation(String location) {
+    return ShellTab.values.firstWhere(
       (tab) => location.startsWith(tab.routePath),
-      orElse: () => AppTab.explore,
+      orElse: () => ShellTab.explore,
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
-import '../explore_ui_models.dart';
+import '../models.dart';
 
 class ExploreListView extends StatelessWidget {
   const ExploreListView({
@@ -278,11 +278,16 @@ class _EventCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.18)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(
+              alpha: Theme.of(context).brightness == Brightness.dark
+                  ? 0.22
+                  : 0.05,
+            ),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),

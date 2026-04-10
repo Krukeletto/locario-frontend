@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
-import '../../explore/explore_ui_models.dart';
+import '../../explore/models.dart';
 
-class AppHeader extends StatelessWidget {
+class ShellHeader extends StatelessWidget {
   static const _headerContentHeight = 48.0;
   static const _viewToggleWidth = 196.0;
   static const _viewToggleGap = 12.0;
 
-  const AppHeader({
+  const ShellHeader({
     super.key,
     required this.selectedView,
     required this.onViewChanged,
@@ -30,7 +30,11 @@ class AppHeader extends StatelessWidget {
         color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(
+              alpha: Theme.of(context).brightness == Brightness.dark
+                  ? 0.18
+                  : 0.04,
+            ),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -103,12 +107,18 @@ class _ViewToggle extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
+        color: colorScheme.surfaceContainerLow.withValues(
+          alpha: Theme.of(context).brightness == Brightness.dark ? 0.96 : 0.92,
+        ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: colorScheme.outline.withValues(alpha: 0.16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(
+              alpha: Theme.of(context).brightness == Brightness.dark
+                  ? 0.2
+                  : 0.05,
+            ),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
