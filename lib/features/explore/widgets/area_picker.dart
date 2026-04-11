@@ -110,8 +110,9 @@ class ExploreAreaSelectionSheet extends StatelessWidget {
                 icon: Icons.my_location_rounded,
                 title: l10n.areaUseCurrentLocation,
                 subtitle: l10n.areaUseCurrentLocationSubtitle,
-                onTap: () =>
-                    onActionSelected(ExploreAreaSelectionAction.currentLocation),
+                onTap: () => onActionSelected(
+                  ExploreAreaSelectionAction.currentLocation,
+                ),
               ),
               const SizedBox(height: 10),
               _ExploreAreaSelectionActionTile(

@@ -53,12 +53,7 @@ class ExploreListView extends StatelessWidget {
           Expanded(
             child: ListView.separated(
               key: const Key('explore-event-list'),
-              padding: EdgeInsets.fromLTRB(
-                16,
-                hideToolbar ? 12 : 8,
-                16,
-                20,
-              ),
+              padding: EdgeInsets.fromLTRB(16, hideToolbar ? 12 : 8, 16, 20),
               itemCount: events.length,
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {

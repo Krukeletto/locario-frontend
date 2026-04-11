@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:locario/app/settings/app_settings_store.dart';
 
 class FakeAppSettingsStore implements AppSettingsStore {
-  FakeAppSettingsStore({
-    this.initialLocale,
-    this.initialThemeMode,
-  }) : _savedLocale = initialLocale,
-       _savedThemeMode = initialThemeMode;
+  FakeAppSettingsStore({this.initialLocale, this.initialThemeMode})
+    : _savedLocale = initialLocale,
+      _savedThemeMode = initialThemeMode;
 
   final Locale? initialLocale;
   final ThemeMode? initialThemeMode;
@@ -30,4 +28,3 @@ class FakeAppSettingsStore implements AppSettingsStore {
     _savedThemeMode = themeMode;
   }
 }
-

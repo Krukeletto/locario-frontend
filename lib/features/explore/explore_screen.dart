@@ -148,7 +148,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   void _confirmMapAreaPicking() {
-    final selectedCenter = _areaController.confirmMapPicking(_controller.mapCenter);
+    final selectedCenter = _areaController.confirmMapPicking(
+      _controller.mapCenter,
+    );
     _controller.setPreferredMapCenter(selectedCenter);
     _headerController.setSelectedView(ExploreContentView.list);
   }

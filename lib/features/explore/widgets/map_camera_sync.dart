@@ -59,4 +59,3 @@ class MapCameraSync {
         location.longitude <= visibleRegion.longitudeEast;
   }
 }
-

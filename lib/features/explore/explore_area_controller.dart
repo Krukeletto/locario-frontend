@@ -10,10 +10,7 @@ typedef ExploreGeocoder = Future<List<Location>> Function(String address);
 enum ExploreAddressLookupStatus { success, notFound, error }
 
 class ExploreAddressLookupResult {
-  const ExploreAddressLookupResult._({
-    required this.status,
-    this.center,
-  });
+  const ExploreAddressLookupResult._({required this.status, this.center});
 
   const ExploreAddressLookupResult.success({required LatLng center})
     : this._(status: ExploreAddressLookupStatus.success, center: center);
@@ -123,4 +120,3 @@ class ExploreAreaController extends ChangeNotifier {
     return buildCurrentLocationAreaSelection(l10n);
   }
 }
-

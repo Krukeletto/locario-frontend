@@ -48,7 +48,9 @@ class MapEventClusterer {
       while (didAdd) {
         didAdd = false;
         final centroid = _averageOffset(
-          members.map((member) => member.screenPosition).toList(growable: false),
+          members
+              .map((member) => member.screenPosition)
+              .toList(growable: false),
         );
 
         for (var index = remaining.length - 1; index >= 0; index--) {
@@ -65,7 +67,9 @@ class MapEventClusterer {
         MapEventCluster(
           events: members.map((member) => member.event).toList(growable: false),
           center: _averageLatLng(
-            members.map((member) => member.event.location).toList(growable: false),
+            members
+                .map((member) => member.event.location)
+                .toList(growable: false),
           ),
         ),
       );
@@ -81,7 +85,10 @@ class MapEventClusterer {
   }
 
   LatLng _averageLatLng(List<LatLng> points) {
-    final latitude = points.fold<double>(0, (sum, point) => sum + point.latitude);
+    final latitude = points.fold<double>(
+      0,
+      (sum, point) => sum + point.latitude,
+    );
     final longitude = points.fold<double>(
       0,
       (sum, point) => sum + point.longitude,
@@ -96,4 +103,3 @@ class _ProjectedEvent {
   final ExploreEvent event;
   final Offset screenPosition;
 }
-

@@ -20,10 +20,9 @@ void main() {
       expect(controller.selectedFilterIndices, {1});
 
       controller.toggleFilter(1);
-      expect(
-        controller.selectedFilterIndices,
-        {ShellHeaderController.allFilterIndex},
-      );
+      expect(controller.selectedFilterIndices, {
+        ShellHeaderController.allFilterIndex,
+      });
     });
 
     test('setSelectedView updates current view', () {
@@ -35,4 +34,3 @@ void main() {
     });
   });
 }
-

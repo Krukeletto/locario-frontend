@@ -10,11 +10,9 @@ typedef EventMarkerBuilder = Widget Function(ExploreEvent event);
 typedef MapLogger = void Function(String message, [Object? error]);
 
 class MapStyleCoordinator {
-  MapStyleCoordinator({
-    MapEventClusterer? clusterer,
-    MapLogger? logger,
-  }) : _clusterer = clusterer ?? const MapEventClusterer(),
-       _logger = logger ?? _defaultLogger;
+  MapStyleCoordinator({MapEventClusterer? clusterer, MapLogger? logger})
+    : _clusterer = clusterer ?? const MapEventClusterer(),
+      _logger = logger ?? _defaultLogger;
 
   static const eventsSourceId = 'explore-events-source';
   static const eventsLayerId = 'explore-events-layer';
@@ -137,7 +135,14 @@ class MapStyleCoordinator {
     );
 
     final positions = mapController.toScreenLocations(
-      events.map((event) => Geographic(lat: event.location.latitude, lon: event.location.longitude)).toList(),
+      events
+          .map(
+            (event) => Geographic(
+              lat: event.location.latitude,
+              lon: event.location.longitude,
+            ),
+          )
+          .toList(),
     );
     final zoom = mapController.getCamera().zoom;
     final clusters = _clusterer.cluster(
@@ -237,4 +242,3 @@ class MapStyleCoordinator {
     debugPrint(error == null ? message : '$message: $error');
   }
 }
-

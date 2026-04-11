@@ -39,7 +39,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubTitle => 'Hub';
 
   @override
-  String get hubDescription => 'Shortcuts for creating and managing your local circle';
+  String get hubDescription =>
+      'Shortcuts for creating and managing your local circle';
 
   @override
   String get hubCreateEventTitle => 'Create event';
@@ -63,7 +64,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileTitle => 'Profile';
 
   @override
-  String get profileDescription => 'Account, preferences and your saved places in one calmer section.';
+  String get profileDescription =>
+      'Account, preferences and your saved places in one calmer section.';
 
   @override
   String get settingsTitle => 'Settings';
@@ -75,7 +77,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsScreenTitle => 'Settings';
 
   @override
-  String get settingsScreenDescription => 'Adjust the app basics before the settings surface grows.';
+  String get settingsScreenDescription =>
+      'Adjust the app basics before the settings surface grows.';
 
   @override
   String get savedTitle => 'Saved';
@@ -87,13 +90,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageSectionTitle => 'Language';
 
   @override
-  String get languageSectionSubtitle => 'Choose how the app should speak to you';
+  String get languageSectionSubtitle =>
+      'Choose how the app should speak to you';
 
   @override
   String get themeSectionTitle => 'Appearance';
 
   @override
-  String get themeSectionSubtitle => 'Choose whether the app should follow the system or stay fixed';
+  String get themeSectionSubtitle =>
+      'Choose whether the app should follow the system or stay fixed';
 
   @override
   String get themeModeSystem => 'System';
@@ -163,19 +168,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get areaPickerTitle => 'Choose area';
 
   @override
-  String get areaPickerSubtitle => 'You can type an address, point to a spot on the map or go back to your current location.';
+  String get areaPickerSubtitle =>
+      'You can type an address, point to a spot on the map or go back to your current location.';
 
   @override
   String get areaUseCurrentLocation => 'My location';
 
   @override
-  String get areaUseCurrentLocationSubtitle => 'Use your current position as the reference point';
+  String get areaUseCurrentLocationSubtitle =>
+      'Use your current position as the reference point';
 
   @override
   String get areaEnterAddress => 'Enter address';
 
   @override
-  String get areaEnterAddressSubtitle => 'Type a street, district or exact place';
+  String get areaEnterAddressSubtitle =>
+      'Type a street, district or exact place';
 
   @override
   String get areaPickOnMap => 'Pick on map';
@@ -184,7 +192,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get areaPickOnMapTitle => 'Pick a point on the map';
 
   @override
-  String get areaPickOnMapSubtitle => 'Move the map so the chosen point sits under the center marker.';
+  String get areaPickOnMapSubtitle =>
+      'Move the map so the chosen point sits under the center marker.';
 
   @override
   String get areaPickOnMapConfirm => 'Use this point';
@@ -294,13 +303,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapLocationSettings => 'Location settings';
 
   @override
-  String get mapServiceDisabled => 'Enable location services to see your position.';
+  String get mapServiceDisabled =>
+      'Enable location services to see your position.';
 
   @override
-  String get mapPermissionDenied => 'Allow location access to center the map on you.';
+  String get mapPermissionDenied =>
+      'Allow location access to center the map on you.';
 
   @override
-  String get mapPermissionDeniedForever => 'Location access is blocked in system settings.';
+  String get mapPermissionDeniedForever =>
+      'Location access is blocked in system settings.';
 
   @override
   String get mapUnableDetermineLocation => 'Unable to determine your location.';

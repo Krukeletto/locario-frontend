@@ -83,4 +83,3 @@ class FakeLocationService implements LocationService {
     return requestPermissionResult;
   }
 }
-

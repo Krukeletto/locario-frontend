@@ -21,15 +21,12 @@ void main() {
         l10n: l10n,
       );
 
-      expect(
-        visibleEvents.map((event) => event.id),
-        [
-          'night-sketching-vistula',
-          'jazz-botanical-garden',
-          'run-club-coffee-stop',
-          'street-food-vinyl-market',
-        ],
-      );
+      expect(visibleEvents.map((event) => event.id), [
+        'night-sketching-vistula',
+        'jazz-botanical-garden',
+        'run-club-coffee-stop',
+        'street-food-vinyl-market',
+      ]);
     });
 
     test('sorts by trendingScore for trending', () {
@@ -42,15 +39,12 @@ void main() {
         l10n: l10n,
       );
 
-      expect(
-        visibleEvents.map((event) => event.id),
-        [
-          'jazz-botanical-garden',
-          'street-food-vinyl-market',
-          'night-sketching-vistula',
-          'run-club-coffee-stop',
-        ],
-      );
+      expect(visibleEvents.map((event) => event.id), [
+        'jazz-botanical-garden',
+        'street-food-vinyl-market',
+        'night-sketching-vistula',
+        'run-club-coffee-stop',
+      ]);
     });
 
     test('filters by category and search query', () {
@@ -63,7 +57,9 @@ void main() {
         l10n: l10n,
       );
 
-      expect(visibleEvents.map((event) => event.id), ['street-food-vinyl-market']);
+      expect(visibleEvents.map((event) => event.id), [
+        'street-food-vinyl-market',
+      ]);
     });
 
     test('returns empty search results for empty query', () {
@@ -81,4 +77,3 @@ void main() {
     });
   });
 }
-

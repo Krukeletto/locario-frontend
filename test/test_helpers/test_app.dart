@@ -9,4 +9,3 @@ Widget buildLocalizedTestApp({required Widget home}) {
     home: home,
   );
 }
-

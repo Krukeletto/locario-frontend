@@ -207,7 +207,9 @@ class _MapWidgetState extends State<MapWidget> {
   Future<void> _syncEventMarkers() async {
     final mapController = _mapController;
     final style = mapController?.style;
-    if (!_styleCoordinator.eventLayersReady && mapController != null && style != null) {
+    if (!_styleCoordinator.eventLayersReady &&
+        mapController != null &&
+        style != null) {
       await _styleCoordinator.initializeEventLayers(
         style: style,
         colorScheme: Theme.of(context).colorScheme,
@@ -215,7 +217,9 @@ class _MapWidgetState extends State<MapWidget> {
         markerBuilder: _buildEventMarkerBadge,
       );
     }
-    if (!_styleCoordinator.eventLayersReady || mapController == null || style == null) {
+    if (!_styleCoordinator.eventLayersReady ||
+        mapController == null ||
+        style == null) {
       return;
     }
     if (!mounted) {

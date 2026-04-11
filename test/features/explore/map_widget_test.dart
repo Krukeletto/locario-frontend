@@ -47,7 +47,9 @@ void main() {
       );
     });
 
-    testWidgets('renders without crash when current location exists', (tester) async {
+    testWidgets('renders without crash when current location exists', (
+      tester,
+    ) async {
       final controller = ExploreMapViewModel(
         locationService: FakeLocationService(
           currentLocation: const LatLng(52.2297, 21.0122),

@@ -41,12 +41,14 @@ class ExploreEventQuery {
     final sortedEvents = filteredEvents.toList(growable: false);
     sortedEvents.sort((first, second) {
       return switch (sort) {
-        ExploreSortOption.distance => first
-            .distanceMetersFrom(referenceLocation)
-            .compareTo(second.distanceMetersFrom(referenceLocation)),
+        ExploreSortOption.distance =>
+          first
+              .distanceMetersFrom(referenceLocation)
+              .compareTo(second.distanceMetersFrom(referenceLocation)),
         ExploreSortOption.soonest => first.startsAt.compareTo(second.startsAt),
-        ExploreSortOption.trending =>
-          second.trendingScore.compareTo(first.trendingScore),
+        ExploreSortOption.trending => second.trendingScore.compareTo(
+          first.trendingScore,
+        ),
       };
     });
 
@@ -75,4 +77,3 @@ class ExploreEventQuery {
     );
   }
 }
-
