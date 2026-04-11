@@ -246,7 +246,7 @@ class _SearchField extends StatelessWidget {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${event.categoryLabel} • ${event.venue}',
+                                          '${event.categoryLabel(l10n)} • ${event.venue}',
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: Theme.of(context)

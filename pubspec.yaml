@@ -41,6 +41,7 @@ dependencies:
   latlong2: ^0.9.1
   maplibre: ^0.3.4+1
   geocoding: ^4.0.0
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

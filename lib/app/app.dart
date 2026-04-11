@@ -5,6 +5,7 @@ import 'package:locario/l10n/app_localizations.dart';
 import 'locale/locale_controller.dart';
 import 'locale/locale_scope.dart';
 import 'router.dart';
+import 'settings/app_settings_store.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_controller.dart';
 import 'theme/theme_scope.dart';
@@ -19,12 +20,16 @@ class LocarioApp extends StatefulWidget {
 class _LocarioAppState extends State<LocarioApp> {
   late final LocaleController _localeController;
   late final ThemeController _themeController;
+  late final AppSettingsStore _settingsStore;
 
   @override
   void initState() {
     super.initState();
-    _localeController = LocaleController();
-    _themeController = ThemeController();
+    _settingsStore = const SharedPreferencesAppSettingsStore();
+    _localeController = LocaleController(settingsStore: _settingsStore);
+    _themeController = ThemeController(settingsStore: _settingsStore);
+    _localeController.load();
+    _themeController.load();
   }
 
   @override

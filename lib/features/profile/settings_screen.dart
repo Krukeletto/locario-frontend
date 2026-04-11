@@ -52,119 +52,112 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
         children: [
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(
-                    alpha: theme.brightness == Brightness.dark ? 0.22 : 0.04,
-                  ),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+          _SettingsSection(
+            title: l10n.languageSectionTitle,
+            subtitle: l10n.languageSectionSubtitle,
+            child: SegmentedButton<Locale>(
+              key: const Key('settings-language-segmented'),
+              showSelectedIcon: false,
+              segments: [
+                ButtonSegment<Locale>(
+                  value: const Locale('pl'),
+                  label: Text(l10n.localePolish),
+                ),
+                ButtonSegment<Locale>(
+                  value: const Locale('en'),
+                  label: Text(l10n.localeEnglish),
                 ),
               ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.languageSectionTitle,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: scheme.primary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.languageSectionSubtitle,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.72),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                SegmentedButton<Locale>(
-                  showSelectedIcon: false,
-                  segments: [
-                    ButtonSegment<Locale>(
-                      value: const Locale('pl'),
-                      label: Text(l10n.localePolish),
-                    ),
-                    ButtonSegment<Locale>(
-                      value: const Locale('en'),
-                      label: Text(l10n.localeEnglish),
-                    ),
-                  ],
-                  selected: {localeController.locale},
-                  onSelectionChanged: (selection) {
-                    localeController.setLocale(selection.first);
-                  },
-                ),
-              ],
+              selected: {localeController.locale},
+              onSelectionChanged: (selection) {
+                localeController.setLocale(selection.first);
+              },
             ),
           ),
           const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(
-                    alpha: theme.brightness == Brightness.dark ? 0.22 : 0.04,
-                  ),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+          _SettingsSection(
+            title: l10n.themeSectionTitle,
+            subtitle: l10n.themeSectionSubtitle,
+            child: SegmentedButton<ThemeMode>(
+              key: const Key('settings-theme-segmented'),
+              showSelectedIcon: false,
+              segments: [
+                ButtonSegment<ThemeMode>(
+                  value: ThemeMode.system,
+                  label: Text(l10n.themeModeSystem),
+                ),
+                ButtonSegment<ThemeMode>(
+                  value: ThemeMode.light,
+                  label: Text(l10n.themeModeLight),
+                ),
+                ButtonSegment<ThemeMode>(
+                  value: ThemeMode.dark,
+                  label: Text(l10n.themeModeDark),
                 ),
               ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.themeSectionTitle,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: scheme.primary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.themeSectionSubtitle,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: scheme.onSurface.withValues(alpha: 0.72),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                SegmentedButton<ThemeMode>(
-                  showSelectedIcon: false,
-                  segments: [
-                    ButtonSegment<ThemeMode>(
-                      value: ThemeMode.system,
-                      label: Text(l10n.themeModeSystem),
-                    ),
-                    ButtonSegment<ThemeMode>(
-                      value: ThemeMode.light,
-                      label: Text(l10n.themeModeLight),
-                    ),
-                    ButtonSegment<ThemeMode>(
-                      value: ThemeMode.dark,
-                      label: Text(l10n.themeModeDark),
-                    ),
-                  ],
-                  selected: {themeController.themeMode},
-                  onSelectionChanged: (selection) {
-                    themeController.setThemeMode(selection.first);
-                  },
-                ),
-              ],
+              selected: {themeController.themeMode},
+              onSelectionChanged: (selection) {
+                themeController.setThemeMode(selection.first);
+              },
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection({
+    required this.title,
+    required this.subtitle,
+    required this.child,
+  });
+
+  final String title;
+  final String subtitle;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(
+              alpha: theme.brightness == Brightness.dark ? 0.22 : 0.04,
+            ),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: scheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurface.withValues(alpha: 0.72),
+            ),
+          ),
+          const SizedBox(height: 14),
+          child,
         ],
       ),
     );

@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:locario/features/explore/map_view_model.dart';
-import 'package:locario/shared/location/location_service.dart';
+
+import '../../test_helpers/fake_location_service.dart';
 
 void main() {
   group('ExploreMapViewModel', () {
@@ -153,78 +154,4 @@ void main() {
       },
     );
   });
-}
-
-class FakeLocationService implements LocationService {
-  FakeLocationService({
-    this.serviceEnabled = true,
-    this.checkPermissionResult = LocationPermission.whileInUse,
-    LocationPermission? requestPermissionResult,
-    this.currentLocation,
-    this.currentLocationCompleter,
-    this.lastKnownLocation,
-    this.currentLocationError,
-    this.supportsLastKnownLocation = true,
-    this.supportsAppSettings = true,
-    this.supportsLocationSettings = true,
-  }) : requestPermissionResult =
-           requestPermissionResult ?? checkPermissionResult;
-
-  final bool serviceEnabled;
-  final LocationPermission checkPermissionResult;
-  final LocationPermission requestPermissionResult;
-  final LatLng? currentLocation;
-  final Completer<LatLng?>? currentLocationCompleter;
-  final LatLng? lastKnownLocation;
-  final Object? currentLocationError;
-
-  @override
-  final bool supportsLastKnownLocation;
-
-  @override
-  final bool supportsAppSettings;
-
-  @override
-  final bool supportsLocationSettings;
-
-  int requestPermissionCallCount = 0;
-  int getLastKnownLocationCallCount = 0;
-
-  @override
-  Future<LocationPermission> checkPermission() async => checkPermissionResult;
-
-  @override
-  Future<LatLng?> getCurrentLocation() async {
-    final currentLocationCompleter = this.currentLocationCompleter;
-    if (currentLocationCompleter != null) {
-      return currentLocationCompleter.future;
-    }
-
-    if (currentLocationError != null) {
-      throw currentLocationError!;
-    }
-
-    return currentLocation;
-  }
-
-  @override
-  Future<LatLng?> getLastKnownLocation() async {
-    getLastKnownLocationCallCount += 1;
-    return lastKnownLocation;
-  }
-
-  @override
-  Future<bool> isLocationServiceEnabled() async => serviceEnabled;
-
-  @override
-  Future<bool> openAppSettings() async => true;
-
-  @override
-  Future<bool> openLocationSettings() async => true;
-
-  @override
-  Future<LocationPermission> requestPermission() async {
-    requestPermissionCallCount += 1;
-    return requestPermissionResult;
-  }
 }

@@ -8,6 +8,8 @@ enum ExploreSortOption { distance, soonest, trending }
 
 enum ExploreCategory { all, music, art, workshops, food }
 
+final _sampleExploreBaseDate = DateTime.utc(2026, 4, 11);
+
 class ExploreFilter {
   const ExploreFilter({
     required this.category,
@@ -18,22 +20,6 @@ class ExploreFilter {
   final ExploreCategory category;
   final String label;
   final IconData icon;
-}
-
-class ExploreAreaOption {
-  const ExploreAreaOption({
-    required this.label,
-    required this.description,
-    required this.icon,
-    this.center,
-    this.usesCurrentLocation = false,
-  });
-
-  final String label;
-  final String description;
-  final IconData icon;
-  final LatLng? center;
-  final bool usesCurrentLocation;
 }
 
 class ExploreAreaSelection {
@@ -55,8 +41,8 @@ class ExploreEvent {
     required this.id,
     required this.title,
     required this.category,
-    required this.categoryLabel,
-    required this.timeLabel,
+    required this.startsAt,
+    required this.trendingScore,
     required this.venue,
     required this.location,
     required this.accentColor,
@@ -66,8 +52,8 @@ class ExploreEvent {
   final String id;
   final String title;
   final ExploreCategory category;
-  final String categoryLabel;
-  final String timeLabel;
+  final DateTime startsAt;
+  final int trendingScore;
   final String venue;
   final LatLng location;
   final Color accentColor;
@@ -86,6 +72,42 @@ class ExploreEvent {
     }
 
     return l10n.distanceKilometers((distanceMeters / 1000).toStringAsFixed(1));
+  }
+
+  String categoryLabel(AppLocalizations l10n) {
+    return switch (category) {
+      ExploreCategory.all => l10n.filterAll,
+      ExploreCategory.music => l10n.filterMusic,
+      ExploreCategory.art => l10n.filterArt,
+      ExploreCategory.workshops => l10n.filterWorkshops,
+      ExploreCategory.food => l10n.filterFood,
+    };
+  }
+
+  String timeLabel(AppLocalizations l10n) {
+    final dayDifference = startsAt.difference(_sampleExploreBaseDate).inDays;
+    final hour = startsAt.hour;
+    final minute = startsAt.minute;
+
+    if (dayDifference == 0 && hour == 20 && minute == 30) {
+      return l10n.eventToday2030;
+    }
+    if (dayDifference == 0 && hour == 19 && minute == 0) {
+      return l10n.eventToday1900;
+    }
+    if (dayDifference == 1 && hour == 8 && minute == 0) {
+      return l10n.eventTomorrow0800;
+    }
+    if (dayDifference == 1 && hour == 12 && minute == 0) {
+      return l10n.eventTomorrow1200;
+    }
+
+    final date = startsAt;
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    final hours = date.hour.toString().padLeft(2, '0');
+    final minutes = date.minute.toString().padLeft(2, '0');
+    return '$day.$month, $hours:$minutes';
   }
 }
 
@@ -160,8 +182,8 @@ List<ExploreEvent> buildExploreEvents(AppLocalizations l10n) {
       id: 'jazz-botanical-garden',
       title: l10n.eventJazzTitle,
       category: ExploreCategory.music,
-      categoryLabel: l10n.filterMusic,
-      timeLabel: l10n.eventToday2030,
+      startsAt: DateTime.utc(2026, 4, 11, 20, 30),
+      trendingScore: 96,
       venue: l10n.venueBotanicalGarden,
       location: const LatLng(51.703038, 19.417220),
       accentColor: const Color(0xFFB14B6F),
@@ -171,8 +193,8 @@ List<ExploreEvent> buildExploreEvents(AppLocalizations l10n) {
       id: 'night-sketching-vistula',
       title: l10n.eventSketchingTitle,
       category: ExploreCategory.art,
-      categoryLabel: l10n.filterArt,
-      timeLabel: l10n.eventToday1900,
+      startsAt: DateTime.utc(2026, 4, 11, 19, 0),
+      trendingScore: 84,
       venue: l10n.venueVistulaBoulevards,
       location: const LatLng(51.695664, 19.416611),
       accentColor: const Color(0xFF607F5B),
@@ -182,8 +204,8 @@ List<ExploreEvent> buildExploreEvents(AppLocalizations l10n) {
       id: 'run-club-coffee-stop',
       title: l10n.eventRunClubTitle,
       category: ExploreCategory.workshops,
-      categoryLabel: l10n.filterWorkshops,
-      timeLabel: l10n.eventTomorrow0800,
+      startsAt: DateTime.utc(2026, 4, 12, 8, 0),
+      trendingScore: 73,
       venue: l10n.venuePoleMokotowskie,
       location: const LatLng(51.695664, 19.416611),
       accentColor: const Color(0xFF2E7D32),
@@ -193,8 +215,8 @@ List<ExploreEvent> buildExploreEvents(AppLocalizations l10n) {
       id: 'street-food-vinyl-market',
       title: l10n.eventStreetFoodTitle,
       category: ExploreCategory.food,
-      categoryLabel: l10n.filterFood,
-      timeLabel: l10n.eventTomorrow1200,
+      startsAt: DateTime.utc(2026, 4, 12, 12, 0),
+      trendingScore: 88,
       venue: l10n.venueHalaKoszyki,
       location: const LatLng(51.695664, 19.416611),
       accentColor: const Color(0xFF8E6B3A),

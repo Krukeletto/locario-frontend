@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 
 import '../../explore/models.dart';
@@ -9,7 +11,8 @@ class ShellHeaderController extends ChangeNotifier {
   Set<int> _selectedFilterIndices = {allFilterIndex};
 
   ExploreContentView get selectedView => _selectedView;
-  Set<int> get selectedFilterIndices => _selectedFilterIndices;
+  Set<int> get selectedFilterIndices =>
+      UnmodifiableSetView(_selectedFilterIndices);
 
   void setSelectedView(ExploreContentView view) {
     if (_selectedView == view) {

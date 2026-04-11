@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:locario/features/explore/map_view_model.dart';
 import 'package:locario/features/explore/explore_screen.dart';
+import 'package:locario/features/explore/map_view_model.dart';
 import 'package:locario/shared/map/style_repository.dart';
-import 'package:locario/shared/location/location_service.dart';
+
+import '../../test_helpers/fake_location_service.dart';
+import '../../test_helpers/test_app.dart';
 
 void main() {
   group('ExploreScreen', () {
@@ -14,7 +15,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _buildScreen(
-          locationService: _ScreenFakeLocationService(
+          locationService: FakeLocationService(
             currentLocation: const LatLng(52.2297, 21.0122),
           ),
         ),
@@ -32,7 +33,7 @@ void main() {
 
     testWidgets('switches from full map view to list view', (tester) async {
       await tester.pumpWidget(
-        _buildScreen(locationService: _ScreenFakeLocationService()),
+        _buildScreen(locationService: FakeLocationService()),
       );
       await tester.pump();
 
@@ -43,13 +44,14 @@ void main() {
 
       expect(find.byKey(const ValueKey('explore-list-view')), findsOneWidget);
       expect(find.text('Wydarzenia w pobliżu'), findsOneWidget);
-      expect(find.text('Jazz w Ogrodzie Botanicznym'), findsOneWidget);
+      expect(find.byKey(const Key('explore-event-list')), findsOneWidget);
+      expect(find.byKey(const Key('explore-area-button')), findsOneWidget);
       expect(find.byKey(const ValueKey('explore-map-view')), findsNothing);
     });
 
-    testWidgets('opens area picker and updates selected area', (tester) async {
+    testWidgets('opens area picker options from list toolbar', (tester) async {
       await tester.pumpWidget(
-        _buildScreen(locationService: _ScreenFakeLocationService()),
+        _buildScreen(locationService: FakeLocationService()),
       );
       await tester.pump();
 
@@ -59,20 +61,17 @@ void main() {
       await tester.tap(find.byKey(const Key('explore-area-button')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Powiśle'), findsOneWidget);
-
-      await tester.tap(find.text('Powiśle'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Powiśle'), findsWidgets);
+      expect(find.text('Moja lokalizacja'), findsWidgets);
+      expect(find.text('Wpisz adres'), findsOneWidget);
+      expect(find.text('Wskaż na mapie'), findsOneWidget);
     });
   });
 }
 
-Widget _buildScreen({required LocationService locationService}) {
+Widget _buildScreen({required FakeLocationService locationService}) {
   final controller = ExploreMapViewModel(locationService: locationService);
 
-  return MaterialApp(
+  return buildLocalizedTestApp(
     home: ExploreScreen(
       controller: controller,
       styleRepository: const MapStyleRepository(
@@ -98,41 +97,3 @@ const _testStyleJson = '''
   ]
 }
 ''';
-
-class _ScreenFakeLocationService implements LocationService {
-  _ScreenFakeLocationService({this.currentLocation});
-
-  final LatLng? currentLocation;
-
-  @override
-  bool get supportsAppSettings => true;
-
-  @override
-  bool get supportsLastKnownLocation => false;
-
-  @override
-  bool get supportsLocationSettings => true;
-
-  @override
-  Future<LocationPermission> checkPermission() async =>
-      LocationPermission.whileInUse;
-
-  @override
-  Future<LatLng?> getCurrentLocation() async => currentLocation;
-
-  @override
-  Future<LatLng?> getLastKnownLocation() async => null;
-
-  @override
-  Future<bool> isLocationServiceEnabled() async => true;
-
-  @override
-  Future<bool> openAppSettings() async => true;
-
-  @override
-  Future<bool> openLocationSettings() async => true;
-
-  @override
-  Future<LocationPermission> requestPermission() async =>
-      LocationPermission.whileInUse;
-}

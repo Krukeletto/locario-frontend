@@ -1,13 +1,13 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:maplibre/maplibre.dart';
 
 import '../../../shared/map/style_repository.dart';
-import '../models.dart';
 import '../map_view_model.dart';
+import '../models.dart';
+import 'map_camera_sync.dart';
+import 'map_style_coordinator.dart';
 
 class MapWidget extends StatefulWidget {
   const MapWidget({
@@ -38,27 +38,17 @@ class MapWidget extends StatefulWidget {
 }
 
 class _MapWidgetState extends State<MapWidget> {
-  static const _fallbackZoom = 16.0;
-  static const _userLocationZoom = 16.0;
   static const _mapControlBottomOffset = 16.0;
-  static const _cameraRecenterThresholdInMeters = 150.0;
-  static const _eventsSourceId = 'explore-events-source';
-  static const _eventsLayerId = 'explore-events-layer';
-  static const _clustersSourceId = 'explore-clusters-source';
-  static const _clustersCircleLayerId = 'explore-clusters-circle-layer';
-  static const _clustersLabelLayerId = 'explore-clusters-label-layer';
   static final _supportsMapLibre = _detectMapLibreSupport();
-  static const _distance = Distance();
 
   MapController? _mapController;
   bool _isStyleLoaded = false;
-  bool _eventLayersReady = false;
-  bool _isInitializingEventLayers = false;
-  final Set<String> _registeredEventMarkerImageIds = <String>{};
-  LatLng? _lastSyncedCenter;
   bool? _isUserLocationVisible;
   Brightness? _resolvedBrightness;
   late Future<String> _styleFuture;
+  int _styleRevision = 0;
+  final MapStyleCoordinator _styleCoordinator = MapStyleCoordinator();
+  final MapCameraSync _cameraSync = MapCameraSync();
 
   static bool _detectMapLibreSupport() {
     try {
@@ -78,15 +68,39 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   void _refreshStyle(Brightness brightness) {
+    final nextStyleFuture = _loadStyleJson(brightness);
+    final nextStyleRevision = ++_styleRevision;
     _resolvedBrightness = brightness;
-    _styleFuture = _loadStyleJson(brightness);
+    _styleFuture = nextStyleFuture;
     _isStyleLoaded = false;
-    _eventLayersReady = false;
-    _isInitializingEventLayers = false;
-    _registeredEventMarkerImageIds.clear();
-    _mapController = null;
-    _lastSyncedCenter = null;
+    _styleCoordinator.reset();
+    _cameraSync.reset();
     _isUserLocationVisible = null;
+
+    if (_supportsMapLibre && _mapController != null) {
+      _applyStyleToExistingMap(nextStyleFuture, nextStyleRevision);
+    }
+  }
+
+  Future<void> _applyStyleToExistingMap(
+    Future<String> styleFuture,
+    int styleRevision,
+  ) async {
+    try {
+      final styleJson = await styleFuture;
+      if (!mounted || styleRevision != _styleRevision) {
+        return;
+      }
+
+      final mapController = _mapController;
+      if (mapController == null) {
+        return;
+      }
+
+      mapController.setStyle(styleJson);
+    } catch (error) {
+      debugPrint('Map style apply failed: $error');
+    }
   }
 
   @override
@@ -122,7 +136,7 @@ class _MapWidgetState extends State<MapWidget> {
 
     oldWidget.controller.removeListener(_handleControllerChanged);
     widget.controller.addListener(_handleControllerChanged);
-    _lastSyncedCenter = null;
+    _cameraSync.reset();
     _handleControllerChanged();
   }
 
@@ -138,24 +152,16 @@ class _MapWidgetState extends State<MapWidget> {
     }
 
     final targetCenter = widget.controller.mapCenter;
-    if (targetCenter == _lastSyncedCenter) {
+    final command = _cameraSync.commandForTarget(
+      targetCenter: targetCenter,
+      currentLocation: widget.controller.currentLocation,
+    );
+    if (command == null) {
       return;
     }
 
-    final lastSyncedCenter = _lastSyncedCenter;
-    if (lastSyncedCenter != null &&
-        _distance(lastSyncedCenter, targetCenter) <
-            _cameraRecenterThresholdInMeters) {
-      _lastSyncedCenter = targetCenter;
-      return;
-    }
-
-    final currentLocation = widget.controller.currentLocation;
-    final targetZoom = currentLocation != null
-        ? _userLocationZoom
-        : _fallbackZoom;
-    _moveTo(targetCenter, targetZoom);
-    _lastSyncedCenter = targetCenter;
+    _moveTo(command.center, command.zoom);
+    _cameraSync.markSynced(command.center);
     _updateUserLocationVisibility();
   }
 
@@ -168,20 +174,22 @@ class _MapWidgetState extends State<MapWidget> {
 
   Future<void> _handleStyleLoaded(StyleController _) async {
     _isStyleLoaded = true;
-    _eventLayersReady = false;
-    try {
-      await _initializeEventLayers();
-    } catch (error) {
-      debugPrint('Map event layer initialization failed: $error');
-      _eventLayersReady = false;
+    await _styleCoordinator.initializeEventLayers(
+      style: _mapController?.style,
+      colorScheme: Theme.of(context).colorScheme,
+      events: widget.events,
+      markerBuilder: _buildEventMarkerBadge,
+    );
+    if (mounted) {
+      setState(() {});
     }
 
     if (!mounted) return;
 
     final currentLocation = widget.controller.currentLocation;
     if (currentLocation != null) {
-      await _moveTo(currentLocation, _userLocationZoom);
-      _lastSyncedCenter = currentLocation;
+      await _moveTo(currentLocation, _cameraSync.userLocationZoom);
+      _cameraSync.markSynced(currentLocation);
       widget.onCameraCenterChanged?.call(currentLocation);
       await _syncEventMarkers();
       _updateUserLocationVisibility();
@@ -189,224 +197,38 @@ class _MapWidgetState extends State<MapWidget> {
     }
 
     final targetCenter = widget.controller.mapCenter;
-    await _moveTo(targetCenter, _fallbackZoom);
-    _lastSyncedCenter = targetCenter;
+    await _moveTo(targetCenter, _cameraSync.fallbackZoom);
+    _cameraSync.markSynced(targetCenter);
     widget.onCameraCenterChanged?.call(targetCenter);
     await _syncEventMarkers();
     _updateUserLocationVisibility();
   }
 
-  Future<void> _initializeEventLayers() async {
-    final style = _mapController?.style;
-    if (style == null) {
-      return;
-    }
-    if (_eventLayersReady || _isInitializingEventLayers) {
-      return;
-    }
-
-    _isInitializingEventLayers = true;
-    final colorScheme = Theme.of(context).colorScheme;
-    try {
-      await _registerEventMarkerImages(style);
-
-      await style.addSource(
-        const GeoJsonSource(
-          id: _eventsSourceId,
-          data: '{"type":"FeatureCollection","features":[]}',
-        ),
-      );
-      await style.addSource(
-        const GeoJsonSource(
-          id: _clustersSourceId,
-          data: '{"type":"FeatureCollection","features":[]}',
-        ),
-      );
-
-      await style.addLayer(
-        SymbolStyleLayer(
-          id: _eventsLayerId,
-          sourceId: _eventsSourceId,
-          layout: const {
-            'icon-image': ['get', 'iconImage'],
-            'icon-size': 1.5,
-            'icon-anchor': 'center',
-            'icon-allow-overlap': true,
-            'icon-ignore-placement': true,
-          },
-        ),
-      );
-      await style.addLayer(
-        CircleStyleLayer(
-          id: _clustersCircleLayerId,
-          sourceId: _clustersSourceId,
-          paint: {
-            'circle-radius': 20,
-            'circle-color': colorScheme.primary.toHexString(),
-            'circle-opacity': 0.9,
-            'circle-stroke-width': 3,
-            'circle-stroke-color': colorScheme.onPrimary.toHexString(),
-            'circle-stroke-opacity': 1,
-          },
-        ),
-      );
-      await style.addLayer(
-        SymbolStyleLayer(
-          id: _clustersLabelLayerId,
-          sourceId: _clustersSourceId,
-          layout: const {
-            'text-field': ['get', 'label'],
-            'text-font': ['Noto Sans Regular'],
-            'text-size': 13,
-            'text-allow-overlap': true,
-            'text-ignore-placement': true,
-          },
-          paint: {'text-color': colorScheme.onPrimary.toHexString()},
-        ),
-      );
-
-      _eventLayersReady = true;
-      if (mounted) {
-        setState(() {});
-      }
-    } finally {
-      _isInitializingEventLayers = false;
-    }
-  }
-
   Future<void> _syncEventMarkers() async {
     final mapController = _mapController;
     final style = mapController?.style;
-    if (!_eventLayersReady && mapController != null && style != null) {
-      try {
-        await _initializeEventLayers();
-      } catch (_) {}
+    if (!_styleCoordinator.eventLayersReady && mapController != null && style != null) {
+      await _styleCoordinator.initializeEventLayers(
+        style: style,
+        colorScheme: Theme.of(context).colorScheme,
+        events: widget.events,
+        markerBuilder: _buildEventMarkerBadge,
+      );
     }
-    if (!_eventLayersReady || mapController == null || style == null) {
+    if (!_styleCoordinator.eventLayersReady || mapController == null || style == null) {
       return;
     }
     if (!mounted) {
       return;
     }
 
-    await _registerEventMarkerImages(style);
-    if (!mounted) {
-      return;
-    }
-
-    final viewportSize = MediaQuery.sizeOf(context);
-    final clusters = _clusterEvents(mapController, viewportSize);
-    final eventFeatures = <Map<String, Object?>>[];
-    final clusterFeatures = <Map<String, Object?>>[];
-
-    for (var index = 0; index < clusters.length; index++) {
-      final cluster = clusters[index];
-      final feature = _clusterFeatureJson(cluster, index);
-      if (cluster.events.length == 1) {
-        eventFeatures.add(feature);
-      } else {
-        clusterFeatures.add(feature);
-      }
-    }
-
-    try {
-      await style.updateGeoJsonSource(
-        id: _eventsSourceId,
-        data: jsonEncode({
-          'type': 'FeatureCollection',
-          'features': eventFeatures,
-        }),
-      );
-      await style.updateGeoJsonSource(
-        id: _clustersSourceId,
-        data: jsonEncode({
-          'type': 'FeatureCollection',
-          'features': clusterFeatures,
-        }),
-      );
-    } catch (_) {}
-  }
-
-  List<_EventCluster> _clusterEvents(
-    MapController mapController,
-    Size viewportSize,
-  ) {
-    final events = widget.events;
-    if (events.isEmpty) {
-      return const [];
-    }
-
-    if (viewportSize.isEmpty) {
-      return [
-        for (final event in events)
-          _EventCluster(events: [event], center: event.location),
-      ];
-    }
-
-    final positions = mapController.toScreenLocations(
-      events.map((event) => _toGeographic(event.location)).toList(),
+    await _styleCoordinator.syncEventMarkers(
+      style: style,
+      mapController: mapController,
+      viewportSize: MediaQuery.sizeOf(context),
+      events: widget.events,
+      markerBuilder: _buildEventMarkerBadge,
     );
-
-    final zoom = mapController.getCamera().zoom;
-    final threshold = (74 - (zoom * 2.4)).clamp(36.0, 64.0);
-
-    final remaining = [
-      for (var i = 0; i < events.length; i++)
-        _ProjectedEvent(event: events[i], screenPosition: positions[i]),
-    ];
-    final clusters = <_EventCluster>[];
-
-    while (remaining.isNotEmpty) {
-      final seed = remaining.removeAt(0);
-      final members = <_ProjectedEvent>[seed];
-      var didAdd = true;
-
-      while (didAdd) {
-        didAdd = false;
-        final centroid = _averageOffset(
-          members.map((member) => member.screenPosition).toList(),
-        );
-
-        for (var i = remaining.length - 1; i >= 0; i--) {
-          final candidate = remaining[i];
-          if ((candidate.screenPosition - centroid).distance <= threshold) {
-            members.add(candidate);
-            remaining.removeAt(i);
-            didAdd = true;
-          }
-        }
-      }
-
-      clusters.add(
-        _EventCluster(
-          events: members.map((member) => member.event).toList(),
-          center: _averageLatLng(
-            members.map((member) => member.event.location),
-          ),
-        ),
-      );
-    }
-
-    return clusters;
-  }
-
-  Offset _averageOffset(List<Offset> points) {
-    final dx = points.fold<double>(0, (sum, point) => sum + point.dx);
-    final dy = points.fold<double>(0, (sum, point) => sum + point.dy);
-    return Offset(dx / points.length, dy / points.length);
-  }
-
-  LatLng _averageLatLng(Iterable<LatLng> points) {
-    final values = points.toList(growable: false);
-    final latitude = values.fold<double>(
-      0,
-      (sum, point) => sum + point.latitude,
-    );
-    final longitude = values.fold<double>(
-      0,
-      (sum, point) => sum + point.longitude,
-    );
-    return LatLng(latitude / values.length, longitude / values.length);
   }
 
   bool _isLocationVisible(LatLng location) {
@@ -416,13 +238,9 @@ class _MapWidgetState extends State<MapWidget> {
     }
 
     try {
-      final visibleRegion = mapController.getVisibleRegion();
-      return location.latitude >= visibleRegion.latitudeSouth &&
-          location.latitude <= visibleRegion.latitudeNorth &&
-          location.longitude >= visibleRegion.longitudeWest &&
-          location.longitude <= visibleRegion.longitudeEast;
-    } catch (e) {
-      // If we can't determine visibility, assume it's not visible to show the button
+      return _cameraSync.isLocationVisible(mapController, location);
+    } catch (error) {
+      debugPrint('Map location visibility check failed: $error');
       return false;
     }
   }
@@ -461,7 +279,7 @@ class _MapWidgetState extends State<MapWidget> {
     }
 
     widget.controller.setPreferredMapCenter(location);
-    _moveTo(location, _userLocationZoom, animate: true);
+    _moveTo(location, _cameraSync.userLocationZoom, animate: true);
   }
 
   void _updateUserLocationVisibility() {
@@ -502,13 +320,13 @@ class _MapWidgetState extends State<MapWidget> {
 
   void _handleMapTap(Offset screenPoint) {
     final mapController = _mapController;
-    if (mapController == null || !_eventLayersReady) {
+    if (mapController == null || !_styleCoordinator.eventLayersReady) {
       return;
     }
 
     final features = mapController.featuresAtPoint(
       screenPoint,
-      layerIds: [_clustersCircleLayerId, _clustersLabelLayerId, _eventsLayerId],
+      layerIds: _styleCoordinator.layerIdsForTap(),
     );
     if (features.isEmpty) {
       return;
@@ -591,47 +409,11 @@ class _MapWidgetState extends State<MapWidget> {
     return LatLng(geographic.lat, geographic.lon);
   }
 
-  Map<String, Object?> _clusterFeatureJson(_EventCluster cluster, int index) {
-    final isSingle = cluster.events.length == 1;
-    final singleEvent = isSingle ? cluster.events.first : null;
-    return {
-      'type': 'Feature',
-      'id': isSingle ? cluster.events.first.id : 'cluster-$index',
-      'properties': {
-        'kind': isSingle ? 'event' : 'cluster',
-        'eventId': isSingle ? singleEvent!.id : null,
-        'eventIds': cluster.events.map((event) => event.id).join('|'),
-        'count': cluster.events.length,
-        'label': cluster.events.length.toString(),
-        'iconImage': isSingle ? _eventMarkerImageId(singleEvent!) : null,
-      },
-      'geometry': {
-        'type': 'Point',
-        'coordinates': [cluster.center.longitude, cluster.center.latitude],
-      },
-    };
-  }
-
-  String _eventMarkerImageId(ExploreEvent event) => 'explore-event-${event.id}';
-
-  Future<void> _registerEventMarkerImages(StyleController style) async {
-    for (final event in widget.events) {
-      final imageId = _eventMarkerImageId(event);
-      if (_registeredEventMarkerImageIds.contains(imageId)) {
-        continue;
-      }
-
-      await style.addImageFromWidget(
-        id: imageId,
-        logicalSize: const Size(56, 56),
-        imageSize: const Size(112, 112),
-        widget: _EventMarkerBadge(
-          backgroundColor: event.accentColor,
-          icon: event.icon,
-        ),
-      );
-      _registeredEventMarkerImageIds.add(imageId);
-    }
+  Widget _buildEventMarkerBadge(ExploreEvent event) {
+    return _EventMarkerBadge(
+      backgroundColor: event.accentColor,
+      icon: event.icon,
+    );
   }
 
   Widget _buildMapSurface(
@@ -655,7 +437,6 @@ class _MapWidgetState extends State<MapWidget> {
     }
 
     return MapLibreMap(
-      key: ValueKey('map-style-${brightness.name}'),
       onMapCreated: _handleMapCreated,
       onStyleLoaded: _handleStyleLoaded,
       onEvent: _handleMapEvent,
@@ -671,7 +452,9 @@ class _MapWidgetState extends State<MapWidget> {
       ],
       options: MapOptions(
         initCenter: _toGeographic(widget.controller.mapCenter),
-        initZoom: currentLocation != null ? _userLocationZoom : _fallbackZoom,
+        initZoom: currentLocation != null
+            ? _cameraSync.userLocationZoom
+            : _cameraSync.fallbackZoom,
         initStyle: styleJson,
         minZoom: 2.0,
         maxZoom: 19.0,
@@ -962,20 +745,6 @@ class _StaticMapMessageBanner extends StatelessWidget {
   }
 }
 
-class _ProjectedEvent {
-  const _ProjectedEvent({required this.event, required this.screenPosition});
-
-  final ExploreEvent event;
-  final Offset screenPosition;
-}
-
-class _EventCluster {
-  const _EventCluster({required this.events, required this.center});
-
-  final List<ExploreEvent> events;
-  final LatLng center;
-}
-
 class _EventMarkerBadge extends StatelessWidget {
   const _EventMarkerBadge({required this.backgroundColor, required this.icon});
 
@@ -1018,6 +787,7 @@ class _ClusterEventTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
       onTap: onTap,
@@ -1053,7 +823,7 @@ class _ClusterEventTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '${event.categoryLabel} • ${event.timeLabel}',
+                    '${event.categoryLabel(l10n)} • ${event.timeLabel(l10n)}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.onSurface.withValues(alpha: 0.7),
                     ),

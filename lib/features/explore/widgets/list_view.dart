@@ -314,7 +314,7 @@ class _EventCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${event.categoryLabel} • ${event.distanceLabel(l10n, referenceLocation)}',
+                  '${event.categoryLabel(l10n)} • ${event.distanceLabel(l10n, referenceLocation)}',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: event.accentColor,
                     fontWeight: FontWeight.w700,
@@ -322,7 +322,7 @@ class _EventCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '${event.timeLabel} • ${event.venue}',
+                  '${event.timeLabel(l10n)} • ${event.venue}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurface.withValues(alpha: 0.66),
                   ),
