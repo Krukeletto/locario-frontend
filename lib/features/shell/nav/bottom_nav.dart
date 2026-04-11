@@ -1,32 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
-import 'app_tab.dart';
+import 'tab.dart';
 
-class AppBottomNav extends StatelessWidget {
-  const AppBottomNav({
+class ShellBottomNav extends StatelessWidget {
+  const ShellBottomNav({
     super.key,
     required this.activeTab,
-    required this.moreOpen,
+    required this.hubOpen,
     required this.onTabSelected,
-    required this.onMoreToggle,
+    required this.onHubToggle,
   });
 
-  final AppTab activeTab;
-  final bool moreOpen;
-  final ValueChanged<AppTab> onTabSelected;
-  final VoidCallback onMoreToggle;
+  final ShellTab activeTab;
+  final bool hubOpen;
+  final ValueChanged<ShellTab> onTabSelected;
+  final VoidCallback onHubToggle;
 
-  // Navigation bar with 5 items: Explore, Saved, More (center), Inbox, Profile.
+  // Navigation bar with 4 items: Explore, Inbox, Hub and Profile.
   @override
   Widget build(BuildContext context) {
     final safeBottom = MediaQuery.paddingOf(context).bottom;
     final scheme = Theme.of(context).colorScheme;
-    const contentHeight = 64.0;
+    const contentHeight = 72.0;
 
     return Container(
       height: contentHeight + safeBottom,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.98),
+        color: scheme.surface.withValues(
+          alpha: Theme.of(context).brightness == Brightness.dark ? 0.98 : 0.98,
+        ),
         border: Border(
           top: BorderSide(color: scheme.outline.withValues(alpha: 0.35)),
         ),
@@ -47,42 +50,32 @@ class AppBottomNav extends StatelessWidget {
         ),
         child: SizedBox(
           height: contentHeight,
-          // Five equal slots: 4 tabs + center action button.
           child: Row(
             children: [
               Expanded(
                 child: _NavItem(
-                  tab: AppTab.explore,
+                  tab: ShellTab.explore,
                   activeTab: activeTab,
+                  hubOpen: hubOpen,
                   onTap: onTabSelected,
                 ),
               ),
               Expanded(
                 child: _NavItem(
-                  tab: AppTab.saved,
+                  tab: ShellTab.inbox,
                   activeTab: activeTab,
+                  hubOpen: hubOpen,
                   onTap: onTabSelected,
                 ),
               ),
               Expanded(
-                child: Center(
-                  child: Transform.translate(
-                    offset: const Offset(0, -14),
-                    child: _MoreButton(open: moreOpen, onTap: onMoreToggle),
-                  ),
-                ),
+                child: _HubNavItem(open: hubOpen, onTap: onHubToggle),
               ),
               Expanded(
                 child: _NavItem(
-                  tab: AppTab.inbox,
+                  tab: ShellTab.profile,
                   activeTab: activeTab,
-                  onTap: onTabSelected,
-                ),
-              ),
-              Expanded(
-                child: _NavItem(
-                  tab: AppTab.profile,
-                  activeTab: activeTab,
+                  hubOpen: hubOpen,
                   onTap: onTabSelected,
                 ),
               ),
@@ -99,18 +92,21 @@ class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.tab,
     required this.activeTab,
+    required this.hubOpen,
     required this.onTap,
   });
 
-  final AppTab tab;
-  final AppTab activeTab;
-  final ValueChanged<AppTab> onTap;
+  final ShellTab tab;
+  final ShellTab activeTab;
+  final bool hubOpen;
+  final ValueChanged<ShellTab> onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final isActive = activeTab == tab;
+    final l10n = AppLocalizations.of(context)!;
+    final isActive = activeTab == tab && !hubOpen;
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -118,7 +114,7 @@ class _NavItem extends StatelessWidget {
       // Animated active state bubble behind each tab item.
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
         decoration: BoxDecoration(
           color: isActive
               ? scheme.primary.withValues(alpha: 0.12)
@@ -132,16 +128,16 @@ class _NavItem extends StatelessWidget {
             Icon(
               isActive ? tab.selectedIcon : tab.icon,
               color: isActive ? scheme.primary : scheme.secondary,
-              size: 21,
+              size: 24,
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 5),
             Text(
-              tab.label,
+              tab.label(l10n),
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelSmall?.copyWith(
-                fontSize: 11,
+                fontSize: 12,
                 height: 1,
                 color: isActive ? scheme.primary : scheme.secondary,
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
@@ -154,69 +150,50 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// "More" button in the center of the nav bar, which toggles the "more" layer when tapped.
-class _MoreButton extends StatelessWidget {
-  const _MoreButton({required this.open, required this.onTap});
+class _HubNavItem extends StatelessWidget {
+  const _HubNavItem({required this.open, required this.onTap});
 
   final bool open;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
+      borderRadius: BorderRadius.circular(16),
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      // Center "More" action with icon morph (add <-> close).
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 240),
-        curve: Curves.easeOutCubic,
-        width: 58,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+        duration: const Duration(milliseconds: 220),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+        decoration: BoxDecoration(
+          color: open
+              ? scheme.primary.withValues(alpha: 0.12)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Floating circular core of the center action.
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 240),
-              curve: Curves.easeOutCubic,
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: scheme.primary,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.18),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                  BoxShadow(
-                    color: scheme.primary.withValues(alpha: open ? 0.22 : 0.12),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Icon(
-                open ? Icons.close_rounded : Icons.add_rounded,
-                color: Colors.white,
-                size: 19,
-              ),
+            Icon(
+              Icons.grid_view_rounded,
+              color: open ? scheme.primary : scheme.secondary,
+              size: 24,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 5),
             Text(
-              'More',
+              l10n.tabHub,
               maxLines: 1,
+              softWrap: false,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelSmall?.copyWith(
-                fontSize: 11,
+                fontSize: 12,
                 height: 1,
-                color: scheme.primary,
-                fontWeight: FontWeight.w700,
+                color: open ? scheme.primary : scheme.secondary,
+                fontWeight: open ? FontWeight.w700 : FontWeight.w600,
               ),
             ),
           ],

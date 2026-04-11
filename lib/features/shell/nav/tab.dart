@@ -1,47 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
-enum AppTab {
+enum ShellTab {
   explore(
-    label: 'Explore',
     icon: Icons.explore_outlined,
     selectedIcon: Icons.explore,
     routePath: '/explore',
   ),
-  saved(
-    label: 'Saved',
-    icon: Icons.bookmark_border_rounded,
-    selectedIcon: Icons.bookmark_rounded,
-    routePath: '/saved',
-  ),
   inbox(
-    label: 'Inbox',
     icon: Icons.notifications_none_rounded,
     selectedIcon: Icons.notifications_rounded,
     routePath: '/inbox',
   ),
   profile(
-    label: 'Profile',
     icon: Icons.person_outline_rounded,
     selectedIcon: Icons.person_rounded,
     routePath: '/profile',
   );
 
-  const AppTab({
-    required this.label,
+  const ShellTab({
     required this.icon,
     required this.selectedIcon,
     required this.routePath,
   });
 
-  final String label;
   final IconData icon;
   final IconData selectedIcon;
   final String routePath;
 
-  static AppTab fromLocation(String location) {
-    return AppTab.values.firstWhere(
+  String label(AppLocalizations l10n) {
+    return switch (this) {
+      ShellTab.explore => l10n.tabExplore,
+      ShellTab.inbox => l10n.tabInbox,
+      ShellTab.profile => l10n.tabProfile,
+    };
+  }
+
+  static ShellTab fromLocation(String location) {
+    return ShellTab.values.firstWhere(
       (tab) => location.startsWith(tab.routePath),
-      orElse: () => AppTab.explore,
+      orElse: () => ShellTab.explore,
     );
   }
 }

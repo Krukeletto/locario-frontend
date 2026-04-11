@@ -1,0 +1,161 @@
+{
+  "@@locale": "en",
+  "appTitle": "Locario",
+  "localeEnglish": "English",
+  "localePolish": "Polish",
+  "tabExplore": "Explore",
+  "tabInbox": "Inbox",
+  "tabHub": "Hub",
+  "tabProfile": "Profile",
+  "headerMap": "Map",
+  "headerList": "List",
+  "hubTitle": "Hub",
+  "hubDescription": "Shortcuts for creating and managing your local circle",
+  "hubCreateEventTitle": "Create event",
+  "hubCreateEventSubtitle": "Start something new",
+  "hubCommunityTitle": "Community",
+  "hubCommunitySubtitle": "Local updates",
+  "hubFriendsTitle": "Friends",
+  "hubFriendsSubtitle": "Your network",
+  "profileTitle": "Profile",
+  "profileDescription": "Account, preferences and your saved places in one calmer section.",
+  "settingsTitle": "Settings",
+  "settingsSubtitle": "Language, preferences and app defaults",
+  "settingsScreenTitle": "Settings",
+  "settingsScreenDescription": "Adjust the app basics before the settings surface grows.",
+  "savedTitle": "Saved",
+  "savedSubtitle": "Places, events and lists you want to revisit",
+  "languageSectionTitle": "Language",
+  "languageSectionSubtitle": "Choose how the app should speak to you",
+  "themeSectionTitle": "Appearance",
+  "themeSectionSubtitle": "Choose whether the app should follow the system or stay fixed",
+  "themeModeSystem": "System",
+  "themeModeLight": "Light",
+  "themeModeDark": "Dark",
+  "exploreSearchHint": "Search events...",
+  "exploreNearbyEvents": "Nearby events",
+  "exploreNearbyWithFilter": "{filter} nearby",
+  "@exploreNearbyWithFilter": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsCount": "{count} results",
+  "@resultsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sortTooltip": "Sort",
+  "sortDistance": "Distance",
+  "sortSoonest": "Soonest",
+  "sortTrending": "Trending",
+  "filterAll": "All",
+  "filterMusic": "Music",
+  "filterArt": "Art",
+  "filterWorkshops": "Workshops",
+  "filterFood": "Food",
+  "areaMyLocation": "My location",
+  "areaMyLocationDescription": "Events closest to you by default",
+  "areaTypedAddressDescription": "Address entered manually",
+  "areaPinnedOnMap": "Pinned on map",
+  "areaPickerTitle": "Choose area",
+  "areaPickerSubtitle": "You can type an address, point to a spot on the map or go back to your current location.",
+  "areaUseCurrentLocation": "My location",
+  "areaUseCurrentLocationSubtitle": "Use your current position as the reference point",
+  "areaEnterAddress": "Enter address",
+  "areaEnterAddressSubtitle": "Type a street, district or exact place",
+  "areaPickOnMap": "Pick on map",
+  "areaPickOnMapTitle": "Pick a point on the map",
+  "areaPickOnMapSubtitle": "Move the map so the chosen point sits under the center marker.",
+  "areaPickOnMapConfirm": "Use this point",
+  "areaAddressDialogTitle": "Enter address",
+  "areaAddressDialogHint": "For example 12 Old Town Sq, Poznan",
+  "areaAddressNotFound": "We couldn't find that address.",
+  "areaAddressLookupFailed": "Address lookup failed. Try again.",
+  "areaDialogCancel": "Cancel",
+  "areaDialogConfirm": "Done",
+  "areaPinnedCoordinates": "{lat}, {lon}",
+  "@areaPinnedCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "areaWarsawCenter": "Warsaw center",
+  "areaWarsawCenterDescription": "Address or pin set manually",
+  "areaPowisle": "Powisle",
+  "areaPowisleDescription": "Boulevards and Poniatowski bridge area",
+  "areaMokotow": "Mokotow",
+  "areaMokotowDescription": "Pole Mokotowskie area and nearby",
+  "eventJazzTitle": "Jazz in the Botanical Garden",
+  "eventSketchingTitle": "Night sketching by the Vistula",
+  "eventRunClubTitle": "Morning run club and coffee stop",
+  "eventStreetFoodTitle": "Street food and vinyl market",
+  "eventToday2030": "Today, 20:30",
+  "eventToday1900": "Today, 19:00",
+  "eventTomorrow0800": "Tomorrow, 08:00",
+  "eventTomorrow1200": "Tomorrow, 12:00",
+  "venueBotanicalGarden": "Botanical Garden",
+  "venueVistulaBoulevards": "Vistula Boulevards",
+  "venuePoleMokotowskie": "Pole Mokotowskie",
+  "venueHalaKoszyki": "Hala Koszyki",
+  "distanceMeters": "{count} m",
+  "@distanceMeters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "distanceKilometers": "{count} km",
+  "@distanceKilometers": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "mapReturnToLocation": "Return to my location",
+  "mapStyleLoadFailed": "Unable to load the local map style.\n{error}",
+  "@mapStyleLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "mapRetry": "Retry",
+  "mapAppSettings": "App settings",
+  "mapLocationSettings": "Location settings",
+  "mapServiceDisabled": "Enable location services to see your position.",
+  "mapPermissionDenied": "Allow location access to center the map on you.",
+  "mapPermissionDeniedForever": "Location access is blocked in system settings.",
+  "mapUnableDetermineLocation": "Unable to determine your location.",
+  "mapLocationTimeout": "Location request timed out. Try again.",
+  "mapUnableLoadLocation": "Unable to load your location.",
+  "mapClusterSheetTitle": "Choose an event ({count})",
+  "@mapClusterSheetTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEventOpenSoon": "The event screen for “{title}” will be added later.",
+  "@mapEventOpenSoon": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
+}

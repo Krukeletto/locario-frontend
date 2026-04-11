@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../shell/more_action_item.dart';
+import '../shell/hub/hub_action_item.dart';
 
-class MorePlaceholderScreen extends StatelessWidget {
-  const MorePlaceholderScreen({super.key, required this.item});
+class HubPlaceholderScreen extends StatelessWidget {
+  const HubPlaceholderScreen({super.key, required this.item});
 
-  final MoreActionItem item;
+  final HubActionItem item;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class MorePlaceholderScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor,
       body: const SizedBox.expand(
-        // TODO: Implement More destination screen content.
+        // TODO: Implement Hub destination screen content.
         child: SizedBox.shrink(),
       ),
     );

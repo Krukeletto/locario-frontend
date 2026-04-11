@@ -1,0 +1,161 @@
+{
+  "@@locale": "pl",
+  "appTitle": "Locario",
+  "localeEnglish": "Angielski",
+  "localePolish": "Polski",
+  "tabExplore": "Odkrywaj",
+  "tabInbox": "Skrzynka",
+  "tabHub": "Hub",
+  "tabProfile": "Profil",
+  "headerMap": "Mapa",
+  "headerList": "Lista",
+  "hubTitle": "Hub",
+  "hubDescription": "Skróty do tworzenia i ogarniania Twojej lokalnej społeczności",
+  "hubCreateEventTitle": "Stwórz wydarzenie",
+  "hubCreateEventSubtitle": "Zorganizuj coś fajnego",
+  "hubCommunityTitle": "Społeczność",
+  "hubCommunitySubtitle": "Lokalne aktualizacje",
+  "hubFriendsTitle": "Znajomi",
+  "hubFriendsSubtitle": "Twoja sieć",
+  "profileTitle": "Profil",
+  "profileDescription": "Konto, preferencje i zapisane miejsca w jednej spokojniejszej sekcji.",
+  "settingsTitle": "Ustawienia",
+  "settingsSubtitle": "Język, preferencje i podstawy aplikacji",
+  "settingsScreenTitle": "Ustawienia",
+  "settingsScreenDescription": "Tu możesz ogarnąć podstawy aplikacji, zanim sekcja ustawień bardziej urośnie.",
+  "savedTitle": "Zapisane",
+  "savedSubtitle": "Miejsca, wydarzenia i listy, do których chcesz wrócić",
+  "languageSectionTitle": "Język",
+  "languageSectionSubtitle": "Wybierz, w jakim języku aplikacja ma z Tobą rozmawiać",
+  "themeSectionTitle": "Wygląd",
+  "themeSectionSubtitle": "Wybierz, czy aplikacja ma podążać za systemem czy trzymać stały motyw",
+  "themeModeSystem": "System",
+  "themeModeLight": "Jasny",
+  "themeModeDark": "Ciemny",
+  "exploreSearchHint": "Szukaj wydarzeń...",
+  "exploreNearbyEvents": "Wydarzenia w pobliżu",
+  "exploreNearbyWithFilter": "{filter} w pobliżu",
+  "@exploreNearbyWithFilter": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsCount": "{count} wyników",
+  "@resultsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sortTooltip": "Sortowanie",
+  "sortDistance": "Odległość",
+  "sortSoonest": "Najbliższy termin",
+  "sortTrending": "Popularność",
+  "filterAll": "Wszystkie",
+  "filterMusic": "Muzyka",
+  "filterArt": "Sztuka",
+  "filterWorkshops": "Warsztaty",
+  "filterFood": "Food",
+  "areaMyLocation": "Moja lokalizacja",
+  "areaMyLocationDescription": "Domyślnie wydarzenia najbliżej Ciebie",
+  "areaTypedAddressDescription": "Adres wpisany ręcznie",
+  "areaPinnedOnMap": "Punkt na mapie",
+  "areaPickerTitle": "Wybierz obszar",
+  "areaPickerSubtitle": "Możesz wpisać adres, wskazać punkt na mapie albo wrócić do bieżącej lokalizacji.",
+  "areaUseCurrentLocation": "Moja lokalizacja",
+  "areaUseCurrentLocationSubtitle": "Użyj Twojej aktualnej pozycji jako punktu odniesienia",
+  "areaEnterAddress": "Wpisz adres",
+  "areaEnterAddressSubtitle": "Podaj ulicę, dzielnicę albo konkretne miejsce",
+  "areaPickOnMap": "Wskaż na mapie",
+  "areaPickOnMapTitle": "Wskaż punkt na mapie",
+  "areaPickOnMapSubtitle": "Przesuń mapę tak, aby wybrany punkt był pod znacznikiem na środku.",
+  "areaPickOnMapConfirm": "Użyj tego punktu",
+  "areaAddressDialogTitle": "Wpisz adres",
+  "areaAddressDialogHint": "Np. Stary Rynek 12, Poznań",
+  "areaAddressNotFound": "Nie udało się znaleźć tego adresu.",
+  "areaAddressLookupFailed": "Nie udało się wyszukać adresu. Spróbuj ponownie.",
+  "areaDialogCancel": "Anuluj",
+  "areaDialogConfirm": "Gotowe",
+  "areaPinnedCoordinates": "{lat}, {lon}",
+  "@areaPinnedCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "areaWarsawCenter": "Centrum Warszawy",
+  "areaWarsawCenterDescription": "Adres lub pin ustawiony ręcznie",
+  "areaPowisle": "Powiśle",
+  "areaPowisleDescription": "Okolice bulwarów i mostu Poniatowskiego",
+  "areaMokotow": "Mokotów",
+  "areaMokotowDescription": "Rejon Pole Mokotowskie i okolice",
+  "eventJazzTitle": "Jazz w Ogrodzie Botanicznym",
+  "eventSketchingTitle": "Noc szkicowania nad Wisłą",
+  "eventRunClubTitle": "Poranny run club i coffee stop",
+  "eventStreetFoodTitle": "Street food i vinyl market",
+  "eventToday2030": "Dziś, 20:30",
+  "eventToday1900": "Dziś, 19:00",
+  "eventTomorrow0800": "Jutro, 08:00",
+  "eventTomorrow1200": "Jutro, 12:00",
+  "venueBotanicalGarden": "Ogród Botaniczny",
+  "venueVistulaBoulevards": "Bulwary Wiślane",
+  "venuePoleMokotowskie": "Pole Mokotowskie",
+  "venueHalaKoszyki": "Hala Koszyki",
+  "distanceMeters": "{count} m",
+  "@distanceMeters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "distanceKilometers": "{count} km",
+  "@distanceKilometers": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "mapReturnToLocation": "Wróć do mojej lokalizacji",
+  "mapStyleLoadFailed": "Nie udało się wczytać lokalnego stylu mapy.\n{error}",
+  "@mapStyleLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "mapRetry": "Ponów",
+  "mapAppSettings": "Ustawienia aplikacji",
+  "mapLocationSettings": "Ustawienia lokalizacji",
+  "mapServiceDisabled": "Włącz usługi lokalizacji, aby zobaczyć swoją pozycję.",
+  "mapPermissionDenied": "Pozwól na dostęp do lokalizacji, aby wycentrować mapę na Tobie.",
+  "mapPermissionDeniedForever": "Dostęp do lokalizacji jest zablokowany w ustawieniach systemu.",
+  "mapUnableDetermineLocation": "Nie udało się ustalić Twojej lokalizacji.",
+  "mapLocationTimeout": "Żądanie lokalizacji przekroczyło limit czasu. Spróbuj ponownie.",
+  "mapUnableLoadLocation": "Nie udało się wczytać Twojej lokalizacji.",
+  "mapClusterSheetTitle": "Wybierz wydarzenie ({count})",
+  "@mapClusterSheetTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEventOpenSoon": "Ekran wydarzenia „{title}” dodamy później.",
+  "@mapEventOpenSoon": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
+}
