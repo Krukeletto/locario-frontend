@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/hub/create_event/create_event_screen.dart';
 import '../features/explore/explore_screen.dart';
 import '../features/hub/hub_placeholder_screen.dart';
 import '../features/inbox/inbox_screen.dart';
@@ -101,7 +102,12 @@ final GoRouter appRouter = GoRouter(
       (item) => GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: item.routePath,
-        builder: (context, state) => HubPlaceholderScreen(item: item),
+        pageBuilder: (context, state) {
+          if (item.id == 'create-event') {
+            return const NoTransitionPage(child: CreateEventScreen());
+          }
+          return NoTransitionPage(child: HubPlaceholderScreen(item: item));
+        },
       ),
     ),
   ],

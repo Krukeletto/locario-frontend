@@ -62,8 +62,7 @@ import 'app_localizations_pl.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('pl'),
+    Locale('pl')
   ];
 
   /// No description provided for @appTitle.
@@ -175,6 +172,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start something new'**
   String get hubCreateEventSubtitle;
+
+  /// No description provided for @hubCreateEventNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Event name'**
+  String get hubCreateEventNameLabel;
+
+  /// No description provided for @hubCreateEventNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your event called?'**
+  String get hubCreateEventNameHint;
+
+  /// No description provided for @hubCreateEventCategoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get hubCreateEventCategoryLabel;
+
+  /// No description provided for @hubCreateEventLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get hubCreateEventLocationLabel;
+
+  /// No description provided for @hubCreateEventLocationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Where will the event take place?'**
+  String get hubCreateEventLocationHint;
+
+  /// No description provided for @hubCreateEventDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get hubCreateEventDateLabel;
+
+  /// No description provided for @hubCreateEventDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a date'**
+  String get hubCreateEventDateHint;
+
+  /// No description provided for @hubCreateEventDatePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a date'**
+  String get hubCreateEventDatePlaceholder;
+
+  /// No description provided for @hubCreateEventTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get hubCreateEventTimeLabel;
+
+  /// No description provided for @hubCreateEventTimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'--:--'**
+  String get hubCreateEventTimeHint;
+
+  /// No description provided for @hubCreateEventTimePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a time'**
+  String get hubCreateEventTimePlaceholder;
+
+  /// No description provided for @hubCreateEventDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Event description'**
+  String get hubCreateEventDescriptionLabel;
+
+  /// No description provided for @hubCreateEventDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell people about your event...'**
+  String get hubCreateEventDescriptionHint;
+
+  /// No description provided for @hubCreateEventMainPhotoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add main photo'**
+  String get hubCreateEventMainPhotoLabel;
+
+  /// No description provided for @hubCreateEventMainPhotoSizeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested size: 1600 x 900 px'**
+  String get hubCreateEventMainPhotoSizeHint;
+
+  /// No description provided for @hubCreateEventTicketingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets and entry'**
+  String get hubCreateEventTicketingTitle;
+
+  /// No description provided for @hubCreateEventTicketingSwitchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable tickets and seat limits'**
+  String get hubCreateEventTicketingSwitchLabel;
+
+  /// No description provided for @hubCreateEventTicketSeatsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of seats'**
+  String get hubCreateEventTicketSeatsLabel;
+
+  /// No description provided for @hubCreateEventTicketPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket price'**
+  String get hubCreateEventTicketPriceLabel;
+
+  /// No description provided for @hubCreateEventSubmitButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create event'**
+  String get hubCreateEventSubmitButton;
+
+  /// No description provided for @hubCreateEventValidationMinChars3.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter at least 3 characters.'**
+  String get hubCreateEventValidationMinChars3;
+
+  /// No description provided for @hubCreateEventValidationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required.'**
+  String get hubCreateEventValidationRequired;
+
+  /// No description provided for @hubCreateEventValidationDescriptionMin10.
+  ///
+  /// In en, this message translates to:
+  /// **'Description should be at least 10 characters.'**
+  String get hubCreateEventValidationDescriptionMin10;
+
+  /// No description provided for @hubCreateEventValidationCategoryRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one category.'**
+  String get hubCreateEventValidationCategoryRequired;
+
+  /// No description provided for @hubCreateEventValidationPositiveNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid positive number.'**
+  String get hubCreateEventValidationPositiveNumber;
+
+  /// No description provided for @hubCreateEventValidationDateTimeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the event date and time.'**
+  String get hubCreateEventValidationDateTimeRequired;
+
+  /// No description provided for @hubCreateEventCreatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event has been created.'**
+  String get hubCreateEventCreatedSuccess;
 
   /// No description provided for @hubCommunityTitle.
   ///
@@ -693,8 +852,7 @@ abstract class AppLocalizations {
   String mapEventOpenSoon(String title);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -703,26 +861,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'pl'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'pl'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'pl':
-      return AppLocalizationsPl();
+    case 'en': return AppLocalizationsEn();
+    case 'pl': return AppLocalizationsPl();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

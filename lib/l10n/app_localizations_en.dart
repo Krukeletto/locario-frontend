@@ -39,14 +39,94 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubTitle => 'Hub';
 
   @override
-  String get hubDescription =>
-      'Shortcuts for creating and managing your local circle';
+  String get hubDescription => 'Shortcuts for creating and managing your local circle';
 
   @override
   String get hubCreateEventTitle => 'Create event';
 
   @override
   String get hubCreateEventSubtitle => 'Start something new';
+
+  @override
+  String get hubCreateEventNameLabel => 'Event name';
+
+  @override
+  String get hubCreateEventNameHint => 'What is your event called?';
+
+  @override
+  String get hubCreateEventCategoryLabel => 'Category';
+
+  @override
+  String get hubCreateEventLocationLabel => 'Location';
+
+  @override
+  String get hubCreateEventLocationHint => 'Where will the event take place?';
+
+  @override
+  String get hubCreateEventDateLabel => 'Date';
+
+  @override
+  String get hubCreateEventDateHint => 'Choose a date';
+
+  @override
+  String get hubCreateEventDatePlaceholder => 'Choose a date';
+
+  @override
+  String get hubCreateEventTimeLabel => 'Time';
+
+  @override
+  String get hubCreateEventTimeHint => '--:--';
+
+  @override
+  String get hubCreateEventTimePlaceholder => 'Choose a time';
+
+  @override
+  String get hubCreateEventDescriptionLabel => 'Event description';
+
+  @override
+  String get hubCreateEventDescriptionHint => 'Tell people about your event...';
+
+  @override
+  String get hubCreateEventMainPhotoLabel => 'Add main photo';
+
+  @override
+  String get hubCreateEventMainPhotoSizeHint => 'Suggested size: 1600 x 900 px';
+
+  @override
+  String get hubCreateEventTicketingTitle => 'Tickets and entry';
+
+  @override
+  String get hubCreateEventTicketingSwitchLabel => 'Enable tickets and seat limits';
+
+  @override
+  String get hubCreateEventTicketSeatsLabel => 'Number of seats';
+
+  @override
+  String get hubCreateEventTicketPriceLabel => 'Ticket price';
+
+  @override
+  String get hubCreateEventSubmitButton => 'Create event';
+
+  @override
+  String get hubCreateEventValidationMinChars3 => 'Enter at least 3 characters.';
+
+  @override
+  String get hubCreateEventValidationRequired => 'This field is required.';
+
+  @override
+  String get hubCreateEventValidationDescriptionMin10 => 'Description should be at least 10 characters.';
+
+  @override
+  String get hubCreateEventValidationCategoryRequired => 'Choose at least one category.';
+
+  @override
+  String get hubCreateEventValidationPositiveNumber => 'Enter a valid positive number.';
+
+  @override
+  String get hubCreateEventValidationDateTimeRequired => 'Choose the event date and time.';
+
+  @override
+  String get hubCreateEventCreatedSuccess => 'Event has been created.';
 
   @override
   String get hubCommunityTitle => 'Community';
@@ -64,8 +144,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileTitle => 'Profile';
 
   @override
-  String get profileDescription =>
-      'Account, preferences and your saved places in one calmer section.';
+  String get profileDescription => 'Account, preferences and your saved places in one calmer section.';
 
   @override
   String get settingsTitle => 'Settings';
@@ -77,8 +156,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsScreenTitle => 'Settings';
 
   @override
-  String get settingsScreenDescription =>
-      'Adjust the app basics before the settings surface grows.';
+  String get settingsScreenDescription => 'Adjust the app basics before the settings surface grows.';
 
   @override
   String get savedTitle => 'Saved';
@@ -90,15 +168,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageSectionTitle => 'Language';
 
   @override
-  String get languageSectionSubtitle =>
-      'Choose how the app should speak to you';
+  String get languageSectionSubtitle => 'Choose how the app should speak to you';
 
   @override
   String get themeSectionTitle => 'Appearance';
 
   @override
-  String get themeSectionSubtitle =>
-      'Choose whether the app should follow the system or stay fixed';
+  String get themeSectionSubtitle => 'Choose whether the app should follow the system or stay fixed';
 
   @override
   String get themeModeSystem => 'System';
@@ -168,22 +244,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get areaPickerTitle => 'Choose area';
 
   @override
-  String get areaPickerSubtitle =>
-      'You can type an address, point to a spot on the map or go back to your current location.';
+  String get areaPickerSubtitle => 'You can type an address, point to a spot on the map or go back to your current location.';
 
   @override
   String get areaUseCurrentLocation => 'My location';
 
   @override
-  String get areaUseCurrentLocationSubtitle =>
-      'Use your current position as the reference point';
+  String get areaUseCurrentLocationSubtitle => 'Use your current position as the reference point';
 
   @override
   String get areaEnterAddress => 'Enter address';
 
   @override
-  String get areaEnterAddressSubtitle =>
-      'Type a street, district or exact place';
+  String get areaEnterAddressSubtitle => 'Type a street, district or exact place';
 
   @override
   String get areaPickOnMap => 'Pick on map';
@@ -192,8 +265,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get areaPickOnMapTitle => 'Pick a point on the map';
 
   @override
-  String get areaPickOnMapSubtitle =>
-      'Move the map so the chosen point sits under the center marker.';
+  String get areaPickOnMapSubtitle => 'Move the map so the chosen point sits under the center marker.';
 
   @override
   String get areaPickOnMapConfirm => 'Use this point';
@@ -303,16 +375,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapLocationSettings => 'Location settings';
 
   @override
-  String get mapServiceDisabled =>
-      'Enable location services to see your position.';
+  String get mapServiceDisabled => 'Enable location services to see your position.';
 
   @override
-  String get mapPermissionDenied =>
-      'Allow location access to center the map on you.';
+  String get mapPermissionDenied => 'Allow location access to center the map on you.';
 
   @override
-  String get mapPermissionDeniedForever =>
-      'Location access is blocked in system settings.';
+  String get mapPermissionDeniedForever => 'Location access is blocked in system settings.';
 
   @override
   String get mapUnableDetermineLocation => 'Unable to determine your location.';
