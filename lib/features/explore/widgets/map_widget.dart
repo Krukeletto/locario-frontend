@@ -14,6 +14,7 @@ class MapWidget extends StatefulWidget {
     super.key,
     required this.controller,
     required this.events,
+    required this.onEventTap,
     this.styleRepository = const MapStyleRepository(),
     this.overlayPadding = EdgeInsets.zero,
     this.attributionAlignment = Alignment.bottomRight,
@@ -25,6 +26,7 @@ class MapWidget extends StatefulWidget {
 
   final ExploreMapViewModel controller;
   final List<ExploreEvent> events;
+  final ValueChanged<ExploreEvent> onEventTap;
   final MapStyleRepository styleRepository;
   final EdgeInsets overlayPadding;
   final Alignment attributionAlignment;
@@ -357,12 +359,7 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   void _openEvent(ExploreEvent event) {
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(l10n.mapEventOpenSoon(event.title))),
-      );
+    widget.onEventTap(event);
   }
 
   Future<void> _showClusterEvents(List<ExploreEvent> events) async {

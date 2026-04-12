@@ -72,6 +72,7 @@ Widget _buildTestApp(ExploreMapViewModel controller) {
       body: MapWidget(
         events: const [],
         controller: controller,
+        onEventTap: (_) {},
         styleRepository: const MapStyleRepository(
           inlineStyleJson: _testStyleJson,
         ),

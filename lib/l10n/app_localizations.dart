@@ -176,6 +176,168 @@ abstract class AppLocalizations {
   /// **'Start something new'**
   String get hubCreateEventSubtitle;
 
+  /// No description provided for @hubCreateEventNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Event name'**
+  String get hubCreateEventNameLabel;
+
+  /// No description provided for @hubCreateEventNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your event called?'**
+  String get hubCreateEventNameHint;
+
+  /// No description provided for @hubCreateEventCategoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get hubCreateEventCategoryLabel;
+
+  /// No description provided for @hubCreateEventLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get hubCreateEventLocationLabel;
+
+  /// No description provided for @hubCreateEventLocationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Where will the event take place?'**
+  String get hubCreateEventLocationHint;
+
+  /// No description provided for @hubCreateEventDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get hubCreateEventDateLabel;
+
+  /// No description provided for @hubCreateEventDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a date'**
+  String get hubCreateEventDateHint;
+
+  /// No description provided for @hubCreateEventDatePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a date'**
+  String get hubCreateEventDatePlaceholder;
+
+  /// No description provided for @hubCreateEventTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get hubCreateEventTimeLabel;
+
+  /// No description provided for @hubCreateEventTimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'--:--'**
+  String get hubCreateEventTimeHint;
+
+  /// No description provided for @hubCreateEventTimePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a time'**
+  String get hubCreateEventTimePlaceholder;
+
+  /// No description provided for @hubCreateEventDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Event description'**
+  String get hubCreateEventDescriptionLabel;
+
+  /// No description provided for @hubCreateEventDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell people about your event...'**
+  String get hubCreateEventDescriptionHint;
+
+  /// No description provided for @hubCreateEventMainPhotoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add main photo'**
+  String get hubCreateEventMainPhotoLabel;
+
+  /// No description provided for @hubCreateEventMainPhotoSizeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested size: 1600 x 900 px'**
+  String get hubCreateEventMainPhotoSizeHint;
+
+  /// No description provided for @hubCreateEventTicketingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets and entry'**
+  String get hubCreateEventTicketingTitle;
+
+  /// No description provided for @hubCreateEventTicketingSwitchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable tickets and seat limits'**
+  String get hubCreateEventTicketingSwitchLabel;
+
+  /// No description provided for @hubCreateEventTicketSeatsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of seats'**
+  String get hubCreateEventTicketSeatsLabel;
+
+  /// No description provided for @hubCreateEventTicketPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket price'**
+  String get hubCreateEventTicketPriceLabel;
+
+  /// No description provided for @hubCreateEventSubmitButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create event'**
+  String get hubCreateEventSubmitButton;
+
+  /// No description provided for @hubCreateEventValidationMinChars3.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter at least 3 characters.'**
+  String get hubCreateEventValidationMinChars3;
+
+  /// No description provided for @hubCreateEventValidationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required.'**
+  String get hubCreateEventValidationRequired;
+
+  /// No description provided for @hubCreateEventValidationDescriptionMin10.
+  ///
+  /// In en, this message translates to:
+  /// **'Description should be at least 10 characters.'**
+  String get hubCreateEventValidationDescriptionMin10;
+
+  /// No description provided for @hubCreateEventValidationCategoryRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one category.'**
+  String get hubCreateEventValidationCategoryRequired;
+
+  /// No description provided for @hubCreateEventValidationPositiveNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid positive number.'**
+  String get hubCreateEventValidationPositiveNumber;
+
+  /// No description provided for @hubCreateEventValidationDateTimeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the event date and time.'**
+  String get hubCreateEventValidationDateTimeRequired;
+
+  /// No description provided for @hubCreateEventCreatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event has been created.'**
+  String get hubCreateEventCreatedSuccess;
+
   /// No description provided for @hubCommunityTitle.
   ///
   /// In en, this message translates to:
@@ -553,6 +715,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Street food and vinyl market'**
   String get eventStreetFoodTitle;
+
+  /// No description provided for @eventDetailsScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Event details'**
+  String get eventDetailsScreenTitle;
+
+  /// No description provided for @eventDetailsImagePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Temporary image placeholder'**
+  String get eventDetailsImagePlaceholder;
+
+  /// No description provided for @eventDetailsTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Event title'**
+  String get eventDetailsTitleLabel;
+
+  /// No description provided for @eventDetailsLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get eventDetailsLocationLabel;
+
+  /// No description provided for @eventDetailsDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get eventDetailsDateLabel;
+
+  /// No description provided for @eventDetailsTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get eventDetailsTimeLabel;
+
+  /// No description provided for @eventDetailsPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get eventDetailsPriceLabel;
+
+  /// No description provided for @eventDetailsSeatsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Seats'**
+  String get eventDetailsSeatsLabel;
+
+  /// No description provided for @eventDetailsAboutLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'About the event'**
+  String get eventDetailsAboutLabel;
+
+  /// No description provided for @eventDetailsOrganizerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer'**
+  String get eventDetailsOrganizerLabel;
+
+  /// No description provided for @eventDetailsChatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants chat'**
+  String get eventDetailsChatLabel;
+
+  /// No description provided for @eventDetailsBuyTicketButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy ticket'**
+  String get eventDetailsBuyTicketButton;
+
+  /// No description provided for @eventDetailsJoinButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get eventDetailsJoinButton;
+
+  /// No description provided for @eventDetailsUnknownEventTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Event'**
+  String get eventDetailsUnknownEventTitle;
+
+  /// No description provided for @eventDetailsUnknownLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location unknown'**
+  String get eventDetailsUnknownLocation;
+
+  /// No description provided for @eventDetailsFallbackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a temporary event description. In the next steps we will connect full data from the create event form and backend.'**
+  String get eventDetailsFallbackDescription;
+
+  /// No description provided for @eventDetailsJazzDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.'**
+  String get eventDetailsJazzDescription;
+
+  /// No description provided for @eventDetailsSketchingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A meetup for people who enjoy sketching and urban illustration. Bring your own materials.'**
+  String get eventDetailsSketchingDescription;
+
+  /// No description provided for @eventDetailsRunClubDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.'**
+  String get eventDetailsRunClubDescription;
+
+  /// No description provided for @eventDetailsStreetFoodDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Street food, curated vinyl records and mini DJ sets. An all-day event.'**
+  String get eventDetailsStreetFoodDescription;
 
   /// No description provided for @eventToday2030.
   ///

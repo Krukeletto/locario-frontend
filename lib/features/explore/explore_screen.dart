@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
 import '../../shared/location/location_service.dart';
@@ -189,6 +190,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
     }
   }
 
+  void _openEvent(ExploreEvent event) {
+    context.push('/events/${Uri.encodeComponent(event.id)}');
+  }
+
   @override
   Widget build(BuildContext context) {
     final headerController = _headerController;
@@ -276,6 +281,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                 controller: _controller,
                                 styleRepository: _styleRepository,
                                 events: visibleEvents,
+                                onEventTap: _openEvent,
                                 onCameraCenterChanged: (center) {
                                   _areaController.updateViewportCenter(center);
                                 },
@@ -300,6 +306,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             selectedSort: _selectedSort,
                             isSearchActive: _searchQuery.trim().isNotEmpty,
                             onAreaPressed: _handleAreaPressed,
+                            onEventTap: _openEvent,
                             onSortChanged: (sort) {
                               setState(() {
                                 _selectedSort = sort;

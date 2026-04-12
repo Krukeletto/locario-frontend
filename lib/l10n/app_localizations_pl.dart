@@ -49,6 +49,93 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubCreateEventSubtitle => 'Zorganizuj coś fajnego';
 
   @override
+  String get hubCreateEventNameLabel => 'Nazwa wydarzenia';
+
+  @override
+  String get hubCreateEventNameHint => 'Jak nazywa się twoje wydarzenie?';
+
+  @override
+  String get hubCreateEventCategoryLabel => 'Kategoria';
+
+  @override
+  String get hubCreateEventLocationLabel => 'Miejsce';
+
+  @override
+  String get hubCreateEventLocationHint => 'Gdzie odbędzie się wydarzenie?';
+
+  @override
+  String get hubCreateEventDateLabel => 'Data';
+
+  @override
+  String get hubCreateEventDateHint => 'Wybierz datę';
+
+  @override
+  String get hubCreateEventDatePlaceholder => 'Wybierz dzień';
+
+  @override
+  String get hubCreateEventTimeLabel => 'Godzina';
+
+  @override
+  String get hubCreateEventTimeHint => '--:--';
+
+  @override
+  String get hubCreateEventTimePlaceholder => 'Wybierz godzinę';
+
+  @override
+  String get hubCreateEventDescriptionLabel => 'Opis wydarzenia';
+
+  @override
+  String get hubCreateEventDescriptionHint => 'Opowiedz o swoim wydarzeniu...';
+
+  @override
+  String get hubCreateEventMainPhotoLabel => 'Dodaj zdjęcie główne';
+
+  @override
+  String get hubCreateEventMainPhotoSizeHint =>
+      'Sugerowany rozmiar: 1600 x 900 px';
+
+  @override
+  String get hubCreateEventTicketingTitle => 'Bilety i wstęp';
+
+  @override
+  String get hubCreateEventTicketingSwitchLabel =>
+      'Włącz bilety i limity miejsc';
+
+  @override
+  String get hubCreateEventTicketSeatsLabel => 'Liczba miejsc';
+
+  @override
+  String get hubCreateEventTicketPriceLabel => 'Cena biletu';
+
+  @override
+  String get hubCreateEventSubmitButton => 'Stwórz wydarzenie';
+
+  @override
+  String get hubCreateEventValidationMinChars3 => 'Podaj co najmniej 3 znaki.';
+
+  @override
+  String get hubCreateEventValidationRequired => 'To pole jest wymagane.';
+
+  @override
+  String get hubCreateEventValidationDescriptionMin10 =>
+      'Opis powinien mieć co najmniej 10 znaków.';
+
+  @override
+  String get hubCreateEventValidationCategoryRequired =>
+      'Wybierz co najmniej jedną kategorię.';
+
+  @override
+  String get hubCreateEventValidationPositiveNumber =>
+      'Podaj poprawną dodatnią liczbę.';
+
+  @override
+  String get hubCreateEventValidationDateTimeRequired =>
+      'Wybierz datę i godzinę wydarzenia.';
+
+  @override
+  String get hubCreateEventCreatedSuccess => 'Wydarzenie zostało utworzone.';
+
+  @override
   String get hubCommunityTitle => 'Społeczność';
 
   @override
@@ -151,7 +238,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get filterWorkshops => 'Warsztaty';
 
   @override
-  String get filterFood => 'Food';
+  String get filterFood => 'Jedzenie';
 
   @override
   String get areaMyLocation => 'Moja lokalizacja';
@@ -254,6 +341,71 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get eventStreetFoodTitle => 'Street food i vinyl market';
+
+  @override
+  String get eventDetailsScreenTitle => 'Szczegóły wydarzenia';
+
+  @override
+  String get eventDetailsImagePlaceholder => 'Tymczasowy placeholder zdjęcia';
+
+  @override
+  String get eventDetailsTitleLabel => 'Tytuł wydarzenia';
+
+  @override
+  String get eventDetailsLocationLabel => 'Lokalizacja';
+
+  @override
+  String get eventDetailsDateLabel => 'Data';
+
+  @override
+  String get eventDetailsTimeLabel => 'Godzina';
+
+  @override
+  String get eventDetailsPriceLabel => 'Cena';
+
+  @override
+  String get eventDetailsSeatsLabel => 'Liczba miejsc';
+
+  @override
+  String get eventDetailsAboutLabel => 'O wydarzeniu';
+
+  @override
+  String get eventDetailsOrganizerLabel => 'Organizator';
+
+  @override
+  String get eventDetailsChatLabel => 'Czat uczestników';
+
+  @override
+  String get eventDetailsBuyTicketButton => 'Kup bilet';
+
+  @override
+  String get eventDetailsJoinButton => 'Zapisz się';
+
+  @override
+  String get eventDetailsUnknownEventTitle => 'Wydarzenie';
+
+  @override
+  String get eventDetailsUnknownLocation => 'Lokalizacja nieznana';
+
+  @override
+  String get eventDetailsFallbackDescription =>
+      'To tymczasowy opis wydarzenia. W kolejnych krokach podepniemy pełne dane z formularza tworzenia wydarzenia i backendu.';
+
+  @override
+  String get eventDetailsJazzDescription =>
+      'Wieczorny koncert jazzowy pod otwartym niebem. Zabierz znajomych, koc i dobry humor.';
+
+  @override
+  String get eventDetailsSketchingDescription =>
+      'Spotkanie dla osób lubiących szkicowanie i ilustracje miejskie. Materiały we własnym zakresie.';
+
+  @override
+  String get eventDetailsRunClubDescription =>
+      'Lekki poranny bieg, potem wspólna kawa i networking. Tempo konwersacyjne, każdy mile widziany.';
+
+  @override
+  String get eventDetailsStreetFoodDescription =>
+      'Street food, selekcja płyt winylowych i mini sety DJ-skie. Wydarzenie całodzienne.';
 
   @override
   String get eventToday2030 => 'Dziś, 20:30';
