@@ -6,9 +6,75 @@ enum ExploreContentView { map, list }
 
 enum ExploreSortOption { distance, soonest, trending }
 
+enum ExploreDistanceFilter {
+  any(null),
+  within1Km(1000),
+  within3Km(3000),
+  within5Km(5000),
+  within10Km(10000),
+  within25Km(25000);
+
+  const ExploreDistanceFilter(this.maxDistanceMeters);
+
+  final int? maxDistanceMeters;
+}
+
 enum ExploreCategory { all, music, art, workshops, food }
 
-final _sampleExploreBaseDate = DateTime.utc(2026, 4, 11);
+const Map<ExploreCategory, String?> _backendCategoryIds = {
+  ExploreCategory.music: null,
+  ExploreCategory.art: null,
+  ExploreCategory.workshops: null,
+  ExploreCategory.food: null,
+};
+
+String? backendCategoryIdFor(ExploreCategory category) {
+  return _backendCategoryIds[category];
+}
+
+ExploreCategory? primaryCategoryForSubmission(
+  Iterable<ExploreCategory> categories,
+) {
+  if (categories.isEmpty) {
+    return null;
+  }
+
+  return categories.last;
+}
+
+ExploreCategory exploreCategoryFromBackend({
+  String? categoryId,
+  String? categoryName,
+}) {
+  final normalizedId = categoryId?.trim();
+  final normalizedName = categoryName?.trim().toLowerCase();
+  if ((normalizedId == null || normalizedId.isEmpty) &&
+      (normalizedName == null || normalizedName.isEmpty)) {
+    return ExploreCategory.all;
+  }
+
+  switch (normalizedName) {
+    case 'music':
+    case 'muzyka':
+      return ExploreCategory.music;
+    case 'art':
+    case 'sztuka':
+      return ExploreCategory.art;
+    case 'workshops':
+    case 'warsztaty':
+      return ExploreCategory.workshops;
+    case 'food':
+    case 'jedzenie':
+      return ExploreCategory.food;
+  }
+
+  final entry = _backendCategoryIds.entries.firstWhere(
+    (entry) => entry.value != null && entry.value == normalizedId,
+    orElse: () =>
+        const MapEntry<ExploreCategory, String?>(ExploreCategory.all, null),
+  );
+  return entry.key;
+}
 
 class ExploreFilter {
   const ExploreFilter({
@@ -45,8 +111,10 @@ class ExploreEvent {
     required this.trendingScore,
     required this.venue,
     required this.location,
-    required this.accentColor,
-    required this.icon,
+    this.description,
+    this.address,
+    this.categoryId,
+    this.categoryName,
   });
 
   final String id;
@@ -56,8 +124,30 @@ class ExploreEvent {
   final int trendingScore;
   final String venue;
   final LatLng location;
-  final Color accentColor;
-  final IconData icon;
+  final String? description;
+  final String? address;
+  final String? categoryId;
+  final String? categoryName;
+
+  Color get accentColor {
+    return switch (category) {
+      ExploreCategory.all => const Color(0xFF5B6C8F),
+      ExploreCategory.music => const Color(0xFFB14B6F),
+      ExploreCategory.art => const Color(0xFF607F5B),
+      ExploreCategory.workshops => const Color(0xFF2E7D32),
+      ExploreCategory.food => const Color(0xFF8E6B3A),
+    };
+  }
+
+  IconData get icon {
+    return switch (category) {
+      ExploreCategory.all => Icons.explore_rounded,
+      ExploreCategory.music => Icons.music_note_rounded,
+      ExploreCategory.art => Icons.palette_outlined,
+      ExploreCategory.workshops => Icons.lightbulb_outline_rounded,
+      ExploreCategory.food => Icons.restaurant_rounded,
+    };
+  }
 
   static const Distance _distance = Distance();
 
@@ -74,6 +164,17 @@ class ExploreEvent {
     return l10n.distanceKilometers((distanceMeters / 1000).toStringAsFixed(1));
   }
 
+  String locationLabel(AppLocalizations l10n) {
+    final normalizedAddress = address?.trim();
+    if (normalizedAddress != null && normalizedAddress.isNotEmpty) {
+      return normalizedAddress;
+    }
+
+    final lat = location.latitude.toStringAsFixed(4);
+    final lon = location.longitude.toStringAsFixed(4);
+    return l10n.areaPinnedCoordinates(lat, lon);
+  }
+
   String categoryLabel(AppLocalizations l10n) {
     return switch (category) {
       ExploreCategory.all => l10n.filterAll,
@@ -85,23 +186,6 @@ class ExploreEvent {
   }
 
   String timeLabel(AppLocalizations l10n) {
-    final dayDifference = startsAt.difference(_sampleExploreBaseDate).inDays;
-    final hour = startsAt.hour;
-    final minute = startsAt.minute;
-
-    if (dayDifference == 0 && hour == 20 && minute == 30) {
-      return l10n.eventToday2030;
-    }
-    if (dayDifference == 0 && hour == 19 && minute == 0) {
-      return l10n.eventToday1900;
-    }
-    if (dayDifference == 1 && hour == 8 && minute == 0) {
-      return l10n.eventTomorrow0800;
-    }
-    if (dayDifference == 1 && hour == 12 && minute == 0) {
-      return l10n.eventTomorrow1200;
-    }
-
     final date = startsAt;
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
@@ -174,53 +258,4 @@ ExploreAreaSelection buildPinnedAreaSelection(
     icon: Icons.place_rounded,
     center: center,
   );
-}
-
-List<ExploreEvent> buildExploreEvents(AppLocalizations l10n) {
-  return [
-    ExploreEvent(
-      id: 'jazz-botanical-garden',
-      title: l10n.eventJazzTitle,
-      category: ExploreCategory.music,
-      startsAt: DateTime.utc(2026, 4, 11, 20, 30),
-      trendingScore: 96,
-      venue: l10n.venueBotanicalGarden,
-      location: const LatLng(51.703038, 19.417220),
-      accentColor: const Color(0xFFB14B6F),
-      icon: Icons.music_note_rounded,
-    ),
-    ExploreEvent(
-      id: 'night-sketching-vistula',
-      title: l10n.eventSketchingTitle,
-      category: ExploreCategory.art,
-      startsAt: DateTime.utc(2026, 4, 11, 19, 0),
-      trendingScore: 84,
-      venue: l10n.venueVistulaBoulevards,
-      location: const LatLng(51.695664, 19.416611),
-      accentColor: const Color(0xFF607F5B),
-      icon: Icons.palette_outlined,
-    ),
-    ExploreEvent(
-      id: 'run-club-coffee-stop',
-      title: l10n.eventRunClubTitle,
-      category: ExploreCategory.workshops,
-      startsAt: DateTime.utc(2026, 4, 12, 8, 0),
-      trendingScore: 73,
-      venue: l10n.venuePoleMokotowskie,
-      location: const LatLng(51.695664, 19.416611),
-      accentColor: const Color(0xFF2E7D32),
-      icon: Icons.directions_run_rounded,
-    ),
-    ExploreEvent(
-      id: 'street-food-vinyl-market',
-      title: l10n.eventStreetFoodTitle,
-      category: ExploreCategory.food,
-      startsAt: DateTime.utc(2026, 4, 12, 12, 0),
-      trendingScore: 88,
-      venue: l10n.venueHalaKoszyki,
-      location: const LatLng(51.695664, 19.416611),
-      accentColor: const Color(0xFF8E6B3A),
-      icon: Icons.restaurant_rounded,
-    ),
-  ];
 }

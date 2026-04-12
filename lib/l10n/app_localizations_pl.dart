@@ -64,6 +64,14 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubCreateEventLocationHint => 'Gdzie odbędzie się wydarzenie?';
 
   @override
+  String get hubCreateEventLocationLoadingLabel =>
+      'Pobieramy Twoją lokalizację';
+
+  @override
+  String get hubCreateEventLocationLoadingDescription =>
+      'To może potrwać chwilę.';
+
+  @override
   String get hubCreateEventDateLabel => 'Data';
 
   @override
@@ -133,7 +141,19 @@ class AppLocalizationsPl extends AppLocalizations {
       'Wybierz datę i godzinę wydarzenia.';
 
   @override
+  String get hubCreateEventValidationLocationRequired =>
+      'Wybierz lokalizację wydarzenia.';
+
+  @override
   String get hubCreateEventCreatedSuccess => 'Wydarzenie zostało utworzone.';
+
+  @override
+  String get hubCreateEventCreateFailed =>
+      'Nie udało się utworzyć wydarzenia. Spróbuj ponownie.';
+
+  @override
+  String get hubCreateEventLocationLookupFailed =>
+      'Nie udało się ustalić lokalizacji. Spróbuj wpisać inny adres lub wskaż punkt na mapie.';
 
   @override
   String get hubCommunityTitle => 'Społeczność';
@@ -209,6 +229,29 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
+  String get exploreLoadingTitle => 'Ładowanie wydarzeń';
+
+  @override
+  String get exploreLoadingSubtitle =>
+      'Pobieramy najnowsze wydarzenia z backendu.';
+
+  @override
+  String get exploreErrorTitle => 'Wydarzenia są niedostępne';
+
+  @override
+  String get exploreErrorSubtitle => 'Nie udało się teraz pobrać wydarzeń.';
+
+  @override
+  String get exploreEmptyTitle => 'Brak wydarzeń';
+
+  @override
+  String get exploreEmptySubtitle =>
+      'Spróbuj zmienić obszar albo wróć później.';
+
+  @override
+  String get exploreRetryButton => 'Spróbuj ponownie';
+
+  @override
   String resultsCount(int count) {
     return '$count wyników';
   }
@@ -224,6 +267,17 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get sortTrending => 'Popularność';
+
+  @override
+  String get distanceFilterTooltip => 'Zasięg listy';
+
+  @override
+  String get distanceFilterAny => 'Wszędzie';
+
+  @override
+  String distanceFilterWithinKm(int km) {
+    return 'Do $km km';
+  }
 
   @override
   String get filterAll => 'Wszystkie';
@@ -390,6 +444,20 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get eventDetailsFallbackDescription =>
       'To tymczasowy opis wydarzenia. W kolejnych krokach podepniemy pełne dane z formularza tworzenia wydarzenia i backendu.';
+
+  @override
+  String get eventDetailsLoadingTitle => 'Ładowanie wydarzenia';
+
+  @override
+  String get eventDetailsLoadingSubtitle =>
+      'Pobieramy szczegóły wydarzenia z backendu.';
+
+  @override
+  String get eventDetailsErrorTitle => 'Wydarzenie jest niedostępne';
+
+  @override
+  String get eventDetailsErrorSubtitle =>
+      'Nie udało się teraz wczytać tego wydarzenia.';
 
   @override
   String get eventDetailsJazzDescription =>

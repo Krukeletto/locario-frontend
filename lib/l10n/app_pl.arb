@@ -18,6 +18,8 @@
   "hubCreateEventCategoryLabel": "Kategoria",
   "hubCreateEventLocationLabel": "Miejsce",
   "hubCreateEventLocationHint": "Gdzie odbędzie się wydarzenie?",
+  "hubCreateEventLocationLoadingLabel": "Pobieramy Twoją lokalizację",
+  "hubCreateEventLocationLoadingDescription": "To może potrwać chwilę.",
   "hubCreateEventDateLabel": "Data",
   "hubCreateEventDateHint": "Wybierz datę",
   "hubCreateEventDatePlaceholder": "Wybierz dzień",
@@ -39,7 +41,10 @@
   "hubCreateEventValidationCategoryRequired": "Wybierz co najmniej jedną kategorię.",
   "hubCreateEventValidationPositiveNumber": "Podaj poprawną dodatnią liczbę.",
   "hubCreateEventValidationDateTimeRequired": "Wybierz datę i godzinę wydarzenia.",
+  "hubCreateEventValidationLocationRequired": "Wybierz lokalizację wydarzenia.",
   "hubCreateEventCreatedSuccess": "Wydarzenie zostało utworzone.",
+  "hubCreateEventCreateFailed": "Nie udało się utworzyć wydarzenia. Spróbuj ponownie.",
+  "hubCreateEventLocationLookupFailed": "Nie udało się ustalić lokalizacji. Spróbuj wpisać inny adres lub wskaż punkt na mapie.",
   "hubCommunityTitle": "Społeczność",
   "hubCommunitySubtitle": "Lokalne aktualizacje",
   "hubFriendsTitle": "Znajomi",
@@ -62,6 +67,13 @@
   "exploreSearchHint": "Szukaj wydarzeń...",
   "exploreNearbyEvents": "Wydarzenia w pobliżu",
   "exploreNearbyWithFilter": "{filter} w pobliżu",
+  "exploreLoadingTitle": "Ładowanie wydarzeń",
+  "exploreLoadingSubtitle": "Pobieramy najnowsze wydarzenia z backendu.",
+  "exploreErrorTitle": "Wydarzenia są niedostępne",
+  "exploreErrorSubtitle": "Nie udało się teraz pobrać wydarzeń.",
+  "exploreEmptyTitle": "Brak wydarzeń",
+  "exploreEmptySubtitle": "Spróbuj zmienić obszar albo wróć później.",
+  "exploreRetryButton": "Spróbuj ponownie",
   "@exploreNearbyWithFilter": {
     "placeholders": {
       "filter": {
@@ -81,6 +93,16 @@
   "sortDistance": "Odległość",
   "sortSoonest": "Najbliższy termin",
   "sortTrending": "Popularność",
+  "distanceFilterTooltip": "Zasięg listy",
+  "distanceFilterAny": "Wszędzie",
+  "distanceFilterWithinKm": "Do {km} km",
+  "@distanceFilterWithinKm": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
   "filterAll": "Wszystkie",
   "filterMusic": "Muzyka",
   "filterArt": "Sztuka",
@@ -143,6 +165,10 @@
   "eventDetailsUnknownEventTitle": "Wydarzenie",
   "eventDetailsUnknownLocation": "Lokalizacja nieznana",
   "eventDetailsFallbackDescription": "To tymczasowy opis wydarzenia. W kolejnych krokach podepniemy pełne dane z formularza tworzenia wydarzenia i backendu.",
+  "eventDetailsLoadingTitle": "Ładowanie wydarzenia",
+  "eventDetailsLoadingSubtitle": "Pobieramy szczegóły wydarzenia z backendu.",
+  "eventDetailsErrorTitle": "Wydarzenie jest niedostępne",
+  "eventDetailsErrorSubtitle": "Nie udało się teraz wczytać tego wydarzenia.",
   "eventDetailsJazzDescription": "Wieczorny koncert jazzowy pod otwartym niebem. Zabierz znajomych, koc i dobry humor.",
   "eventDetailsSketchingDescription": "Spotkanie dla osób lubiących szkicowanie i ilustracje miejskie. Materiały we własnym zakresie.",
   "eventDetailsRunClubDescription": "Lekki poranny bieg, potem wspólna kawa i networking. Tempo konwersacyjne, każdy mile widziany.",

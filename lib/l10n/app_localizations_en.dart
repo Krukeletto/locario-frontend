@@ -64,6 +64,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubCreateEventLocationHint => 'Where will the event take place?';
 
   @override
+  String get hubCreateEventLocationLoadingLabel => 'Fetching your location';
+
+  @override
+  String get hubCreateEventLocationLoadingDescription =>
+      'This may take a moment.';
+
+  @override
   String get hubCreateEventDateLabel => 'Date';
 
   @override
@@ -133,7 +140,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose the event date and time.';
 
   @override
+  String get hubCreateEventValidationLocationRequired =>
+      'Choose the event location.';
+
+  @override
   String get hubCreateEventCreatedSuccess => 'Event has been created.';
+
+  @override
+  String get hubCreateEventCreateFailed =>
+      'Event could not be created. Try again.';
+
+  @override
+  String get hubCreateEventLocationLookupFailed =>
+      'We couldn\'t resolve that location. Try another address or point on the map.';
 
   @override
   String get hubCommunityTitle => 'Community';
@@ -208,6 +227,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get exploreLoadingTitle => 'Loading events';
+
+  @override
+  String get exploreLoadingSubtitle =>
+      'We are fetching the latest events from the backend.';
+
+  @override
+  String get exploreErrorTitle => 'Events unavailable';
+
+  @override
+  String get exploreErrorSubtitle => 'We could not load events right now.';
+
+  @override
+  String get exploreEmptyTitle => 'No events found';
+
+  @override
+  String get exploreEmptySubtitle => 'Try a different area or come back later.';
+
+  @override
+  String get exploreRetryButton => 'Retry';
+
+  @override
   String resultsCount(int count) {
     return '$count results';
   }
@@ -223,6 +264,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortTrending => 'Trending';
+
+  @override
+  String get distanceFilterTooltip => 'List range';
+
+  @override
+  String get distanceFilterAny => 'Anywhere';
+
+  @override
+  String distanceFilterWithinKm(int km) {
+    return 'Within $km km';
+  }
 
   @override
   String get filterAll => 'All';
@@ -386,6 +438,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get eventDetailsFallbackDescription =>
       'This is a temporary event description. In the next steps we will connect full data from the create event form and backend.';
+
+  @override
+  String get eventDetailsLoadingTitle => 'Loading event';
+
+  @override
+  String get eventDetailsLoadingSubtitle =>
+      'We are fetching the event details from the backend.';
+
+  @override
+  String get eventDetailsErrorTitle => 'Event unavailable';
+
+  @override
+  String get eventDetailsErrorSubtitle =>
+      'We could not load this event right now.';
 
   @override
   String get eventDetailsJazzDescription =>

@@ -18,6 +18,8 @@
   "hubCreateEventCategoryLabel": "Category",
   "hubCreateEventLocationLabel": "Location",
   "hubCreateEventLocationHint": "Where will the event take place?",
+  "hubCreateEventLocationLoadingLabel": "Fetching your location",
+  "hubCreateEventLocationLoadingDescription": "This may take a moment.",
   "hubCreateEventDateLabel": "Date",
   "hubCreateEventDateHint": "Choose a date",
   "hubCreateEventDatePlaceholder": "Choose a date",
@@ -39,7 +41,10 @@
   "hubCreateEventValidationCategoryRequired": "Choose at least one category.",
   "hubCreateEventValidationPositiveNumber": "Enter a valid positive number.",
   "hubCreateEventValidationDateTimeRequired": "Choose the event date and time.",
+  "hubCreateEventValidationLocationRequired": "Choose the event location.",
   "hubCreateEventCreatedSuccess": "Event has been created.",
+  "hubCreateEventCreateFailed": "Event could not be created. Try again.",
+  "hubCreateEventLocationLookupFailed": "We couldn't resolve that location. Try another address or point on the map.",
   "hubCommunityTitle": "Community",
   "hubCommunitySubtitle": "Local updates",
   "hubFriendsTitle": "Friends",
@@ -62,6 +67,13 @@
   "exploreSearchHint": "Search events...",
   "exploreNearbyEvents": "Nearby events",
   "exploreNearbyWithFilter": "{filter} nearby",
+  "exploreLoadingTitle": "Loading events",
+  "exploreLoadingSubtitle": "We are fetching the latest events from the backend.",
+  "exploreErrorTitle": "Events unavailable",
+  "exploreErrorSubtitle": "We could not load events right now.",
+  "exploreEmptyTitle": "No events found",
+  "exploreEmptySubtitle": "Try a different area or come back later.",
+  "exploreRetryButton": "Retry",
   "@exploreNearbyWithFilter": {
     "placeholders": {
       "filter": {
@@ -81,6 +93,16 @@
   "sortDistance": "Distance",
   "sortSoonest": "Soonest",
   "sortTrending": "Trending",
+  "distanceFilterTooltip": "List range",
+  "distanceFilterAny": "Anywhere",
+  "distanceFilterWithinKm": "Within {km} km",
+  "@distanceFilterWithinKm": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
   "filterAll": "All",
   "filterMusic": "Music",
   "filterArt": "Art",
@@ -143,6 +165,10 @@
   "eventDetailsUnknownEventTitle": "Event",
   "eventDetailsUnknownLocation": "Location unknown",
   "eventDetailsFallbackDescription": "This is a temporary event description. In the next steps we will connect full data from the create event form and backend.",
+  "eventDetailsLoadingTitle": "Loading event",
+  "eventDetailsLoadingSubtitle": "We are fetching the event details from the backend.",
+  "eventDetailsErrorTitle": "Event unavailable",
+  "eventDetailsErrorSubtitle": "We could not load this event right now.",
   "eventDetailsJazzDescription": "An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.",
   "eventDetailsSketchingDescription": "A meetup for people who enjoy sketching and urban illustration. Bring your own materials.",
   "eventDetailsRunClubDescription": "A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.",
