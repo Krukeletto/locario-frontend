@@ -13,6 +13,7 @@ class ExploreEventQuery {
     required ExploreSortOption sort,
     required LatLng referenceLocation,
     required AppLocalizations l10n,
+    int? maxDistanceMeters,
   }) {
     final normalizedQuery = query.trim().toLowerCase();
     final categories = selectedCategories
@@ -36,6 +37,13 @@ class ExploreEventQuery {
         ].join(' ').toLowerCase();
         return haystack.contains(normalizedQuery);
       });
+    }
+
+    if (maxDistanceMeters != null) {
+      filteredEvents = filteredEvents.where(
+        (event) =>
+            event.distanceMetersFrom(referenceLocation) <= maxDistanceMeters,
+      );
     }
 
     final sortedEvents = filteredEvents.toList(growable: false);
@@ -62,6 +70,7 @@ class ExploreEventQuery {
     required ExploreSortOption sort,
     required LatLng referenceLocation,
     required AppLocalizations l10n,
+    int? maxDistanceMeters,
   }) {
     if (query.trim().isEmpty) {
       return const [];
@@ -74,6 +83,7 @@ class ExploreEventQuery {
       sort: sort,
       referenceLocation: referenceLocation,
       l10n: l10n,
+      maxDistanceMeters: maxDistanceMeters,
     );
   }
 }

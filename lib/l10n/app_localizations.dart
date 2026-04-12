@@ -62,8 +62,7 @@ import 'app_localizations_pl.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('pl'),
+    Locale('pl')
   ];
 
   /// No description provided for @appTitle.
@@ -205,6 +202,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Where will the event take place?'**
   String get hubCreateEventLocationHint;
+
+  /// No description provided for @hubCreateEventLocationLoadingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching your location'**
+  String get hubCreateEventLocationLoadingLabel;
+
+  /// No description provided for @hubCreateEventLocationLoadingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This may take a moment.'**
+  String get hubCreateEventLocationLoadingDescription;
 
   /// No description provided for @hubCreateEventDateLabel.
   ///
@@ -332,11 +341,29 @@ abstract class AppLocalizations {
   /// **'Choose the event date and time.'**
   String get hubCreateEventValidationDateTimeRequired;
 
+  /// No description provided for @hubCreateEventValidationLocationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the event location.'**
+  String get hubCreateEventValidationLocationRequired;
+
   /// No description provided for @hubCreateEventCreatedSuccess.
   ///
   /// In en, this message translates to:
   /// **'Event has been created.'**
   String get hubCreateEventCreatedSuccess;
+
+  /// No description provided for @hubCreateEventCreateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Event could not be created. Try again.'**
+  String get hubCreateEventCreateFailed;
+
+  /// No description provided for @hubCreateEventLocationLookupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t resolve that location. Try another address or point on the map.'**
+  String get hubCreateEventLocationLookupFailed;
 
   /// No description provided for @hubCommunityTitle.
   ///
@@ -470,6 +497,48 @@ abstract class AppLocalizations {
   /// **'{filter} nearby'**
   String exploreNearbyWithFilter(String filter);
 
+  /// No description provided for @exploreLoadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading events'**
+  String get exploreLoadingTitle;
+
+  /// No description provided for @exploreLoadingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We are fetching the latest events from the backend.'**
+  String get exploreLoadingSubtitle;
+
+  /// No description provided for @exploreErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Events unavailable'**
+  String get exploreErrorTitle;
+
+  /// No description provided for @exploreErrorSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load events right now.'**
+  String get exploreErrorSubtitle;
+
+  /// No description provided for @exploreEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No events found'**
+  String get exploreEmptyTitle;
+
+  /// No description provided for @exploreEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different area or come back later.'**
+  String get exploreEmptySubtitle;
+
+  /// No description provided for @exploreRetryButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get exploreRetryButton;
+
   /// No description provided for @resultsCount.
   ///
   /// In en, this message translates to:
@@ -499,6 +568,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Trending'**
   String get sortTrending;
+
+  /// No description provided for @distanceFilterTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'List range'**
+  String get distanceFilterTooltip;
+
+  /// No description provided for @distanceFilterAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Anywhere'**
+  String get distanceFilterAny;
+
+  /// No description provided for @distanceFilterWithinKm.
+  ///
+  /// In en, this message translates to:
+  /// **'Within {km} km'**
+  String distanceFilterWithinKm(int km);
 
   /// No description provided for @filterAll.
   ///
@@ -812,6 +899,30 @@ abstract class AppLocalizations {
   /// **'This is a temporary event description. In the next steps we will connect full data from the create event form and backend.'**
   String get eventDetailsFallbackDescription;
 
+  /// No description provided for @eventDetailsLoadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading event'**
+  String get eventDetailsLoadingTitle;
+
+  /// No description provided for @eventDetailsLoadingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We are fetching the event details from the backend.'**
+  String get eventDetailsLoadingSubtitle;
+
+  /// No description provided for @eventDetailsErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Event unavailable'**
+  String get eventDetailsErrorTitle;
+
+  /// No description provided for @eventDetailsErrorSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load this event right now.'**
+  String get eventDetailsErrorSubtitle;
+
   /// No description provided for @eventDetailsJazzDescription.
   ///
   /// In en, this message translates to:
@@ -975,8 +1086,7 @@ abstract class AppLocalizations {
   String mapEventOpenSoon(String title);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -985,26 +1095,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'pl'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'pl'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'pl':
-      return AppLocalizationsPl();
+    case 'en': return AppLocalizationsEn();
+    case 'pl': return AppLocalizationsPl();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

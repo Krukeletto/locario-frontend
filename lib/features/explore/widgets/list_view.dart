@@ -12,9 +12,11 @@ class ExploreListView extends StatelessWidget {
     required this.selectedFilterSummary,
     required this.selectedArea,
     required this.selectedSort,
+    required this.selectedDistanceFilter,
     required this.isSearchActive,
     required this.onAreaPressed,
     required this.onSortChanged,
+    required this.onDistanceFilterChanged,
     required this.onEventTap,
   });
 
@@ -23,9 +25,11 @@ class ExploreListView extends StatelessWidget {
   final String selectedFilterSummary;
   final ExploreAreaSelection selectedArea;
   final ExploreSortOption selectedSort;
+  final ExploreDistanceFilter selectedDistanceFilter;
   final bool isSearchActive;
   final VoidCallback onAreaPressed;
   final ValueChanged<ExploreSortOption> onSortChanged;
+  final ValueChanged<ExploreDistanceFilter> onDistanceFilterChanged;
   final ValueChanged<ExploreEvent> onEventTap;
 
   @override
@@ -48,8 +52,10 @@ class ExploreListView extends StatelessWidget {
                 allFilterLabel: l10n.filterAll,
                 selectedArea: selectedArea,
                 selectedSort: selectedSort,
+                selectedDistanceFilter: selectedDistanceFilter,
                 onAreaPressed: onAreaPressed,
                 onSortChanged: onSortChanged,
+                onDistanceFilterChanged: onDistanceFilterChanged,
               ),
             ),
           Expanded(
@@ -81,8 +87,10 @@ class _ListToolbar extends StatelessWidget {
     required this.allFilterLabel,
     required this.selectedArea,
     required this.selectedSort,
+    required this.selectedDistanceFilter,
     required this.onAreaPressed,
     required this.onSortChanged,
+    required this.onDistanceFilterChanged,
   });
 
   final int eventsCount;
@@ -90,8 +98,10 @@ class _ListToolbar extends StatelessWidget {
   final String allFilterLabel;
   final ExploreAreaSelection selectedArea;
   final ExploreSortOption selectedSort;
+  final ExploreDistanceFilter selectedDistanceFilter;
   final VoidCallback onAreaPressed;
   final ValueChanged<ExploreSortOption> onSortChanged;
+  final ValueChanged<ExploreDistanceFilter> onDistanceFilterChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +133,11 @@ class _ListToolbar extends StatelessWidget {
               _SortMenu(
                 selectedSort: selectedSort,
                 onSortChanged: onSortChanged,
+              ),
+              const SizedBox(width: 8),
+              _DistanceFilterMenu(
+                selectedDistanceFilter: selectedDistanceFilter,
+                onDistanceFilterChanged: onDistanceFilterChanged,
               ),
             ],
           ),
@@ -247,6 +262,83 @@ class _SortMenu extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               _labelFor(l10n, selectedSort),
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DistanceFilterMenu extends StatelessWidget {
+  const _DistanceFilterMenu({
+    required this.selectedDistanceFilter,
+    required this.onDistanceFilterChanged,
+  });
+
+  final ExploreDistanceFilter selectedDistanceFilter;
+  final ValueChanged<ExploreDistanceFilter> onDistanceFilterChanged;
+
+  String _labelFor(
+    AppLocalizations l10n,
+    ExploreDistanceFilter distanceFilter,
+  ) {
+    return switch (distanceFilter) {
+      ExploreDistanceFilter.any => l10n.distanceFilterAny,
+      ExploreDistanceFilter.within1Km => l10n.distanceFilterWithinKm(1),
+      ExploreDistanceFilter.within3Km => l10n.distanceFilterWithinKm(3),
+      ExploreDistanceFilter.within5Km => l10n.distanceFilterWithinKm(5),
+      ExploreDistanceFilter.within10Km => l10n.distanceFilterWithinKm(10),
+      ExploreDistanceFilter.within25Km => l10n.distanceFilterWithinKm(25),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    return PopupMenuButton<ExploreDistanceFilter>(
+      tooltip: l10n.distanceFilterTooltip,
+      onSelected: onDistanceFilterChanged,
+      itemBuilder: (context) => ExploreDistanceFilter.values
+          .map(
+            (option) => PopupMenuItem<ExploreDistanceFilter>(
+              value: option,
+              child: Row(
+                children: [
+                  Icon(
+                    option == ExploreDistanceFilter.any
+                        ? Icons.public_rounded
+                        : Icons.radar_rounded,
+                    size: 18,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(_labelFor(l10n, option)),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+      child: Container(
+        key: const Key('explore-distance-filter-button'),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: colorScheme.outlineVariant),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.radar_rounded, color: colorScheme.primary, size: 17),
+            const SizedBox(width: 6),
+            Text(
+              _labelFor(l10n, selectedDistanceFilter),
               style: Theme.of(
                 context,
               ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),

@@ -42,6 +42,7 @@ class ExploreMapViewModel extends ChangeNotifier {
   Future<void>? _pendingLoad;
   bool _hasLoadedInitialLocation = false;
   bool _isLocating = false;
+  bool _isDisposed = false;
 
   ExploreMapStatus get status => _status;
   LatLng? get currentLocation => _currentLocation;
@@ -53,6 +54,9 @@ class ExploreMapViewModel extends ChangeNotifier {
   bool get canOpenLocationSettings => _locationService.supportsLocationSettings;
 
   void setPreferredMapCenter(LatLng? center) {
+    if (_isDisposed) {
+      return;
+    }
     if (_preferredMapCenter == center) {
       return;
     }
@@ -213,10 +217,19 @@ class ExploreMapViewModel extends ChangeNotifier {
     required ExploreMapMessage? message,
     required bool isLocating,
   }) {
+    if (_isDisposed) {
+      return;
+    }
     _status = status;
     _currentLocation = currentLocation ?? _currentLocation;
     _message = message;
     _isLocating = isLocating;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
   }
 }

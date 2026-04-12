@@ -1,37 +1,81 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:locario/features/events/event_screen.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:locario/features/explore/models.dart';
+import 'package:locario/features/events/event_screen.dart';
+import 'package:locario/l10n/app_localizations.dart';
+import 'package:locario/shared/events/event_repository.dart';
+
+import '../../test_helpers/fake_event_repository.dart';
 import '../../test_helpers/test_app.dart';
 
 void main() {
   group('EventScreen', () {
-    testWidgets('renders selected event title and buy ticket CTA', (
-      tester,
-    ) async {
+    testWidgets('renders info cards for loaded event', (tester) async {
       await tester.pumpWidget(
         buildLocalizedTestApp(
-          home: const EventScreen(eventId: 'jazz-botanical-garden'),
+          home: EventScreen(
+            eventId: '11111111-1111-1111-1111-111111111111',
+            eventRepository: FakeEventRepository(),
+          ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump();
 
-      expect(find.text('Szczegóły wydarzenia'), findsOneWidget);
-      expect(find.text('Jazz w Ogrodzie Botanicznym'), findsOneWidget);
-      expect(find.text('Kup bilet'), findsOneWidget);
-      expect(find.text('Czat uczestników'), findsOneWidget);
+      expect(find.text('Jazz Evening'), findsOneWidget);
+      expect(find.text('Piotrkowska 10, Lodz'), findsOneWidget);
+      expect(find.byType(FilledButton), findsOneWidget);
     });
 
-    testWidgets('renders fallback content when event is unknown', (
-      tester,
-    ) async {
+    testWidgets('shows loading state before fetch completes', (tester) async {
+      final repository = _PendingEventRepository();
       await tester.pumpWidget(
-        buildLocalizedTestApp(home: const EventScreen(eventId: 'unknown-id')),
+        buildLocalizedTestApp(
+          home: EventScreen(
+            eventId: '11111111-1111-1111-1111-111111111111',
+            eventRepository: repository,
+          ),
+        ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
 
-      expect(find.text('Wydarzenie'), findsOneWidget);
-      expect(find.text('Lokalizacja nieznana'), findsOneWidget);
-      expect(find.text('Zapisz się'), findsOneWidget);
+      expect(find.text('Ładowanie wydarzenia'), findsOneWidget);
+
+      repository.complete();
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('shows error state when fetch fails', (tester) async {
+      await tester.pumpWidget(
+        buildLocalizedTestApp(
+          home: EventScreen(
+            eventId: '11111111-1111-1111-1111-111111111111',
+            eventRepository: FakeEventRepository(
+              fetchEventError: const EventRepositoryException('boom'),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Wydarzenie jest niedostępne'), findsOneWidget);
     });
   });
+}
+
+class _PendingEventRepository extends FakeEventRepository {
+  final Completer<ExploreEvent> _completer = Completer<ExploreEvent>();
+
+  @override
+  Future<ExploreEvent> fetchEvent(String id, AppLocalizations l10n) =>
+      _completer.future;
+
+  void complete() {
+    if (!_completer.isCompleted) {
+      _completer.complete(eventDetails);
+    }
+  }
 }

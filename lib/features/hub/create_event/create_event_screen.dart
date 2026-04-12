@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart' show LatLng;
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../../shared/events/event_repository.dart';
+import '../../../shared/events/event_refresh_signal.dart';
+import '../../../shared/location/location_service.dart';
+import '../../explore/models.dart';
+import '../../explore/widgets/area_picker.dart';
+import 'create_event_location_controller.dart';
+import 'event_map_picker_screen.dart';
+
 class CreateEventScreen extends StatefulWidget {
-  const CreateEventScreen({super.key});
+  const CreateEventScreen({
+    super.key,
+    EventRepository? eventRepository,
+    LocationService? locationService,
+    CreateEventGeocoder? geocoder,
+    EventRefreshSignal? eventRefreshSignal,
+  }) : _eventRepository = eventRepository,
+       _locationService = locationService,
+       _geocoder = geocoder,
+       _eventRefreshSignal = eventRefreshSignal;
+
+  final EventRepository? _eventRepository;
+  final LocationService? _locationService;
+  final CreateEventGeocoder? _geocoder;
+  final EventRefreshSignal? _eventRefreshSignal;
 
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
@@ -11,27 +34,50 @@ class CreateEventScreen extends StatefulWidget {
 class _CreateEventScreenState extends State<CreateEventScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _ticketsCountController = TextEditingController();
   final TextEditingController _ticketPriceController = TextEditingController();
 
+  late final EventRepository _eventRepository;
+  late final LocationService _locationService;
+  late final CreateEventLocationController _locationController;
+  late final EventRefreshSignal _eventRefreshSignal;
+
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
-  final Set<String> _selectedCategories = {'music'};
+  final List<ExploreCategory> _selectedCategories = [];
   bool _hasTicketing = false;
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _eventRepository = widget._eventRepository ?? HttpEventRepository();
+    _locationService = widget._locationService ?? GeolocatorLocationService();
+    _eventRefreshSignal =
+        widget._eventRefreshSignal ?? globalEventRefreshSignal;
+    _locationController = CreateEventLocationController(
+      locationService: _locationService,
+      geocoder: widget._geocoder,
+    );
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
-    _locationController.dispose();
     _descriptionController.dispose();
     _ticketsCountController.dispose();
     _ticketPriceController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
+  void _clearInteractionFocus() {
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
   Future<void> _pickDate() async {
+    _clearInteractionFocus();
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -40,6 +86,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       initialDate: _selectedDate ?? now,
     );
 
+    if (!mounted) {
+      return;
+    }
+
+    _clearInteractionFocus();
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
@@ -48,11 +99,17 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   Future<void> _pickTime() async {
+    _clearInteractionFocus();
     final picked = await showTimePicker(
       context: context,
       initialTime: _selectedTime ?? const TimeOfDay(hour: 18, minute: 0),
     );
 
+    if (!mounted) {
+      return;
+    }
+
+    _clearInteractionFocus();
     if (picked != null) {
       setState(() {
         _selectedTime = picked;
@@ -60,19 +117,27 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
   }
 
-  String _categoryLabel(AppLocalizations l10n, String value) {
-    switch (value) {
-      case 'music':
-        return l10n.filterMusic;
-      case 'art':
-        return l10n.filterArt;
-      case 'workshops':
-        return l10n.filterWorkshops;
-      case 'food':
-        return l10n.filterFood;
-      default:
-        return l10n.filterAll;
-    }
+  String _categoryLabel(AppLocalizations l10n, ExploreCategory value) {
+    return switch (value) {
+      ExploreCategory.music => l10n.filterMusic,
+      ExploreCategory.art => l10n.filterArt,
+      ExploreCategory.workshops => l10n.filterWorkshops,
+      ExploreCategory.food => l10n.filterFood,
+      ExploreCategory.all => l10n.filterAll,
+    };
+  }
+
+  bool _isCategorySelected(ExploreCategory category) {
+    return _selectedCategories.contains(category);
+  }
+
+  void _toggleCategory(ExploreCategory category, bool selected) {
+    setState(() {
+      _selectedCategories.remove(category);
+      if (selected) {
+        _selectedCategories.add(category);
+      }
+    });
   }
 
   InputDecoration _fieldDecoration(
@@ -81,28 +146,81 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     IconData? prefixIcon,
     bool alignLabelWithHint = false,
   }) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return InputDecoration(
+    return _buildFieldDecoration(
+      context,
       hintText: hintText,
-      hintStyle: TextStyle(color: scheme.onSurface.withValues(alpha: 0.55)),
-      prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
+      prefixIcon: prefixIcon,
       alignLabelWithHint: alignLabelWithHint,
-      filled: true,
-      fillColor: scheme.surface.withValues(alpha: 0.72),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.18)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.18)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: scheme.primary.withValues(alpha: 0.6)),
+    );
+  }
+
+  Future<void> _handleLocationPressed() async {
+    final l10n = AppLocalizations.of(context)!;
+    _clearInteractionFocus();
+    final action = await showModalBottomSheet<ExploreAreaSelectionAction>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => ExploreAreaSelectionSheet(
+        title: l10n.areaPickerTitle,
+        subtitle: l10n.areaPickerSubtitle,
+        onActionSelected: (action) => Navigator.of(context).pop(action),
       ),
     );
+
+    if (!mounted || action == null) {
+      return;
+    }
+
+    switch (action) {
+      case ExploreAreaSelectionAction.currentLocation:
+        final result = await _locationController.useCurrentLocation(l10n);
+        if (!mounted) {
+          return;
+        }
+        _clearInteractionFocus();
+        _handleLocationResult(result);
+        return;
+      case ExploreAreaSelectionAction.enterAddress:
+        final address = await showDialog<String>(
+          context: context,
+          builder: (context) => const ExploreAddressInputDialog(),
+        );
+        if (!mounted || address == null || address.isEmpty) {
+          return;
+        }
+        final result = await _locationController.selectAddress(l10n, address);
+        if (!mounted) {
+          return;
+        }
+        _clearInteractionFocus();
+        _handleLocationResult(result);
+        return;
+      case ExploreAreaSelectionAction.pickOnMap:
+        final center = await Navigator.of(context).push<LatLng>(
+          MaterialPageRoute(
+            builder: (_) =>
+                EventMapPickerScreen(locationService: _locationService),
+          ),
+        );
+        if (!mounted || center == null) {
+          return;
+        }
+        _clearInteractionFocus();
+        _locationController.selectPinnedLocation(l10n, center);
+        return;
+    }
+  }
+
+  void _handleLocationResult(CreateEventLocationLookupResult result) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (result.status) {
+      case CreateEventLocationLookupStatus.success:
+        return;
+      case CreateEventLocationLookupStatus.notFound:
+      case CreateEventLocationLookupStatus.error:
+        _showSnackBar(l10n.hubCreateEventLocationLookupFailed);
+        return;
+    }
   }
 
   Future<void> _submit() async {
@@ -113,34 +231,79 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
 
     if (_selectedDate == null || _selectedTime == null) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(l10n.hubCreateEventValidationDateTimeRequired),
-          ),
-        );
+      _showSnackBar(l10n.hubCreateEventValidationDateTimeRequired);
       return;
     }
 
     if (_selectedCategories.isEmpty) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(l10n.hubCreateEventValidationCategoryRequired),
-          ),
-        );
+      _showSnackBar(l10n.hubCreateEventValidationCategoryRequired);
       return;
     }
 
+    final primaryCategory = primaryCategoryForSubmission(_selectedCategories);
+    if (primaryCategory == null) {
+      _showSnackBar(l10n.hubCreateEventValidationCategoryRequired);
+      return;
+    }
+
+    final locationSelection = _locationController.selection;
+    if (locationSelection == null) {
+      _showSnackBar(l10n.hubCreateEventValidationLocationRequired);
+      return;
+    }
+
+    final startDate = DateTime(
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+      _selectedTime!.hour,
+      _selectedTime!.minute,
+    );
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      await _eventRepository.createEvent(
+        CreateEventInput(
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim(),
+          location: locationSelection.coordinates,
+          startDate: startDate,
+          address: locationSelection.address,
+          categoryId: backendCategoryIdFor(primaryCategory),
+        ),
+        l10n,
+      );
+      if (!mounted) {
+        return;
+      }
+
+      _eventRefreshSignal.notifyChanged();
+      _showSnackBar(l10n.hubCreateEventCreatedSuccess);
+      Navigator.of(context).maybePop();
+    } on EventRepositoryException {
+      if (mounted) {
+        _showSnackBar(l10n.hubCreateEventCreateFailed);
+      }
+    } catch (_) {
+      if (mounted) {
+        _showSnackBar(l10n.hubCreateEventCreateFailed);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  void _showSnackBar(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(l10n.hubCreateEventCreatedSuccess)),
-      );
-
-    Navigator.of(context).maybePop();
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -179,199 +342,302 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           ),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: _clearInteractionFocus,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+            children: [
+              _Section(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _ImagePickerTile(
+                      label: l10n.hubCreateEventMainPhotoLabel,
+                      subtitle: l10n.hubCreateEventMainPhotoSizeHint,
+                    ),
+                    const SizedBox(height: 12),
+                    _FieldLabel(text: l10n.hubCreateEventNameLabel),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _titleController,
+                      textInputAction: TextInputAction.next,
+                      decoration: _fieldDecoration(
+                        context,
+                        hintText: l10n.hubCreateEventNameHint,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().length < 3) {
+                          return l10n.hubCreateEventValidationMinChars3;
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _FieldLabel(text: l10n.hubCreateEventDateLabel),
+                              const SizedBox(height: 6),
+                              _PickerTile(
+                                value: _selectedDate == null
+                                    ? l10n.hubCreateEventDateHint
+                                    : '${_selectedDate!.day.toString().padLeft(2, '0')}.${_selectedDate!.month.toString().padLeft(2, '0')}.${_selectedDate!.year}',
+                                isPlaceholder: _selectedDate == null,
+                                onTap: _pickDate,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _FieldLabel(text: l10n.hubCreateEventTimeLabel),
+                              const SizedBox(height: 6),
+                              _PickerTile(
+                                value: _selectedTime == null
+                                    ? l10n.hubCreateEventTimeHint
+                                    : _selectedTime!.format(context),
+                                isPlaceholder: _selectedTime == null,
+                                onTap: _pickTime,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.hubCreateEventCategoryLabel,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: scheme.onSurface.withValues(alpha: 0.76),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final category in const [
+                          ExploreCategory.music,
+                          ExploreCategory.art,
+                          ExploreCategory.workshops,
+                          ExploreCategory.food,
+                        ])
+                          FilterChip(
+                            selected: _isCategorySelected(category),
+                            showCheckmark: false,
+                            label: Text(_categoryLabel(l10n, category)),
+                            labelStyle: theme.textTheme.labelMedium?.copyWith(
+                              color: _isCategorySelected(category)
+                                  ? scheme.onPrimary
+                                  : scheme.onSurface,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            backgroundColor: scheme.surface,
+                            selectedColor: scheme.primary,
+                            side: BorderSide.none,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            onSelected: (selected) =>
+                                _toggleCategory(category, selected),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _FieldLabel(text: l10n.hubCreateEventLocationLabel),
+                    const SizedBox(height: 6),
+                    AnimatedBuilder(
+                      animation: _locationController,
+                      builder: (context, _) {
+                        return _LocationSelectionTile(
+                          selection: _locationController.selection,
+                          isLoading: _locationController.isResolvingSelection,
+                          placeholder: l10n.hubCreateEventLocationHint,
+                          loadingLabel: l10n.hubCreateEventLocationLoadingLabel,
+                          loadingDescription:
+                              l10n.hubCreateEventLocationLoadingDescription,
+                          onTap: _handleLocationPressed,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _FieldLabel(text: l10n.hubCreateEventDescriptionLabel),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _descriptionController,
+                      minLines: 4,
+                      maxLines: 6,
+                      decoration: _fieldDecoration(
+                        context,
+                        hintText: l10n.hubCreateEventDescriptionHint,
+                        alignLabelWithHint: true,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().length < 10) {
+                          return l10n.hubCreateEventValidationDescriptionMin10;
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _TicketingSection(
+                      hasTicketing: _hasTicketing,
+                      title: l10n.hubCreateEventTicketingTitle,
+                      countLabel: l10n.hubCreateEventTicketSeatsLabel,
+                      priceLabel: l10n.hubCreateEventTicketPriceLabel,
+                      switchLabel: l10n.hubCreateEventTicketingSwitchLabel,
+                      countController: _ticketsCountController,
+                      priceController: _ticketPriceController,
+                      requiredValidationMessage:
+                          l10n.hubCreateEventValidationRequired,
+                      invalidNumberMessage:
+                          l10n.hubCreateEventValidationPositiveNumber,
+                      onTicketingChanged: (value) {
+                        setState(() {
+                          _hasTicketing = value;
+                          if (!value) {
+                            _ticketsCountController.clear();
+                            _ticketPriceController.clear();
+                          }
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              FilledButton.icon(
+                onPressed: _isSubmitting ? null : _submit,
+                icon: _isSubmitting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.check_rounded),
+                label: Text(l10n.hubCreateEventSubmitButton),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  textStyle: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LocationSelectionTile extends StatelessWidget {
+  const _LocationSelectionTile({
+    required this.selection,
+    required this.isLoading,
+    required this.placeholder,
+    required this.loadingLabel,
+    required this.loadingDescription,
+    required this.onTap,
+  });
+
+  final CreateEventLocationSelection? selection;
+  final bool isLoading;
+  final String placeholder;
+  final String loadingLabel;
+  final String loadingDescription;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final selection = this.selection;
+
+    return InkWell(
+      key: const Key('create-event-location-button'),
+      borderRadius: BorderRadius.circular(16),
+      canRequestFocus: false,
+      onTap: isLoading ? null : onTap,
+      child: Ink(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: scheme.surface.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: scheme.outline.withValues(alpha: 0.18)),
+        ),
+        child: Row(
           children: [
-            _Section(
+            if (isLoading)
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+                ),
+              )
+            else
+              Icon(
+                selection?.icon ?? Icons.place_outlined,
+                color: scheme.primary,
+              ),
+            const SizedBox(width: 10),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _ImagePickerTile(
-                    label: l10n.hubCreateEventMainPhotoLabel,
-                    subtitle: l10n.hubCreateEventMainPhotoSizeHint,
-                  ),
-                  const SizedBox(height: 12),
-                  _FieldLabel(text: l10n.hubCreateEventNameLabel),
-                  const SizedBox(height: 6),
-                  TextFormField(
-                    controller: _titleController,
-                    textInputAction: TextInputAction.next,
-                    decoration: _fieldDecoration(
-                      context,
-                      hintText: l10n.hubCreateEventNameHint,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().length < 3) {
-                        return l10n.hubCreateEventValidationMinChars3;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _FieldLabel(text: l10n.hubCreateEventDateLabel),
-                            const SizedBox(height: 6),
-                            _PickerTile(
-                              value: _selectedDate == null
-                                  ? l10n.hubCreateEventDateHint
-                                  : '${_selectedDate!.day.toString().padLeft(2, '0')}.${_selectedDate!.month.toString().padLeft(2, '0')}.${_selectedDate!.year}',
-                              isPlaceholder: _selectedDate == null,
-                              onTap: _pickDate,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _FieldLabel(text: l10n.hubCreateEventTimeLabel),
-                            const SizedBox(height: 6),
-                            _PickerTile(
-                              value: _selectedTime == null
-                                  ? l10n.hubCreateEventTimeHint
-                                  : _selectedTime!.format(context),
-                              isPlaceholder: _selectedTime == null,
-                              onTap: _pickTime,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
                   Text(
-                    l10n.hubCreateEventCategoryLabel,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: scheme.onSurface.withValues(alpha: 0.76),
-                      fontWeight: FontWeight.w700,
+                    isLoading ? loadingLabel : selection?.label ?? placeholder,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: scheme.onSurface.withValues(
+                        alpha: selection == null && !isLoading ? 0.55 : 1,
+                      ),
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final category in const [
-                        'music',
-                        'art',
-                        'workshops',
-                        'food',
-                      ])
-                        FilterChip(
-                          selected: _selectedCategories.contains(category),
-                          showCheckmark: false,
-                          label: Text(_categoryLabel(l10n, category)),
-                          labelStyle: theme.textTheme.labelMedium?.copyWith(
-                            color: _selectedCategories.contains(category)
-                                ? scheme.onPrimary
-                                : scheme.onSurface,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          visualDensity: VisualDensity.compact,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          backgroundColor: scheme.surface,
-                          selectedColor: scheme.primary,
-                          side: BorderSide.none,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                _selectedCategories.add(category);
-                              } else {
-                                _selectedCategories.remove(category);
-                              }
-                            });
-                          },
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _FieldLabel(text: l10n.hubCreateEventLocationLabel),
-                  const SizedBox(height: 6),
-                  TextFormField(
-                    controller: _locationController,
-                    textInputAction: TextInputAction.next,
-                    decoration: _fieldDecoration(
-                      context,
-                      hintText: l10n.hubCreateEventLocationHint,
+                  if (isLoading) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      loadingDescription,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurface.withValues(alpha: 0.68),
+                      ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return l10n.hubCreateEventValidationRequired;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _FieldLabel(text: l10n.hubCreateEventDescriptionLabel),
-                  const SizedBox(height: 6),
-                  TextFormField(
-                    controller: _descriptionController,
-                    minLines: 4,
-                    maxLines: 6,
-                    decoration: _fieldDecoration(
-                      context,
-                      hintText: l10n.hubCreateEventDescriptionHint,
-                      alignLabelWithHint: true,
+                  ] else if (selection != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      selection.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurface.withValues(alpha: 0.68),
+                      ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.trim().length < 10) {
-                        return l10n.hubCreateEventValidationDescriptionMin10;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _TicketingSection(
-                    hasTicketing: _hasTicketing,
-                    title: l10n.hubCreateEventTicketingTitle,
-                    countLabel: l10n.hubCreateEventTicketSeatsLabel,
-                    priceLabel: l10n.hubCreateEventTicketPriceLabel,
-                    switchLabel: l10n.hubCreateEventTicketingSwitchLabel,
-                    countController: _ticketsCountController,
-                    priceController: _ticketPriceController,
-                    requiredValidationMessage:
-                        l10n.hubCreateEventValidationRequired,
-                    invalidNumberMessage:
-                        l10n.hubCreateEventValidationPositiveNumber,
-                    onTicketingChanged: (value) {
-                      setState(() {
-                        _hasTicketing = value;
-                        if (!value) {
-                          _ticketsCountController.clear();
-                          _ticketPriceController.clear();
-                        }
-                      });
-                    },
-                  ),
+                  ],
                 ],
               ),
             ),
-            const SizedBox(height: 18),
-            FilledButton.icon(
-              onPressed: _submit,
-              icon: const Icon(Icons.check_rounded),
-              label: Text(l10n.hubCreateEventSubmitButton),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                textStyle: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
+            const SizedBox(width: 8),
+            Icon(Icons.keyboard_arrow_down_rounded, color: scheme.secondary),
           ],
         ),
       ),
@@ -388,10 +654,11 @@ class _ImagePickerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final scheme = Theme.of(context).colorScheme;
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
+      canRequestFocus: false,
       onTap: () {},
       child: CustomPaint(
         painter: _DashedBorderPainter(
@@ -539,31 +806,9 @@ class _TicketingSection extends StatelessWidget {
                 child: TextFormField(
                   controller: countController,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
+                  decoration: _buildFieldDecoration(
+                    context,
                     hintText: countLabel,
-                    hintStyle: TextStyle(
-                      color: scheme.onSurface.withValues(alpha: 0.55),
-                    ),
-                    filled: true,
-                    fillColor: scheme.surface.withValues(alpha: 0.72),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(
-                        color: scheme.outline.withValues(alpha: 0.18),
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(
-                        color: scheme.outline.withValues(alpha: 0.18),
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(
-                        color: scheme.primary.withValues(alpha: 0.6),
-                      ),
-                    ),
                   ),
                   validator: (value) {
                     final raw = value?.trim() ?? '';
@@ -586,31 +831,9 @@ class _TicketingSection extends StatelessWidget {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: InputDecoration(
+                  decoration: _buildFieldDecoration(
+                    context,
                     hintText: priceLabel,
-                    hintStyle: TextStyle(
-                      color: scheme.onSurface.withValues(alpha: 0.55),
-                    ),
-                    filled: true,
-                    fillColor: scheme.surface.withValues(alpha: 0.72),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(
-                        color: scheme.outline.withValues(alpha: 0.18),
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(
-                        color: scheme.outline.withValues(alpha: 0.18),
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(
-                        color: scheme.primary.withValues(alpha: 0.6),
-                      ),
-                    ),
                   ),
                   validator: (value) {
                     final raw = (value ?? '').trim().replaceAll(',', '.');
@@ -632,6 +855,36 @@ class _TicketingSection extends StatelessWidget {
       ],
     );
   }
+}
+
+InputDecoration _buildFieldDecoration(
+  BuildContext context, {
+  required String hintText,
+  IconData? prefixIcon,
+  bool alignLabelWithHint = false,
+}) {
+  final scheme = Theme.of(context).colorScheme;
+
+  return InputDecoration(
+    hintText: hintText,
+    hintStyle: TextStyle(color: scheme.onSurface.withValues(alpha: 0.55)),
+    prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
+    alignLabelWithHint: alignLabelWithHint,
+    filled: true,
+    fillColor: scheme.surface.withValues(alpha: 0.72),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.18)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.18)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: scheme.primary.withValues(alpha: 0.6)),
+    ),
+  );
 }
 
 class _Section extends StatelessWidget {
@@ -683,6 +936,7 @@ class _PickerTile extends StatelessWidget {
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
+      canRequestFocus: false,
       onTap: onTap,
       child: Ink(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
