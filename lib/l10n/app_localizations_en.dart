@@ -324,6 +324,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventStreetFoodTitle => 'Street food and vinyl market';
 
   @override
+  String get eventDetailsScreenTitle => 'Event details';
+
+  @override
+  String get eventDetailsImagePlaceholder => 'Temporary image placeholder';
+
+  @override
+  String get eventDetailsTitleLabel => 'Event title';
+
+  @override
+  String get eventDetailsLocationLabel => 'Location';
+
+  @override
+  String get eventDetailsDateLabel => 'Date';
+
+  @override
+  String get eventDetailsTimeLabel => 'Time';
+
+  @override
+  String get eventDetailsPriceLabel => 'Price';
+
+  @override
+  String get eventDetailsSeatsLabel => 'Seats';
+
+  @override
+  String get eventDetailsAboutLabel => 'About the event';
+
+  @override
+  String get eventDetailsOrganizerLabel => 'Organizer';
+
+  @override
+  String get eventDetailsChatLabel => 'Participants chat';
+
+  @override
+  String get eventDetailsBuyTicketButton => 'Buy ticket';
+
+  @override
+  String get eventDetailsJoinButton => 'Join';
+
+  @override
+  String get eventDetailsUnknownEventTitle => 'Event';
+
+  @override
+  String get eventDetailsUnknownLocation => 'Location unknown';
+
+  @override
+  String get eventDetailsFallbackDescription => 'This is a temporary event description. In the next steps we will connect full data from the create event form and backend.';
+
+  @override
+  String get eventDetailsJazzDescription => 'An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.';
+
+  @override
+  String get eventDetailsSketchingDescription => 'A meetup for people who enjoy sketching and urban illustration. Bring your own materials.';
+
+  @override
+  String get eventDetailsRunClubDescription => 'A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.';
+
+  @override
+  String get eventDetailsStreetFoodDescription => 'Street food, curated vinyl records and mini DJ sets. An all-day event.';
+
+  @override
   String get eventToday2030 => 'Today, 20:30';
 
   @override

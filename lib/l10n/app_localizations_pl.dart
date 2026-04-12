@@ -324,6 +324,66 @@ class AppLocalizationsPl extends AppLocalizations {
   String get eventStreetFoodTitle => 'Street food i vinyl market';
 
   @override
+  String get eventDetailsScreenTitle => 'Szczegóły wydarzenia';
+
+  @override
+  String get eventDetailsImagePlaceholder => 'Tymczasowy placeholder zdjęcia';
+
+  @override
+  String get eventDetailsTitleLabel => 'Tytuł wydarzenia';
+
+  @override
+  String get eventDetailsLocationLabel => 'Lokalizacja';
+
+  @override
+  String get eventDetailsDateLabel => 'Data';
+
+  @override
+  String get eventDetailsTimeLabel => 'Godzina';
+
+  @override
+  String get eventDetailsPriceLabel => 'Cena';
+
+  @override
+  String get eventDetailsSeatsLabel => 'Liczba miejsc';
+
+  @override
+  String get eventDetailsAboutLabel => 'O wydarzeniu';
+
+  @override
+  String get eventDetailsOrganizerLabel => 'Organizator';
+
+  @override
+  String get eventDetailsChatLabel => 'Czat uczestników';
+
+  @override
+  String get eventDetailsBuyTicketButton => 'Kup bilet';
+
+  @override
+  String get eventDetailsJoinButton => 'Zapisz się';
+
+  @override
+  String get eventDetailsUnknownEventTitle => 'Wydarzenie';
+
+  @override
+  String get eventDetailsUnknownLocation => 'Lokalizacja nieznana';
+
+  @override
+  String get eventDetailsFallbackDescription => 'To tymczasowy opis wydarzenia. W kolejnych krokach podepniemy pełne dane z formularza tworzenia wydarzenia i backendu.';
+
+  @override
+  String get eventDetailsJazzDescription => 'Wieczorny koncert jazzowy pod otwartym niebem. Zabierz znajomych, koc i dobry humor.';
+
+  @override
+  String get eventDetailsSketchingDescription => 'Spotkanie dla osób lubiących szkicowanie i ilustracje miejskie. Materiały we własnym zakresie.';
+
+  @override
+  String get eventDetailsRunClubDescription => 'Lekki poranny bieg, potem wspólna kawa i networking. Tempo konwersacyjne, każdy mile widziany.';
+
+  @override
+  String get eventDetailsStreetFoodDescription => 'Street food, selekcja płyt winylowych i mini sety DJ-skie. Wydarzenie całodzienne.';
+
+  @override
   String get eventToday2030 => 'Dziś, 20:30';
 
   @override

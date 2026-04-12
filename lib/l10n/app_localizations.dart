@@ -713,6 +713,126 @@ abstract class AppLocalizations {
   /// **'Street food and vinyl market'**
   String get eventStreetFoodTitle;
 
+  /// No description provided for @eventDetailsScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Event details'**
+  String get eventDetailsScreenTitle;
+
+  /// No description provided for @eventDetailsImagePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Temporary image placeholder'**
+  String get eventDetailsImagePlaceholder;
+
+  /// No description provided for @eventDetailsTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Event title'**
+  String get eventDetailsTitleLabel;
+
+  /// No description provided for @eventDetailsLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get eventDetailsLocationLabel;
+
+  /// No description provided for @eventDetailsDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get eventDetailsDateLabel;
+
+  /// No description provided for @eventDetailsTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get eventDetailsTimeLabel;
+
+  /// No description provided for @eventDetailsPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get eventDetailsPriceLabel;
+
+  /// No description provided for @eventDetailsSeatsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Seats'**
+  String get eventDetailsSeatsLabel;
+
+  /// No description provided for @eventDetailsAboutLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'About the event'**
+  String get eventDetailsAboutLabel;
+
+  /// No description provided for @eventDetailsOrganizerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer'**
+  String get eventDetailsOrganizerLabel;
+
+  /// No description provided for @eventDetailsChatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants chat'**
+  String get eventDetailsChatLabel;
+
+  /// No description provided for @eventDetailsBuyTicketButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy ticket'**
+  String get eventDetailsBuyTicketButton;
+
+  /// No description provided for @eventDetailsJoinButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get eventDetailsJoinButton;
+
+  /// No description provided for @eventDetailsUnknownEventTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Event'**
+  String get eventDetailsUnknownEventTitle;
+
+  /// No description provided for @eventDetailsUnknownLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location unknown'**
+  String get eventDetailsUnknownLocation;
+
+  /// No description provided for @eventDetailsFallbackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a temporary event description. In the next steps we will connect full data from the create event form and backend.'**
+  String get eventDetailsFallbackDescription;
+
+  /// No description provided for @eventDetailsJazzDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.'**
+  String get eventDetailsJazzDescription;
+
+  /// No description provided for @eventDetailsSketchingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A meetup for people who enjoy sketching and urban illustration. Bring your own materials.'**
+  String get eventDetailsSketchingDescription;
+
+  /// No description provided for @eventDetailsRunClubDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.'**
+  String get eventDetailsRunClubDescription;
+
+  /// No description provided for @eventDetailsStreetFoodDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Street food, curated vinyl records and mini DJ sets. An all-day event.'**
+  String get eventDetailsStreetFoodDescription;
+
   /// No description provided for @eventToday2030.
   ///
   /// In en, this message translates to:
