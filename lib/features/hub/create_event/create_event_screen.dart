@@ -525,7 +525,8 @@ class _TicketingSection extends StatelessWidget {
             Expanded(child: Text(switchLabel)),
             Switch.adaptive(
               value: hasTicketing,
-              activeColor: scheme.primary,
+              activeThumbColor: scheme.primary,
+              activeTrackColor: scheme.primary.withValues(alpha: 0.4),
               onChanged: onTicketingChanged,
             ),
           ],
