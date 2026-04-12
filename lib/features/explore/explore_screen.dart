@@ -306,6 +306,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             selectedSort: _selectedSort,
                             isSearchActive: _searchQuery.trim().isNotEmpty,
                             onAreaPressed: _handleAreaPressed,
+                            onEventTap: _openEvent,
                             onSortChanged: (sort) {
                               setState(() {
                                 _selectedSort = sort;

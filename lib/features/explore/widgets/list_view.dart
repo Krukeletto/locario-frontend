@@ -15,6 +15,7 @@ class ExploreListView extends StatelessWidget {
     required this.isSearchActive,
     required this.onAreaPressed,
     required this.onSortChanged,
+    required this.onEventTap,
   });
 
   final List<ExploreEvent> events;
@@ -25,6 +26,7 @@ class ExploreListView extends StatelessWidget {
   final bool isSearchActive;
   final VoidCallback onAreaPressed;
   final ValueChanged<ExploreSortOption> onSortChanged;
+  final ValueChanged<ExploreEvent> onEventTap;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +63,7 @@ class ExploreListView extends StatelessWidget {
                 return _EventCard(
                   event: event,
                   referenceLocation: referenceLocation,
+                  onTap: () => onEventTap(event),
                 );
               },
             ),
@@ -256,78 +259,92 @@ class _SortMenu extends StatelessWidget {
 }
 
 class _EventCard extends StatelessWidget {
-  const _EventCard({required this.event, required this.referenceLocation});
+  const _EventCard({
+    required this.event,
+    required this.referenceLocation,
+    required this.onTap,
+  });
 
   final ExploreEvent event;
   final LatLng referenceLocation;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.18)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(
-              alpha: Theme.of(context).brightness == Brightness.dark
-                  ? 0.22
-                  : 0.05,
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: colorScheme.outline.withValues(alpha: 0.18),
             ),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: event.accentColor.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Icon(event.icon, color: event.accentColor),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  event.title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.2,
-                  ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(
+                  alpha: Theme.of(context).brightness == Brightness.dark
+                      ? 0.22
+                      : 0.05,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${event.categoryLabel(l10n)} • ${event.distanceLabel(l10n, referenceLocation)}',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: event.accentColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${event.timeLabel(l10n)} • ${event.venue}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurface.withValues(alpha: 0.66),
-                  ),
-                ),
-              ],
-            ),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Icon(Icons.chevron_right_rounded, color: colorScheme.secondary),
-        ],
+          child: Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: event.accentColor.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Icon(event.icon, color: event.accentColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      event.title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${event.categoryLabel(l10n)} • ${event.distanceLabel(l10n, referenceLocation)}',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: event.accentColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${event.timeLabel(l10n)} • ${event.venue}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurface.withValues(alpha: 0.66),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right_rounded, color: colorScheme.secondary),
+            ],
+          ),
+        ),
       ),
     );
   }
