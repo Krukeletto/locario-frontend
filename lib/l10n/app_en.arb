@@ -1,0 +1,234 @@
+{
+  "@@locale": "en",
+  "appTitle": "Locario",
+  "localeEnglish": "English",
+  "localePolish": "Polish",
+  "tabExplore": "Explore",
+  "tabInbox": "Inbox",
+  "tabHub": "Hub",
+  "tabProfile": "Profile",
+  "headerMap": "Map",
+  "headerList": "List",
+  "hubTitle": "Hub",
+  "hubDescription": "Shortcuts for creating and managing your local circle",
+  "hubCreateEventTitle": "Create event",
+  "hubCreateEventSubtitle": "Start something new",
+  "hubCreateEventNameLabel": "Event name",
+  "hubCreateEventNameHint": "What is your event called?",
+  "hubCreateEventCategoryLabel": "Category",
+  "hubCreateEventLocationLabel": "Location",
+  "hubCreateEventLocationHint": "Where will the event take place?",
+  "hubCreateEventLocationLoadingLabel": "Fetching your location",
+  "hubCreateEventLocationLoadingDescription": "This may take a moment.",
+  "hubCreateEventDateLabel": "Date",
+  "hubCreateEventDateHint": "Choose a date",
+  "hubCreateEventDatePlaceholder": "Choose a date",
+  "hubCreateEventTimeLabel": "Time",
+  "hubCreateEventTimeHint": "--:--",
+  "hubCreateEventTimePlaceholder": "Choose a time",
+  "hubCreateEventDescriptionLabel": "Event description",
+  "hubCreateEventDescriptionHint": "Tell people about your event...",
+  "hubCreateEventMainPhotoLabel": "Add main photo",
+  "hubCreateEventMainPhotoSizeHint": "Suggested size: 1600 x 900 px",
+  "hubCreateEventTicketingTitle": "Tickets and entry",
+  "hubCreateEventTicketingSwitchLabel": "Enable tickets and seat limits",
+  "hubCreateEventTicketSeatsLabel": "Number of seats",
+  "hubCreateEventTicketPriceLabel": "Ticket price",
+  "hubCreateEventSubmitButton": "Create event",
+  "hubCreateEventValidationMinChars3": "Enter at least 3 characters.",
+  "hubCreateEventValidationRequired": "This field is required.",
+  "hubCreateEventValidationDescriptionMin10": "Description should be at least 10 characters.",
+  "hubCreateEventValidationCategoryRequired": "Choose at least one category.",
+  "hubCreateEventValidationPositiveNumber": "Enter a valid positive number.",
+  "hubCreateEventValidationDateTimeRequired": "Choose the event date and time.",
+  "hubCreateEventValidationLocationRequired": "Choose the event location.",
+  "hubCreateEventCreatedSuccess": "Event has been created.",
+  "hubCreateEventCreateFailed": "Event could not be created. Try again.",
+  "hubCreateEventLocationLookupFailed": "We couldn't resolve that location. Try another address or point on the map.",
+  "hubCommunityTitle": "Community",
+  "hubCommunitySubtitle": "Local updates",
+  "hubFriendsTitle": "Friends",
+  "hubFriendsSubtitle": "Your network",
+  "profileTitle": "Profile",
+  "profileDescription": "Account, preferences and your saved places in one calmer section.",
+  "settingsTitle": "Settings",
+  "settingsSubtitle": "Language, preferences and app defaults",
+  "settingsScreenTitle": "Settings",
+  "settingsScreenDescription": "Adjust the app basics before the settings surface grows.",
+  "savedTitle": "Saved",
+  "savedSubtitle": "Places, events and lists you want to revisit",
+  "languageSectionTitle": "Language",
+  "languageSectionSubtitle": "Choose how the app should speak to you",
+  "themeSectionTitle": "Appearance",
+  "themeSectionSubtitle": "Choose whether the app should follow the system or stay fixed",
+  "themeModeSystem": "System",
+  "themeModeLight": "Light",
+  "themeModeDark": "Dark",
+  "exploreSearchHint": "Search events...",
+  "exploreNearbyEvents": "Nearby events",
+  "exploreNearbyWithFilter": "{filter} nearby",
+  "exploreLoadingTitle": "Loading events",
+  "exploreLoadingSubtitle": "We are fetching the latest events from the backend.",
+  "exploreErrorTitle": "Events unavailable",
+  "exploreErrorSubtitle": "We could not load events right now.",
+  "exploreEmptyTitle": "No events found",
+  "exploreEmptySubtitle": "Try a different area or come back later.",
+  "exploreRetryButton": "Retry",
+  "@exploreNearbyWithFilter": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsCount": "{count} results",
+  "@resultsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sortTooltip": "Sort",
+  "sortDistance": "Distance",
+  "sortSoonest": "Soonest",
+  "sortTrending": "Trending",
+  "distanceFilterTooltip": "List range",
+  "distanceFilterAny": "Anywhere",
+  "distanceFilterWithinKm": "Within {km} km",
+  "@distanceFilterWithinKm": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAll": "All",
+  "filterMusic": "Music",
+  "filterArt": "Art",
+  "filterWorkshops": "Workshops",
+  "filterFood": "Food",
+  "areaMyLocation": "My location",
+  "areaMyLocationDescription": "Events closest to you by default",
+  "areaTypedAddressDescription": "Address entered manually",
+  "areaPinnedOnMap": "Pinned on map",
+  "areaPickerTitle": "Choose area",
+  "areaPickerSubtitle": "You can type an address, point to a spot on the map or go back to your current location.",
+  "areaUseCurrentLocation": "My location",
+  "areaUseCurrentLocationSubtitle": "Use your current position as the reference point",
+  "areaEnterAddress": "Enter address",
+  "areaEnterAddressSubtitle": "Type a street, district or exact place",
+  "areaPickOnMap": "Pick on map",
+  "areaPickOnMapTitle": "Pick a point on the map",
+  "areaPickOnMapSubtitle": "Move the map so the chosen point sits under the center marker.",
+  "areaPickOnMapConfirm": "Use this point",
+  "areaAddressDialogTitle": "Enter address",
+  "areaAddressDialogHint": "For example 12 Old Town Sq, Poznan",
+  "areaAddressNotFound": "We couldn't find that address.",
+  "areaAddressLookupFailed": "Address lookup failed. Try again.",
+  "areaDialogCancel": "Cancel",
+  "areaDialogConfirm": "Done",
+  "areaPinnedCoordinates": "{lat}, {lon}",
+  "@areaPinnedCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "areaWarsawCenter": "Warsaw center",
+  "areaWarsawCenterDescription": "Address or pin set manually",
+  "areaPowisle": "Powisle",
+  "areaPowisleDescription": "Boulevards and Poniatowski bridge area",
+  "areaMokotow": "Mokotow",
+  "areaMokotowDescription": "Pole Mokotowskie area and nearby",
+  "eventJazzTitle": "Jazz in the Botanical Garden",
+  "eventSketchingTitle": "Night sketching by the Vistula",
+  "eventRunClubTitle": "Morning run club and coffee stop",
+  "eventStreetFoodTitle": "Street food and vinyl market",
+  "eventDetailsScreenTitle": "Event details",
+  "eventDetailsImagePlaceholder": "Temporary image placeholder",
+  "eventDetailsTitleLabel": "Event title",
+  "eventDetailsLocationLabel": "Location",
+  "eventDetailsDateLabel": "Date",
+  "eventDetailsTimeLabel": "Time",
+  "eventDetailsPriceLabel": "Price",
+  "eventDetailsSeatsLabel": "Seats",
+  "eventDetailsAboutLabel": "About the event",
+  "eventDetailsOrganizerLabel": "Organizer",
+  "eventDetailsChatLabel": "Participants chat",
+  "eventDetailsBuyTicketButton": "Buy ticket",
+  "eventDetailsJoinButton": "Join",
+  "eventDetailsUnknownEventTitle": "Event",
+  "eventDetailsUnknownLocation": "Location unknown",
+  "eventDetailsFallbackDescription": "This is a temporary event description. In the next steps we will connect full data from the create event form and backend.",
+  "eventDetailsLoadingTitle": "Loading event",
+  "eventDetailsLoadingSubtitle": "We are fetching the event details from the backend.",
+  "eventDetailsErrorTitle": "Event unavailable",
+  "eventDetailsErrorSubtitle": "We could not load this event right now.",
+  "eventDetailsJazzDescription": "An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.",
+  "eventDetailsSketchingDescription": "A meetup for people who enjoy sketching and urban illustration. Bring your own materials.",
+  "eventDetailsRunClubDescription": "A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.",
+  "eventDetailsStreetFoodDescription": "Street food, curated vinyl records and mini DJ sets. An all-day event.",
+  "eventToday2030": "Today, 20:30",
+  "eventToday1900": "Today, 19:00",
+  "eventTomorrow0800": "Tomorrow, 08:00",
+  "eventTomorrow1200": "Tomorrow, 12:00",
+  "venueBotanicalGarden": "Botanical Garden",
+  "venueVistulaBoulevards": "Vistula Boulevards",
+  "venuePoleMokotowskie": "Pole Mokotowskie",
+  "venueHalaKoszyki": "Hala Koszyki",
+  "distanceMeters": "{count} m",
+  "@distanceMeters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "distanceKilometers": "{count} km",
+  "@distanceKilometers": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "mapReturnToLocation": "Return to my location",
+  "mapStyleLoadFailed": "Unable to load the local map style.\n{error}",
+  "@mapStyleLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "mapRetry": "Retry",
+  "mapAppSettings": "App settings",
+  "mapLocationSettings": "Location settings",
+  "mapServiceDisabled": "Enable location services to see your position.",
+  "mapPermissionDenied": "Allow location access to center the map on you.",
+  "mapPermissionDeniedForever": "Location access is blocked in system settings.",
+  "mapUnableDetermineLocation": "Unable to determine your location.",
+  "mapLocationTimeout": "Location request timed out. Try again.",
+  "mapUnableLoadLocation": "Unable to load your location.",
+  "mapClusterSheetTitle": "Choose an event ({count})",
+  "@mapClusterSheetTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEventOpenSoon": "The event screen for “{title}” will be added later.",
+  "@mapEventOpenSoon": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
+}

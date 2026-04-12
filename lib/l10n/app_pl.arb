@@ -1,0 +1,234 @@
+{
+  "@@locale": "pl",
+  "appTitle": "Locario",
+  "localeEnglish": "Angielski",
+  "localePolish": "Polski",
+  "tabExplore": "Odkrywaj",
+  "tabInbox": "Skrzynka",
+  "tabHub": "Hub",
+  "tabProfile": "Profil",
+  "headerMap": "Mapa",
+  "headerList": "Lista",
+  "hubTitle": "Hub",
+  "hubDescription": "Skróty do tworzenia i ogarniania Twojej lokalnej społeczności",
+  "hubCreateEventTitle": "Stwórz wydarzenie",
+  "hubCreateEventSubtitle": "Zorganizuj coś fajnego",
+  "hubCreateEventNameLabel": "Nazwa wydarzenia",
+  "hubCreateEventNameHint": "Jak nazywa się twoje wydarzenie?",
+  "hubCreateEventCategoryLabel": "Kategoria",
+  "hubCreateEventLocationLabel": "Miejsce",
+  "hubCreateEventLocationHint": "Gdzie odbędzie się wydarzenie?",
+  "hubCreateEventLocationLoadingLabel": "Pobieramy Twoją lokalizację",
+  "hubCreateEventLocationLoadingDescription": "To może potrwać chwilę.",
+  "hubCreateEventDateLabel": "Data",
+  "hubCreateEventDateHint": "Wybierz datę",
+  "hubCreateEventDatePlaceholder": "Wybierz dzień",
+  "hubCreateEventTimeLabel": "Godzina",
+  "hubCreateEventTimeHint": "--:--",
+  "hubCreateEventTimePlaceholder": "Wybierz godzinę",
+  "hubCreateEventDescriptionLabel": "Opis wydarzenia",
+  "hubCreateEventDescriptionHint": "Opowiedz o swoim wydarzeniu...",
+  "hubCreateEventMainPhotoLabel": "Dodaj zdjęcie główne",
+  "hubCreateEventMainPhotoSizeHint": "Sugerowany rozmiar: 1600 x 900 px",
+  "hubCreateEventTicketingTitle": "Bilety i wstęp",
+  "hubCreateEventTicketingSwitchLabel": "Włącz bilety i limity miejsc",
+  "hubCreateEventTicketSeatsLabel": "Liczba miejsc",
+  "hubCreateEventTicketPriceLabel": "Cena biletu",
+  "hubCreateEventSubmitButton": "Stwórz wydarzenie",
+  "hubCreateEventValidationMinChars3": "Podaj co najmniej 3 znaki.",
+  "hubCreateEventValidationRequired": "To pole jest wymagane.",
+  "hubCreateEventValidationDescriptionMin10": "Opis powinien mieć co najmniej 10 znaków.",
+  "hubCreateEventValidationCategoryRequired": "Wybierz co najmniej jedną kategorię.",
+  "hubCreateEventValidationPositiveNumber": "Podaj poprawną dodatnią liczbę.",
+  "hubCreateEventValidationDateTimeRequired": "Wybierz datę i godzinę wydarzenia.",
+  "hubCreateEventValidationLocationRequired": "Wybierz lokalizację wydarzenia.",
+  "hubCreateEventCreatedSuccess": "Wydarzenie zostało utworzone.",
+  "hubCreateEventCreateFailed": "Nie udało się utworzyć wydarzenia. Spróbuj ponownie.",
+  "hubCreateEventLocationLookupFailed": "Nie udało się ustalić lokalizacji. Spróbuj wpisać inny adres lub wskaż punkt na mapie.",
+  "hubCommunityTitle": "Społeczność",
+  "hubCommunitySubtitle": "Lokalne aktualizacje",
+  "hubFriendsTitle": "Znajomi",
+  "hubFriendsSubtitle": "Twoja sieć",
+  "profileTitle": "Profil",
+  "profileDescription": "Konto, preferencje i zapisane miejsca w jednej spokojniejszej sekcji.",
+  "settingsTitle": "Ustawienia",
+  "settingsSubtitle": "Język, preferencje i podstawy aplikacji",
+  "settingsScreenTitle": "Ustawienia",
+  "settingsScreenDescription": "Tu możesz ogarnąć podstawy aplikacji, zanim sekcja ustawień bardziej urośnie.",
+  "savedTitle": "Zapisane",
+  "savedSubtitle": "Miejsca, wydarzenia i listy, do których chcesz wrócić",
+  "languageSectionTitle": "Język",
+  "languageSectionSubtitle": "Wybierz, w jakim języku aplikacja ma z Tobą rozmawiać",
+  "themeSectionTitle": "Wygląd",
+  "themeSectionSubtitle": "Wybierz, czy aplikacja ma podążać za systemem czy trzymać stały motyw",
+  "themeModeSystem": "System",
+  "themeModeLight": "Jasny",
+  "themeModeDark": "Ciemny",
+  "exploreSearchHint": "Szukaj wydarzeń...",
+  "exploreNearbyEvents": "Wydarzenia w pobliżu",
+  "exploreNearbyWithFilter": "{filter} w pobliżu",
+  "exploreLoadingTitle": "Ładowanie wydarzeń",
+  "exploreLoadingSubtitle": "Pobieramy najnowsze wydarzenia z backendu.",
+  "exploreErrorTitle": "Wydarzenia są niedostępne",
+  "exploreErrorSubtitle": "Nie udało się teraz pobrać wydarzeń.",
+  "exploreEmptyTitle": "Brak wydarzeń",
+  "exploreEmptySubtitle": "Spróbuj zmienić obszar albo wróć później.",
+  "exploreRetryButton": "Spróbuj ponownie",
+  "@exploreNearbyWithFilter": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsCount": "{count} wyników",
+  "@resultsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sortTooltip": "Sortowanie",
+  "sortDistance": "Odległość",
+  "sortSoonest": "Najbliższy termin",
+  "sortTrending": "Popularność",
+  "distanceFilterTooltip": "Zasięg listy",
+  "distanceFilterAny": "Wszędzie",
+  "distanceFilterWithinKm": "Do {km} km",
+  "@distanceFilterWithinKm": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAll": "Wszystkie",
+  "filterMusic": "Muzyka",
+  "filterArt": "Sztuka",
+  "filterWorkshops": "Warsztaty",
+  "filterFood": "Jedzenie",
+  "areaMyLocation": "Moja lokalizacja",
+  "areaMyLocationDescription": "Domyślnie wydarzenia najbliżej Ciebie",
+  "areaTypedAddressDescription": "Adres wpisany ręcznie",
+  "areaPinnedOnMap": "Punkt na mapie",
+  "areaPickerTitle": "Wybierz obszar",
+  "areaPickerSubtitle": "Możesz wpisać adres, wskazać punkt na mapie albo wrócić do bieżącej lokalizacji.",
+  "areaUseCurrentLocation": "Moja lokalizacja",
+  "areaUseCurrentLocationSubtitle": "Użyj Twojej aktualnej pozycji jako punktu odniesienia",
+  "areaEnterAddress": "Wpisz adres",
+  "areaEnterAddressSubtitle": "Podaj ulicę, dzielnicę albo konkretne miejsce",
+  "areaPickOnMap": "Wskaż na mapie",
+  "areaPickOnMapTitle": "Wskaż punkt na mapie",
+  "areaPickOnMapSubtitle": "Przesuń mapę tak, aby wybrany punkt był pod znacznikiem na środku.",
+  "areaPickOnMapConfirm": "Użyj tego punktu",
+  "areaAddressDialogTitle": "Wpisz adres",
+  "areaAddressDialogHint": "Np. Stary Rynek 12, Poznań",
+  "areaAddressNotFound": "Nie udało się znaleźć tego adresu.",
+  "areaAddressLookupFailed": "Nie udało się wyszukać adresu. Spróbuj ponownie.",
+  "areaDialogCancel": "Anuluj",
+  "areaDialogConfirm": "Gotowe",
+  "areaPinnedCoordinates": "{lat}, {lon}",
+  "@areaPinnedCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "areaWarsawCenter": "Centrum Warszawy",
+  "areaWarsawCenterDescription": "Adres lub pin ustawiony ręcznie",
+  "areaPowisle": "Powiśle",
+  "areaPowisleDescription": "Okolice bulwarów i mostu Poniatowskiego",
+  "areaMokotow": "Mokotów",
+  "areaMokotowDescription": "Rejon Pole Mokotowskie i okolice",
+  "eventJazzTitle": "Jazz w Ogrodzie Botanicznym",
+  "eventSketchingTitle": "Noc szkicowania nad Wisłą",
+  "eventRunClubTitle": "Poranny run club i coffee stop",
+  "eventStreetFoodTitle": "Street food i vinyl market",
+  "eventDetailsScreenTitle": "Szczegóły wydarzenia",
+  "eventDetailsImagePlaceholder": "Tymczasowy placeholder zdjęcia",
+  "eventDetailsTitleLabel": "Tytuł wydarzenia",
+  "eventDetailsLocationLabel": "Lokalizacja",
+  "eventDetailsDateLabel": "Data",
+  "eventDetailsTimeLabel": "Godzina",
+  "eventDetailsPriceLabel": "Cena",
+  "eventDetailsSeatsLabel": "Liczba miejsc",
+  "eventDetailsAboutLabel": "O wydarzeniu",
+  "eventDetailsOrganizerLabel": "Organizator",
+  "eventDetailsChatLabel": "Czat uczestników",
+  "eventDetailsBuyTicketButton": "Kup bilet",
+  "eventDetailsJoinButton": "Zapisz się",
+  "eventDetailsUnknownEventTitle": "Wydarzenie",
+  "eventDetailsUnknownLocation": "Lokalizacja nieznana",
+  "eventDetailsFallbackDescription": "To tymczasowy opis wydarzenia. W kolejnych krokach podepniemy pełne dane z formularza tworzenia wydarzenia i backendu.",
+  "eventDetailsLoadingTitle": "Ładowanie wydarzenia",
+  "eventDetailsLoadingSubtitle": "Pobieramy szczegóły wydarzenia z backendu.",
+  "eventDetailsErrorTitle": "Wydarzenie jest niedostępne",
+  "eventDetailsErrorSubtitle": "Nie udało się teraz wczytać tego wydarzenia.",
+  "eventDetailsJazzDescription": "Wieczorny koncert jazzowy pod otwartym niebem. Zabierz znajomych, koc i dobry humor.",
+  "eventDetailsSketchingDescription": "Spotkanie dla osób lubiących szkicowanie i ilustracje miejskie. Materiały we własnym zakresie.",
+  "eventDetailsRunClubDescription": "Lekki poranny bieg, potem wspólna kawa i networking. Tempo konwersacyjne, każdy mile widziany.",
+  "eventDetailsStreetFoodDescription": "Street food, selekcja płyt winylowych i mini sety DJ-skie. Wydarzenie całodzienne.",
+  "eventToday2030": "Dziś, 20:30",
+  "eventToday1900": "Dziś, 19:00",
+  "eventTomorrow0800": "Jutro, 08:00",
+  "eventTomorrow1200": "Jutro, 12:00",
+  "venueBotanicalGarden": "Ogród Botaniczny",
+  "venueVistulaBoulevards": "Bulwary Wiślane",
+  "venuePoleMokotowskie": "Pole Mokotowskie",
+  "venueHalaKoszyki": "Hala Koszyki",
+  "distanceMeters": "{count} m",
+  "@distanceMeters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "distanceKilometers": "{count} km",
+  "@distanceKilometers": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "mapReturnToLocation": "Wróć do mojej lokalizacji",
+  "mapStyleLoadFailed": "Nie udało się wczytać lokalnego stylu mapy.\n{error}",
+  "@mapStyleLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "mapRetry": "Ponów",
+  "mapAppSettings": "Ustawienia aplikacji",
+  "mapLocationSettings": "Ustawienia lokalizacji",
+  "mapServiceDisabled": "Włącz usługi lokalizacji, aby zobaczyć swoją pozycję.",
+  "mapPermissionDenied": "Pozwól na dostęp do lokalizacji, aby wycentrować mapę na Tobie.",
+  "mapPermissionDeniedForever": "Dostęp do lokalizacji jest zablokowany w ustawieniach systemu.",
+  "mapUnableDetermineLocation": "Nie udało się ustalić Twojej lokalizacji.",
+  "mapLocationTimeout": "Żądanie lokalizacji przekroczyło limit czasu. Spróbuj ponownie.",
+  "mapUnableLoadLocation": "Nie udało się wczytać Twojej lokalizacji.",
+  "mapClusterSheetTitle": "Wybierz wydarzenie ({count})",
+  "@mapClusterSheetTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEventOpenSoon": "Ekran wydarzenia „{title}” dodamy później.",
+  "@mapEventOpenSoon": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
+}
