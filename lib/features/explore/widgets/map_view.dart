@@ -12,12 +12,14 @@ class ExploreMapView extends StatelessWidget {
     required this.controller,
     required this.styleRepository,
     required this.events,
+    required this.onEventTap,
     this.onCameraCenterChanged,
   });
 
   final ExploreMapViewModel controller;
   final MapStyleRepository styleRepository;
   final List<ExploreEvent> events;
+  final ValueChanged<ExploreEvent> onEventTap;
   final ValueChanged<LatLng>? onCameraCenterChanged;
 
   @override
@@ -29,6 +31,7 @@ class ExploreMapView extends StatelessWidget {
       child: MapWidget(
         controller: controller,
         events: events,
+        onEventTap: onEventTap,
         styleRepository: styleRepository,
         onCameraCenterChanged: onCameraCenterChanged,
         overlayPadding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
