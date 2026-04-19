@@ -330,9 +330,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
             onSearchResultSelected: _handleSearchResultSelected,
             onSearchCleared: _handleSearchCleared,
             selectedFilterIndices: headerController.selectedFilterIndices,
-            availableCategories: (CategoryScope.maybeOf(context)?.categories ?? [])
-                .cast<Category>()
-                .toList(),
+            availableCategories:
+                (CategoryScope.maybeOf(context)?.categories ?? [])
+                    .cast<Category>()
+                    .toList(),
             onFilterToggled: (index) {
               _dismissSearchFocus();
               headerController.toggleFilter(index);
@@ -455,6 +456,44 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         _markCurrentAreaAsSearched(force: true);
                         _exploreController.loadEvents(forceRefresh: true);
                       },
+                    ),
+                  ),
+                ),
+              if (showEmptyResultsMessage)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surface.withValues(alpha: 0.92),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outline.withValues(alpha: 0.14),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: StatePanel.empty(
+                              title: l10n.exploreEmptyTitle,
+                              subtitle: l10n.exploreEmptySubtitle,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),

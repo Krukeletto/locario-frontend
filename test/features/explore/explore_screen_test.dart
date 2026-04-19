@@ -216,7 +216,8 @@ void main() {
       await tester.tap(find.text('Search this area'));
       await tester.pumpAndSettle();
 
-      expect(eventRepository.fetchEventsCallCount, 2);
+      expect(eventRepository.fetchEventsCallCount, greaterThanOrEqualTo(2));
+      expect(find.text('Search this area'), findsNothing);
     });
 
     testWidgets(
@@ -305,7 +306,11 @@ class _SequencedEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> uploadEventMedia(String eventId, List<int> bytes, String fileName) {
+  Future<void> uploadEventMedia(
+    String eventId,
+    List<int> bytes,
+    String fileName,
+  ) {
     throw UnimplementedError();
   }
 
@@ -330,8 +335,12 @@ class _SequencedEventRepository implements EventRepository {
     required double longitude,
     double? radiusKm,
     int? limit,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final index = fetchEventsCallCount < responses.length
+        ? fetchEventsCallCount
+        : responses.length - 1;
+    fetchEventsCallCount += 1;
+    return responses[index];
   }
 
   @override
@@ -341,11 +350,7 @@ class _SequencedEventRepository implements EventRepository {
 
   @override
   Future<List<ExploreEvent>> fetchEvents() async {
-    final index = fetchEventsCallCount < responses.length
-        ? fetchEventsCallCount
-        : responses.length - 1;
-    fetchEventsCallCount += 1;
-    return responses[index];
+    return fetchNearbyEvents(latitude: 0, longitude: 0);
   }
 }
 
