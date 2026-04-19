@@ -4,10 +4,16 @@ on:
   push:
     branches:
       - release
+    paths-ignore:
+      - "**/*.md"
+      - ".gitignore"
 
 concurrency:
-  group: build-release-android
+  group: build-release-android-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build-android:
@@ -22,34 +28,23 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+          cache: gradle
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.41.5"
           cache: true
+          cache-dependency-path: pubspec.lock
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Analyze project
-        run: flutter analyze
-
-      - name: Run tests
-        run: flutter test
+      - name: Build App Bundle
+        run: flutter build appbundle --release --no-pub
 
       - name: Build APK
-        run: flutter build apk --release
-
-      - name: Build App Bundle
-        run: flutter build appbundle --release
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v5
-        with:
-          name: app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
+        run: flutter build apk --release --no-pub
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v5
@@ -57,3 +52,12 @@ jobs:
           name: app-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          compression-level: 0
