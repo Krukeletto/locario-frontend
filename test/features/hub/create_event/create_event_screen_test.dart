@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:locario/features/explore/models.dart';
 import 'package:locario/features/hub/create_event/create_event_screen.dart';
+import 'package:locario/shared/events/category_controller.dart';
+import 'package:locario/shared/events/category_scope.dart';
 
 import '../../../test_helpers/fake_event_repository.dart';
 import '../../../test_helpers/fake_location_service.dart';
@@ -17,11 +20,25 @@ Future<void> _pumpCreateEventScreen(
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
+  // Pre-load a CategoryController with PL-named categories matching test assertions.
+  final fakeRepo = FakeEventRepository(
+    categories: const [
+      Category(id: 'music', name: 'Muzyka', slug: 'music'),
+      Category(id: 'workshops', name: 'Warsztaty', slug: 'workshops'),
+    ],
+  );
+  final categoryController = CategoryController(eventRepository: fakeRepo);
+  await categoryController.loadCategories();
+
   await tester.pumpWidget(
     buildLocalizedTestApp(
-      home: CreateEventScreen(
-        eventRepository: repository ?? FakeEventRepository(),
-        locationService: locationService ?? FakeLocationService(),
+      locale: const Locale('pl'),
+      home: CategoryScope(
+        controller: categoryController,
+        child: CreateEventScreen(
+          eventRepository: repository ?? FakeEventRepository(),
+          locationService: locationService ?? FakeLocationService(),
+        ),
       ),
     ),
   );
@@ -195,25 +212,25 @@ void main() {
       await tester.pump();
 
       expect(repository.lastCreateInput, isNotNull);
-      expect(repository.lastCreateInput!.title, 'Koncert');
+      expect(repository.lastCreateInput!.name, 'Koncert');
       expect(
-        repository.lastCreateInput!.location.latitude,
+        repository.lastCreateInput!.latitude,
         closeTo(51.7592, 0.0001),
       );
-      expect(repository.lastCreateInput!.categoryId, isNull);
+      expect(repository.lastCreateInput!.categoryIds, ['workshops']);
     });
   });
 }
 
 Future<void> _pickDate(WidgetTester tester) async {
-  await tester.tap(find.text('Wybierz datę'));
+  await tester.tap(find.byKey(const Key('create-event-date-picker')));
   await tester.pumpAndSettle();
   await tester.tap(find.text('OK'));
   await tester.pumpAndSettle();
 }
 
 Future<void> _pickTime(WidgetTester tester) async {
-  await tester.tap(find.text('--:--'));
+  await tester.tap(find.byKey(const Key('create-event-time-picker')));
   await tester.pumpAndSettle();
   await tester.tap(find.text('OK'));
   await tester.pumpAndSettle();

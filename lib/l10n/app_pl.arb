@@ -34,6 +34,11 @@
   "hubCreateEventTicketingSwitchLabel": "Włącz bilety i limity miejsc",
   "hubCreateEventTicketSeatsLabel": "Liczba miejsc",
   "hubCreateEventTicketPriceLabel": "Cena biletu",
+  "hubCreateEventTicketingLabel": "Bilety i wstęp",
+  "hubCreateEventTicketUrlHint": "Link do zakupu biletów",
+  "hubCreateEventStatusLabel": "Status wydarzenia",
+  "eventStatusDraft": "Szkic",
+  "eventStatusPublished": "Opublikowane",
   "hubCreateEventSubmitButton": "Stwórz wydarzenie",
   "hubCreateEventValidationMinChars3": "Podaj co najmniej 3 znaki.",
   "hubCreateEventValidationRequired": "To pole jest wymagane.",
@@ -108,6 +113,39 @@
   "filterArt": "Sztuka",
   "filterWorkshops": "Warsztaty",
   "filterFood": "Jedzenie",
+  "filterAdvancedFilters": "Filtry zaawansowane",
+  "filterAdvancedDistance": "Zasięg wyszukiwania",
+  "filterAdvancedDateRange": "Data wydarzenia",
+  "filterAdvancedAge": "Wiek (lata)",
+  "filterAdvancedType": "Typ wydarzenia",
+  "filterAdvancedSource": "Źródło wydarzenia",
+  "filterAdvancedApply": "Pokaż wyniki",
+  "filterAdvancedClear": "Wyczyść",
+  "exploreSearchThisArea": "Przeszukaj ten obszar",
+  "filterAdvancedDateFrom": "Od",
+  "filterAdvancedDateTo": "Do",
+  "filterAdvancedDateAny": "Dowolna data",
+  "filterAdvancedDateToday": "Dziś",
+  "filterAdvancedDateTomorrow": "Jutro",
+  "filterAdvancedDateCustomRange": "Zakres dat",
+  "filterAdvancedDateOther": "Inna data",
+  "filterAdvancedDateSelection": "Wybrana data",
+  "filterAdvancedAgeFrom": "Min",
+  "filterAdvancedAgeTo": "Max",
+  "filterAdvancedAgeSelection": "Wiek uczestnika",
+  "filterAdvancedAgeCustomRange": "Przedział wieku",
+  "filterAdvancedAgeOther": "Inny wiek",
+  "filterAdvancedAgeRangeSummary": "{from}–{to} lat",
+  "@filterAdvancedAgeRangeSummary": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
   "areaMyLocation": "Moja lokalizacja",
   "areaMyLocationDescription": "Domyślnie wydarzenia najbliżej Ciebie",
   "areaTypedAddressDescription": "Adres wpisany ręcznie",
@@ -149,7 +187,7 @@
   "eventSketchingTitle": "Noc szkicowania nad Wisłą",
   "eventRunClubTitle": "Poranny run club i coffee stop",
   "eventStreetFoodTitle": "Street food i vinyl market",
-  "eventDetailsScreenTitle": "Szczegóły wydarzenia",
+  "eventDetailsScreenTitle": "Szczegóły",
   "eventDetailsImagePlaceholder": "Tymczasowy placeholder zdjęcia",
   "eventDetailsTitleLabel": "Tytuł wydarzenia",
   "eventDetailsLocationLabel": "Lokalizacja",
@@ -173,6 +211,16 @@
   "eventDetailsSketchingDescription": "Spotkanie dla osób lubiących szkicowanie i ilustracje miejskie. Materiały we własnym zakresie.",
   "eventDetailsRunClubDescription": "Lekki poranny bieg, potem wspólna kawa i networking. Tempo konwersacyjne, każdy mile widziany.",
   "eventDetailsStreetFoodDescription": "Street food, selekcja płyt winylowych i mini sety DJ-skie. Wydarzenie całodzienne.",
+  "eventDetailsTicketLabel": "Bilety",
+  "eventDetailsSlotsLabel": "Limit miejsc",
+  "eventDetailsSlotsValue": "{count} wolnych miejsc",
+  "@eventDetailsSlotsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "eventToday2030": "Dziś, 20:30",
   "eventToday1900": "Dziś, 19:00",
   "eventTomorrow0800": "Jutro, 08:00",
@@ -227,6 +275,29 @@
   "@mapEventOpenSoon": {
     "placeholders": {
       "title": {
+        "type": "String"
+      }
+    }
+  },
+  "authLoginSuccess": "Zalogowano pomyślnie.",
+  "authLoginErrorInvalidCredentials": "Błędny e-mail lub hasło.",
+  "eventSaveSuccess": "Wydarzenie zapisano na Twojej liście.",
+  "eventRemoveSuccess": "Wydarzenie usunięto z Twojej listy.",
+  "eventPublishSuccess": "Wydarzenie zostało opublikowane.",
+  "eventPublishError": "Nie udało się opublikować wydarzenia. Spróbuj ponownie.",
+  "networkError": "Błąd sieci. Sprawdź swoje połączenie.",
+  "networkErrorRetry": "Ponów",
+  "exploreErrorPermissionTitle": "Wymagany dostęp do lokalizacji",
+  "exploreErrorPermissionSubtitle": "Zezwól na dostęp do lokalizacji, aby zobaczyć wydarzenia w pobliżu.",
+  "exploreErrorUnknownTitle": "Coś poszło nie tak",
+  "exploreErrorUnknownSubtitle": "Wystąpił nieoczekiwany błąd.",
+  "shareEventMessage": "Sprawdź to wydarzenie w Locario: {title}\n\n{url}",
+  "@shareEventMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "url": {
         "type": "String"
       }
     }

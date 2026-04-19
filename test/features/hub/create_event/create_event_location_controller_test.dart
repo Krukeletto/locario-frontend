@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geocoding_platform_interface/geocoding_platform_interface.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:locario/features/hub/create_event/create_event_location_controller.dart';
-import 'package:locario/l10n/app_localizations.dart';
 
 import '../../../test_helpers/fake_location_service.dart';
 import '../../../test_helpers/test_app.dart';
@@ -16,7 +15,7 @@ void main() {
       await tester.pumpWidget(
         buildLocalizedTestApp(home: const SizedBox.shrink()),
       );
-      final l10n = AppLocalizations.of(tester.element(find.byType(SizedBox)))!;
+      await tester.pump(); // Ensure builder runs
 
       final controller = CreateEventLocationController(
         locationService: FakeLocationService(),
@@ -30,7 +29,6 @@ void main() {
       );
 
       final result = await controller.selectAddress(
-        l10n,
         'Piotrkowska 10, Lodz',
       );
 
@@ -46,13 +44,13 @@ void main() {
       await tester.pumpWidget(
         buildLocalizedTestApp(home: const SizedBox.shrink()),
       );
-      final l10n = AppLocalizations.of(tester.element(find.byType(SizedBox)))!;
+      await tester.pump(); // Ensure builder runs
 
       final controller = CreateEventLocationController(
         locationService: FakeLocationService(),
       );
 
-      controller.selectPinnedLocation(l10n, const LatLng(51.7, 19.4));
+      controller.selectPinnedLocation(const LatLng(51.7, 19.4));
 
       expect(controller.selection, isNotNull);
       expect(

@@ -34,6 +34,11 @@
   "hubCreateEventTicketingSwitchLabel": "Enable tickets and seat limits",
   "hubCreateEventTicketSeatsLabel": "Number of seats",
   "hubCreateEventTicketPriceLabel": "Ticket price",
+  "hubCreateEventTicketingLabel": "Ticketing",
+  "hubCreateEventTicketUrlHint": "URL for buying tickets",
+  "hubCreateEventStatusLabel": "Event status",
+  "eventStatusDraft": "Draft",
+  "eventStatusPublished": "Published",
   "hubCreateEventSubmitButton": "Create event",
   "hubCreateEventValidationMinChars3": "Enter at least 3 characters.",
   "hubCreateEventValidationRequired": "This field is required.",
@@ -108,6 +113,39 @@
   "filterArt": "Art",
   "filterWorkshops": "Workshops",
   "filterFood": "Food",
+  "filterAdvancedFilters": "Advanced Filters",
+  "filterAdvancedDistance": "Search Range",
+  "filterAdvancedDateRange": "Event Date",
+  "filterAdvancedAge": "Age (years)",
+  "filterAdvancedType": "Event Type",
+  "filterAdvancedSource": "Event Source",
+  "filterAdvancedApply": "Show Results",
+  "filterAdvancedClear": "Clear",
+  "exploreSearchThisArea": "Search this area",
+  "filterAdvancedDateFrom": "From",
+  "filterAdvancedDateTo": "To",
+  "filterAdvancedDateAny": "Any date",
+  "filterAdvancedDateToday": "Today",
+  "filterAdvancedDateTomorrow": "Tomorrow",
+  "filterAdvancedDateCustomRange": "Date range",
+  "filterAdvancedDateOther": "Other date",
+  "filterAdvancedDateSelection": "Selected date",
+  "filterAdvancedAgeFrom": "Min",
+  "filterAdvancedAgeTo": "Max",
+  "filterAdvancedAgeSelection": "Participant age",
+  "filterAdvancedAgeCustomRange": "Age range",
+  "filterAdvancedAgeOther": "Other age",
+  "filterAdvancedAgeRangeSummary": "{from}-{to} years",
+  "@filterAdvancedAgeRangeSummary": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
   "areaMyLocation": "My location",
   "areaMyLocationDescription": "Events closest to you by default",
   "areaTypedAddressDescription": "Address entered manually",
@@ -149,7 +187,7 @@
   "eventSketchingTitle": "Night sketching by the Vistula",
   "eventRunClubTitle": "Morning run club and coffee stop",
   "eventStreetFoodTitle": "Street food and vinyl market",
-  "eventDetailsScreenTitle": "Event details",
+  "eventDetailsScreenTitle": "Details",
   "eventDetailsImagePlaceholder": "Temporary image placeholder",
   "eventDetailsTitleLabel": "Event title",
   "eventDetailsLocationLabel": "Location",
@@ -173,6 +211,16 @@
   "eventDetailsSketchingDescription": "A meetup for people who enjoy sketching and urban illustration. Bring your own materials.",
   "eventDetailsRunClubDescription": "A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.",
   "eventDetailsStreetFoodDescription": "Street food, curated vinyl records and mini DJ sets. An all-day event.",
+  "eventDetailsTicketLabel": "Tickets",
+  "eventDetailsSlotsLabel": "Seat limit",
+  "eventDetailsSlotsValue": "{count} seats available",
+  "@eventDetailsSlotsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "eventToday2030": "Today, 20:30",
   "eventToday1900": "Today, 19:00",
   "eventTomorrow0800": "Tomorrow, 08:00",
@@ -227,6 +275,29 @@
   "@mapEventOpenSoon": {
     "placeholders": {
       "title": {
+        "type": "String"
+      }
+    }
+  },
+  "authLoginSuccess": "Logged in successfully.",
+  "authLoginErrorInvalidCredentials": "Invalid email or password.",
+  "eventSaveSuccess": "Event saved to your list.",
+  "eventRemoveSuccess": "Event removed from your list.",
+  "eventPublishSuccess": "Event published successfully.",
+  "eventPublishError": "Failed to publish event. Try again.",
+  "networkError": "Network error. Please check your connection.",
+  "networkErrorRetry": "Retry",
+  "exploreErrorPermissionTitle": "Location permission required",
+  "exploreErrorPermissionSubtitle": "Please allow location access to see events nearby.",
+  "exploreErrorUnknownTitle": "Something went wrong",
+  "exploreErrorUnknownSubtitle": "We encountered an unexpected error.",
+  "shareEventMessage": "Check out this event on Locario: {title}\n\n{url}",
+  "@shareEventMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "url": {
         "type": "String"
       }
     }

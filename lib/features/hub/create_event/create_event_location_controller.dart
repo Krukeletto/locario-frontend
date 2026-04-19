@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:locario/l10n/app_localizations.dart';
-
 import '../../../shared/location/location_service.dart';
+import '../../../shared/services/l10n_service.dart';
 
 typedef CreateEventGeocoder = Future<List<Location>> Function(String address);
 
@@ -60,9 +59,8 @@ class CreateEventLocationController extends ChangeNotifier {
   CreateEventLocationSelection? get selection => _selection;
   bool get isResolvingSelection => _isResolvingSelection;
 
-  Future<CreateEventLocationLookupResult> useCurrentLocation(
-    AppLocalizations l10n,
-  ) async {
+  Future<CreateEventLocationLookupResult> useCurrentLocation() async {
+    final l10n = L10nService.l10n;
     _isResolvingSelection = true;
     notifyListeners();
 
@@ -93,10 +91,8 @@ class CreateEventLocationController extends ChangeNotifier {
     }
   }
 
-  Future<CreateEventLocationLookupResult> selectAddress(
-    AppLocalizations l10n,
-    String address,
-  ) async {
+  Future<CreateEventLocationLookupResult> selectAddress(String address) async {
+    final l10n = L10nService.l10n;
     try {
       final locations = await _geocoder(address);
       if (locations.isEmpty) {
@@ -122,7 +118,8 @@ class CreateEventLocationController extends ChangeNotifier {
     }
   }
 
-  void selectPinnedLocation(AppLocalizations l10n, LatLng location) {
+  void selectPinnedLocation(LatLng location) {
+    final l10n = L10nService.l10n;
     final lat = location.latitude.toStringAsFixed(4);
     final lon = location.longitude.toStringAsFixed(4);
     _selection = CreateEventLocationSelection(
