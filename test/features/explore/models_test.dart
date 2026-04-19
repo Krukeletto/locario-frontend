@@ -28,4 +28,19 @@ void main() {
       );
     });
   });
+
+  group('ExploreAdvancedFilters', () {
+    test('compares by value', () {
+      expect(
+        const ExploreAdvancedFilters(
+          distanceFilter: ExploreDistanceFilter.within5Km,
+          ageFrom: 18,
+        ),
+        const ExploreAdvancedFilters(
+          distanceFilter: ExploreDistanceFilter.within5Km,
+          ageFrom: 18,
+        ),
+      );
+    });
+  });
 }

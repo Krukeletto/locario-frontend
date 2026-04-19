@@ -1,0 +1,101 @@
+import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
+import 'l10n_service.dart';
+
+enum FeedbackMessage {
+  loginSuccess,
+  loginInvalidCredentials,
+  networkError,
+  eventCreated,
+  eventSaveSuccess,
+  eventRemoveSuccess,
+  eventPublishSuccess,
+  eventPublishError,
+  unknownError,
+}
+
+enum FeedbackStyle { success, error, info }
+
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
+class FeedbackService {
+  FeedbackService._();
+
+  static DateTime? _lastMessageTime;
+  static FeedbackMessage? _lastMessage;
+
+  /// Shows a success feedback message.
+  static void showSuccess(FeedbackMessage message) {
+    _showFeedback(message, style: FeedbackStyle.success);
+  }
+
+  /// Shows an error feedback message.
+  static void showError(FeedbackMessage message) {
+    _showFeedback(message, style: FeedbackStyle.error);
+  }
+
+  /// Shows an info feedback message.
+  static void showInfo(FeedbackMessage message) {
+    _showFeedback(message, style: FeedbackStyle.info);
+  }
+
+  /// Internal method to show feedback using [L10nService] and [rootScaffoldMessengerKey].
+  static void _showFeedback(
+    FeedbackMessage message, {
+    required FeedbackStyle style,
+  }) {
+    final now = DateTime.now();
+    if (_lastMessage == message &&
+        _lastMessageTime != null &&
+        now.difference(_lastMessageTime!) < const Duration(seconds: 1)) {
+      return;
+    }
+
+    _lastMessage = message;
+    _lastMessageTime = now;
+
+    // Use L10nService instead of BuildContext
+    final l10n = L10nService.l10n;
+    final text = _getMessageText(l10n, message);
+
+    final messenger = rootScaffoldMessengerKey.currentState;
+    if (messenger == null) return;
+
+    if (style == FeedbackStyle.error) {
+      messenger.removeCurrentSnackBar();
+    }
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(text),
+        backgroundColor: _getBackgroundColor(style),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  static String _getMessageText(AppLocalizations l10n, FeedbackMessage message) {
+    return switch (message) {
+      FeedbackMessage.loginSuccess => l10n.authLoginSuccess,
+      FeedbackMessage.loginInvalidCredentials =>
+        l10n.authLoginErrorInvalidCredentials,
+      FeedbackMessage.networkError => l10n.networkError,
+      FeedbackMessage.eventCreated => l10n.hubCreateEventCreatedSuccess,
+      FeedbackMessage.eventSaveSuccess => l10n.eventSaveSuccess,
+      FeedbackMessage.eventRemoveSuccess => l10n.eventRemoveSuccess,
+      FeedbackMessage.eventPublishSuccess => l10n.eventPublishSuccess,
+      FeedbackMessage.eventPublishError => l10n.eventPublishError,
+      FeedbackMessage.unknownError => l10n.exploreErrorUnknownTitle,
+    };
+  }
+
+  static Color _getBackgroundColor(FeedbackStyle style) {
+    return switch (style) {
+      FeedbackStyle.success => const Color(0xFF2E7D32), // Green 700
+      FeedbackStyle.error => const Color(0xFFC62828),   // Red 800
+      FeedbackStyle.info => const Color(0xFF1565C0),    // Blue 800
+    };
+  }
+}

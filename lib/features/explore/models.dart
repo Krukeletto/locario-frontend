@@ -7,7 +7,6 @@ enum ExploreContentView { map, list }
 enum ExploreSortOption { distance, soonest, trending }
 
 enum ExploreDistanceFilter {
-  any(null),
   within1Km(1000),
   within3Km(3000),
   within5Km(5000),
@@ -16,10 +15,98 @@ enum ExploreDistanceFilter {
 
   const ExploreDistanceFilter(this.maxDistanceMeters);
 
-  final int? maxDistanceMeters;
+  final int maxDistanceMeters;
 }
 
 enum ExploreCategory { all, music, art, workshops, food }
+
+class Category {
+  const Category({
+    required this.id,
+    required this.name,
+    required this.slug,
+    this.parentId,
+    this.sortOrder = 0,
+  });
+
+  final String id;
+  final String name;
+  final String slug;
+  final String? parentId;
+  final int sortOrder;
+
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      slug: json['slug'] as String,
+      parentId: json['parentId'] as String?,
+      sortOrder: json['sortOrder'] as int? ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'slug': slug,
+      'parentId': parentId,
+      'sortOrder': sortOrder,
+    };
+  }
+}
+
+enum EventStatus {
+  draft,
+  published;
+
+  static EventStatus fromString(String? value) {
+    return switch (value?.toLowerCase()) {
+      'draft' => EventStatus.draft,
+      'published' => EventStatus.published,
+      _ => EventStatus.draft,
+    };
+  }
+
+  String toJson() => name;
+}
+
+enum MediaType {
+  image,
+  video;
+
+  static MediaType fromString(String? value) {
+    return switch (value?.toLowerCase()) {
+      'video' => MediaType.video,
+      _ => MediaType.image,
+    };
+  }
+
+  String toJson() => name;
+}
+
+class EventMedia {
+  const EventMedia({
+    required this.id,
+    required this.url,
+    required this.type,
+    this.sortOrder = 0,
+  });
+
+  final String id;
+  final String url;
+  final MediaType type;
+  final int sortOrder;
+
+  factory EventMedia.fromJson(Map<String, dynamic> json) {
+    return EventMedia(
+      id: json['id'] as String,
+      url: json['url'] as String,
+      type: MediaType.fromString(json['type'] as String?),
+      sortOrder: json['sortOrder'] as int? ?? 0,
+    );
+  }
+}
 
 const Map<ExploreCategory, String?> _backendCategoryIds = {
   ExploreCategory.music: null,
@@ -106,47 +193,94 @@ class ExploreEvent {
   const ExploreEvent({
     required this.id,
     required this.title,
-    required this.category,
     required this.startsAt,
-    required this.trendingScore,
     required this.venue,
     required this.location,
+    this.categories = const [],
+    this.media = const [],
+    this.thumbnailUrl,
+    this.endsAt,
+    this.minAge,
+    this.maxAge,
+    this.eventType,
+    this.eventSource,
     this.description,
     this.address,
-    this.categoryId,
-    this.categoryName,
+    this.status = EventStatus.published,
+    this.slotLimit,
+    this.ticketUrl,
+    this.organizers = const [],
+    this.createdAt,
+    this.updatedAt,
+    this.trendingScore = 0,
   });
 
   final String id;
   final String title;
-  final ExploreCategory category;
+  final List<Category> categories;
+  final List<EventMedia> media;
+  final String? thumbnailUrl;
   final DateTime startsAt;
+  final DateTime? endsAt;
   final int trendingScore;
   final String venue;
   final LatLng location;
+  final int? minAge;
+  final int? maxAge;
+  final String? eventType;
+  final String? eventSource;
   final String? description;
   final String? address;
-  final String? categoryId;
-  final String? categoryName;
+  final EventStatus status;
+  final int? slotLimit;
+  final String? ticketUrl;
+  final List<String> organizers;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   Color get accentColor {
-    return switch (category) {
-      ExploreCategory.all => const Color(0xFF5B6C8F),
-      ExploreCategory.music => const Color(0xFFB14B6F),
-      ExploreCategory.art => const Color(0xFF607F5B),
-      ExploreCategory.workshops => const Color(0xFF2E7D32),
-      ExploreCategory.food => const Color(0xFF8E6B3A),
-    };
+    if (categories.isEmpty) return const Color(0xFF5B6C8F);
+    // Use the first category to determine the color for now
+    final categoryName = categories.first.name.toLowerCase();
+    if (categoryName.contains('music') || categoryName.contains('muzyka')) {
+      return const Color(0xFFB14B6F);
+    }
+    if (categoryName.contains('art') || categoryName.contains('sztuka')) {
+      return const Color(0xFF607F5B);
+    }
+    if (categoryName.contains('workshop') || categoryName.contains('warsztat')) {
+      return const Color(0xFF2E7D32);
+    }
+    if (categoryName.contains('food') || categoryName.contains('jedzenie')) {
+      return const Color(0xFF8E6B3A);
+    }
+    return const Color(0xFF5B6C8F);
   }
 
   IconData get icon {
-    return switch (category) {
-      ExploreCategory.all => Icons.explore_rounded,
-      ExploreCategory.music => Icons.music_note_rounded,
-      ExploreCategory.art => Icons.palette_outlined,
-      ExploreCategory.workshops => Icons.lightbulb_outline_rounded,
-      ExploreCategory.food => Icons.restaurant_rounded,
-    };
+    if (categories.isEmpty) return Icons.explore_rounded;
+    final categoryName = categories.first.name.toLowerCase();
+    if (categoryName.contains('music') || categoryName.contains('muzyka')) {
+      return Icons.music_note_rounded;
+    }
+    if (categoryName.contains('art') || categoryName.contains('sztuka')) {
+      return Icons.palette_outlined;
+    }
+    if (categoryName.contains('workshop') || categoryName.contains('warsztat')) {
+      return Icons.lightbulb_outline_rounded;
+    }
+    if (categoryName.contains('food') || categoryName.contains('jedzenie')) {
+      return Icons.restaurant_rounded;
+    }
+    return Icons.explore_rounded;
+  }
+
+  String? get effectiveThumbnailUrl {
+    if (thumbnailUrl != null && thumbnailUrl!.isNotEmpty) {
+      return thumbnailUrl;
+    }
+    final firstImage = media.where((m) => m.type == MediaType.image).firstOrNull;
+    return firstImage?.url;
   }
 
   static const Distance _distance = Distance();
@@ -176,13 +310,8 @@ class ExploreEvent {
   }
 
   String categoryLabel(AppLocalizations l10n) {
-    return switch (category) {
-      ExploreCategory.all => l10n.filterAll,
-      ExploreCategory.music => l10n.filterMusic,
-      ExploreCategory.art => l10n.filterArt,
-      ExploreCategory.workshops => l10n.filterWorkshops,
-      ExploreCategory.food => l10n.filterFood,
-    };
+    if (categories.isEmpty) return l10n.filterAll;
+    return categories.map((c) => c.name).join(', ');
   }
 
   String timeLabel(AppLocalizations l10n) {
@@ -257,5 +386,90 @@ ExploreAreaSelection buildPinnedAreaSelection(
     description: l10n.areaPinnedCoordinates(lat, lon),
     icon: Icons.place_rounded,
     center: center,
+  );
+}
+
+class ExploreAdvancedFilters {
+  const ExploreAdvancedFilters({
+    this.distanceFilter = ExploreDistanceFilter.within10Km,
+    this.dateFrom,
+    this.dateTo,
+    this.ageFrom,
+    this.ageTo,
+    this.eventType,
+    this.eventSource,
+  });
+
+  final ExploreDistanceFilter distanceFilter;
+  final DateTime? dateFrom;
+  final DateTime? dateTo;
+  final int? ageFrom;
+  final int? ageTo;
+  final String? eventType;
+  final String? eventSource;
+
+  static const defaults = ExploreAdvancedFilters();
+
+  ExploreAdvancedFilters copyWith({
+    ExploreDistanceFilter? distanceFilter,
+    DateTime? Function()? dateFrom,
+    DateTime? Function()? dateTo,
+    int? Function()? ageFrom,
+    int? Function()? ageTo,
+    String? Function()? eventType,
+    String? Function()? eventSource,
+  }) {
+    return ExploreAdvancedFilters(
+      distanceFilter: distanceFilter ?? this.distanceFilter,
+      dateFrom: dateFrom != null ? dateFrom() : this.dateFrom,
+      dateTo: dateTo != null ? dateTo() : this.dateTo,
+      ageFrom: ageFrom != null ? ageFrom() : this.ageFrom,
+      ageTo: ageTo != null ? ageTo() : this.ageTo,
+      eventType: eventType != null ? eventType() : this.eventType,
+      eventSource: eventSource != null ? eventSource() : this.eventSource,
+    );
+  }
+
+  bool get hasActiveFilters =>
+      distanceFilter != ExploreDistanceFilter.within1Km ||
+      dateFrom != null ||
+      dateTo != null ||
+      ageFrom != null ||
+      ageTo != null ||
+      eventType != null ||
+      eventSource != null;
+
+  int get activeFiltersCount {
+    int count = 0;
+    if (distanceFilter != ExploreDistanceFilter.within1Km) count++;
+    if (dateFrom != null || dateTo != null) count++;
+    if (ageFrom != null || ageTo != null) count++;
+    if (eventType != null) count++;
+    if (eventSource != null) count++;
+    return count;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ExploreAdvancedFilters &&
+        other.distanceFilter == distanceFilter &&
+        other.dateFrom == dateFrom &&
+        other.dateTo == dateTo &&
+        other.ageFrom == ageFrom &&
+        other.ageTo == ageTo &&
+        other.eventType == eventType &&
+        other.eventSource == eventSource;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    distanceFilter,
+    dateFrom,
+    dateTo,
+    ageFrom,
+    ageTo,
+    eventType,
+    eventSource,
   );
 }
