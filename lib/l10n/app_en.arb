@@ -38,8 +38,9 @@
   "hubCreateEventTicketUrlHint": "URL for buying tickets",
   "hubCreateEventStatusLabel": "Event status",
   "eventStatusDraft": "Draft",
-  "eventStatusPublished": "Published",
+  "eventStatusPublished": "Live",
   "hubCreateEventSubmitButton": "Create event",
+  "hubCreateEventSubmitDisabledHint": "Creating events is temporarily disabled until login is wired into the app.",
   "hubCreateEventValidationMinChars3": "Enter at least 3 characters.",
   "hubCreateEventValidationRequired": "This field is required.",
   "hubCreateEventValidationDescriptionMin10": "Description should be at least 10 characters.",
@@ -86,7 +87,7 @@
       }
     }
   },
-  "resultsCount": "{count} results",
+  "resultsCount": "{count,plural, =0{0 results} =1{1 result} other{{count} results}}",
   "@resultsCount": {
     "placeholders": {
       "count": {

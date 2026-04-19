@@ -126,19 +126,6 @@ class _ListToolbar extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(
-                Icons.format_list_bulleted_rounded,
-                size: 14,
-                color: colorScheme.primary,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                l10n.resultsCount(eventsCount),
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
               const Spacer(),
               IconButton.filledTonal(
                 onPressed: onSortOrderToggled,
@@ -155,6 +142,24 @@ class _ListToolbar extends StatelessWidget {
                 selectedSort: selectedSort,
                 onOpened: onSortOpened,
                 onSortChanged: onSortChanged,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Icon(
+                Icons.format_list_bulleted_rounded,
+                size: 14,
+                color: colorScheme.primary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                l10n.resultsCount(eventsCount),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),
@@ -233,9 +238,7 @@ class _SortMenu extends StatelessWidget {
           children: [
             Text(
               _labelFor(l10n, selectedSort),
-              style: Theme.of(
-                context,
-              ).textTheme.labelLarge?.copyWith(
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: colorScheme.onSurface,
               ),
@@ -311,9 +314,7 @@ class _EventCard extends StatelessWidget {
                         child: SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
                     ),
@@ -369,7 +370,11 @@ class _EventCard extends StatelessWidget {
               IconButton(
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                icon: Icon(Icons.share_rounded, size: 20, color: colorScheme.secondary),
+                icon: Icon(
+                  Icons.share_rounded,
+                  size: 20,
+                  color: colorScheme.secondary,
+                ),
                 onPressed: () {
                   final l10n = AppLocalizations.of(context)!;
                   ShareService.shareEvent(

@@ -38,8 +38,9 @@
   "hubCreateEventTicketUrlHint": "Link do zakupu biletów",
   "hubCreateEventStatusLabel": "Status wydarzenia",
   "eventStatusDraft": "Szkic",
-  "eventStatusPublished": "Opublikowane",
+  "eventStatusPublished": "Live",
   "hubCreateEventSubmitButton": "Stwórz wydarzenie",
+  "hubCreateEventSubmitDisabledHint": "Tworzenie wydarzeń jest tymczasowo wyłączone, dopóki logowanie nie zostanie podpięte w aplikacji.",
   "hubCreateEventValidationMinChars3": "Podaj co najmniej 3 znaki.",
   "hubCreateEventValidationRequired": "To pole jest wymagane.",
   "hubCreateEventValidationDescriptionMin10": "Opis powinien mieć co najmniej 10 znaków.",
@@ -86,7 +87,7 @@
       }
     }
   },
-  "resultsCount": "{count} wyników",
+  "resultsCount": "{count,plural, =0{0 wyników} =1{1 wynik} few{{count} wyniki} many{{count} wyników} other{{count} wyniku}}",
   "@resultsCount": {
     "placeholders": {
       "count": {
