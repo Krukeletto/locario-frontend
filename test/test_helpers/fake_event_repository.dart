@@ -22,9 +22,11 @@ class FakeEventRepository implements EventRepository {
   final Object? createEventError;
 
   EventRequest? lastCreateInput;
-  String? lastUploadedEventId;
-  List<int>? lastUploadedBytes;
-  String? lastUploadedFileName;
+  final List<String> uploadedEventIds = [];
+  final List<List<int>> uploadedBytes = [];
+  final List<String> uploadedFileNames = [];
+  String? lastThumbnailEventId;
+  String? lastThumbnailMediaId;
 
   @override
   Future<ExploreEvent> createEvent(EventRequest request) async {
@@ -75,21 +77,30 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> uploadEventMedia(
+  Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
     String fileName,
   ) async {
-    lastUploadedEventId = eventId;
-    lastUploadedBytes = bytes;
-    lastUploadedFileName = fileName;
+    uploadedEventIds.add(eventId);
+    uploadedBytes.add(bytes);
+    uploadedFileNames.add(fileName);
+    return EventMedia(
+      id: 'media-${uploadedFileNames.length}',
+      url: 'https://example.com/$fileName',
+      type: MediaType.image,
+      sortOrder: uploadedFileNames.length - 1,
+    );
   }
 
   @override
   Future<void> deleteEventMedia(String eventId, String mediaId) async {}
 
   @override
-  Future<void> setEventThumbnail(String eventId, String mediaId) async {}
+  Future<void> setEventThumbnail(String eventId, String mediaId) async {
+    lastThumbnailEventId = eventId;
+    lastThumbnailMediaId = mediaId;
+  }
 }
 
 final List<ExploreEvent> _defaultEvents = [

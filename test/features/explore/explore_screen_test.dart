@@ -306,7 +306,7 @@ class _SequencedEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> uploadEventMedia(
+  Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
     String fileName,

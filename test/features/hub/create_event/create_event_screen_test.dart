@@ -86,7 +86,7 @@ Future<void> _pumpCreateEventScreen(
   WidgetTester tester, {
   FakeEventRepository? repository,
   FakeLocationService? locationService,
-  Future<CreateEventPickedFile?> Function()? pickImageFile,
+  Future<List<CreateEventPickedFile>> Function()? pickImageFiles,
   bool canSubmit = true,
 }) async {
   tester.view.physicalSize = const Size(1400, 2600);
@@ -112,7 +112,7 @@ Future<void> _pumpCreateEventScreen(
         child: CreateEventScreen(
           eventRepository: repository ?? FakeEventRepository(),
           locationService: locationService ?? FakeLocationService(),
-          pickImageFile: pickImageFile,
+          pickImageFiles: pickImageFiles,
           canSubmit: canSubmit,
         ),
       ),
@@ -309,7 +309,7 @@ void main() {
       expect(repository.lastCreateInput!.categoryIds, ['workshops']);
     });
 
-    testWidgets('uploads selected image after creating the event', (
+    testWidgets('uploads selected images after creating the event', (
       tester,
     ) async {
       final repository = FakeEventRepository();
@@ -319,14 +319,29 @@ void main() {
         locationService: FakeLocationService(
           currentLocation: const LatLng(51.7592, 19.4550),
         ),
-        pickImageFile: () async => const CreateEventPickedFile(
-          bytes: _transparentImageBytes,
-          fileName: 'poster.jpg',
-        ),
+        pickImageFiles: () async => const [
+          CreateEventPickedFile(
+            bytes: _transparentImageBytes,
+            fileName: 'poster.jpg',
+          ),
+          CreateEventPickedFile(
+            bytes: _transparentImageBytes,
+            fileName: 'venue.png',
+          ),
+        ],
       );
 
       await tester.tap(find.byKey(const Key('create-event-image-picker')));
       await tester.pumpAndSettle();
+
+      expect(find.text('poster.jpg'), findsOneWidget);
+      expect(find.text('venue.png'), findsOneWidget);
+      expect(
+        find.text(
+          'Zdjęcie główne (miniatura). Przeciągnij inne zdjęcie na początek, aby je ustawić.',
+        ),
+        findsOneWidget,
+      );
 
       await tester.enterText(find.byType(TextFormField).at(0), 'Koncert');
       await tester.enterText(
@@ -347,9 +362,17 @@ void main() {
       await tester.tap(find.text('Stwórz wydarzenie').first);
       await tester.pump();
 
-      expect(repository.lastUploadedEventId, repository.eventDetails.id);
-      expect(repository.lastUploadedFileName, 'poster.jpg');
-      expect(repository.lastUploadedBytes, _transparentImageBytes);
+      expect(repository.uploadedEventIds, [
+        repository.eventDetails.id,
+        repository.eventDetails.id,
+      ]);
+      expect(repository.uploadedFileNames, ['poster.jpg', 'venue.png']);
+      expect(repository.uploadedBytes, [
+        _transparentImageBytes,
+        _transparentImageBytes,
+      ]);
+      expect(repository.lastThumbnailEventId, repository.eventDetails.id);
+      expect(repository.lastThumbnailMediaId, 'media-1');
     });
   });
 }

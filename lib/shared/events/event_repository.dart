@@ -79,7 +79,7 @@ abstract class EventRepository {
   Future<ExploreEvent> fetchEvent(String id);
   Future<ExploreEvent> createEvent(EventRequest request);
   Future<ExploreEvent> updateEvent(String id, EventRequest request);
-  Future<void> uploadEventMedia(
+  Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
     String fileName,
@@ -191,7 +191,7 @@ class HttpEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> uploadEventMedia(
+  Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
     String fileName,
@@ -213,6 +213,13 @@ class HttpEventRepository implements EventRepository {
         statusCode: response.statusCode,
       );
     }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw const EventRepositoryException('Unexpected event media payload');
+    }
+
+    return EventMedia.fromJson(decoded);
   }
 
   @override

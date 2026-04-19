@@ -99,8 +99,32 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubCreateEventMainPhotoLabel => 'Dodaj zdjęcie główne';
 
   @override
+  String get hubCreateEventPhotosLabel => 'Dodaj zdjęcia';
+
+  @override
   String get hubCreateEventMainPhotoSizeHint =>
       'Sugerowany rozmiar: 1600 x 900 px';
+
+  @override
+  String hubCreateEventSelectedPhotosCount(int count) {
+    return intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      zero: 'Brak zdjęć',
+      one: '1 wybrane zdjęcie',
+      few: '$count wybrane zdjęcia',
+      many: '$count wybranych zdjęć',
+      other: '$count wybranego zdjęcia',
+    );
+  }
+
+  @override
+  String get hubCreateEventPrimaryPhotoHint =>
+      'Zdjęcie główne (miniatura). Przeciągnij inne zdjęcie na początek, aby je ustawić.';
+
+  @override
+  String get hubCreateEventSecondaryPhotoHint =>
+      'Dodatkowe zdjęcie. Przeciągnij, aby zmienić kolejność.';
 
   @override
   String get hubCreateEventTicketingTitle => 'Bilety i wstęp';

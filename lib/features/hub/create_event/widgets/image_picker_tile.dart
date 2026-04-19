@@ -1,6 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+import 'package:locario/l10n/app_localizations.dart';
+
+import '../create_event_state.dart';
 
 /// Tappable image picker tile. Shows a dashed border when no image is selected,
 /// and overlays a semi-transparent scrim when one is set.
@@ -10,25 +13,29 @@ class CreateEventImagePickerTile extends StatelessWidget {
     required this.label,
     required this.subtitle,
     required this.onTap,
-    this.imageUrl,
-    this.imageBytes,
-    this.selectedFileName,
+    this.selectedImages = const [],
   });
 
   final String label;
   final String subtitle;
   final VoidCallback onTap;
-  final String? imageUrl;
-  final List<int>? imageBytes;
-  final String? selectedFileName;
+  final List<CreateEventSelectedImage> selectedImages;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final hasLocalImage = imageBytes != null && imageBytes!.isNotEmpty;
-    final hasRemoteImage = imageUrl != null && imageUrl!.isNotEmpty;
-    final showImage = hasLocalImage || hasRemoteImage;
+    final l10n = AppLocalizations.of(context)!;
+    final primaryImage = selectedImages.firstOrNull;
+    final showImage = primaryImage != null;
+    final labelText = selectedImages.isEmpty
+        ? label
+        : l10n.hubCreateEventPhotosLabel;
+    final subtitleText = selectedImages.isEmpty
+        ? subtitle
+        : selectedImages.length == 1
+        ? primaryImage!.fileName
+        : l10n.hubCreateEventSelectedPhotosCount(selectedImages.length);
 
     return InkWell(
       key: const Key('create-event-image-picker'),
@@ -47,10 +54,9 @@ class CreateEventImagePickerTile extends StatelessWidget {
             decoration: showImage
                 ? BoxDecoration(
                     image: DecorationImage(
-                      image: hasLocalImage
-                          ? MemoryImage(Uint8List.fromList(imageBytes!))
-                          : CachedNetworkImageProvider(imageUrl!)
-                                as ImageProvider,
+                      image: MemoryImage(
+                        Uint8List.fromList(primaryImage.bytes),
+                      ),
                       fit: BoxFit.cover,
                     ),
                   )
@@ -69,14 +75,14 @@ class CreateEventImagePickerTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    label,
+                    labelText,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: showImage ? Colors.white : null,
                     ),
                   ),
                   Text(
-                    selectedFileName ?? subtitle,
+                    subtitleText,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: showImage
                           ? Colors.white.withValues(alpha: 0.8)

@@ -114,20 +114,31 @@ class CreateEventController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateSelectedImage({
-    required List<int> bytes,
-    required String fileName,
-  }) {
+  void addSelectedImages(List<CreateEventSelectedImage> images) {
+    if (images.isEmpty) return;
     _state = _state.copyWith(
-      selectedImage: () =>
-          CreateEventSelectedImage(bytes: bytes, fileName: fileName),
+      selectedImages: [..._state.selectedImages, ...images],
     );
     notifyListeners();
   }
 
-  void clearSelectedImage() {
-    if (_state.selectedImage == null) return;
-    _state = _state.copyWith(selectedImage: () => null);
+  void removeSelectedImageAt(int index) {
+    if (index < 0 || index >= _state.selectedImages.length) return;
+    final next = [..._state.selectedImages]..removeAt(index);
+    _state = _state.copyWith(selectedImages: next);
+    notifyListeners();
+  }
+
+  void reorderSelectedImages(int oldIndex, int newIndex) {
+    final images = [..._state.selectedImages];
+    if (oldIndex < 0 || oldIndex >= images.length) return;
+    if (newIndex < 0 || newIndex > images.length) return;
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final moved = images.removeAt(oldIndex);
+    images.insert(newIndex, moved);
+    _state = _state.copyWith(selectedImages: images);
     notifyListeners();
   }
 
@@ -190,14 +201,25 @@ class CreateEventController extends ChangeNotifier {
       );
 
       final createdEvent = await _eventRepository.createEvent(request);
-      final selectedImage = _state.selectedImage;
-      if (selectedImage != null) {
+      final selectedImages = _state.selectedImages;
+      if (selectedImages.isNotEmpty) {
         try {
-          await _eventRepository.uploadEventMedia(
-            createdEvent.id,
-            selectedImage.bytes,
-            selectedImage.fileName,
-          );
+          final uploadedMedia = <EventMedia>[];
+          for (final image in selectedImages) {
+            final media = await _eventRepository.uploadEventMedia(
+              createdEvent.id,
+              image.bytes,
+              image.fileName,
+            );
+            uploadedMedia.add(media);
+          }
+          final firstMediaId = uploadedMedia.firstOrNull?.id;
+          if (firstMediaId != null && firstMediaId.isNotEmpty) {
+            await _eventRepository.setEventThumbnail(
+              createdEvent.id,
+              firstMediaId,
+            );
+          }
         } catch (error, stackTrace) {
           debugPrint('CreateEventController image upload failed: $error');
           debugPrintStack(stackTrace: stackTrace);

@@ -272,11 +272,35 @@ abstract class AppLocalizations {
   /// **'Add main photo'**
   String get hubCreateEventMainPhotoLabel;
 
+  /// No description provided for @hubCreateEventPhotosLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos'**
+  String get hubCreateEventPhotosLabel;
+
   /// No description provided for @hubCreateEventMainPhotoSizeHint.
   ///
   /// In en, this message translates to:
   /// **'Suggested size: 1600 x 900 px'**
   String get hubCreateEventMainPhotoSizeHint;
+
+  /// No description provided for @hubCreateEventSelectedPhotosCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count,plural, =0{No photos selected} =1{1 photo selected} other{{count} photos selected}}'**
+  String hubCreateEventSelectedPhotosCount(int count);
+
+  /// No description provided for @hubCreateEventPrimaryPhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Main photo (thumbnail). Drag to keep another image first.'**
+  String get hubCreateEventPrimaryPhotoHint;
+
+  /// No description provided for @hubCreateEventSecondaryPhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional photo. Drag to change order.'**
+  String get hubCreateEventSecondaryPhotoHint;
 
   /// No description provided for @hubCreateEventTicketingTitle.
   ///

@@ -28,7 +28,7 @@ class CreateEventState {
     this.ticketUrlError,
     this.slotLimit,
     this.slotLimitError,
-    this.selectedImage,
+    this.selectedImages = const [],
     this.status = CreateEventFormStatus.idle,
   });
 
@@ -49,7 +49,7 @@ class CreateEventState {
   final String? ticketUrlError;
   final int? slotLimit;
   final String? slotLimitError;
-  final CreateEventSelectedImage? selectedImage;
+  final List<CreateEventSelectedImage> selectedImages;
   final CreateEventFormStatus status;
 
   bool get canSubmit =>
@@ -85,7 +85,7 @@ class CreateEventState {
     String? Function()? ticketUrlError,
     int? Function()? slotLimit,
     String? Function()? slotLimitError,
-    CreateEventSelectedImage? Function()? selectedImage,
+    List<CreateEventSelectedImage>? selectedImages,
     CreateEventFormStatus? status,
   }) {
     return CreateEventState(
@@ -116,9 +116,7 @@ class CreateEventState {
       slotLimitError: slotLimitError != null
           ? slotLimitError()
           : this.slotLimitError,
-      selectedImage: selectedImage != null
-          ? selectedImage()
-          : this.selectedImage,
+      selectedImages: selectedImages ?? this.selectedImages,
       status: status ?? this.status,
     );
   }

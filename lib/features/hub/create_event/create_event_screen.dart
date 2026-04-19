@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -37,19 +38,19 @@ class CreateEventScreen extends StatefulWidget {
     LocationService? locationService,
     CreateEventGeocoder? geocoder,
     EventRefreshSignal? eventRefreshSignal,
-    Future<CreateEventPickedFile?> Function()? pickImageFile,
+    Future<List<CreateEventPickedFile>> Function()? pickImageFiles,
     this.canSubmit = false,
   }) : _eventRepository = eventRepository,
        _locationService = locationService,
        _geocoder = geocoder,
        _eventRefreshSignal = eventRefreshSignal,
-       _pickImageFile = pickImageFile;
+       _pickImageFiles = pickImageFiles;
 
   final EventRepository? _eventRepository;
   final LocationService? _locationService;
   final CreateEventGeocoder? _geocoder;
   final EventRefreshSignal? _eventRefreshSignal;
-  final Future<CreateEventPickedFile?> Function()? _pickImageFile;
+  final Future<List<CreateEventPickedFile>> Function()? _pickImageFiles;
   final bool canSubmit;
 
   @override
@@ -113,30 +114,38 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   Future<void> _handleImagePressed() async {
     _clearFocus();
-    final pickedFile =
-        await (widget._pickImageFile?.call() ?? _pickImageFile());
-    if (!mounted || pickedFile == null) {
+    final pickedFiles =
+        await (widget._pickImageFiles?.call() ?? _pickImageFiles());
+    if (!mounted || pickedFiles.isEmpty) {
       return;
     }
 
-    _controller.updateSelectedImage(
-      bytes: pickedFile.bytes,
-      fileName: pickedFile.fileName,
+    _controller.addSelectedImages(
+      pickedFiles
+          .map(
+            (file) => CreateEventSelectedImage(
+              bytes: file.bytes,
+              fileName: file.fileName,
+            ),
+          )
+          .toList(),
     );
   }
 
-  Future<CreateEventPickedFile?> _pickImageFile() async {
+  Future<List<CreateEventPickedFile>> _pickImageFiles() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       withData: true,
+      allowMultiple: true,
     );
-    final file = result?.files.singleOrNull;
-    final bytes = file?.bytes;
-    if (file == null || bytes == null || bytes.isEmpty) {
-      return null;
-    }
-
-    return CreateEventPickedFile(bytes: bytes, fileName: file.name);
+    final files = result?.files ?? const [];
+    return files
+        .where((file) => file.bytes != null && file.bytes!.isNotEmpty)
+        .map(
+          (file) =>
+              CreateEventPickedFile(bytes: file.bytes!, fileName: file.name),
+        )
+        .toList();
   }
 
   Future<void> _pickDate() async {
@@ -250,10 +259,17 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   CreateEventImagePickerTile(
                     label: l10n.hubCreateEventMainPhotoLabel,
                     subtitle: l10n.hubCreateEventMainPhotoSizeHint,
-                    selectedFileName: state.selectedImage?.fileName,
-                    imageBytes: state.selectedImage?.bytes,
+                    selectedImages: state.selectedImages,
                     onTap: _handleImagePressed,
                   ),
+                  if (state.selectedImages.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _SelectedImagesList(
+                      images: state.selectedImages,
+                      onRemove: _controller.removeSelectedImageAt,
+                      onReorder: _controller.reorderSelectedImages,
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   CreateEventBasicInfoSection(
                     titleController: _titleController,
@@ -350,6 +366,106 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       leading: IconButton(
         onPressed: () => Navigator.of(context).maybePop(),
         icon: const Icon(Icons.close_rounded),
+      ),
+    );
+  }
+}
+
+class _SelectedImagesList extends StatelessWidget {
+  const _SelectedImagesList({
+    required this.images,
+    required this.onRemove,
+    required this.onReorder,
+  });
+
+  final List<CreateEventSelectedImage> images;
+  final ValueChanged<int> onRemove;
+  final void Function(int oldIndex, int newIndex) onReorder;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 280),
+      child: ReorderableListView.builder(
+        key: const Key('create-event-image-list'),
+        shrinkWrap: true,
+        buildDefaultDragHandles: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: images.length,
+        onReorder: onReorder,
+        itemBuilder: (context, index) {
+          final image = images[index];
+          final isPrimary = index == 0;
+
+          return Container(
+            key: ValueKey('${image.fileName}-$index'),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isPrimary
+                    ? scheme.primary.withValues(alpha: 0.35)
+                    : scheme.outline.withValues(alpha: 0.12),
+              ),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.memory(
+                  Uint8List.fromList(image.bytes),
+                  width: 52,
+                  height: 52,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              title: Text(
+                image.fileName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              subtitle: Text(
+                isPrimary
+                    ? l10n.hubCreateEventPrimaryPhotoHint
+                    : l10n.hubCreateEventSecondaryPhotoHint,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: isPrimary ? scheme.primary : scheme.onSurfaceVariant,
+                  fontWeight: isPrimary ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () => onRemove(index),
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).deleteButtonTooltip,
+                  ),
+                  ReorderableDragStartListener(
+                    index: index,
+                    child: const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Icon(Icons.drag_handle_rounded),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
