@@ -4,13 +4,6 @@ on:
   pull_request:
     branches:
       - dev
-      - release
-    paths-ignore:
-      - "**/*.md"
-      - ".gitignore"
-  push:
-    branches:
-      - dev
     paths-ignore:
       - "**/*.md"
       - ".gitignore"
