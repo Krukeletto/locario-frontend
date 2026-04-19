@@ -24,13 +24,21 @@ void main() {
           controller: localeController,
           child: ThemeScope(
             controller: themeController,
-            child: buildLocalizedTestApp(home: const SettingsScreen()),
+            child: buildLocalizedTestApp(
+              locale: const Locale('pl'),
+              home: const SettingsScreen(),
+            ),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Angielski'));
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const Key('settings-language-segmented')),
+          matching: find.text('Angielski'),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(localeController.locale, const Locale('en'));
@@ -49,13 +57,21 @@ void main() {
           controller: localeController,
           child: ThemeScope(
             controller: themeController,
-            child: buildLocalizedTestApp(home: const SettingsScreen()),
+            child: buildLocalizedTestApp(
+              locale: const Locale('pl'),
+              home: const SettingsScreen(),
+            ),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Ciemny'));
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const Key('settings-theme-segmented')),
+          matching: find.text('Ciemny'),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(themeController.themeMode, ThemeMode.dark);
