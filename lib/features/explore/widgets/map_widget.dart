@@ -1,7 +1,12 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:maplibre/maplibre.dart';
+import 'package:html/dom.dart' as dom;
+import 'package:html/parser.dart' as html_parser;
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../shared/map/style_repository.dart';
 import '../map_view_model.dart';
@@ -22,6 +27,9 @@ class MapWidget extends StatefulWidget {
     this.recenterAlignment = Alignment.bottomRight,
     this.recenterPadding = const EdgeInsets.only(right: 16, bottom: 16),
     this.onCameraCenterChanged,
+    this.onVisibleRadiusChanged,
+    this.searchRadiusCenter,
+    this.searchRadiusMeters,
   });
 
   final ExploreMapViewModel controller;
@@ -34,6 +42,9 @@ class MapWidget extends StatefulWidget {
   final Alignment recenterAlignment;
   final EdgeInsets recenterPadding;
   final ValueChanged<LatLng>? onCameraCenterChanged;
+  final ValueChanged<int>? onVisibleRadiusChanged;
+  final LatLng? searchRadiusCenter;
+  final int? searchRadiusMeters;
 
   @override
   State<MapWidget> createState() => _MapWidgetState();
@@ -41,6 +52,9 @@ class MapWidget extends StatefulWidget {
 
 class _MapWidgetState extends State<MapWidget> {
   static const _mapControlBottomOffset = 16.0;
+  static const _searchRadiusSourceId = 'explore-search-radius-source';
+  static const _searchRadiusFillLayerId = 'explore-search-radius-fill-layer';
+  static const _searchRadiusLineLayerId = 'explore-search-radius-line-layer';
   static final _supportsMapLibre = _detectMapLibreSupport();
 
   MapController? _mapController;
@@ -128,7 +142,10 @@ class _MapWidgetState extends State<MapWidget> {
       _refreshStyle(_resolvedBrightness ?? Theme.of(context).brightness);
     }
 
-    if (oldWidget.events != widget.events && _isStyleLoaded) {
+    if ((oldWidget.events != widget.events ||
+            oldWidget.searchRadiusCenter != widget.searchRadiusCenter ||
+            oldWidget.searchRadiusMeters != widget.searchRadiusMeters) &&
+        _isStyleLoaded) {
       _syncEventMarkers();
     }
 
@@ -182,6 +199,7 @@ class _MapWidgetState extends State<MapWidget> {
       events: widget.events,
       markerBuilder: _buildEventMarkerBadge,
     );
+    await _initializeSearchRadiusLayers();
     if (mounted) {
       setState(() {});
     }
@@ -194,6 +212,7 @@ class _MapWidgetState extends State<MapWidget> {
       _cameraSync.markSynced(currentLocation);
       widget.onCameraCenterChanged?.call(currentLocation);
       await _syncEventMarkers();
+      _updateVisibleSearchRadius();
       _updateUserLocationVisibility();
       return;
     }
@@ -203,6 +222,7 @@ class _MapWidgetState extends State<MapWidget> {
     _cameraSync.markSynced(targetCenter);
     widget.onCameraCenterChanged?.call(targetCenter);
     await _syncEventMarkers();
+    _updateVisibleSearchRadius();
     _updateUserLocationVisibility();
   }
 
@@ -235,6 +255,84 @@ class _MapWidgetState extends State<MapWidget> {
       events: widget.events,
       markerBuilder: _buildEventMarkerBadge,
     );
+    await _syncSearchRadiusOverlay();
+  }
+
+  Future<void> _initializeSearchRadiusLayers() async {
+    final style = _mapController?.style;
+    if (style == null) {
+      return;
+    }
+
+    try {
+      await style.addSource(
+        const GeoJsonSource(
+          id: _searchRadiusSourceId,
+          data: '{"type":"FeatureCollection","features":[]}',
+        ),
+      );
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    final colorScheme = Theme.of(context).colorScheme;
+    try {
+      await style.addLayer(
+        FillStyleLayer(
+          id: _searchRadiusFillLayerId,
+          sourceId: _searchRadiusSourceId,
+          paint: {
+            'fill-color': colorScheme.primary.toHexString(),
+            'fill-opacity': 0.12,
+          },
+        ),
+      );
+    } catch (_) {}
+
+    try {
+      await style.addLayer(
+        LineStyleLayer(
+          id: _searchRadiusLineLayerId,
+          sourceId: _searchRadiusSourceId,
+          paint: {
+            'line-color': colorScheme.primary.toHexString(),
+            'line-width': 2,
+            'line-opacity': 0.45,
+          },
+        ),
+      );
+    } catch (_) {}
+
+    await _syncSearchRadiusOverlay();
+  }
+
+  Future<void> _syncSearchRadiusOverlay() async {
+    final style = _mapController?.style;
+    if (style == null) {
+      return;
+    }
+
+    final center = widget.searchRadiusCenter;
+    final radiusMeters = widget.searchRadiusMeters;
+    final data = center == null || radiusMeters == null
+        ? '{"type":"FeatureCollection","features":[]}'
+        : _buildSearchRadiusGeoJson(center, radiusMeters);
+
+    try {
+      await style.updateGeoJsonSource(id: _searchRadiusSourceId, data: data);
+    } catch (_) {}
+  }
+
+  String _buildSearchRadiusGeoJson(LatLng center, int radiusMeters) {
+    const distance = Distance();
+    final ring = <String>[];
+    for (var step = 0; step <= 64; step++) {
+      final bearing = step * (360 / 64);
+      final point = distance.offset(center, radiusMeters.toDouble(), bearing);
+      ring.add('[${point.longitude},${point.latitude}]');
+    }
+
+    return '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[${ring.join(',')}]]}}]}';
   }
 
   bool _isLocationVisible(LatLng location) {
@@ -248,6 +346,40 @@ class _MapWidgetState extends State<MapWidget> {
     } catch (error) {
       debugPrint('Map location visibility check failed: $error');
       return false;
+    }
+  }
+
+  void _updateVisibleSearchRadius() {
+    final mapController = _mapController;
+    if (mapController == null) {
+      return;
+    }
+
+    try {
+      final visibleRegion = mapController.getVisibleRegion();
+      final cameraCenter = mapController.camera?.center;
+      if (cameraCenter == null) {
+        return;
+      }
+
+      final center = _fromGeographic(cameraCenter);
+      const distance = Distance();
+      final corners = [
+        LatLng(visibleRegion.latitudeNorth, visibleRegion.longitudeEast),
+        LatLng(visibleRegion.latitudeNorth, visibleRegion.longitudeWest),
+        LatLng(visibleRegion.latitudeSouth, visibleRegion.longitudeEast),
+        LatLng(visibleRegion.latitudeSouth, visibleRegion.longitudeWest),
+      ];
+
+      final radiusMeters = corners
+          .map((corner) => distance(center, corner).round())
+          .fold<int>(0, (max, value) => value > max ? value : max);
+
+      if (radiusMeters > 0) {
+        widget.onVisibleRadiusChanged?.call(radiusMeters);
+      }
+    } catch (error) {
+      debugPrint('Visible search radius update failed: $error');
     }
   }
 
@@ -312,14 +444,19 @@ class _MapWidgetState extends State<MapWidget> {
       _handleMapTap(event.screenPoint);
     }
     if (event is MapEventMoveCamera) {
-      widget.onCameraCenterChanged?.call(_fromGeographic(event.camera.center));
+      final center = _fromGeographic(event.camera.center);
+      _cameraSync.markSynced(center);
+      widget.onCameraCenterChanged?.call(center);
     }
     if (event is MapEventCameraIdle) {
       final camera = _mapController?.camera;
       if (camera != null) {
-        widget.onCameraCenterChanged?.call(_fromGeographic(camera.center));
+        final center = _fromGeographic(camera.center);
+        _cameraSync.markSynced(center);
+        widget.onCameraCenterChanged?.call(center);
       }
       _syncEventMarkers();
+      _updateVisibleSearchRadius();
       _updateUserLocationVisibility();
     }
   }
@@ -355,7 +492,33 @@ class _MapWidgetState extends State<MapWidget> {
       return;
     }
 
-    _showClusterEvents(events);
+    final currentZoom = mapController.camera?.zoom ?? 16.0;
+    if (currentZoom >= 18.0) {
+      _showClusterEvents(events);
+      return;
+    }
+
+    double minLat = events.first.location.latitude;
+    double maxLat = minLat;
+    double minLng = events.first.location.longitude;
+    double maxLng = minLng;
+    for (final event in events) {
+      if (event.location.latitude < minLat) minLat = event.location.latitude;
+      if (event.location.latitude > maxLat) maxLat = event.location.latitude;
+      if (event.location.longitude < minLng) minLng = event.location.longitude;
+      if (event.location.longitude > maxLng) maxLng = event.location.longitude;
+    }
+
+    final diffLat = maxLat - minLat;
+    final diffLng = maxLng - minLng;
+    if (diffLat < 0.0001 && diffLng < 0.0001) {
+      _showClusterEvents(events);
+      return;
+    }
+
+    final targetZoom = (currentZoom + 2.5).clamp(2.0, 19.0);
+    final center = LatLng((minLat + maxLat) / 2, (minLng + maxLng) / 2);
+    _moveTo(center, targetZoom, animate: true);
   }
 
   void _openEvent(ExploreEvent event) {
@@ -461,7 +624,7 @@ class _MapWidgetState extends State<MapWidget> {
         maxZoom: 19.0,
       ),
       children: [
-        SourceAttribution(
+        _CollapsedSourceAttribution(
           padding: widget.attributionPadding,
           alignment: widget.attributionAlignment,
           showMapLibre: false,
@@ -588,6 +751,147 @@ class _MapWidgetState extends State<MapWidget> {
           },
         );
       },
+    );
+  }
+}
+
+class _CollapsedSourceAttribution extends StatefulWidget {
+  const _CollapsedSourceAttribution({
+    this.padding = const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+    this.alignment = Alignment.bottomRight,
+    this.showMapLibre = true,
+  });
+
+  final EdgeInsets padding;
+  final Alignment alignment;
+  final bool showMapLibre;
+
+  @override
+  State<_CollapsedSourceAttribution> createState() =>
+      _CollapsedSourceAttributionState();
+}
+
+class _CollapsedSourceAttributionState
+    extends State<_CollapsedSourceAttribution> {
+  bool _expanded = false;
+  MapCamera? _initMapCamera;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = MapController.maybeOf(context)?.style;
+    final camera = MapCamera.maybeOf(context);
+    if (style == null || camera == null) {
+      return const SizedBox.shrink();
+    }
+
+    _initMapCamera ??= camera;
+    if (_expanded && _initMapCamera != camera) {
+      _initMapCamera = null;
+      _expanded = false;
+    }
+
+    final theme = Theme.of(context);
+    final size = MediaQuery.sizeOf(context);
+    final attributions = [
+      if (widget.showMapLibre) '<a href="https://maplibre.org/">MapLibre</a>',
+      ...style.getAttributionsSync(),
+    ];
+
+    return SafeArea(
+      child: Container(
+        alignment: widget.alignment,
+        padding: widget.padding,
+        child: PointerInterceptor(
+          child: Container(
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_expanded)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 5, top: 5, left: 10),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: size.width / 2),
+                      child: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 2,
+                        runSpacing: 2,
+                        children: attributions
+                            .map(_MapAttributionHtml.new)
+                            .toList(growable: false),
+                      ),
+                    ),
+                  ),
+                SizedBox.square(
+                  dimension: 30,
+                  child: IconButton(
+                    onPressed: () => setState(() {
+                      _initMapCamera = null;
+                      _expanded = !_expanded;
+                    }),
+                    icon: const Icon(Icons.info, size: 18),
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MapAttributionHtml extends StatefulWidget {
+  const _MapAttributionHtml(this.html);
+
+  final String html;
+
+  @override
+  State<_MapAttributionHtml> createState() => _MapAttributionHtmlState();
+}
+
+class _MapAttributionHtmlState extends State<_MapAttributionHtml> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    var textStyle = Theme.of(context).textTheme.bodySmall;
+    if (_hovering) {
+      textStyle = textStyle?.copyWith(decoration: TextDecoration.underline);
+    }
+
+    final textSpans = <TextSpan>[];
+    final document = html_parser.parse(widget.html);
+
+    for (final node in document.body?.nodes ?? const <dom.Node>[]) {
+      if (node is dom.Text) {
+        textSpans.add(TextSpan(text: node.text));
+      } else if (node is dom.Element && node.localName == 'a') {
+        textSpans.add(
+          TextSpan(
+            onEnter: (_) => setState(() => _hovering = true),
+            onExit: (_) => setState(() => _hovering = false),
+            text: node.text,
+            style: textStyle,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                final href = node.attributes['href'];
+                if (href != null) {
+                  launchUrl(Uri.parse(href));
+                }
+              },
+          ),
+        );
+      }
+    }
+
+    return RichText(
+      text: TextSpan(style: textStyle, children: textSpans),
     );
   }
 }

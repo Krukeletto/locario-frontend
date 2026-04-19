@@ -13,6 +13,45 @@ import '../features/shell/shell.dart';
 import '../features/shell/hub/hub_action_item.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+final RegExp _uuidLikePattern = RegExp(
+  r'^[0-9a-fA-F]{8}-'
+  r'[0-9a-fA-F]{4}-'
+  r'[0-9a-fA-F]{4}-'
+  r'[0-9a-fA-F]{4}-'
+  r'[0-9a-fA-F]{12}$',
+);
+
+String? normalizeIncomingLocation(Uri uri) {
+  final pathSegments = uri.pathSegments;
+
+  // Accept the shared custom scheme `locario://events/<id>` (legacy)
+  if (uri.scheme == 'locario' &&
+      uri.host == 'events' &&
+      pathSegments.length == 1) {
+    return '/events/${pathSegments.first}';
+  }
+
+  // Accept the new HTTPS deep link `https://locario-events.web.app/events/<id>`
+  if (uri.scheme == 'https' &&
+      uri.host == 'locario-events.web.app' &&
+      pathSegments.length == 2 &&
+      pathSegments.first == 'events') {
+    return '/events/${pathSegments.last}';
+  }
+
+  // Some platforms can surface the deep link to Flutter as only the path
+  // portion. Support a single UUID-like segment and normalize it to the event
+  // details route while leaving known top-level sections untouched.
+  if (uri.scheme.isEmpty &&
+      uri.host.isEmpty &&
+      pathSegments.length == 1 &&
+      !const {'explore', 'inbox', 'profile'}.contains(pathSegments.first) &&
+      _uuidLikePattern.hasMatch(pathSegments.first)) {
+    return '/events/${pathSegments.first}';
+  }
+
+  return null;
+}
 
 final List<HubActionItem> hubActionItems = [
   const HubActionItem(
@@ -36,6 +75,13 @@ final List<HubActionItem> hubActionItems = [
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/explore',
+  redirect: (context, state) {
+    final normalizedLocation = normalizeIncomingLocation(state.uri);
+    if (normalizedLocation != null && normalizedLocation != state.uri.path) {
+      return normalizedLocation;
+    }
+    return null;
+  },
   routes: [
     // Indexed stack keeps tab navigator state alive between tab switches.
     StatefulShellRoute.indexedStack(

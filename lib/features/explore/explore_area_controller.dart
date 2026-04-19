@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:locario/l10n/app_localizations.dart';
-
+import '../../shared/services/l10n_service.dart';
 import 'models.dart';
 
 typedef ExploreGeocoder = Future<List<Location>> Function(String address);
 
 enum ExploreAddressLookupStatus { success, notFound, error }
+
+enum ExploreAreaSelectionMode { currentLocation, typedAddress, mapPin }
 
 class ExploreAddressLookupResult {
   const ExploreAddressLookupResult._({required this.status, this.center});
@@ -37,6 +38,15 @@ class ExploreAreaController extends ChangeNotifier {
   bool _isPickingAreaOnMap = false;
 
   bool get isPickingAreaOnMap => _isPickingAreaOnMap;
+  ExploreAreaSelectionMode get selectionMode {
+    if (_typedAreaLabel != null && _typedAreaLabel!.isNotEmpty) {
+      return ExploreAreaSelectionMode.typedAddress;
+    }
+    if (_selectedAreaCenter != null) {
+      return ExploreAreaSelectionMode.mapPin;
+    }
+    return ExploreAreaSelectionMode.currentLocation;
+  }
 
   void selectCurrentLocation() {
     _typedAreaLabel = null;
@@ -65,6 +75,13 @@ class ExploreAreaController extends ChangeNotifier {
 
   void updateViewportCenter(LatLng center) {
     _mapViewportCenter = center;
+  }
+
+  void searchInArea(LatLng center) {
+    _typedAreaLabel = null;
+    _selectedAreaCenter = center;
+    _isPickingAreaOnMap = false;
+    notifyListeners();
   }
 
   LatLng confirmMapPicking(LatLng fallbackCenter) {
@@ -102,7 +119,8 @@ class ExploreAreaController extends ChangeNotifier {
     return _selectedAreaCenter ?? currentLocation ?? fallbackCenter;
   }
 
-  ExploreAreaSelection selectedArea(AppLocalizations l10n) {
+  ExploreAreaSelection selectedArea() {
+    final l10n = L10nService.l10n;
     final typedAreaLabel = _typedAreaLabel;
     if (typedAreaLabel != null && typedAreaLabel.isNotEmpty) {
       return buildTypedAddressAreaSelection(

@@ -99,8 +99,32 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubCreateEventMainPhotoLabel => 'Dodaj zdjęcie główne';
 
   @override
+  String get hubCreateEventPhotosLabel => 'Dodaj zdjęcia';
+
+  @override
   String get hubCreateEventMainPhotoSizeHint =>
       'Sugerowany rozmiar: 1600 x 900 px';
+
+  @override
+  String hubCreateEventSelectedPhotosCount(int count) {
+    return intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      zero: 'Brak zdjęć',
+      one: '1 wybrane zdjęcie',
+      few: '$count wybrane zdjęcia',
+      many: '$count wybranych zdjęć',
+      other: '$count wybranego zdjęcia',
+    );
+  }
+
+  @override
+  String get hubCreateEventPrimaryPhotoHint =>
+      'Zdjęcie główne (miniatura). Przeciągnij inne zdjęcie na początek, aby je ustawić.';
+
+  @override
+  String get hubCreateEventSecondaryPhotoHint =>
+      'Dodatkowe zdjęcie. Przeciągnij, aby zmienić kolejność.';
 
   @override
   String get hubCreateEventTicketingTitle => 'Bilety i wstęp';
@@ -116,7 +140,26 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubCreateEventTicketPriceLabel => 'Cena biletu';
 
   @override
+  String get hubCreateEventTicketingLabel => 'Bilety i wstęp';
+
+  @override
+  String get hubCreateEventTicketUrlHint => 'Link do zakupu biletów';
+
+  @override
+  String get hubCreateEventStatusLabel => 'Status wydarzenia';
+
+  @override
+  String get eventStatusDraft => 'Szkic';
+
+  @override
+  String get eventStatusPublished => 'Live';
+
+  @override
   String get hubCreateEventSubmitButton => 'Stwórz wydarzenie';
+
+  @override
+  String get hubCreateEventSubmitDisabledHint =>
+      'Tworzenie wydarzeń jest tymczasowo wyłączone, dopóki logowanie nie zostanie podpięte w aplikacji.';
 
   @override
   String get hubCreateEventValidationMinChars3 => 'Podaj co najmniej 3 znaki.';
@@ -253,7 +296,16 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String resultsCount(int count) {
-    return '$count wyników';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count wyniku',
+      few: '$count wyniki',
+      many: '$count wyników',
+      one: '1 wynik',
+      zero: '0 wyników',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -293,6 +345,77 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get filterFood => 'Jedzenie';
+
+  @override
+  String get filterAdvancedFilters => 'Filtry zaawansowane';
+
+  @override
+  String get filterAdvancedDistance => 'Zasięg wyszukiwania';
+
+  @override
+  String get filterAdvancedDateRange => 'Data wydarzenia';
+
+  @override
+  String get filterAdvancedAge => 'Wiek (lata)';
+
+  @override
+  String get filterAdvancedType => 'Typ wydarzenia';
+
+  @override
+  String get filterAdvancedSource => 'Źródło wydarzenia';
+
+  @override
+  String get filterAdvancedApply => 'Pokaż wyniki';
+
+  @override
+  String get filterAdvancedClear => 'Wyczyść';
+
+  @override
+  String get exploreSearchThisArea => 'Przeszukaj ten obszar';
+
+  @override
+  String get filterAdvancedDateFrom => 'Od';
+
+  @override
+  String get filterAdvancedDateTo => 'Do';
+
+  @override
+  String get filterAdvancedDateAny => 'Dowolna data';
+
+  @override
+  String get filterAdvancedDateToday => 'Dziś';
+
+  @override
+  String get filterAdvancedDateTomorrow => 'Jutro';
+
+  @override
+  String get filterAdvancedDateCustomRange => 'Zakres dat';
+
+  @override
+  String get filterAdvancedDateOther => 'Inna data';
+
+  @override
+  String get filterAdvancedDateSelection => 'Wybrana data';
+
+  @override
+  String get filterAdvancedAgeFrom => 'Min';
+
+  @override
+  String get filterAdvancedAgeTo => 'Max';
+
+  @override
+  String get filterAdvancedAgeSelection => 'Wiek uczestnika';
+
+  @override
+  String get filterAdvancedAgeCustomRange => 'Przedział wieku';
+
+  @override
+  String get filterAdvancedAgeOther => 'Inny wiek';
+
+  @override
+  String filterAdvancedAgeRangeSummary(int from, int to) {
+    return '$from–$to lat';
+  }
 
   @override
   String get areaMyLocation => 'Moja lokalizacja';
@@ -397,7 +520,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get eventStreetFoodTitle => 'Street food i vinyl market';
 
   @override
-  String get eventDetailsScreenTitle => 'Szczegóły wydarzenia';
+  String get eventDetailsScreenTitle => 'Szczegóły';
 
   @override
   String get eventDetailsImagePlaceholder => 'Tymczasowy placeholder zdjęcia';
@@ -474,6 +597,17 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get eventDetailsStreetFoodDescription =>
       'Street food, selekcja płyt winylowych i mini sety DJ-skie. Wydarzenie całodzienne.';
+
+  @override
+  String get eventDetailsTicketLabel => 'Bilety';
+
+  @override
+  String get eventDetailsSlotsLabel => 'Limit miejsc';
+
+  @override
+  String eventDetailsSlotsValue(int count) {
+    return '$count wolnych miejsc';
+  }
 
   @override
   String get eventToday2030 => 'Dziś, 20:30';
@@ -558,5 +692,48 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String mapEventOpenSoon(String title) {
     return 'Ekran wydarzenia „$title” dodamy później.';
+  }
+
+  @override
+  String get authLoginSuccess => 'Zalogowano pomyślnie.';
+
+  @override
+  String get authLoginErrorInvalidCredentials => 'Błędny e-mail lub hasło.';
+
+  @override
+  String get eventSaveSuccess => 'Wydarzenie zapisano na Twojej liście.';
+
+  @override
+  String get eventRemoveSuccess => 'Wydarzenie usunięto z Twojej listy.';
+
+  @override
+  String get eventPublishSuccess => 'Wydarzenie zostało opublikowane.';
+
+  @override
+  String get eventPublishError =>
+      'Nie udało się opublikować wydarzenia. Spróbuj ponownie.';
+
+  @override
+  String get networkError => 'Błąd sieci. Sprawdź swoje połączenie.';
+
+  @override
+  String get networkErrorRetry => 'Ponów';
+
+  @override
+  String get exploreErrorPermissionTitle => 'Wymagany dostęp do lokalizacji';
+
+  @override
+  String get exploreErrorPermissionSubtitle =>
+      'Zezwól na dostęp do lokalizacji, aby zobaczyć wydarzenia w pobliżu.';
+
+  @override
+  String get exploreErrorUnknownTitle => 'Coś poszło nie tak';
+
+  @override
+  String get exploreErrorUnknownSubtitle => 'Wystąpił nieoczekiwany błąd.';
+
+  @override
+  String shareEventMessage(String title, String url) {
+    return 'Sprawdź to wydarzenie w Locario: $title\n\n$url';
   }
 }

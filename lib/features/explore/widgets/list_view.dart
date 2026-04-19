@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
 import '../models.dart';
+import '../../../shared/services/share_service.dart';
 
 class ExploreListView extends StatelessWidget {
   const ExploreListView({
@@ -10,26 +12,24 @@ class ExploreListView extends StatelessWidget {
     required this.events,
     required this.referenceLocation,
     required this.selectedFilterSummary,
-    required this.selectedArea,
     required this.selectedSort,
-    required this.selectedDistanceFilter,
+    required this.sortAscending,
     required this.isSearchActive,
-    required this.onAreaPressed,
     required this.onSortChanged,
-    required this.onDistanceFilterChanged,
+    required this.onSortOrderToggled,
+    this.onSortOpened,
     required this.onEventTap,
   });
 
   final List<ExploreEvent> events;
   final LatLng referenceLocation;
   final String selectedFilterSummary;
-  final ExploreAreaSelection selectedArea;
   final ExploreSortOption selectedSort;
-  final ExploreDistanceFilter selectedDistanceFilter;
+  final bool sortAscending;
   final bool isSearchActive;
-  final VoidCallback onAreaPressed;
   final ValueChanged<ExploreSortOption> onSortChanged;
-  final ValueChanged<ExploreDistanceFilter> onDistanceFilterChanged;
+  final VoidCallback onSortOrderToggled;
+  final VoidCallback? onSortOpened;
   final ValueChanged<ExploreEvent> onEventTap;
 
   @override
@@ -50,12 +50,11 @@ class ExploreListView extends StatelessWidget {
                 eventsCount: events.length,
                 selectedFilterSummary: selectedFilterSummary,
                 allFilterLabel: l10n.filterAll,
-                selectedArea: selectedArea,
                 selectedSort: selectedSort,
-                selectedDistanceFilter: selectedDistanceFilter,
-                onAreaPressed: onAreaPressed,
+                sortAscending: sortAscending,
+                onSortOpened: onSortOpened,
                 onSortChanged: onSortChanged,
-                onDistanceFilterChanged: onDistanceFilterChanged,
+                onSortOrderToggled: onSortOrderToggled,
               ),
             ),
           Expanded(
@@ -85,23 +84,21 @@ class _ListToolbar extends StatelessWidget {
     required this.eventsCount,
     required this.selectedFilterSummary,
     required this.allFilterLabel,
-    required this.selectedArea,
     required this.selectedSort,
-    required this.selectedDistanceFilter,
-    required this.onAreaPressed,
+    required this.sortAscending,
+    this.onSortOpened,
     required this.onSortChanged,
-    required this.onDistanceFilterChanged,
+    required this.onSortOrderToggled,
   });
 
   final int eventsCount;
   final String selectedFilterSummary;
   final String allFilterLabel;
-  final ExploreAreaSelection selectedArea;
   final ExploreSortOption selectedSort;
-  final ExploreDistanceFilter selectedDistanceFilter;
-  final VoidCallback onAreaPressed;
+  final bool sortAscending;
+  final VoidCallback? onSortOpened;
   final ValueChanged<ExploreSortOption> onSortChanged;
-  final ValueChanged<ExploreDistanceFilter> onDistanceFilterChanged;
+  final VoidCallback onSortOrderToggled;
 
   @override
   Widget build(BuildContext context) {
@@ -117,82 +114,51 @@ class _ListToolbar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            selectedFilterSummary == allFilterLabel
+                ? l10n.exploreNearbyEvents
+                : l10n.exploreNearbyWithFilter(selectedFilterSummary),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  selectedFilterSummary == allFilterLabel
-                      ? l10n.exploreNearbyEvents
-                      : l10n.exploreNearbyWithFilter(selectedFilterSummary),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.3,
-                  ),
+              const Spacer(),
+              IconButton.filledTonal(
+                onPressed: onSortOrderToggled,
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                padding: EdgeInsets.zero,
+                icon: AnimatedRotation(
+                  duration: const Duration(milliseconds: 200),
+                  turns: sortAscending ? 0 : 0.5,
+                  child: const Icon(Icons.sort_rounded, size: 20),
                 ),
               ),
+              const SizedBox(width: 8),
               _SortMenu(
                 selectedSort: selectedSort,
+                onOpened: onSortOpened,
                 onSortChanged: onSortChanged,
-              ),
-              const SizedBox(width: 8),
-              _DistanceFilterMenu(
-                selectedDistanceFilter: selectedDistanceFilter,
-                onDistanceFilterChanged: onDistanceFilterChanged,
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Row(
             children: [
-              Icon(Icons.tune_rounded, size: 16, color: colorScheme.primary),
+              Icon(
+                Icons.format_list_bulleted_rounded,
+                size: 14,
+                color: colorScheme.primary,
+              ),
               const SizedBox(width: 6),
               Text(
                 l10n.resultsCount(eventsCount),
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: InkWell(
-                  key: const Key('explore-area-button'),
-                  onTap: onAreaPressed,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 9,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          selectedArea.icon,
-                          size: 16,
-                          color: colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            selectedArea.label,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.labelLarge
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: colorScheme.secondary,
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
             ],
@@ -204,9 +170,14 @@ class _ListToolbar extends StatelessWidget {
 }
 
 class _SortMenu extends StatelessWidget {
-  const _SortMenu({required this.selectedSort, required this.onSortChanged});
+  const _SortMenu({
+    required this.selectedSort,
+    this.onOpened,
+    required this.onSortChanged,
+  });
 
   final ExploreSortOption selectedSort;
+  final VoidCallback? onOpened;
   final ValueChanged<ExploreSortOption> onSortChanged;
 
   String _labelFor(AppLocalizations l10n, ExploreSortOption option) {
@@ -224,6 +195,7 @@ class _SortMenu extends StatelessWidget {
 
     return PopupMenuButton<ExploreSortOption>(
       tooltip: l10n.sortTooltip,
+      onOpened: onOpened,
       onSelected: onSortChanged,
       itemBuilder: (context) => ExploreSortOption.values
           .map(
@@ -241,7 +213,13 @@ class _SortMenu extends StatelessWidget {
                     color: colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
-                  Text(_labelFor(l10n, option)),
+                  Expanded(child: Text(_labelFor(l10n, option))),
+                  if (option == selectedSort)
+                    Icon(
+                      Icons.check_rounded,
+                      size: 16,
+                      color: colorScheme.primary,
+                    ),
                 ],
               ),
             ),
@@ -249,7 +227,7 @@ class _SortMenu extends StatelessWidget {
           .toList(),
       child: Container(
         key: const Key('explore-sort-button'),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
@@ -258,90 +236,17 @@ class _SortMenu extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.swap_vert_rounded, color: colorScheme.primary, size: 17),
-            const SizedBox(width: 6),
             Text(
               _labelFor(l10n, selectedSort),
-              style: Theme.of(
-                context,
-              ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DistanceFilterMenu extends StatelessWidget {
-  const _DistanceFilterMenu({
-    required this.selectedDistanceFilter,
-    required this.onDistanceFilterChanged,
-  });
-
-  final ExploreDistanceFilter selectedDistanceFilter;
-  final ValueChanged<ExploreDistanceFilter> onDistanceFilterChanged;
-
-  String _labelFor(
-    AppLocalizations l10n,
-    ExploreDistanceFilter distanceFilter,
-  ) {
-    return switch (distanceFilter) {
-      ExploreDistanceFilter.any => l10n.distanceFilterAny,
-      ExploreDistanceFilter.within1Km => l10n.distanceFilterWithinKm(1),
-      ExploreDistanceFilter.within3Km => l10n.distanceFilterWithinKm(3),
-      ExploreDistanceFilter.within5Km => l10n.distanceFilterWithinKm(5),
-      ExploreDistanceFilter.within10Km => l10n.distanceFilterWithinKm(10),
-      ExploreDistanceFilter.within25Km => l10n.distanceFilterWithinKm(25),
-    };
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-
-    return PopupMenuButton<ExploreDistanceFilter>(
-      tooltip: l10n.distanceFilterTooltip,
-      onSelected: onDistanceFilterChanged,
-      itemBuilder: (context) => ExploreDistanceFilter.values
-          .map(
-            (option) => PopupMenuItem<ExploreDistanceFilter>(
-              value: option,
-              child: Row(
-                children: [
-                  Icon(
-                    option == ExploreDistanceFilter.any
-                        ? Icons.public_rounded
-                        : Icons.radar_rounded,
-                    size: 18,
-                    color: colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(_labelFor(l10n, option)),
-                ],
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: colorScheme.onSurface,
               ),
             ),
-          )
-          .toList(),
-      child: Container(
-        key: const Key('explore-distance-filter-button'),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: colorScheme.outlineVariant),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.radar_rounded, color: colorScheme.primary, size: 17),
-            const SizedBox(width: 6),
-            Text(
-              _labelFor(l10n, selectedDistanceFilter),
-              style: Theme.of(
-                context,
-              ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.arrow_drop_down_rounded,
+              color: colorScheme.onSurfaceVariant,
             ),
           ],
         ),
@@ -393,15 +298,44 @@ class _EventCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: event.accentColor.withValues(alpha: 0.14),
+              if (event.effectiveThumbnailUrl != null)
+                ClipRRect(
                   borderRadius: BorderRadius.circular(18),
+                  child: CachedNetworkImage(
+                    imageUrl: event.effectiveThumbnailUrl!,
+                    width: 54,
+                    height: 54,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      width: 54,
+                      height: 54,
+                      color: event.accentColor.withValues(alpha: 0.1),
+                      child: const Center(
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      width: 54,
+                      height: 54,
+                      color: event.accentColor.withValues(alpha: 0.14),
+                      child: Icon(event.icon, color: event.accentColor),
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: event.accentColor.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Icon(event.icon, color: event.accentColor),
                 ),
-                child: Icon(event.icon, color: event.accentColor),
-              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -432,7 +366,24 @@ class _EventCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                icon: Icon(
+                  Icons.share_rounded,
+                  size: 20,
+                  color: colorScheme.secondary,
+                ),
+                onPressed: () {
+                  final l10n = AppLocalizations.of(context)!;
+                  ShareService.shareEvent(
+                    eventId: event.id,
+                    title: event.title,
+                    l10n: l10n,
+                  );
+                },
+              ),
               Icon(Icons.chevron_right_rounded, color: colorScheme.secondary),
             ],
           ),

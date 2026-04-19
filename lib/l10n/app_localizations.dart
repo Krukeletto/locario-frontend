@@ -272,11 +272,35 @@ abstract class AppLocalizations {
   /// **'Add main photo'**
   String get hubCreateEventMainPhotoLabel;
 
+  /// No description provided for @hubCreateEventPhotosLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos'**
+  String get hubCreateEventPhotosLabel;
+
   /// No description provided for @hubCreateEventMainPhotoSizeHint.
   ///
   /// In en, this message translates to:
   /// **'Suggested size: 1600 x 900 px'**
   String get hubCreateEventMainPhotoSizeHint;
+
+  /// No description provided for @hubCreateEventSelectedPhotosCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count,plural, =0{No photos selected} =1{1 photo selected} other{{count} photos selected}}'**
+  String hubCreateEventSelectedPhotosCount(int count);
+
+  /// No description provided for @hubCreateEventPrimaryPhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Main photo (thumbnail). Drag to keep another image first.'**
+  String get hubCreateEventPrimaryPhotoHint;
+
+  /// No description provided for @hubCreateEventSecondaryPhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional photo. Drag to change order.'**
+  String get hubCreateEventSecondaryPhotoHint;
 
   /// No description provided for @hubCreateEventTicketingTitle.
   ///
@@ -302,11 +326,47 @@ abstract class AppLocalizations {
   /// **'Ticket price'**
   String get hubCreateEventTicketPriceLabel;
 
+  /// No description provided for @hubCreateEventTicketingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticketing'**
+  String get hubCreateEventTicketingLabel;
+
+  /// No description provided for @hubCreateEventTicketUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'URL for buying tickets'**
+  String get hubCreateEventTicketUrlHint;
+
+  /// No description provided for @hubCreateEventStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Event status'**
+  String get hubCreateEventStatusLabel;
+
+  /// No description provided for @eventStatusDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get eventStatusDraft;
+
+  /// No description provided for @eventStatusPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get eventStatusPublished;
+
   /// No description provided for @hubCreateEventSubmitButton.
   ///
   /// In en, this message translates to:
   /// **'Create event'**
   String get hubCreateEventSubmitButton;
+
+  /// No description provided for @hubCreateEventSubmitDisabledHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating events is temporarily disabled until login is wired into the app.'**
+  String get hubCreateEventSubmitDisabledHint;
 
   /// No description provided for @hubCreateEventValidationMinChars3.
   ///
@@ -545,7 +605,7 @@ abstract class AppLocalizations {
   /// No description provided for @resultsCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} results'**
+  /// **'{count,plural, =0{0 results} =1{1 result} other{{count} results}}'**
   String resultsCount(int count);
 
   /// No description provided for @sortTooltip.
@@ -619,6 +679,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Food'**
   String get filterFood;
+
+  /// No description provided for @filterAdvancedFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced Filters'**
+  String get filterAdvancedFilters;
+
+  /// No description provided for @filterAdvancedDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Range'**
+  String get filterAdvancedDistance;
+
+  /// No description provided for @filterAdvancedDateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Event Date'**
+  String get filterAdvancedDateRange;
+
+  /// No description provided for @filterAdvancedAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Age (years)'**
+  String get filterAdvancedAge;
+
+  /// No description provided for @filterAdvancedType.
+  ///
+  /// In en, this message translates to:
+  /// **'Event Type'**
+  String get filterAdvancedType;
+
+  /// No description provided for @filterAdvancedSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Event Source'**
+  String get filterAdvancedSource;
+
+  /// No description provided for @filterAdvancedApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Results'**
+  String get filterAdvancedApply;
+
+  /// No description provided for @filterAdvancedClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get filterAdvancedClear;
+
+  /// No description provided for @exploreSearchThisArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Search this area'**
+  String get exploreSearchThisArea;
+
+  /// No description provided for @filterAdvancedDateFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get filterAdvancedDateFrom;
+
+  /// No description provided for @filterAdvancedDateTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get filterAdvancedDateTo;
+
+  /// No description provided for @filterAdvancedDateAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any date'**
+  String get filterAdvancedDateAny;
+
+  /// No description provided for @filterAdvancedDateToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get filterAdvancedDateToday;
+
+  /// No description provided for @filterAdvancedDateTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get filterAdvancedDateTomorrow;
+
+  /// No description provided for @filterAdvancedDateCustomRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Date range'**
+  String get filterAdvancedDateCustomRange;
+
+  /// No description provided for @filterAdvancedDateOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other date'**
+  String get filterAdvancedDateOther;
+
+  /// No description provided for @filterAdvancedDateSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected date'**
+  String get filterAdvancedDateSelection;
+
+  /// No description provided for @filterAdvancedAgeFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Min'**
+  String get filterAdvancedAgeFrom;
+
+  /// No description provided for @filterAdvancedAgeTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get filterAdvancedAgeTo;
+
+  /// No description provided for @filterAdvancedAgeSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Participant age'**
+  String get filterAdvancedAgeSelection;
+
+  /// No description provided for @filterAdvancedAgeCustomRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Age range'**
+  String get filterAdvancedAgeCustomRange;
+
+  /// No description provided for @filterAdvancedAgeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other age'**
+  String get filterAdvancedAgeOther;
+
+  /// No description provided for @filterAdvancedAgeRangeSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{from}-{to} years'**
+  String filterAdvancedAgeRangeSummary(int from, int to);
 
   /// No description provided for @areaMyLocation.
   ///
@@ -809,7 +1007,7 @@ abstract class AppLocalizations {
   /// No description provided for @eventDetailsScreenTitle.
   ///
   /// In en, this message translates to:
-  /// **'Event details'**
+  /// **'Details'**
   String get eventDetailsScreenTitle;
 
   /// No description provided for @eventDetailsImagePlaceholder.
@@ -950,6 +1148,24 @@ abstract class AppLocalizations {
   /// **'Street food, curated vinyl records and mini DJ sets. An all-day event.'**
   String get eventDetailsStreetFoodDescription;
 
+  /// No description provided for @eventDetailsTicketLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets'**
+  String get eventDetailsTicketLabel;
+
+  /// No description provided for @eventDetailsSlotsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Seat limit'**
+  String get eventDetailsSlotsLabel;
+
+  /// No description provided for @eventDetailsSlotsValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} seats available'**
+  String eventDetailsSlotsValue(int count);
+
   /// No description provided for @eventToday2030.
   ///
   /// In en, this message translates to:
@@ -1087,6 +1303,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The event screen for “{title}” will be added later.'**
   String mapEventOpenSoon(String title);
+
+  /// No description provided for @authLoginSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged in successfully.'**
+  String get authLoginSuccess;
+
+  /// No description provided for @authLoginErrorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password.'**
+  String get authLoginErrorInvalidCredentials;
+
+  /// No description provided for @eventSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event saved to your list.'**
+  String get eventSaveSuccess;
+
+  /// No description provided for @eventRemoveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event removed from your list.'**
+  String get eventRemoveSuccess;
+
+  /// No description provided for @eventPublishSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event published successfully.'**
+  String get eventPublishSuccess;
+
+  /// No description provided for @eventPublishError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to publish event. Try again.'**
+  String get eventPublishError;
+
+  /// No description provided for @networkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Please check your connection.'**
+  String get networkError;
+
+  /// No description provided for @networkErrorRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get networkErrorRetry;
+
+  /// No description provided for @exploreErrorPermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission required'**
+  String get exploreErrorPermissionTitle;
+
+  /// No description provided for @exploreErrorPermissionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Please allow location access to see events nearby.'**
+  String get exploreErrorPermissionSubtitle;
+
+  /// No description provided for @exploreErrorUnknownTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get exploreErrorUnknownTitle;
+
+  /// No description provided for @exploreErrorUnknownSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We encountered an unexpected error.'**
+  String get exploreErrorUnknownSubtitle;
+
+  /// No description provided for @shareEventMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out this event on Locario: {title}\n\n{url}'**
+  String shareEventMessage(String title, String url);
 }
 
 class _AppLocalizationsDelegate

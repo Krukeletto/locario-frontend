@@ -13,14 +13,20 @@ class ExploreMapView extends StatelessWidget {
     required this.styleRepository,
     required this.events,
     required this.onEventTap,
+    required this.referenceLocation,
+    this.searchRadiusMeters,
     this.onCameraCenterChanged,
+    this.onVisibleRadiusChanged,
   });
 
   final ExploreMapViewModel controller;
   final MapStyleRepository styleRepository;
   final List<ExploreEvent> events;
   final ValueChanged<ExploreEvent> onEventTap;
+  final LatLng referenceLocation;
+  final int? searchRadiusMeters;
   final ValueChanged<LatLng>? onCameraCenterChanged;
+  final ValueChanged<int>? onVisibleRadiusChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -32,13 +38,16 @@ class ExploreMapView extends StatelessWidget {
         controller: controller,
         events: events,
         onEventTap: onEventTap,
+        searchRadiusCenter: referenceLocation,
+        searchRadiusMeters: searchRadiusMeters,
         styleRepository: styleRepository,
         onCameraCenterChanged: onCameraCenterChanged,
+        onVisibleRadiusChanged: onVisibleRadiusChanged,
         overlayPadding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-        attributionAlignment: Alignment.bottomRight,
-        attributionPadding: const EdgeInsets.only(right: 8, bottom: 8),
-        recenterAlignment: Alignment.topRight,
-        recenterPadding: const EdgeInsets.only(right: 16, top: 12),
+        attributionAlignment: Alignment.bottomLeft,
+        attributionPadding: const EdgeInsets.only(left: 8, bottom: 8),
+        recenterAlignment: Alignment.bottomRight,
+        recenterPadding: const EdgeInsets.only(right: 16, bottom: 16),
       ),
     );
   }

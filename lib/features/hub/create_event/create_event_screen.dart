@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart' show LatLng;
 import 'package:locario/l10n/app_localizations.dart';
@@ -5,10 +9,27 @@ import 'package:locario/l10n/app_localizations.dart';
 import '../../../shared/events/event_repository.dart';
 import '../../../shared/events/event_refresh_signal.dart';
 import '../../../shared/location/location_service.dart';
-import '../../explore/models.dart';
+import '../../../shared/services/feedback_service.dart';
 import '../../explore/widgets/area_picker.dart';
+import 'create_event_controller.dart';
 import 'create_event_location_controller.dart';
+import 'create_event_state.dart';
 import 'event_map_picker_screen.dart';
+import 'widgets/basic_info_section.dart';
+import 'widgets/form/categories_section.dart';
+import 'widgets/form/date_time_section.dart';
+import 'widgets/form/location_section.dart';
+import 'widgets/form/status_section.dart';
+import 'widgets/form/ticketing_section.dart';
+import 'widgets/form_primitives.dart';
+import 'widgets/image_picker_tile.dart';
+
+class CreateEventPickedFile {
+  const CreateEventPickedFile({required this.bytes, required this.fileName});
+
+  final List<int> bytes;
+  final String fileName;
+}
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({
@@ -17,146 +38,156 @@ class CreateEventScreen extends StatefulWidget {
     LocationService? locationService,
     CreateEventGeocoder? geocoder,
     EventRefreshSignal? eventRefreshSignal,
+    Future<List<CreateEventPickedFile>> Function()? pickImageFiles,
+    this.canSubmit = false,
   }) : _eventRepository = eventRepository,
        _locationService = locationService,
        _geocoder = geocoder,
-       _eventRefreshSignal = eventRefreshSignal;
+       _eventRefreshSignal = eventRefreshSignal,
+       _pickImageFiles = pickImageFiles;
 
   final EventRepository? _eventRepository;
   final LocationService? _locationService;
   final CreateEventGeocoder? _geocoder;
   final EventRefreshSignal? _eventRefreshSignal;
+  final Future<List<CreateEventPickedFile>> Function()? _pickImageFiles;
+  final bool canSubmit;
 
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
 }
 
 class _CreateEventScreenState extends State<CreateEventScreen> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _ticketsCountController = TextEditingController();
-  final TextEditingController _ticketPriceController = TextEditingController();
-
-  late final EventRepository _eventRepository;
-  late final LocationService _locationService;
+  late final CreateEventController _controller;
   late final CreateEventLocationController _locationController;
   late final EventRefreshSignal _eventRefreshSignal;
+  late final LocationService _locationService;
 
-  DateTime? _selectedDate;
-  TimeOfDay? _selectedTime;
-  final List<ExploreCategory> _selectedCategories = [];
-  bool _hasTicketing = false;
-  bool _isSubmitting = false;
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _seatsController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _eventRepository = widget._eventRepository ?? HttpEventRepository();
     _locationService = widget._locationService ?? GeolocatorLocationService();
     _eventRefreshSignal =
         widget._eventRefreshSignal ?? globalEventRefreshSignal;
+    _controller = CreateEventController(
+      eventRepository: widget._eventRepository ?? HttpEventRepository(),
+    );
     _locationController = CreateEventLocationController(
       locationService: _locationService,
       geocoder: widget._geocoder,
     );
+
+    _controller.addListener(_handleStateChanged);
+    _locationController.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_handleStateChanged);
+    _controller.dispose();
+    _locationController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
-    _ticketsCountController.dispose();
-    _ticketPriceController.dispose();
-    _locationController.dispose();
+    _seatsController.dispose();
     super.dispose();
   }
 
-  void _clearInteractionFocus() {
+  void _handleStateChanged() {
+    final state = _controller.state;
+    if (state.status == CreateEventFormStatus.success) {
+      FeedbackService.showSuccess(FeedbackMessage.eventCreated);
+      _eventRefreshSignal.notifyChanged();
+      Navigator.of(context).maybePop();
+    } else if (state.status == CreateEventFormStatus.error) {
+      FeedbackService.showError(FeedbackMessage.unknownError);
+    }
+    setState(() {});
+  }
+
+  void _clearFocus() {
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
+  Future<void> _handleImagePressed() async {
+    _clearFocus();
+    final pickedFiles =
+        await (widget._pickImageFiles?.call() ?? _pickImageFiles());
+    if (!mounted || pickedFiles.isEmpty) {
+      return;
+    }
+
+    _controller.addSelectedImages(
+      pickedFiles
+          .map(
+            (file) => CreateEventSelectedImage(
+              bytes: file.bytes,
+              fileName: file.fileName,
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Future<List<CreateEventPickedFile>> _pickImageFiles() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+      allowMultiple: true,
+    );
+    final files = result?.files ?? const [];
+    return files
+        .where((file) => file.bytes != null && file.bytes!.isNotEmpty)
+        .map(
+          (file) =>
+              CreateEventPickedFile(bytes: file.bytes!, fileName: file.name),
+        )
+        .toList();
+  }
+
   Future<void> _pickDate() async {
-    _clearInteractionFocus();
+    _clearFocus();
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
       firstDate: now,
       lastDate: DateTime(now.year + 2),
-      initialDate: _selectedDate ?? now,
+      initialDate: _controller.state.selectedDate ?? now,
     );
 
-    if (!mounted) {
-      return;
-    }
-
-    _clearInteractionFocus();
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
+    if (mounted && picked != null) {
+      _controller.updateDate(picked);
     }
   }
 
   Future<void> _pickTime() async {
-    _clearInteractionFocus();
+    _clearFocus();
     final picked = await showTimePicker(
       context: context,
-      initialTime: _selectedTime ?? const TimeOfDay(hour: 18, minute: 0),
+      initialTime: TimeOfDay.fromDateTime(
+        _controller.state.selectedTime ?? DateTime.now(),
+      ),
     );
 
-    if (!mounted) {
-      return;
+    if (mounted && picked != null) {
+      final now = DateTime.now();
+      final time = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        picked.hour,
+        picked.minute,
+      );
+      _controller.updateTime(time);
     }
-
-    _clearInteractionFocus();
-    if (picked != null) {
-      setState(() {
-        _selectedTime = picked;
-      });
-    }
-  }
-
-  String _categoryLabel(AppLocalizations l10n, ExploreCategory value) {
-    return switch (value) {
-      ExploreCategory.music => l10n.filterMusic,
-      ExploreCategory.art => l10n.filterArt,
-      ExploreCategory.workshops => l10n.filterWorkshops,
-      ExploreCategory.food => l10n.filterFood,
-      ExploreCategory.all => l10n.filterAll,
-    };
-  }
-
-  bool _isCategorySelected(ExploreCategory category) {
-    return _selectedCategories.contains(category);
-  }
-
-  void _toggleCategory(ExploreCategory category, bool selected) {
-    setState(() {
-      _selectedCategories.remove(category);
-      if (selected) {
-        _selectedCategories.add(category);
-      }
-    });
-  }
-
-  InputDecoration _fieldDecoration(
-    BuildContext context, {
-    required String hintText,
-    IconData? prefixIcon,
-    bool alignLabelWithHint = false,
-  }) {
-    return _buildFieldDecoration(
-      context,
-      hintText: hintText,
-      prefixIcon: prefixIcon,
-      alignLabelWithHint: alignLabelWithHint,
-    );
   }
 
   Future<void> _handleLocationPressed() async {
+    _clearFocus();
     final l10n = AppLocalizations.of(context)!;
-    _clearInteractionFocus();
     final action = await showModalBottomSheet<ExploreAreaSelectionAction>(
       context: context,
       showDragHandle: true,
@@ -167,34 +198,22 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       ),
     );
 
-    if (!mounted || action == null) {
-      return;
-    }
+    if (!mounted || action == null) return;
 
+    CreateEventLocationLookupResult? result;
     switch (action) {
       case ExploreAreaSelectionAction.currentLocation:
-        final result = await _locationController.useCurrentLocation(l10n);
-        if (!mounted) {
-          return;
-        }
-        _clearInteractionFocus();
-        _handleLocationResult(result);
-        return;
+        result = await _locationController.useCurrentLocation();
+        break;
       case ExploreAreaSelectionAction.enterAddress:
         final address = await showDialog<String>(
           context: context,
           builder: (context) => const ExploreAddressInputDialog(),
         );
-        if (!mounted || address == null || address.isEmpty) {
-          return;
+        if (address != null && address.isNotEmpty) {
+          result = await _locationController.selectAddress(address);
         }
-        final result = await _locationController.selectAddress(l10n, address);
-        if (!mounted) {
-          return;
-        }
-        _clearInteractionFocus();
-        _handleLocationResult(result);
-        return;
+        break;
       case ExploreAreaSelectionAction.pickOnMap:
         final center = await Navigator.of(context).push<LatLng>(
           MaterialPageRoute(
@@ -202,108 +221,20 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 EventMapPickerScreen(locationService: _locationService),
           ),
         );
-        if (!mounted || center == null) {
-          return;
+        if (center != null) {
+          _locationController.selectPinnedLocation(center);
         }
-        _clearInteractionFocus();
-        _locationController.selectPinnedLocation(l10n, center);
-        return;
-    }
-  }
-
-  void _handleLocationResult(CreateEventLocationLookupResult result) {
-    final l10n = AppLocalizations.of(context)!;
-    switch (result.status) {
-      case CreateEventLocationLookupStatus.success:
-        return;
-      case CreateEventLocationLookupStatus.notFound:
-      case CreateEventLocationLookupStatus.error:
-        _showSnackBar(l10n.hubCreateEventLocationLookupFailed);
-        return;
-    }
-  }
-
-  Future<void> _submit() async {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (!_formKey.currentState!.validate()) {
-      return;
+        break;
     }
 
-    if (_selectedDate == null || _selectedTime == null) {
-      _showSnackBar(l10n.hubCreateEventValidationDateTimeRequired);
-      return;
+    if (mounted && _locationController.selection != null) {
+      final selection = _locationController.selection!;
+      _controller.updateLocation(selection.label, selection.coordinates);
+    } else if (mounted &&
+        result != null &&
+        result.status != CreateEventLocationLookupStatus.success) {
+      FeedbackService.showError(FeedbackMessage.networkError);
     }
-
-    if (_selectedCategories.isEmpty) {
-      _showSnackBar(l10n.hubCreateEventValidationCategoryRequired);
-      return;
-    }
-
-    final primaryCategory = primaryCategoryForSubmission(_selectedCategories);
-    if (primaryCategory == null) {
-      _showSnackBar(l10n.hubCreateEventValidationCategoryRequired);
-      return;
-    }
-
-    final locationSelection = _locationController.selection;
-    if (locationSelection == null) {
-      _showSnackBar(l10n.hubCreateEventValidationLocationRequired);
-      return;
-    }
-
-    final startDate = DateTime(
-      _selectedDate!.year,
-      _selectedDate!.month,
-      _selectedDate!.day,
-      _selectedTime!.hour,
-      _selectedTime!.minute,
-    );
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      await _eventRepository.createEvent(
-        CreateEventInput(
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim(),
-          location: locationSelection.coordinates,
-          startDate: startDate,
-          address: locationSelection.address,
-          categoryId: backendCategoryIdFor(primaryCategory),
-        ),
-        l10n,
-      );
-      if (!mounted) {
-        return;
-      }
-
-      _eventRefreshSignal.notifyChanged();
-      _showSnackBar(l10n.hubCreateEventCreatedSuccess);
-      Navigator.of(context).maybePop();
-    } on EventRepositoryException {
-      if (mounted) {
-        _showSnackBar(l10n.hubCreateEventCreateFailed);
-      }
-    } catch (_) {
-      if (mounted) {
-        _showSnackBar(l10n.hubCreateEventCreateFailed);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -311,667 +242,230 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final state = _controller.state;
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: AppBar(
-        backgroundColor: scheme.surface,
-        surfaceTintColor: Colors.transparent,
-        scrolledUnderElevation: 0,
-        titleSpacing: 8,
-        leadingWidth: 64,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16, top: 6, bottom: 6),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerLow,
-              shape: BoxShape.circle,
-              border: Border.all(color: scheme.outline.withValues(alpha: 0.18)),
-            ),
-            child: IconButton(
-              onPressed: () => Navigator.of(context).maybePop(),
-              icon: Icon(Icons.close_rounded, color: scheme.primary, size: 22),
-            ),
-          ),
-        ),
-        title: Text(
-          l10n.hubCreateEventTitle,
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: scheme.primary,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
+      appBar: _buildAppBar(context, l10n, scheme, theme),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
-        onTap: _clearInteractionFocus,
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-            children: [
-              _Section(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _ImagePickerTile(
-                      label: l10n.hubCreateEventMainPhotoLabel,
-                      subtitle: l10n.hubCreateEventMainPhotoSizeHint,
-                    ),
-                    const SizedBox(height: 12),
-                    _FieldLabel(text: l10n.hubCreateEventNameLabel),
-                    const SizedBox(height: 6),
-                    TextFormField(
-                      controller: _titleController,
-                      textInputAction: TextInputAction.next,
-                      decoration: _fieldDecoration(
-                        context,
-                        hintText: l10n.hubCreateEventNameHint,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().length < 3) {
-                          return l10n.hubCreateEventValidationMinChars3;
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _FieldLabel(text: l10n.hubCreateEventDateLabel),
-                              const SizedBox(height: 6),
-                              _PickerTile(
-                                value: _selectedDate == null
-                                    ? l10n.hubCreateEventDateHint
-                                    : '${_selectedDate!.day.toString().padLeft(2, '0')}.${_selectedDate!.month.toString().padLeft(2, '0')}.${_selectedDate!.year}',
-                                isPlaceholder: _selectedDate == null,
-                                onTap: _pickDate,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _FieldLabel(text: l10n.hubCreateEventTimeLabel),
-                              const SizedBox(height: 6),
-                              _PickerTile(
-                                value: _selectedTime == null
-                                    ? l10n.hubCreateEventTimeHint
-                                    : _selectedTime!.format(context),
-                                isPlaceholder: _selectedTime == null,
-                                onTap: _pickTime,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.hubCreateEventCategoryLabel,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.76),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final category in const [
-                          ExploreCategory.music,
-                          ExploreCategory.art,
-                          ExploreCategory.workshops,
-                          ExploreCategory.food,
-                        ])
-                          FilterChip(
-                            selected: _isCategorySelected(category),
-                            showCheckmark: false,
-                            label: Text(_categoryLabel(l10n, category)),
-                            labelStyle: theme.textTheme.labelMedium?.copyWith(
-                              color: _isCategorySelected(category)
-                                  ? scheme.onPrimary
-                                  : scheme.onSurface,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            visualDensity: VisualDensity.compact,
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: scheme.surface,
-                            selectedColor: scheme.primary,
-                            side: BorderSide.none,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            onSelected: (selected) =>
-                                _toggleCategory(category, selected),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _FieldLabel(text: l10n.hubCreateEventLocationLabel),
-                    const SizedBox(height: 6),
-                    AnimatedBuilder(
-                      animation: _locationController,
-                      builder: (context, _) {
-                        return _LocationSelectionTile(
-                          selection: _locationController.selection,
-                          isLoading: _locationController.isResolvingSelection,
-                          placeholder: l10n.hubCreateEventLocationHint,
-                          loadingLabel: l10n.hubCreateEventLocationLoadingLabel,
-                          loadingDescription:
-                              l10n.hubCreateEventLocationLoadingDescription,
-                          onTap: _handleLocationPressed,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _FieldLabel(text: l10n.hubCreateEventDescriptionLabel),
-                    const SizedBox(height: 6),
-                    TextFormField(
-                      controller: _descriptionController,
-                      minLines: 4,
-                      maxLines: 6,
-                      decoration: _fieldDecoration(
-                        context,
-                        hintText: l10n.hubCreateEventDescriptionHint,
-                        alignLabelWithHint: true,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().length < 10) {
-                          return l10n.hubCreateEventValidationDescriptionMin10;
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _TicketingSection(
-                      hasTicketing: _hasTicketing,
-                      title: l10n.hubCreateEventTicketingTitle,
-                      countLabel: l10n.hubCreateEventTicketSeatsLabel,
-                      priceLabel: l10n.hubCreateEventTicketPriceLabel,
-                      switchLabel: l10n.hubCreateEventTicketingSwitchLabel,
-                      countController: _ticketsCountController,
-                      priceController: _ticketPriceController,
-                      requiredValidationMessage:
-                          l10n.hubCreateEventValidationRequired,
-                      invalidNumberMessage:
-                          l10n.hubCreateEventValidationPositiveNumber,
-                      onTicketingChanged: (value) {
-                        setState(() {
-                          _hasTicketing = value;
-                          if (!value) {
-                            _ticketsCountController.clear();
-                            _ticketPriceController.clear();
-                          }
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              FilledButton.icon(
-                onPressed: _isSubmitting ? null : _submit,
-                icon: _isSubmitting
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.check_rounded),
-                label: Text(l10n.hubCreateEventSubmitButton),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LocationSelectionTile extends StatelessWidget {
-  const _LocationSelectionTile({
-    required this.selection,
-    required this.isLoading,
-    required this.placeholder,
-    required this.loadingLabel,
-    required this.loadingDescription,
-    required this.onTap,
-  });
-
-  final CreateEventLocationSelection? selection;
-  final bool isLoading;
-  final String placeholder;
-  final String loadingLabel;
-  final String loadingDescription;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final selection = this.selection;
-
-    return InkWell(
-      key: const Key('create-event-location-button'),
-      borderRadius: BorderRadius.circular(16),
-      canRequestFocus: false,
-      onTap: isLoading ? null : onTap,
-      child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: scheme.surface.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: scheme.outline.withValues(alpha: 0.18)),
-        ),
-        child: Row(
+        onTap: _clearFocus,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
           children: [
-            if (isLoading)
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
-                ),
-              )
-            else
-              Icon(
-                selection?.icon ?? Icons.place_outlined,
-                color: scheme.primary,
-              ),
-            const SizedBox(width: 10),
-            Expanded(
+            CreateEventSection(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    isLoading ? loadingLabel : selection?.label ?? placeholder,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: scheme.onSurface.withValues(
-                        alpha: selection == null && !isLoading ? 0.55 : 1,
-                      ),
-                      fontWeight: FontWeight.w600,
-                    ),
+                  CreateEventImagePickerTile(
+                    label: l10n.hubCreateEventMainPhotoLabel,
+                    subtitle: l10n.hubCreateEventMainPhotoSizeHint,
+                    selectedImages: state.selectedImages,
+                    onTap: _handleImagePressed,
                   ),
-                  if (isLoading) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      loadingDescription,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.68),
-                      ),
-                    ),
-                  ] else if (selection != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      selection.description,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.68),
-                      ),
+                  if (state.selectedImages.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _SelectedImagesList(
+                      images: state.selectedImages,
+                      onRemove: _controller.removeSelectedImageAt,
+                      onReorder: _controller.reorderSelectedImages,
                     ),
                   ],
+                  const SizedBox(height: 16),
+                  CreateEventBasicInfoSection(
+                    titleController: _titleController,
+                    descriptionController: _descriptionController,
+                    titleError: state.titleError,
+                    descriptionError: state.descriptionError,
+                    onTitleChanged: _controller.updateTitle,
+                    onDescriptionChanged: _controller.updateDescription,
+                  ),
+                  const SizedBox(height: 16),
+                  CreateEventCategoriesSection(
+                    state: state,
+                    onCategoryToggled: _controller.toggleCategory,
+                  ),
+                  const SizedBox(height: 16),
+                  CreateEventDateTimeSection(
+                    state: state,
+                    onPickDate: _pickDate,
+                    onPickTime: _pickTime,
+                  ),
+                  const SizedBox(height: 16),
+                  CreateEventLocationSection(
+                    state: state,
+                    locationController: _locationController,
+                    onLocationPressed: _handleLocationPressed,
+                  ),
+                  const SizedBox(height: 16),
+                  CreateEventTicketingSection(
+                    state: state,
+                    seatsController: _seatsController,
+                    onTicketUrlChanged: _controller.updateTicketUrl,
+                    onSlotLimitChanged: _controller.updateSlotLimit,
+                  ),
+                  const SizedBox(height: 16),
+                  CreateEventStatusSection(
+                    state: state,
+                    onStatusChanged: _controller.updateStatus,
+                  ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            Icon(Icons.keyboard_arrow_down_rounded, color: scheme.secondary),
+            const SizedBox(height: 24),
+            if (!widget.canSubmit)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  l10n.hubCreateEventSubmitDisabledHint,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            FilledButton(
+              onPressed:
+                  !widget.canSubmit ||
+                      state.status == CreateEventFormStatus.submitting
+                  ? null
+                  : () => _controller.submit(),
+              child: state.status == CreateEventFormStatus.submitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(l10n.hubCreateEventSubmitButton),
+            ),
           ],
         ),
       ),
     );
   }
+
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    AppLocalizations l10n,
+    ColorScheme scheme,
+    ThemeData theme,
+  ) {
+    return AppBar(
+      backgroundColor: scheme.surface,
+      surfaceTintColor: Colors.transparent,
+      centerTitle: true,
+      title: Text(
+        l10n.hubCreateEventTitle,
+        style: theme.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w800,
+          color: scheme.primary,
+        ),
+      ),
+      leading: IconButton(
+        onPressed: () => Navigator.of(context).maybePop(),
+        icon: const Icon(Icons.close_rounded),
+      ),
+    );
+  }
 }
 
-class _ImagePickerTile extends StatelessWidget {
-  const _ImagePickerTile({required this.label, required this.subtitle});
+class _SelectedImagesList extends StatelessWidget {
+  const _SelectedImagesList({
+    required this.images,
+    required this.onRemove,
+    required this.onReorder,
+  });
 
-  final String label;
-  final String subtitle;
+  final List<CreateEventSelectedImage> images;
+  final ValueChanged<int> onRemove;
+  final void Function(int oldIndex, int newIndex) onReorder;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = Theme.of(context).colorScheme;
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      canRequestFocus: false,
-      onTap: () {},
-      child: CustomPaint(
-        painter: _DashedBorderPainter(
-          color: scheme.outline.withValues(alpha: 0.42),
-          radius: 16,
-          strokeWidth: 1.4,
-          dashWidth: 7,
-          dashSpace: 5,
-        ),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          decoration: BoxDecoration(
-            color: scheme.surface.withValues(alpha: 0.62),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              Icon(Icons.add_a_photo_outlined, color: scheme.primary, size: 36),
-              const SizedBox(height: 10),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: scheme.onSurface,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 280),
+      child: ReorderableListView.builder(
+        key: const Key('create-event-image-list'),
+        shrinkWrap: true,
+        buildDefaultDragHandles: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: images.length,
+        onReorder: onReorder,
+        itemBuilder: (context, index) {
+          final image = images[index];
+          final isPrimary = index == 0;
+
+          return Container(
+            key: ValueKey('${image.fileName}-$index'),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isPrimary
+                    ? scheme.primary.withValues(alpha: 0.35)
+                    : scheme.outline.withValues(alpha: 0.12),
+              ),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.memory(
+                  Uint8List.fromList(image.bytes),
+                  width: 52,
+                  height: 52,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              title: Text(
+                image.fileName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
+              subtitle: Text(
+                isPrimary
+                    ? l10n.hubCreateEventPrimaryPhotoHint
+                    : l10n.hubCreateEventSecondaryPhotoHint,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurface.withValues(alpha: 0.62),
-                  fontWeight: FontWeight.w500,
+                  color: isPrimary ? scheme.primary : scheme.onSurfaceVariant,
+                  fontWeight: isPrimary ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DashedBorderPainter extends CustomPainter {
-  const _DashedBorderPainter({
-    required this.color,
-    required this.radius,
-    required this.strokeWidth,
-    required this.dashWidth,
-    required this.dashSpace,
-  });
-
-  final Color color;
-  final double radius;
-  final double strokeWidth;
-  final double dashWidth;
-  final double dashSpace;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke;
-
-    final path = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius)),
-      );
-
-    for (final metric in path.computeMetrics()) {
-      double distance = 0;
-      while (distance < metric.length) {
-        final nextDistance = distance + dashWidth > metric.length
-            ? metric.length
-            : distance + dashWidth;
-        canvas.drawPath(metric.extractPath(distance, nextDistance), paint);
-        distance += dashWidth + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) {
-    return oldDelegate.color != color ||
-        oldDelegate.radius != radius ||
-        oldDelegate.strokeWidth != strokeWidth ||
-        oldDelegate.dashWidth != dashWidth ||
-        oldDelegate.dashSpace != dashSpace;
-  }
-}
-
-class _TicketingSection extends StatelessWidget {
-  const _TicketingSection({
-    required this.hasTicketing,
-    required this.title,
-    required this.switchLabel,
-    required this.countLabel,
-    required this.priceLabel,
-    required this.countController,
-    required this.priceController,
-    required this.requiredValidationMessage,
-    required this.invalidNumberMessage,
-    required this.onTicketingChanged,
-  });
-
-  final bool hasTicketing;
-  final String title;
-  final String switchLabel;
-  final String countLabel;
-  final String priceLabel;
-  final TextEditingController countController;
-  final TextEditingController priceController;
-  final String requiredValidationMessage;
-  final String invalidNumberMessage;
-  final ValueChanged<bool> onTicketingChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(child: Text(switchLabel)),
-            Switch.adaptive(
-              value: hasTicketing,
-              activeThumbColor: scheme.primary,
-              activeTrackColor: scheme.primary.withValues(alpha: 0.4),
-              onChanged: onTicketingChanged,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () => onRemove(index),
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).deleteButtonTooltip,
+                  ),
+                  ReorderableDragStartListener(
+                    index: index,
+                    child: const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Icon(Icons.drag_handle_rounded),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-        if (hasTicketing) ...[
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: countController,
-                  keyboardType: TextInputType.number,
-                  decoration: _buildFieldDecoration(
-                    context,
-                    hintText: countLabel,
-                  ),
-                  validator: (value) {
-                    final raw = value?.trim() ?? '';
-                    if (raw.isEmpty) {
-                      return requiredValidationMessage;
-                    }
-
-                    final parsed = int.tryParse(raw);
-                    if (parsed == null || parsed <= 0) {
-                      return invalidNumberMessage;
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextFormField(
-                  controller: priceController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: _buildFieldDecoration(
-                    context,
-                    hintText: priceLabel,
-                  ),
-                  validator: (value) {
-                    final raw = (value ?? '').trim().replaceAll(',', '.');
-                    if (raw.isEmpty) {
-                      return requiredValidationMessage;
-                    }
-
-                    final parsed = double.tryParse(raw);
-                    if (parsed == null || parsed < 0) {
-                      return invalidNumberMessage;
-                    }
-                    return null;
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-InputDecoration _buildFieldDecoration(
-  BuildContext context, {
-  required String hintText,
-  IconData? prefixIcon,
-  bool alignLabelWithHint = false,
-}) {
-  final scheme = Theme.of(context).colorScheme;
-
-  return InputDecoration(
-    hintText: hintText,
-    hintStyle: TextStyle(color: scheme.onSurface.withValues(alpha: 0.55)),
-    prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
-    alignLabelWithHint: alignLabelWithHint,
-    filled: true,
-    fillColor: scheme.surface.withValues(alpha: 0.72),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.18)),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.18)),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide(color: scheme.primary.withValues(alpha: 0.6)),
-    ),
-  );
-}
-
-class _Section extends StatelessWidget {
-  const _Section({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: scheme.outline.withValues(alpha: 0.22)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(
-              alpha: theme.brightness == Brightness.dark ? 0.2 : 0.03,
-            ),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-class _PickerTile extends StatelessWidget {
-  const _PickerTile({
-    required this.value,
-    required this.isPlaceholder,
-    required this.onTap,
-  });
-
-  final String value;
-  final bool isPlaceholder;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      canRequestFocus: false,
-      onTap: onTap,
-      child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
-        decoration: BoxDecoration(
-          color: scheme.surface.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: scheme.outline.withValues(alpha: 0.18)),
-        ),
-        child: Text(
-          value,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            color: scheme.onSurface.withValues(alpha: isPlaceholder ? 0.55 : 1),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Text(
-      text,
-      style: theme.textTheme.labelSmall?.copyWith(
-        color: scheme.onSurface.withValues(alpha: 0.68),
-        fontWeight: FontWeight.w700,
+          );
+        },
       ),
     );
   }

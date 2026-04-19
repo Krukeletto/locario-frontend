@@ -71,5 +71,19 @@
 	<string>Locario needs access to your location to show you on the map.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Locario needs access to your location to show you on the map.</string>
+	<!-- Deep link: locario://events/<id> -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>app.locario</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>locario</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

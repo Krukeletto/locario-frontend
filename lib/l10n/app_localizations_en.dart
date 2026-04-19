@@ -98,7 +98,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubCreateEventMainPhotoLabel => 'Add main photo';
 
   @override
+  String get hubCreateEventPhotosLabel => 'Add photos';
+
+  @override
   String get hubCreateEventMainPhotoSizeHint => 'Suggested size: 1600 x 900 px';
+
+  @override
+  String hubCreateEventSelectedPhotosCount(int count) {
+    return intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      zero: 'No photos selected',
+      one: '1 photo selected',
+      other: '$count photos selected',
+    );
+  }
+
+  @override
+  String get hubCreateEventPrimaryPhotoHint =>
+      'Main photo (thumbnail). Drag to keep another image first.';
+
+  @override
+  String get hubCreateEventSecondaryPhotoHint =>
+      'Additional photo. Drag to change order.';
 
   @override
   String get hubCreateEventTicketingTitle => 'Tickets and entry';
@@ -114,7 +136,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubCreateEventTicketPriceLabel => 'Ticket price';
 
   @override
+  String get hubCreateEventTicketingLabel => 'Ticketing';
+
+  @override
+  String get hubCreateEventTicketUrlHint => 'URL for buying tickets';
+
+  @override
+  String get hubCreateEventStatusLabel => 'Event status';
+
+  @override
+  String get eventStatusDraft => 'Draft';
+
+  @override
+  String get eventStatusPublished => 'Live';
+
+  @override
   String get hubCreateEventSubmitButton => 'Create event';
+
+  @override
+  String get hubCreateEventSubmitDisabledHint =>
+      'Creating events is temporarily disabled until login is wired into the app.';
 
   @override
   String get hubCreateEventValidationMinChars3 =>
@@ -250,7 +291,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String resultsCount(int count) {
-    return '$count results';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count results',
+      one: '1 result',
+      zero: '0 results',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -290,6 +338,77 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterFood => 'Food';
+
+  @override
+  String get filterAdvancedFilters => 'Advanced Filters';
+
+  @override
+  String get filterAdvancedDistance => 'Search Range';
+
+  @override
+  String get filterAdvancedDateRange => 'Event Date';
+
+  @override
+  String get filterAdvancedAge => 'Age (years)';
+
+  @override
+  String get filterAdvancedType => 'Event Type';
+
+  @override
+  String get filterAdvancedSource => 'Event Source';
+
+  @override
+  String get filterAdvancedApply => 'Show Results';
+
+  @override
+  String get filterAdvancedClear => 'Clear';
+
+  @override
+  String get exploreSearchThisArea => 'Search this area';
+
+  @override
+  String get filterAdvancedDateFrom => 'From';
+
+  @override
+  String get filterAdvancedDateTo => 'To';
+
+  @override
+  String get filterAdvancedDateAny => 'Any date';
+
+  @override
+  String get filterAdvancedDateToday => 'Today';
+
+  @override
+  String get filterAdvancedDateTomorrow => 'Tomorrow';
+
+  @override
+  String get filterAdvancedDateCustomRange => 'Date range';
+
+  @override
+  String get filterAdvancedDateOther => 'Other date';
+
+  @override
+  String get filterAdvancedDateSelection => 'Selected date';
+
+  @override
+  String get filterAdvancedAgeFrom => 'Min';
+
+  @override
+  String get filterAdvancedAgeTo => 'Max';
+
+  @override
+  String get filterAdvancedAgeSelection => 'Participant age';
+
+  @override
+  String get filterAdvancedAgeCustomRange => 'Age range';
+
+  @override
+  String get filterAdvancedAgeOther => 'Other age';
+
+  @override
+  String filterAdvancedAgeRangeSummary(int from, int to) {
+    return '$from-$to years';
+  }
 
   @override
   String get areaMyLocation => 'My location';
@@ -391,7 +510,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventStreetFoodTitle => 'Street food and vinyl market';
 
   @override
-  String get eventDetailsScreenTitle => 'Event details';
+  String get eventDetailsScreenTitle => 'Details';
 
   @override
   String get eventDetailsImagePlaceholder => 'Temporary image placeholder';
@@ -468,6 +587,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get eventDetailsStreetFoodDescription =>
       'Street food, curated vinyl records and mini DJ sets. An all-day event.';
+
+  @override
+  String get eventDetailsTicketLabel => 'Tickets';
+
+  @override
+  String get eventDetailsSlotsLabel => 'Seat limit';
+
+  @override
+  String eventDetailsSlotsValue(int count) {
+    return '$count seats available';
+  }
 
   @override
   String get eventToday2030 => 'Today, 20:30';
@@ -549,5 +679,48 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String mapEventOpenSoon(String title) {
     return 'The event screen for “$title” will be added later.';
+  }
+
+  @override
+  String get authLoginSuccess => 'Logged in successfully.';
+
+  @override
+  String get authLoginErrorInvalidCredentials => 'Invalid email or password.';
+
+  @override
+  String get eventSaveSuccess => 'Event saved to your list.';
+
+  @override
+  String get eventRemoveSuccess => 'Event removed from your list.';
+
+  @override
+  String get eventPublishSuccess => 'Event published successfully.';
+
+  @override
+  String get eventPublishError => 'Failed to publish event. Try again.';
+
+  @override
+  String get networkError => 'Network error. Please check your connection.';
+
+  @override
+  String get networkErrorRetry => 'Retry';
+
+  @override
+  String get exploreErrorPermissionTitle => 'Location permission required';
+
+  @override
+  String get exploreErrorPermissionSubtitle =>
+      'Please allow location access to see events nearby.';
+
+  @override
+  String get exploreErrorUnknownTitle => 'Something went wrong';
+
+  @override
+  String get exploreErrorUnknownSubtitle =>
+      'We encountered an unexpected error.';
+
+  @override
+  String shareEventMessage(String title, String url) {
+    return 'Check out this event on Locario: $title\n\n$url';
   }
 }

@@ -3,15 +3,15 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:locario/features/explore/models.dart';
 import 'package:locario/l10n/app_localizations_en.dart';
 import 'package:locario/shared/events/event_repository.dart';
+import 'package:locario/shared/services/l10n_service.dart';
 
 void main() {
-  group('HttpEventRepository', () {
-    final l10n = AppLocalizationsEn();
+  // Initialize L10nService for tests
+  L10nService.init(AppLocalizationsEn());
 
+  group('HttpEventRepository', () {
     test('fetchEvents maps backend response', () async {
       final repository = HttpEventRepository(
         client: MockClient((request) async {
@@ -20,13 +20,15 @@ void main() {
             jsonEncode([
               {
                 'id': '11111111-1111-1111-1111-111111111111',
-                'title': 'Live music',
+                'name': 'Live music',
                 'description': 'Open-air concert',
                 'latitude': 51.7592,
                 'longitude': 19.4550,
                 'address': 'Piotrkowska 10, Lodz',
-                'startDate': '2026-04-12T19:00:00Z',
-                'categoryName': 'music',
+                'startAt': '2026-04-12T19:00:00Z',
+                'categories': [
+                  {'id': 'music', 'name': 'music', 'slug': 'music'},
+                ],
               },
             ]),
             200,
@@ -35,11 +37,11 @@ void main() {
         baseUrl: 'http://example.com',
       );
 
-      final events = await repository.fetchEvents(l10n);
+      final events = await repository.fetchEvents();
 
       expect(events, hasLength(1));
       expect(events.first.title, 'Live music');
-      expect(events.first.category, ExploreCategory.music);
+      expect(events.first.categories.first.id, 'music');
       expect(events.first.address, 'Piotrkowska 10, Lodz');
     });
 
@@ -52,11 +54,11 @@ void main() {
               jsonEncode([
                 {
                   'id': '11111111-1111-1111-1111-111111111111',
-                  'title': 'Live music',
+                  'name': 'Live music',
                   'latitude': 51.7592,
                   'longitude': 19.4550,
                   'address': null,
-                  'startDate': '2026-04-12T19:00:00Z',
+                  'startAt': '2026-04-12T19:00:00Z',
                 },
               ]),
               200,
@@ -65,26 +67,25 @@ void main() {
           baseUrl: 'http://example.com',
         );
 
-        final events = await repository.fetchEvents(l10n);
+        final events = await repository.fetchEvents();
 
         expect(events.first.venue, '51.7592, 19.4550');
       },
     );
 
-    test('fetchEvents maps missing category to all instead of music', () async {
+    test('fetchEvents maps missing categories to empty list', () async {
       final repository = HttpEventRepository(
         client: MockClient((request) async {
           return http.Response(
             jsonEncode([
               {
                 'id': '11111111-1111-1111-1111-111111111111',
-                'title': 'Live music',
+                'name': 'Live music',
                 'latitude': 51.7592,
                 'longitude': 19.4550,
                 'address': 'Piotrkowska 10, Lodz',
-                'startDate': '2026-04-12T19:00:00Z',
-                'categoryId': null,
-                'categoryName': null,
+                'startAt': '2026-04-12T19:00:00Z',
+                'categories': null,
               },
             ]),
             200,
@@ -93,9 +94,9 @@ void main() {
         baseUrl: 'http://example.com',
       );
 
-      final events = await repository.fetchEvents(l10n);
+      final events = await repository.fetchEvents();
 
-      expect(events.first.category, ExploreCategory.all);
+      expect(events.first.categories, isEmpty);
     });
 
     test('fetchEvent throws on non-200', () async {
@@ -105,7 +106,7 @@ void main() {
       );
 
       expect(
-        repository.fetchEvent('id', l10n),
+        repository.fetchEvent('id'),
         throwsA(isA<EventRepositoryException>()),
       );
     });
@@ -118,10 +119,10 @@ void main() {
           return http.Response(
             jsonEncode({
               'id': '11111111-1111-1111-1111-111111111111',
-              'title': 'Created event',
+              'name': 'Created event',
               'latitude': 51.7592,
               'longitude': 19.4550,
-              'startDate': '2026-04-12T19:00:00Z',
+              'startAt': '2026-04-12T19:00:00Z',
             }),
             201,
           );
@@ -130,22 +131,77 @@ void main() {
       );
 
       await repository.createEvent(
-        CreateEventInput(
-          title: 'Created event',
+        EventRequest(
+          name: 'Created event',
           description: 'Open-air concert',
-          location: const LatLng(51.7592, 19.4550),
-          startDate: DateTime.utc(2026, 4, 12, 19),
+          latitude: 51.7592,
+          longitude: 19.4550,
+          startAt: DateTime.utc(2026, 4, 12, 19),
           address: 'Piotrkowska 10, Lodz',
         ),
-        l10n,
       );
 
-      expect(body['title'], 'Created event');
+      expect(body['name'], 'Created event');
       expect(body['description'], 'Open-air concert');
       expect(body['latitude'], 51.7592);
       expect(body['longitude'], 19.455);
       expect(body['address'], 'Piotrkowska 10, Lodz');
-      expect(body['startDate'], '2026-04-12T19:00:00.000Z');
+      expect(body['startAt'], '2026-04-12T19:00:00.000Z');
+    });
+
+    test(
+      'setEventThumbnail uses the documented media thumbnail endpoint',
+      () async {
+        late http.Request capturedRequest;
+        final repository = HttpEventRepository(
+          client: MockClient((request) async {
+            capturedRequest = request;
+            return http.Response('', 204);
+          }),
+          baseUrl: 'http://example.com',
+        );
+
+        await repository.setEventThumbnail(
+          '11111111-1111-1111-1111-111111111111',
+          '22222222-2222-2222-2222-222222222222',
+        );
+
+        expect(capturedRequest.method, 'PUT');
+        expect(
+          capturedRequest.url.path,
+          '/api/events/11111111-1111-1111-1111-111111111111/media/22222222-2222-2222-2222-222222222222/thumbnail',
+        );
+      },
+    );
+
+    test('fetchEvent maps organizer usernames from backend objects', () async {
+      final repository = HttpEventRepository(
+        client: MockClient((request) async {
+          return http.Response(
+            jsonEncode({
+              'id': '11111111-1111-1111-1111-111111111111',
+              'name': 'Created event',
+              'latitude': 51.7592,
+              'longitude': 19.4550,
+              'startAt': '2026-04-12T19:00:00Z',
+              'organizers': [
+                {
+                  'userId': '33333333-3333-3333-3333-333333333333',
+                  'username': 'alice',
+                },
+              ],
+            }),
+            200,
+          );
+        }),
+        baseUrl: 'http://example.com',
+      );
+
+      final event = await repository.fetchEvent(
+        '11111111-1111-1111-1111-111111111111',
+      );
+
+      expect(event.organizers, ['alice']);
     });
   });
 }
