@@ -1,41 +1,50 @@
 import 'package:latlong2/latlong.dart';
 import 'package:locario/features/explore/models.dart';
-import 'package:locario/l10n/app_localizations.dart';
 import 'package:locario/shared/events/event_repository.dart';
 
 class FakeEventRepository implements EventRepository {
   FakeEventRepository({
     List<ExploreEvent>? events,
     ExploreEvent? eventDetails,
+    List<Category>? categories,
     this.fetchEventsError,
     this.fetchEventError,
     this.createEventError,
   }) : events = events ?? _defaultEvents,
-       eventDetails = eventDetails ?? _defaultEvents.first;
+       eventDetails = eventDetails ?? _defaultEvents.first,
+       categories = categories ?? _defaultCategories;
 
   final List<ExploreEvent> events;
   final ExploreEvent eventDetails;
+  final List<Category> categories;
   final Object? fetchEventsError;
   final Object? fetchEventError;
   final Object? createEventError;
 
-  CreateEventInput? lastCreateInput;
+  EventRequest? lastCreateInput;
+  final List<String> uploadedEventIds = [];
+  final List<List<int>> uploadedBytes = [];
+  final List<String> uploadedFileNames = [];
+  String? lastThumbnailEventId;
+  String? lastThumbnailMediaId;
 
   @override
-  Future<ExploreEvent> createEvent(
-    CreateEventInput input,
-    AppLocalizations l10n,
-  ) async {
+  Future<ExploreEvent> createEvent(EventRequest request) async {
     if (createEventError != null) {
       throw createEventError!;
     }
 
-    lastCreateInput = input;
+    lastCreateInput = request;
     return eventDetails;
   }
 
   @override
-  Future<ExploreEvent> fetchEvent(String id, AppLocalizations l10n) async {
+  Future<ExploreEvent> updateEvent(String id, EventRequest request) async {
+    return eventDetails;
+  }
+
+  @override
+  Future<ExploreEvent> fetchEvent(String id) async {
     if (fetchEventError != null) {
       throw fetchEventError!;
     }
@@ -44,12 +53,53 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchEvents(AppLocalizations l10n) async {
+  Future<List<ExploreEvent>> fetchEvents() async {
     if (fetchEventsError != null) {
       throw fetchEventsError!;
     }
 
     return events;
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchNearbyEvents({
+    required double latitude,
+    required double longitude,
+    double? radiusKm,
+    int? limit,
+  }) async {
+    return events;
+  }
+
+  @override
+  Future<List<Category>> fetchCategories() async {
+    return categories;
+  }
+
+  @override
+  Future<EventMedia> uploadEventMedia(
+    String eventId,
+    List<int> bytes,
+    String fileName,
+  ) async {
+    uploadedEventIds.add(eventId);
+    uploadedBytes.add(bytes);
+    uploadedFileNames.add(fileName);
+    return EventMedia(
+      id: 'media-${uploadedFileNames.length}',
+      url: 'https://example.com/$fileName',
+      type: MediaType.image,
+      sortOrder: uploadedFileNames.length - 1,
+    );
+  }
+
+  @override
+  Future<void> deleteEventMedia(String eventId, String mediaId) async {}
+
+  @override
+  Future<void> setEventThumbnail(String eventId, String mediaId) async {
+    lastThumbnailEventId = eventId;
+    lastThumbnailMediaId = mediaId;
   }
 }
 
@@ -57,7 +107,7 @@ final List<ExploreEvent> _defaultEvents = [
   ExploreEvent(
     id: '11111111-1111-1111-1111-111111111111',
     title: 'Jazz Evening',
-    category: ExploreCategory.music,
+    categories: const [Category(id: 'music', name: 'Music', slug: 'music')],
     startsAt: DateTime.utc(2026, 4, 12, 19),
     trendingScore: 50,
     venue: 'Piotrkowska 10, Lodz',
@@ -65,4 +115,9 @@ final List<ExploreEvent> _defaultEvents = [
     description: 'Live music and open-air atmosphere.',
     address: 'Piotrkowska 10, Lodz',
   ),
+];
+
+final List<Category> _defaultCategories = [
+  const Category(id: 'music', name: 'Music', slug: 'music'),
+  const Category(id: 'art', name: 'Art', slug: 'art'),
 ];

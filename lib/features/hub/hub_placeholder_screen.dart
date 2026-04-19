@@ -16,10 +16,7 @@ class HubPlaceholderScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: const SizedBox.expand(
-        // TODO: Implement Hub destination screen content.
-        child: SizedBox.shrink(),
-      ),
+      body: const SizedBox.expand(child: SizedBox.shrink()),
     );
   }
 }

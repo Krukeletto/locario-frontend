@@ -1,6 +1,6 @@
+import 'package:flutter/foundation.dart' hide Category;
 import 'package:latlong2/latlong.dart';
-import 'package:locario/l10n/app_localizations.dart';
-
+import '../../shared/services/l10n_service.dart';
 import 'models.dart';
 
 class ExploreEventQuery {
@@ -8,26 +8,32 @@ class ExploreEventQuery {
 
   List<ExploreEvent> visibleEvents({
     required List<ExploreEvent> events,
-    required Iterable<ExploreCategory> selectedCategories,
+    required Iterable<Category> selectedCategories,
     required String query,
     required ExploreSortOption sort,
+    required bool isAscending,
     required LatLng referenceLocation,
-    required AppLocalizations l10n,
     int? maxDistanceMeters,
+    ExploreAdvancedFilters? advancedFilters,
   }) {
     final normalizedQuery = query.trim().toLowerCase();
-    final categories = selectedCategories
-        .where((category) => category != ExploreCategory.all)
-        .toSet();
+    final categories = selectedCategories.toSet();
     Iterable<ExploreEvent> filteredEvents = events;
 
     if (categories.isNotEmpty) {
-      filteredEvents = filteredEvents.where(
-        (event) => categories.contains(event.category),
-      );
+      filteredEvents = filteredEvents.where((event) {
+        if (event.categories.isEmpty) return false;
+        return event.categories.any(
+          (c) => categories.any(
+            (selected) => selected.name.toLowerCase() == c.name.toLowerCase(),
+          ),
+        );
+      });
     }
+    debugPrint('After category filter: ${filteredEvents.length}');
 
     if (normalizedQuery.isNotEmpty) {
+      final l10n = L10nService.l10n;
       filteredEvents = filteredEvents.where((event) {
         final haystack = [
           event.title,
@@ -39,16 +45,65 @@ class ExploreEventQuery {
       });
     }
 
-    if (maxDistanceMeters != null) {
-      filteredEvents = filteredEvents.where(
-        (event) =>
-            event.distanceMetersFrom(referenceLocation) <= maxDistanceMeters,
-      );
+    final distanceFilterMeters =
+        maxDistanceMeters ?? advancedFilters?.distanceFilter.maxDistanceMeters;
+    if (distanceFilterMeters != null) {
+      filteredEvents = filteredEvents.where((event) {
+        final distance = event.distanceMetersFrom(referenceLocation);
+        debugPrint(
+          'Event "${event.title}" distance: $distance m (limit: $distanceFilterMeters)',
+        );
+        return distance <= distanceFilterMeters;
+      });
     }
+    debugPrint(
+      'After distance filter ($distanceFilterMeters): ${filteredEvents.length}',
+    );
+    debugPrint(
+      'After distance filter ($distanceFilterMeters): ${filteredEvents.length}',
+    );
+
+    if (advancedFilters != null) {
+      if (advancedFilters.dateFrom != null) {
+        final from = advancedFilters.dateFrom!;
+        final fromDate = DateTime(from.year, from.month, from.day);
+        filteredEvents = filteredEvents.where((event) {
+          final eventDate = DateTime(
+            event.startsAt.year,
+            event.startsAt.month,
+            event.startsAt.day,
+          );
+          return eventDate.isAtSameMomentAs(fromDate) ||
+              eventDate.isAfter(fromDate);
+        });
+      }
+
+      if (advancedFilters.dateTo != null) {
+        final to = advancedFilters.dateTo!;
+        final toDate = DateTime(to.year, to.month, to.day, 23, 59, 59);
+        filteredEvents = filteredEvents.where((event) {
+          final compareDate = event.endsAt ?? event.startsAt;
+          return compareDate.isBefore(toDate) ||
+              compareDate.isAtSameMomentAs(toDate);
+        });
+      }
+
+      if (advancedFilters.ageFrom != null || advancedFilters.ageTo != null) {
+        final ageFrom = advancedFilters.ageFrom ?? 0;
+        final ageTo = advancedFilters.ageTo ?? 999;
+        filteredEvents = filteredEvents.where((event) {
+          final eventMinAge = event.minAge ?? 0;
+          final eventMaxAge = event.maxAge ?? 999;
+
+          return eventMinAge <= ageTo && eventMaxAge >= ageFrom;
+        });
+      }
+    }
+    debugPrint('After advanced filters: ${filteredEvents.length}');
 
     final sortedEvents = filteredEvents.toList(growable: false);
     sortedEvents.sort((first, second) {
-      return switch (sort) {
+      final comparison = switch (sort) {
         ExploreSortOption.distance =>
           first
               .distanceMetersFrom(referenceLocation)
@@ -58,6 +113,7 @@ class ExploreEventQuery {
           first.trendingScore,
         ),
       };
+      return isAscending ? comparison : -comparison;
     });
 
     return sortedEvents;
@@ -65,12 +121,13 @@ class ExploreEventQuery {
 
   List<ExploreEvent> searchResults({
     required List<ExploreEvent> events,
-    required Iterable<ExploreCategory> selectedCategories,
+    required Iterable<Category> selectedCategories,
     required String query,
     required ExploreSortOption sort,
+    required bool isAscending,
     required LatLng referenceLocation,
-    required AppLocalizations l10n,
     int? maxDistanceMeters,
+    ExploreAdvancedFilters? advancedFilters,
   }) {
     if (query.trim().isEmpty) {
       return const [];
@@ -81,9 +138,10 @@ class ExploreEventQuery {
       selectedCategories: selectedCategories,
       query: query,
       sort: sort,
+      isAscending: isAscending,
       referenceLocation: referenceLocation,
-      l10n: l10n,
       maxDistanceMeters: maxDistanceMeters,
+      advancedFilters: advancedFilters,
     );
   }
 }

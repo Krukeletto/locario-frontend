@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locario/features/explore/models.dart';
 import 'package:locario/features/events/event_screen.dart';
-import 'package:locario/l10n/app_localizations.dart';
 import 'package:locario/shared/events/event_repository.dart';
 
 import '../../test_helpers/fake_event_repository.dart';
@@ -33,6 +32,7 @@ void main() {
       final repository = _PendingEventRepository();
       await tester.pumpWidget(
         buildLocalizedTestApp(
+          locale: const Locale('pl'),
           home: EventScreen(
             eventId: '11111111-1111-1111-1111-111111111111',
             eventRepository: repository,
@@ -50,6 +50,7 @@ void main() {
     testWidgets('shows error state when fetch fails', (tester) async {
       await tester.pumpWidget(
         buildLocalizedTestApp(
+          locale: const Locale('pl'),
           home: EventScreen(
             eventId: '11111111-1111-1111-1111-111111111111',
             eventRepository: FakeEventRepository(
@@ -70,8 +71,7 @@ class _PendingEventRepository extends FakeEventRepository {
   final Completer<ExploreEvent> _completer = Completer<ExploreEvent>();
 
   @override
-  Future<ExploreEvent> fetchEvent(String id, AppLocalizations l10n) =>
-      _completer.future;
+  Future<ExploreEvent> fetchEvent(String id) => _completer.future;
 
   void complete() {
     if (!_completer.isCompleted) {

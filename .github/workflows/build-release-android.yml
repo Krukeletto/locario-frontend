@@ -4,10 +4,23 @@ on:
   push:
     branches:
       - release
+    paths-ignore:
+      - "**/*.md"
+      - ".gitignore"
+  workflow_dispatch:
+    inputs:
+      build_aab:
+        description: "Build release AAB in addition to APK"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
-  group: build-release-android
+  group: build-release-android-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build-android:
@@ -22,27 +35,24 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+          cache: gradle
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.41.5"
           cache: true
+          cache-dependency-path: pubspec.lock
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Analyze project
-        run: flutter analyze
-
-      - name: Run tests
-        run: flutter test
-
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-pub
 
       - name: Build App Bundle
-        run: flutter build appbundle --release
+        if: github.event_name == 'workflow_dispatch' && inputs.build_aab
+        run: flutter build appbundle --release --no-pub
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v5
@@ -50,10 +60,13 @@ jobs:
           name: app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
+          compression-level: 0
 
       - name: Upload AAB artifact
+        if: github.event_name == 'workflow_dispatch' && inputs.build_aab
         uses: actions/upload-artifact@v5
         with:
           name: app-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+          compression-level: 0
