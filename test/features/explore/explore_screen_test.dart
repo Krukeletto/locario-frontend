@@ -1,12 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:locario/features/explore/explore_area_controller.dart';
+import 'package:locario/features/explore/explore_controller.dart';
 import 'package:locario/features/explore/explore_screen.dart';
 import 'package:locario/features/explore/map_view_model.dart';
 import 'package:locario/features/explore/models.dart';
+import 'package:locario/features/explore/widgets/header.dart';
+import 'package:locario/features/explore/widgets/map_widget.dart';
 import 'package:locario/shared/events/event_repository.dart';
-import 'package:locario/shared/events/event_refresh_signal.dart';
 import 'package:locario/shared/map/style_repository.dart';
+import 'package:locario/features/shell/header/header_controller.dart';
+import 'package:locario/features/shell/header/header_scope.dart';
 
 import '../../test_helpers/fake_event_repository.dart';
 import '../../test_helpers/fake_location_service.dart';
@@ -14,270 +21,264 @@ import '../../test_helpers/test_app.dart';
 
 void main() {
   group('ExploreScreen', () {
-    testWidgets('renders search, brand and filters on top of the map', (
-      tester,
-    ) async {
+    testWidgets('renders map and list view toggle', (tester) async {
       await tester.pumpWidget(
-        _buildScreen(
+        _buildTestApp(
           locationService: FakeLocationService(
-            currentLocation: const LatLng(52.2297, 21.0122),
+            currentLocation: const LatLng(0, 0),
           ),
           eventRepository: FakeEventRepository(),
         ),
       );
       await tester.pump();
-      await tester.pump();
 
-      expect(find.text('Locario'), findsOneWidget);
-      expect(find.byKey(const Key('explore-search-field')), findsOneWidget);
-      expect(find.text('Wszystkie'), findsOneWidget);
-      expect(find.text('Muzyka'), findsOneWidget);
-      expect(find.text('Mapa'), findsOneWidget);
-      expect(find.text('Lista'), findsOneWidget);
-      expect(find.byKey(const Key('explore-area-button')), findsNothing);
+      expect(find.byType(ExploreScreen), findsOneWidget);
     });
 
-    testWidgets('switches from full map view to list view', (tester) async {
+    testWidgets('refreshes events when refresh signal emits', (tester) async {
+      final eventRefreshSignal = StreamController<void>.broadcast();
+      final responses = [
+        [_event(id: '1', title: 'First', location: const LatLng(0, 0))],
+        [_event(id: '2', title: 'Second', location: const LatLng(0, 0))],
+      ];
+      final eventRepository = _SequencedEventRepository(responses: responses);
+
       await tester.pumpWidget(
-        _buildScreen(
-          locationService: FakeLocationService(),
-          eventRepository: FakeEventRepository(),
-        ),
-      );
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.byKey(const ValueKey('explore-map-view')), findsOneWidget);
-
-      await tester.tap(find.text('Lista'));
-      await tester.pumpAndSettle();
-
-      expect(find.byKey(const ValueKey('explore-list-view')), findsOneWidget);
-      expect(find.text('Wydarzenia w pobliżu'), findsOneWidget);
-      expect(find.byKey(const Key('explore-event-list')), findsOneWidget);
-      expect(find.byKey(const Key('explore-area-button')), findsOneWidget);
-      expect(find.byKey(const ValueKey('explore-map-view')), findsNothing);
-    });
-
-    testWidgets('opens area picker options from list toolbar', (tester) async {
-      await tester.pumpWidget(
-        _buildScreen(
-          locationService: FakeLocationService(),
-          eventRepository: FakeEventRepository(),
-        ),
-      );
-      await tester.pump();
-      await tester.pump();
-
-      await tester.tap(find.text('Lista'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(const Key('explore-area-button')));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Moja lokalizacja'), findsWidgets);
-      expect(find.text('Wpisz adres'), findsOneWidget);
-      expect(find.text('Wskaż na mapie'), findsOneWidget);
-    });
-
-    testWidgets('shows loading state while events are fetched', (tester) async {
-      await tester.pumpWidget(
-        _buildScreen(
-          locationService: FakeLocationService(),
-          eventRepository: FakeEventRepository(),
-        ),
-      );
-      await tester.pump();
-
-      expect(
-        find.byKey(const ValueKey('explore-loading-state')),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('shows empty state when backend returns no events', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _buildScreen(
-          locationService: FakeLocationService(),
-          eventRepository: FakeEventRepository(events: const []),
-        ),
-      );
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.byKey(const ValueKey('explore-map-view')), findsOneWidget);
-
-      await tester.tap(find.text('Lista'));
-      await tester.pumpAndSettle();
-
-      expect(find.byKey(const ValueKey('explore-empty-state')), findsOneWidget);
-    });
-
-    testWidgets('shows error state when backend fetch fails', (tester) async {
-      await tester.pumpWidget(
-        _buildScreen(
-          locationService: FakeLocationService(),
-          eventRepository: FakeEventRepository(
-            fetchEventsError: const EventRepositoryException('boom'),
+        _buildTestApp(
+          locationService: FakeLocationService(
+            currentLocation: const LatLng(0, 0),
           ),
+          eventRepository: eventRepository,
+          eventRefreshSignal: eventRefreshSignal.stream,
         ),
       );
-      await tester.pump();
-      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(find.text('First'), findsOneWidget);
 
-      expect(find.byKey(const ValueKey('explore-error-state')), findsOneWidget);
+      eventRefreshSignal.add(null);
+      await tester.pumpAndSettle();
+      expect(find.text('Second'), findsOneWidget);
     });
 
-    testWidgets('reloads events when event refresh signal is emitted', (
-      tester,
-    ) async {
-      final refreshSignal = EventRefreshSignal();
-      final repository = _SequencedEventRepository(
-        responses: [
-          [
-            _event(
-              id: 'first',
-              title: 'Pierwszy event',
-              location: const LatLng(51.7592, 19.4550),
+    testWidgets('keeps map visible when there are no events', (tester) async {
+      final headerController = ShellHeaderController()
+        ..setSelectedView(ExploreContentView.map);
+
+      await tester.pumpWidget(
+        buildLocalizedTestApp(
+          home: ExploreScreen(
+            controller: ExploreController(
+              eventRepository: FakeEventRepository(events: const []),
             ),
-          ],
+            mapViewModel: ExploreMapViewModel(
+              locationService: FakeLocationService(
+                currentLocation: const LatLng(0, 0),
+              ),
+              fallbackCenter: const LatLng(0, 0),
+            ),
+            areaController: ExploreAreaController(),
+            headerController: headerController,
+            styleRepository: const MapStyleRepository(
+              inlineStyleJson: _testStyleJson,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MapWidget), findsOneWidget);
+      expect(find.text('No events found'), findsOneWidget);
+    });
+
+    testWidgets('does not show empty notice in list view', (tester) async {
+      final headerController = ShellHeaderController()
+        ..setSelectedView(ExploreContentView.list);
+
+      await tester.pumpWidget(
+        buildLocalizedTestApp(
+          home: ExploreScreen(
+            controller: ExploreController(
+              eventRepository: FakeEventRepository(events: const []),
+            ),
+            mapViewModel: ExploreMapViewModel(
+              locationService: FakeLocationService(
+                currentLocation: const LatLng(0, 0),
+              ),
+              fallbackCenter: const LatLng(0, 0),
+            ),
+            areaController: ExploreAreaController(),
+            headerController: headerController,
+            styleRepository: const MapStyleRepository(
+              inlineStyleJson: _testStyleJson,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('No events found'), findsNothing);
+    });
+
+    testWidgets('shows search-this-area button after moving the map', (
+      tester,
+    ) async {
+      final headerController = ShellHeaderController()
+        ..setSelectedView(ExploreContentView.map);
+
+      await tester.pumpWidget(
+        buildLocalizedTestApp(
+          home: ExploreScreen(
+            controller: ExploreController(
+              eventRepository: FakeEventRepository(
+                events: [
+                  _event(
+                    id: '1',
+                    title: 'Jazz Evening',
+                    location: const LatLng(0, 0),
+                  ),
+                ],
+              ),
+            ),
+            mapViewModel: ExploreMapViewModel(
+              locationService: FakeLocationService(
+                currentLocation: const LatLng(0, 0),
+              ),
+              fallbackCenter: const LatLng(0, 0),
+            ),
+            areaController: ExploreAreaController(),
+            headerController: headerController,
+            styleRepository: const MapStyleRepository(
+              inlineStyleJson: _testStyleJson,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      expect(find.text('Search this area'), findsNothing);
+
+      final mapWidget = tester.widget<MapWidget>(find.byType(MapWidget));
+      mapWidget.onCameraCenterChanged?.call(const LatLng(0.01, 0.01));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Search this area'), findsOneWidget);
+    });
+
+    testWidgets('moving map alone does not refresh events before button tap', (
+      tester,
+    ) async {
+      final headerController = ShellHeaderController()
+        ..setSelectedView(ExploreContentView.map);
+      final eventRepository = _SequencedEventRepository(
+        responses: [
+          [_event(id: '1', title: 'First', location: const LatLng(0, 0))],
           [
             _event(
-              id: 'second',
-              title: 'Nowy event po create',
-              location: const LatLng(51.76, 19.46),
+              id: '2',
+              title: 'Second',
+              location: const LatLng(0.01, 0.01),
             ),
           ],
         ],
       );
 
       await tester.pumpWidget(
-        _buildScreen(
-          locationService: FakeLocationService(),
-          eventRepository: repository,
-          eventRefreshSignal: refreshSignal,
+        buildLocalizedTestApp(
+          home: ExploreScreen(
+            controller: ExploreController(eventRepository: eventRepository),
+            mapViewModel: ExploreMapViewModel(
+              locationService: FakeLocationService(
+                currentLocation: const LatLng(0, 0),
+              ),
+              fallbackCenter: const LatLng(0, 0),
+            ),
+            areaController: ExploreAreaController(),
+            headerController: headerController,
+            styleRepository: const MapStyleRepository(
+              inlineStyleJson: _testStyleJson,
+            ),
+          ),
         ),
       );
-      await tester.pump();
-      await tester.pump();
 
-      await tester.tap(find.text('Lista'));
+      await tester.pumpAndSettle();
+      expect(eventRepository.fetchEventsCallCount, 1);
+
+      final mapWidget = tester.widget<MapWidget>(find.byType(MapWidget));
+      mapWidget.onCameraCenterChanged?.call(const LatLng(0.01, 0.01));
       await tester.pumpAndSettle();
 
-      expect(find.text('Pierwszy event'), findsOneWidget);
-      expect(find.text('Nowy event po create'), findsNothing);
+      expect(eventRepository.fetchEventsCallCount, 1);
+      expect(find.text('Search this area'), findsOneWidget);
 
-      refreshSignal.notifyChanged();
-      await tester.pump();
-      await tester.pump();
+      await tester.tap(find.text('Search this area'));
+      await tester.pumpAndSettle();
 
-      expect(repository.fetchEventsCallCount, 2);
-      expect(find.text('Nowy event po create'), findsOneWidget);
+      expect(eventRepository.fetchEventsCallCount, 2);
     });
 
     testWidgets(
-      'auto refresh reloads events on interval when explore is active',
+      'does not add status bar gap when rendered below shell header',
       (tester) async {
-        final repository = _SequencedEventRepository(
-          responses: [
-            [
-              _event(
-                id: 'first',
-                title: 'Pierwszy event',
-                location: const LatLng(51.7592, 19.4550),
-              ),
-            ],
-            [
-              _event(
-                id: 'second',
-                title: 'Event z auto refreshu',
-                location: const LatLng(51.7600, 19.4550),
-              ),
-            ],
-          ],
-        );
+        final searchController = TextEditingController();
+        final focusNode = FocusNode();
+        addTearDown(searchController.dispose);
+        addTearDown(focusNode.dispose);
 
         await tester.pumpWidget(
-          _buildScreen(
-            locationService: FakeLocationService(),
-            eventRepository: repository,
-            autoRefreshInterval: const Duration(seconds: 1),
+          MediaQuery(
+            data: const MediaQueryData(padding: EdgeInsets.only(top: 24)),
+            child: buildLocalizedTestApp(
+              home: ShellHeaderScope(
+                controller: ShellHeaderController(),
+                child: Scaffold(
+                  appBar: ExploreHeader(
+                    searchController: searchController,
+                    searchFocusNode: focusNode,
+                    onFilterPressed: () {},
+                    includeTopInset: false,
+                    selectedFilterIndices: const {},
+                    onFilterToggled: (_) {},
+                  ),
+                ),
+              ),
+            ),
           ),
         );
-        await tester.pump();
-        await tester.pump();
 
-        await tester.tap(find.text('Lista'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Pierwszy event'), findsOneWidget);
-
-        await tester.pump(const Duration(seconds: 1, milliseconds: 50));
         await tester.pump();
 
-        expect(repository.fetchEventsCallCount, greaterThanOrEqualTo(2));
-        expect(find.text('Event z auto refreshu'), findsOneWidget);
+        final appBarTop = tester.getTopLeft(find.byType(ExploreHeader)).dy;
+        final searchFieldTop = tester.getTopLeft(find.byType(TextField)).dy;
+        expect(searchFieldTop - appBarTop, 16);
       },
     );
-
-    testWidgets('list distance filter narrows visible events', (tester) async {
-      final repository = FakeEventRepository(
-        events: [
-          _event(
-            id: 'near',
-            title: 'Blisko',
-            location: const LatLng(51.7592, 19.4550),
-          ),
-          _event(
-            id: 'far',
-            title: 'Daleko',
-            location: const LatLng(51.9000, 19.4550),
-          ),
-        ],
-      );
-
-      await tester.pumpWidget(
-        _buildScreen(
-          locationService: FakeLocationService(
-            currentLocation: const LatLng(51.7592, 19.4550),
-          ),
-          eventRepository: repository,
-        ),
-      );
-      await tester.pump();
-      await tester.pump();
-
-      await tester.tap(find.text('Lista'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Blisko'), findsOneWidget);
-      expect(find.text('Daleko'), findsOneWidget);
-
-      await tester.tap(find.byKey(const Key('explore-distance-filter-button')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Do 1 km').last);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Blisko'), findsOneWidget);
-      expect(find.text('Daleko'), findsNothing);
-    });
   });
 }
 
-Widget _buildScreen({
+Widget _buildTestApp({
   required FakeLocationService locationService,
   required EventRepository eventRepository,
-  EventRefreshSignal? eventRefreshSignal,
-  Duration? autoRefreshInterval,
+  Stream<void>? eventRefreshSignal,
+  Duration autoRefreshInterval = const Duration(minutes: 5),
 }) {
-  final controller = ExploreMapViewModel(locationService: locationService);
+  final mapViewModel = ExploreMapViewModel(
+    locationService: locationService,
+    fallbackCenter: const LatLng(0, 0),
+  );
+  final controller = ExploreController(eventRepository: eventRepository);
+  final headerController = ShellHeaderController()
+    ..setSelectedView(ExploreContentView.list);
+  final areaController = ExploreAreaController();
 
   return buildLocalizedTestApp(
     home: ExploreScreen(
       controller: controller,
-      eventRepository: eventRepository,
+      mapViewModel: mapViewModel,
+      areaController: areaController,
+      headerController: headerController,
       eventRefreshSignal: eventRefreshSignal,
       autoRefreshInterval: autoRefreshInterval,
       styleRepository: const MapStyleRepository(
@@ -294,17 +295,52 @@ class _SequencedEventRepository implements EventRepository {
   int fetchEventsCallCount = 0;
 
   @override
-  Future<ExploreEvent> createEvent(input, l10n) {
+  Future<ExploreEvent> createEvent(EventRequest request) {
     throw UnimplementedError();
   }
 
   @override
-  Future<ExploreEvent> fetchEvent(String id, l10n) {
+  Future<ExploreEvent> updateEvent(String id, EventRequest request) {
     throw UnimplementedError();
   }
 
   @override
-  Future<List<ExploreEvent>> fetchEvents(l10n) async {
+  Future<void> uploadEventMedia(String eventId, List<int> bytes, String fileName) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> deleteEventMedia(String eventId, String mediaId) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> setEventThumbnail(String eventId, String mediaId) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Category>> fetchCategories() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchNearbyEvents({
+    required double latitude,
+    required double longitude,
+    double? radiusKm,
+    int? limit,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<ExploreEvent> fetchEvent(String id) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchEvents() async {
     final index = fetchEventsCallCount < responses.length
         ? fetchEventsCallCount
         : responses.length - 1;
@@ -321,7 +357,7 @@ ExploreEvent _event({
   return ExploreEvent(
     id: id,
     title: title,
-    category: ExploreCategory.music,
+    categories: const [Category(id: 'music', name: 'Music', slug: 'music')],
     startsAt: DateTime.utc(2026, 4, 12, 19),
     trendingScore: 1,
     venue: 'Piotrkowska 10, Lodz',

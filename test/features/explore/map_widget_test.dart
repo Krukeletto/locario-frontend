@@ -42,7 +42,7 @@ void main() {
 
       expect(find.byKey(const Key('map-message-banner')), findsOneWidget);
       expect(
-        find.text('Włącz usługi lokalizacji, aby zobaczyć swoją pozycję.'),
+        find.text('Enable location services to see your position.'),
         findsOneWidget,
       );
     });

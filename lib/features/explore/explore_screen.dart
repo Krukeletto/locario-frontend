@@ -1,636 +1,536 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
 import '../../shared/events/event_repository.dart';
-import '../../shared/events/event_refresh_signal.dart';
 import '../../shared/location/location_service.dart';
 import '../../shared/map/style_repository.dart';
-import '../shell/header/header.dart';
-import '../shell/header/header_controller.dart';
-import '../shell/header/header_scope.dart';
+import '../../shared/widgets/state_panel.dart';
 import 'explore_area_controller.dart';
-import 'explore_event_query.dart';
+import 'explore_controller.dart';
+import 'explore_state.dart';
 import 'map_view_model.dart';
 import 'models.dart';
+import 'widgets/advanced_filter_sheet.dart';
 import 'widgets/area_picker.dart';
 import 'widgets/header.dart';
 import 'widgets/list_view.dart';
 import 'widgets/map_view.dart';
+import 'widgets/search_this_area_button.dart';
+import '../../shared/events/category_scope.dart';
+import '../shell/header/header_controller.dart';
+import '../shell/header/header_scope.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({
     super.key,
-    ExploreMapViewModel? controller,
-    MapStyleRepository? styleRepository,
-    EventRepository? eventRepository,
-    EventRefreshSignal? eventRefreshSignal,
-    Duration? autoRefreshInterval,
-  }) : _controller = controller,
-       _styleRepository = styleRepository,
-       _eventRepository = eventRepository,
-       _eventRefreshSignal = eventRefreshSignal,
-       _autoRefreshInterval = autoRefreshInterval;
+    this.controller,
+    this.mapViewModel,
+    this.areaController,
+    this.styleRepository,
+    this.headerController,
+    this.eventRefreshSignal,
+    this.autoRefreshInterval = const Duration(minutes: 5),
+  });
 
-  final ExploreMapViewModel? _controller;
-  final MapStyleRepository? _styleRepository;
-  final EventRepository? _eventRepository;
-  final EventRefreshSignal? _eventRefreshSignal;
-  final Duration? _autoRefreshInterval;
+  final ExploreController? controller;
+  final ExploreMapViewModel? mapViewModel;
+  final ExploreAreaController? areaController;
+  final MapStyleRepository? styleRepository;
+  final ShellHeaderController? headerController;
+  final Stream<void>? eventRefreshSignal;
+  final Duration autoRefreshInterval;
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
 }
 
-class _ExploreScreenState extends State<ExploreScreen>
-    with WidgetsBindingObserver {
-  static const _defaultAutoRefreshInterval = Duration(seconds: 60);
-
-  late final ExploreMapViewModel _controller;
-  late final MapStyleRepository _styleRepository;
-  late final EventRepository _eventRepository;
-  late final EventRefreshSignal _eventRefreshSignal;
-  late final bool _ownsController;
-  late final ShellHeaderController _localHeaderController;
-  late final TextEditingController _searchController;
+class _ExploreScreenState extends State<ExploreScreen> {
+  late final ExploreController _exploreController;
+  late final ExploreMapViewModel _mapViewModel;
   late final ExploreAreaController _areaController;
-  final ExploreEventQuery _eventQuery = const ExploreEventQuery();
-  AppLocalizations? _l10n;
-  bool _hasRequestedInitialLoad = false;
-  Timer? _autoRefreshTimer;
-  Future<void>? _activeEventsLoad;
+  late final MapStyleRepository _styleRepository;
+  late final ShellHeaderController _internalHeaderController;
 
-  ExploreSortOption _selectedSort = ExploreSortOption.distance;
-  ExploreDistanceFilter _selectedDistanceFilter = ExploreDistanceFilter.any;
-  String _searchQuery = '';
-  bool _isLoadingEvents = true;
-  String? _eventsError;
-  List<ExploreEvent> _allEvents = const [];
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+
+  StreamSubscription<void>? _refreshSubscription;
+  Timer? _autoRefreshTimer;
+  LatLng? _lastSearchedLocation;
+  int? _pendingMapSearchRadiusMeters;
+  int? _appliedMapSearchRadiusMeters;
+
+  bool _isMinLoadingElapsed = true;
+  Timer? _loadingTimer;
+  bool _isEmptyResultsNoticeDismissed = false;
+
+  ShellHeaderController? _activeHeaderController;
 
   @override
   void initState() {
     super.initState();
-    _ownsController = widget._controller == null;
-    _controller =
-        widget._controller ??
+
+    // Initialize or use provided dependencies
+    _areaController = widget.areaController ?? ExploreAreaController();
+
+    _exploreController =
+        widget.controller ??
+        ExploreController(eventRepository: HttpEventRepository());
+
+    _mapViewModel =
+        widget.mapViewModel ??
         ExploreMapViewModel(locationService: GeolocatorLocationService());
-    _styleRepository = widget._styleRepository ?? const MapStyleRepository();
-    _eventRepository = widget._eventRepository ?? HttpEventRepository();
-    _eventRefreshSignal =
-        widget._eventRefreshSignal ?? globalEventRefreshSignal;
-    _localHeaderController = ShellHeaderController();
-    _searchController = TextEditingController();
-    _areaController = ExploreAreaController();
-    WidgetsBinding.instance.addObserver(this);
-    _controller.loadInitialLocation();
-    _eventRefreshSignal.addListener(_handleEventsChanged);
-    _startAutoRefreshTimer();
+
+    _styleRepository = widget.styleRepository ?? const MapStyleRepository();
+    _internalHeaderController =
+        widget.headerController ?? ShellHeaderController();
+
+    _searchFocusNode.addListener(_handleSearchFocusChanged);
+    _exploreController.addListener(_handleStateChanged);
+    _areaController.addListener(_handleAreaChanged);
+    _mapViewModel.addListener(_handleMapViewModelChanged);
+
+    _refreshSubscription = widget.eventRefreshSignal?.listen((_) {
+      _exploreController.loadEvents(forceRefresh: true);
+    });
+
+    _autoRefreshTimer = Timer.periodic(widget.autoRefreshInterval, (_) {
+      if (mounted) {
+        _exploreController.loadEvents();
+      }
+    });
+
+    _exploreController.loadEvents();
+    _mapViewModel.loadInitialLocation();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _l10n ??= AppLocalizations.of(context)!;
-    if (_hasRequestedInitialLoad) {
-      return;
+    final newHeaderController =
+        ShellHeaderScope.maybeOf(context) ?? _internalHeaderController;
+    if (newHeaderController != _activeHeaderController) {
+      _activeHeaderController?.removeListener(_handleHeaderChanged);
+      _activeHeaderController = newHeaderController;
+      _activeHeaderController?.addListener(_handleHeaderChanged);
+      _syncControllerParams();
     }
-
-    _hasRequestedInitialLoad = true;
-    _loadEvents();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _autoRefreshTimer?.cancel();
-    _eventRefreshSignal.removeListener(_handleEventsChanged);
-    if (_ownsController) {
-      _controller.dispose();
-    }
+    _searchFocusNode.removeListener(_handleSearchFocusChanged);
+    _exploreController.removeListener(_handleStateChanged);
+    _areaController.removeListener(_handleAreaChanged);
+    _mapViewModel.removeListener(_handleMapViewModelChanged);
+    _activeHeaderController?.removeListener(_handleHeaderChanged);
+
+    // Dispose only if created internally
+    if (widget.areaController == null) _areaController.dispose();
+    if (widget.controller == null) _exploreController.dispose();
+    if (widget.mapViewModel == null) _mapViewModel.dispose();
+    if (widget.headerController == null) _internalHeaderController.dispose();
+
     _searchController.dispose();
-    _areaController.dispose();
-    _localHeaderController.dispose();
+    _searchFocusNode.dispose();
+    _refreshSubscription?.cancel();
+    _autoRefreshTimer?.cancel();
+    _loadingTimer?.cancel();
     super.dispose();
   }
 
-  ShellHeaderController get _headerController {
-    final scopedController = ShellHeaderScope.maybeOf(context);
-    if (scopedController != null) {
-      return scopedController;
-    }
-    return _localHeaderController;
-  }
+  void _syncControllerParams() {
+    if (!mounted) return;
 
-  Future<void> _loadEvents() async {
-    return _loadEventsWithMode(showLoadingState: _allEvents.isEmpty);
-  }
-
-  Future<void> _loadEventsWithMode({required bool showLoadingState}) {
-    final currentLoad = _activeEventsLoad;
-    if (currentLoad != null) {
-      return currentLoad;
-    }
-
-    final future = _performEventsLoad(showLoadingState: showLoadingState);
-    _activeEventsLoad = future;
-    return future.whenComplete(() {
-      if (identical(_activeEventsLoad, future)) {
-        _activeEventsLoad = null;
-      }
-    });
-  }
-
-  Future<void> _performEventsLoad({required bool showLoadingState}) async {
-    final l10n = _l10n ?? AppLocalizations.of(context)!;
-    final hasEvents = _allEvents.isNotEmpty;
-    final shouldShowLoadingState = showLoadingState || !hasEvents;
-
-    if (shouldShowLoadingState && mounted) {
-      setState(() {
-        _isLoadingEvents = true;
-        _eventsError = null;
-      });
-    }
-
-    try {
-      final events = await _eventRepository.fetchEvents(l10n);
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _allEvents = events;
-        _eventsError = null;
-        _isLoadingEvents = false;
-      });
-    } on EventRepositoryException catch (error) {
-      if (!mounted) {
-        return;
-      }
-
-      if (shouldShowLoadingState || !hasEvents) {
-        setState(() {
-          _eventsError = error.message;
-          _isLoadingEvents = false;
-        });
-      }
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-
-      if (shouldShowLoadingState || !hasEvents) {
-        setState(() {
-          _eventsError = 'unknown';
-          _isLoadingEvents = false;
-        });
-      }
-    }
-  }
-
-  void _handleEventsChanged() {
-    if (!_hasRequestedInitialLoad || !mounted) {
-      return;
-    }
-
-    _loadEventsWithMode(showLoadingState: _allEvents.isEmpty);
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _refreshEventsSilently();
-    }
-  }
-
-  void _startAutoRefreshTimer() {
-    final interval = widget._autoRefreshInterval ?? _defaultAutoRefreshInterval;
-    if (interval <= Duration.zero) {
-      return;
-    }
-
-    _autoRefreshTimer = Timer.periodic(interval, (_) {
-      _refreshEventsSilently();
-    });
-  }
-
-  void _refreshEventsSilently() {
-    if (!_hasRequestedInitialLoad || !_shouldAutoRefreshNow()) {
-      return;
-    }
-
-    _loadEventsWithMode(showLoadingState: false);
-  }
-
-  bool _shouldAutoRefreshNow() {
-    if (!mounted || _areaController.isPickingAreaOnMap) {
-      return false;
-    }
-
-    final lifecycleState = WidgetsBinding.instance.lifecycleState;
-    if (lifecycleState != null && lifecycleState != AppLifecycleState.resumed) {
-      return false;
-    }
-
-    try {
-      final routePath = GoRouterState.of(context).uri.path;
-      return routePath.startsWith('/explore');
-    } catch (_) {
-      return true;
-    }
-  }
-
-  void _toggleFilter(int index) {
-    _headerController.toggleFilter(index);
-  }
-
-  Future<void> _handleAreaPressed() async {
-    final l10n = AppLocalizations.of(context)!;
-    final action = await showModalBottomSheet<ExploreAreaSelectionAction>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => ExploreAreaSelectionSheet(
-        title: l10n.areaPickerTitle,
-        subtitle: l10n.areaPickerSubtitle,
-        onActionSelected: (action) => Navigator.of(context).pop(action),
+    _exploreController.updateSearchQuery(_searchController.text);
+    _exploreController.updateReferenceLocation(
+      _areaController.referenceLocation(
+        currentLocation: _mapViewModel.currentLocation,
+        fallbackCenter: _mapViewModel.mapCenter,
       ),
     );
-
-    if (!mounted || action == null) {
-      return;
-    }
-
-    switch (action) {
-      case ExploreAreaSelectionAction.currentLocation:
-        _areaController.selectCurrentLocation();
-        _controller.setPreferredMapCenter(_controller.currentLocation);
-        return;
-      case ExploreAreaSelectionAction.enterAddress:
-        await _promptForAddress();
-        return;
-      case ExploreAreaSelectionAction.pickOnMap:
-        _startMapAreaPicking();
-        return;
-    }
-  }
-
-  Future<void> _promptForAddress() async {
-    final l10n = AppLocalizations.of(context)!;
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => const ExploreAddressInputDialog(),
+    final isMapView =
+        (_activeHeaderController ?? _internalHeaderController).selectedView ==
+        ExploreContentView.map;
+    _exploreController.updateDistanceOverride(
+      isMapView ? _appliedMapSearchRadiusMeters : null,
     );
 
-    if (!mounted || result == null || result.isEmpty) {
-      return;
-    }
+    if (!mounted) return;
 
-    final lookupResult = await _areaController.selectAddress(result);
-    if (!mounted) {
-      return;
-    }
-
-    switch (lookupResult.status) {
-      case ExploreAddressLookupStatus.notFound:
-        _showAddressLookupMessage(l10n.areaAddressNotFound);
-        return;
-      case ExploreAddressLookupStatus.error:
-        _showAddressLookupMessage(l10n.areaAddressLookupFailed);
-        return;
-      case ExploreAddressLookupStatus.success:
-        _controller.setPreferredMapCenter(lookupResult.center);
+    if (_activeHeaderController != null) {
+      final available = CategoryScope.maybeOf(context)?.categories ?? [];
+      final categories = _activeHeaderController!.selectedFilterIndices
+          .where((i) => i > 0 && (i - 1) < available.length)
+          .map((i) => available[i - 1]);
+      _exploreController.updateCategories(categories.cast<Category>().toList());
     }
   }
 
-  void _startMapAreaPicking() {
-    _headerController.setSelectedView(ExploreContentView.map);
-    _areaController.startMapPicking();
+  void _handleHeaderChanged() {
+    _syncControllerParams();
   }
 
-  void _cancelMapAreaPicking() {
-    _areaController.cancelMapPicking();
-    _headerController.setSelectedView(ExploreContentView.list);
-  }
-
-  void _confirmMapAreaPicking() {
-    final selectedCenter = _areaController.confirmMapPicking(
-      _controller.mapCenter,
+  LatLng _currentSearchAreaCenter() {
+    return _areaController.referenceLocation(
+      currentLocation: _mapViewModel.currentLocation,
+      fallbackCenter: _mapViewModel.mapCenter,
     );
-    _controller.setPreferredMapCenter(selectedCenter);
-    _headerController.setSelectedView(ExploreContentView.list);
   }
 
-  void _showAddressLookupMessage(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+  void _markCurrentAreaAsSearched({bool force = false}) {
+    if (_lastSearchedLocation != null && !force) {
+      return;
+    }
+    _lastSearchedLocation = _currentSearchAreaCenter();
+    _appliedMapSearchRadiusMeters ??= _pendingMapSearchRadiusMeters;
   }
 
-  void _handleSearchChanged(String value) {
-    setState(() {
-      _searchQuery = value;
+  void _handleStateChanged() {
+    if (_exploreController.state is! ExploreEmpty &&
+        _isEmptyResultsNoticeDismissed) {
+      _isEmptyResultsNoticeDismissed = false;
+    }
+    if (_exploreController.state is ExploreLoading ||
+        _exploreController.state is ExploreDataLoading) {
+      _startLoadingTimer();
+    } else {
+      _isMinLoadingElapsed = true;
+      _loadingTimer?.cancel();
+    }
+    setState(() {});
+  }
+
+  void _handleMapViewModelChanged() {
+    _syncControllerParams();
+    _markCurrentAreaAsSearched();
+    if (mounted) {
+      setState(() {});
+      // If we just got a location and haven't loaded events yet, or if we need to refresh
+      if (_mapViewModel.currentLocation != null &&
+          _exploreController.state is ExploreLoading) {
+        _exploreController.loadEvents();
+      }
+    }
+  }
+
+  void _startLoadingTimer() {
+    _isMinLoadingElapsed = false;
+    _loadingTimer?.cancel();
+    _loadingTimer = Timer(const Duration(milliseconds: 200), () {
+      if (mounted) {
+        setState(() => _isMinLoadingElapsed = true);
+      }
     });
   }
 
-  void _clearSearch() {
+  void _handleAreaChanged() {
+    _syncControllerParams();
+    _markCurrentAreaAsSearched(force: true);
+    setState(() {});
+  }
+
+  void _handleSearchFocusChanged() {
+    setState(() {});
+  }
+
+  void _handleSearchChanged(String query) {
+    _exploreController.updateSearchQuery(query);
+  }
+
+  void _dismissSearchFocus() {
+    if (_searchFocusNode.hasFocus) {
+      _searchFocusNode.unfocus();
+    }
+  }
+
+  void _handleSearchCleared() {
     _searchController.clear();
-    setState(() {
-      _searchQuery = '';
-    });
+    _exploreController.updateSearchQuery('');
   }
 
   void _handleSearchResultSelected(ExploreEvent event) {
-    _searchController.value = TextEditingValue(
-      text: event.title,
-      selection: TextSelection.collapsed(offset: event.title.length),
-    );
-    setState(() {
-      _searchQuery = event.title;
-    });
+    _dismissSearchFocus();
+    _handleEventTap(event);
+  }
 
-    if (_headerController.selectedView == ExploreContentView.map) {
-      _controller.setPreferredMapCenter(event.location);
-      _areaController.updateViewportCenter(event.location);
+  bool get _showSearchThisArea {
+    if (_areaController.isPickingAreaOnMap) return false;
+    if (_lastSearchedLocation == null) return false;
+    final current = _mapViewModel.mapCenter;
+    const distance = Distance();
+    final centerChanged =
+        distance.as(LengthUnit.Meter, _lastSearchedLocation!, current) > 500;
+    final appliedRadius = _appliedMapSearchRadiusMeters;
+    final pendingRadius = _pendingMapSearchRadiusMeters;
+    final radiusChanged =
+        appliedRadius != null &&
+        pendingRadius != null &&
+        (pendingRadius - appliedRadius).abs() >
+            ((appliedRadius * 0.15).round().clamp(250, 5000));
+    return centerChanged || radiusChanged;
+  }
+
+  Future<void> _handleFilterPressed() async {
+    final result = await showModalBottomSheet<ExploreAdvancedFilterResult>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (context) => ExploreAdvancedFilterSheet(
+        initialFilters: _exploreController.advancedFilters,
+        areaController: _areaController,
+      ),
+    );
+
+    if (mounted && result != null) {
+      _exploreController.updateAdvancedFilters(result.filters);
+      if (result.shouldPickOnMap) {
+        final headerController =
+            _activeHeaderController ?? _internalHeaderController;
+        headerController.setSelectedView(ExploreContentView.map);
+        _areaController.startMapPicking();
+      }
     }
   }
 
-  void _openEvent(ExploreEvent event) {
-    context.push('/events/${Uri.encodeComponent(event.id)}');
+  void _handleEventTap(ExploreEvent event) {
+    context.push('/events/${event.id}');
   }
 
   @override
   Widget build(BuildContext context) {
-    final headerController = _headerController;
-    final l10n = AppLocalizations.of(context)!;
-    final filters = buildExploreFilters(l10n);
-    final allFilter = filters.firstWhere(
-      (filter) => filter.category == ExploreCategory.all,
-    );
+    final state = _exploreController.state;
+    final headerController =
+        _activeHeaderController ?? _internalHeaderController;
+    final includeHeaderTopInset = ShellHeaderScope.maybeOf(context) == null;
 
-    return AnimatedBuilder(
-      animation: Listenable.merge([headerController, _areaController]),
+    return ListenableBuilder(
+      listenable: headerController,
       builder: (context, _) {
-        final selectedFilters = _selectedFilters(filters);
-        final selectedFilterSummary = _selectedFilterSummary(
-          selectedFilters,
-          allFilter,
-        );
-        final referenceLocation = _areaController.referenceLocation(
-          currentLocation: _controller.currentLocation,
-          fallbackCenter: _controller.mapCenter,
-        );
-        final maxDistanceMeters =
-            headerController.selectedView == ExploreContentView.list
-            ? _selectedDistanceFilter.maxDistanceMeters
-            : null;
-        final visibleEvents = _eventQuery.visibleEvents(
-          events: _allEvents,
-          selectedCategories: selectedFilters.map((filter) => filter.category),
-          query: _searchQuery,
-          sort: _selectedSort,
-          referenceLocation: referenceLocation,
-          l10n: l10n,
-          maxDistanceMeters: maxDistanceMeters,
-        );
-        final searchResults = _eventQuery.searchResults(
-          events: _allEvents,
-          selectedCategories: selectedFilters.map((filter) => filter.category),
-          query: _searchQuery,
-          sort: _selectedSort,
-          referenceLocation: referenceLocation,
-          l10n: l10n,
-          maxDistanceMeters: maxDistanceMeters,
-        );
-        final selectedArea = _areaController.selectedArea(l10n);
-        final showShellHeader = ShellHeaderScope.maybeOf(context) == null;
+        final currentView = headerController.selectedView;
 
         return Scaffold(
-          body: ColoredBox(
-            color: Theme.of(context).colorScheme.surface,
-            child: Column(
-              children: [
-                if (showShellHeader)
-                  ShellHeader(
-                    selectedView: headerController.selectedView,
-                    onViewChanged: headerController.setSelectedView,
-                  ),
-                ExploreHeader(
-                  selectedFilterIndices: headerController.selectedFilterIndices,
-                  filters: filters,
-                  onFilterToggled: _toggleFilter,
-                  searchController: _searchController,
-                  searchResults: searchResults,
-                  onSearchChanged: _handleSearchChanged,
-                  onSearchResultSelected: _handleSearchResultSelected,
-                  onSearchCleared: _clearSearch,
+          extendBodyBehindAppBar: true,
+          appBar: ExploreHeader(
+            searchController: _searchController,
+            searchFocusNode: _searchFocusNode,
+            onFilterPressed: () {
+              _dismissSearchFocus();
+              _handleFilterPressed();
+            },
+            includeTopInset: includeHeaderTopInset,
+            searchResults: _exploreController.searchResults,
+            activeFiltersCount:
+                _exploreController.advancedFilters.activeFiltersCount,
+            onSearchChanged: _handleSearchChanged,
+            onSearchResultSelected: _handleSearchResultSelected,
+            onSearchCleared: _handleSearchCleared,
+            selectedFilterIndices: headerController.selectedFilterIndices,
+            availableCategories: (CategoryScope.maybeOf(context)?.categories ?? [])
+                .cast<Category>()
+                .toList(),
+            onFilterToggled: (index) {
+              _dismissSearchFocus();
+              headerController.toggleFilter(index);
+            },
+          ),
+          body: Stack(
+            children: [
+              _buildContent(context, state, currentView),
+              if (_areaController.isPickingAreaOnMap)
+                ExploreMapAreaPickerOverlay(
+                  title: AppLocalizations.of(context)!.areaPickOnMapTitle,
+                  subtitle: AppLocalizations.of(context)!.areaPickOnMapSubtitle,
+                  cancelLabel: AppLocalizations.of(context)!.areaDialogCancel,
+                  confirmLabel: AppLocalizations.of(context)!.areaDialogConfirm,
+                  onCancel: _areaController.cancelMapPicking,
+                  onConfirm: () {
+                    final center = _areaController.confirmMapPicking(
+                      _mapViewModel.mapCenter,
+                    );
+                    _appliedMapSearchRadiusMeters =
+                        _pendingMapSearchRadiusMeters;
+                    _mapViewModel.setPreferredMapCenter(center);
+                  },
                 ),
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 260),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeInCubic,
-                    transitionBuilder: (child, animation) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0.03, 0),
-                            end: Offset.zero,
-                          ).animate(animation),
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: _buildBody(
-                      context: context,
-                      l10n: l10n,
-                      headerController: headerController,
-                      visibleEvents: visibleEvents,
-                      referenceLocation: referenceLocation,
-                      selectedFilterSummary: selectedFilterSummary,
-                      selectedArea: selectedArea,
+              if (state is ExploreDataLoading && !_isMinLoadingElapsed)
+                const _LoadingOverlay(),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    ExploreState state,
+    ExploreContentView currentView,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final effectiveView = _areaController.isPickingAreaOnMap
+        ? ExploreContentView.map
+        : currentView;
+
+    return switch (state) {
+      ExploreLoading() => StatePanel.loading(
+        title: l10n.exploreLoadingTitle,
+        subtitle: l10n.exploreLoadingSubtitle,
+      ),
+      ExploreError(type: var type, details: var details) => StatePanel.error(
+        title: _errorTitle(type, l10n),
+        subtitle: _errorSubtitle(type, l10n, details),
+        retryLabel: l10n.exploreRetryButton,
+        onRetry: () => _exploreController.loadEvents(forceRefresh: true),
+      ),
+      ExploreEmpty() => _buildMainUI(
+        const [],
+        effectiveView,
+        showEmptyResultsMessage: true,
+      ),
+      ExploreData(events: var events) => _buildMainUI(events, effectiveView),
+      ExploreDataLoading(previous: var previous) => _buildMainUI(
+        previous,
+        effectiveView,
+      ),
+    };
+  }
+
+  Widget _buildMainUI(
+    List<ExploreEvent> events,
+    ExploreContentView currentView, {
+    bool showEmptyResultsMessage = false,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final referenceLocation =
+        _exploreController.referenceLocation ?? const LatLng(0, 0);
+    final searchRadiusMeters =
+        _areaController.selectionMode == ExploreAreaSelectionMode.mapPin
+        ? _appliedMapSearchRadiusMeters ??
+              _exploreController.distanceOverrideMeters ??
+              _exploreController
+                  .advancedFilters
+                  .distanceFilter
+                  .maxDistanceMeters
+        : null;
+    final topContentOffset = (ShellHeaderScope.maybeOf(context) == null)
+        ? MediaQuery.paddingOf(context).top + 112
+        : 112.0;
+    final content = currentView == ExploreContentView.map
+        ? Stack(
+            children: [
+              ExploreMapView(
+                controller: _mapViewModel,
+                styleRepository: _styleRepository,
+                events: events,
+                referenceLocation: referenceLocation,
+                searchRadiusMeters: searchRadiusMeters,
+                onEventTap: _handleEventTap,
+                onCameraCenterChanged: _mapViewModel.setPreferredMapCenter,
+                onVisibleRadiusChanged: (radiusMeters) {
+                  if (_pendingMapSearchRadiusMeters == radiusMeters) {
+                    return;
+                  }
+                  setState(() {
+                    _pendingMapSearchRadiusMeters = radiusMeters;
+                  });
+                },
+              ),
+              if (_showSearchThisArea)
+                Positioned(
+                  top: 16,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: SearchThisAreaButton(
+                      onPressed: () {
+                        _areaController.searchInArea(_mapViewModel.mapCenter);
+                        _appliedMapSearchRadiusMeters =
+                            _pendingMapSearchRadiusMeters;
+                        _syncControllerParams();
+                        _markCurrentAreaAsSearched(force: true);
+                        _exploreController.loadEvents(forceRefresh: true);
+                      },
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-        );
-      },
+            ],
+          )
+        : Stack(
+            children: [
+              ExploreListView(
+                events: events,
+                referenceLocation: referenceLocation,
+                selectedFilterSummary:
+                    _exploreController.selectedCategories.isEmpty
+                    ? l10n.filterAll
+                    : _exploreController.selectedCategories
+                          .map((c) => c.name)
+                          .join(', '),
+                selectedSort: _exploreController.selectedSort,
+                sortAscending: _exploreController.sortAscending,
+                isSearchActive: _searchFocusNode.hasFocus,
+                onSortOpened: _dismissSearchFocus,
+                onSortChanged: (sort) {
+                  _dismissSearchFocus();
+                  _exploreController.updateSort(sort);
+                },
+                onSortOrderToggled: _exploreController.toggleSortOrder,
+                onEventTap: (event) {
+                  _dismissSearchFocus();
+                  _handleEventTap(event);
+                },
+              ),
+            ],
+          );
+
+    return Column(
+      children: [
+        SizedBox(height: topContentOffset),
+        Expanded(child: content),
+      ],
     );
   }
 
-  Widget _buildBody({
-    required BuildContext context,
-    required AppLocalizations l10n,
-    required ShellHeaderController headerController,
-    required List<ExploreEvent> visibleEvents,
-    required LatLng referenceLocation,
-    required String selectedFilterSummary,
-    required ExploreAreaSelection selectedArea,
-  }) {
-    if (_isLoadingEvents) {
-      return _ExploreStatePanel(
-        key: const ValueKey('explore-loading-state'),
-        icon: Icons.hourglass_top_rounded,
-        title: l10n.exploreLoadingTitle,
-        subtitle: l10n.exploreLoadingSubtitle,
-        trailing: const Padding(
-          padding: EdgeInsets.only(top: 12),
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    if (_eventsError != null) {
-      return _ExploreStatePanel(
-        key: const ValueKey('explore-error-state'),
-        icon: Icons.wifi_tethering_error_rounded,
-        title: l10n.exploreErrorTitle,
-        subtitle: l10n.exploreErrorSubtitle,
-        trailing: Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: FilledButton(
-            onPressed: _loadEvents,
-            child: Text(l10n.exploreRetryButton),
-          ),
-        ),
-      );
-    }
-
-    if (visibleEvents.isEmpty &&
-        headerController.selectedView != ExploreContentView.map) {
-      return _ExploreStatePanel(
-        key: const ValueKey('explore-empty-state'),
-        icon: Icons.event_busy_rounded,
-        title: l10n.exploreEmptyTitle,
-        subtitle: l10n.exploreEmptySubtitle,
-      );
-    }
-
-    if (headerController.selectedView == ExploreContentView.map) {
-      return Stack(
-        key: const ValueKey('explore-map-view'),
-        children: [
-          ExploreMapView(
-            controller: _controller,
-            styleRepository: _styleRepository,
-            events: visibleEvents,
-            onEventTap: _openEvent,
-            onCameraCenterChanged: (center) {
-              _areaController.updateViewportCenter(center);
-            },
-          ),
-          if (_areaController.isPickingAreaOnMap)
-            ExploreMapAreaPickerOverlay(
-              title: l10n.areaPickOnMapTitle,
-              subtitle: l10n.areaPickOnMapSubtitle,
-              cancelLabel: l10n.areaDialogCancel,
-              confirmLabel: l10n.areaPickOnMapConfirm,
-              onCancel: _cancelMapAreaPicking,
-              onConfirm: _confirmMapAreaPicking,
-            ),
-        ],
-      );
-    }
-
-    return ExploreListView(
-      key: const ValueKey('explore-list-view'),
-      events: visibleEvents,
-      referenceLocation: referenceLocation,
-      selectedFilterSummary: selectedFilterSummary,
-      selectedArea: selectedArea,
-      selectedSort: _selectedSort,
-      selectedDistanceFilter: _selectedDistanceFilter,
-      isSearchActive: _searchQuery.trim().isNotEmpty,
-      onAreaPressed: _handleAreaPressed,
-      onEventTap: _openEvent,
-      onSortChanged: (sort) {
-        setState(() {
-          _selectedSort = sort;
-        });
-      },
-      onDistanceFilterChanged: (distanceFilter) {
-        setState(() {
-          _selectedDistanceFilter = distanceFilter;
-        });
-      },
-    );
+  String _errorTitle(ExploreErrorType type, AppLocalizations l10n) {
+    return switch (type) {
+      ExploreErrorType.network => l10n.networkError,
+      ExploreErrorType.permission => l10n.exploreErrorPermissionTitle,
+      ExploreErrorType.unknown => l10n.exploreErrorUnknownTitle,
+    };
   }
 
-  List<ExploreFilter> _selectedFilters(List<ExploreFilter> filters) {
-    final selected = _headerController.selectedFilterIndices.toList()..sort();
-    return selected.map((index) => filters[index]).toList();
-  }
-
-  String _selectedFilterSummary(
-    List<ExploreFilter> filters,
-    ExploreFilter allFilter,
+  String _errorSubtitle(
+    ExploreErrorType type,
+    AppLocalizations l10n,
+    String? details,
   ) {
-    if (filters.isEmpty ||
-        (filters.length == 1 && filters.first.category == allFilter.category)) {
-      return allFilter.label;
-    }
-
-    return filters.map((filter) => filter.label).join(' + ');
+    return switch (type) {
+      ExploreErrorType.network => l10n.exploreErrorSubtitle,
+      ExploreErrorType.permission => l10n.exploreErrorPermissionSubtitle,
+      ExploreErrorType.unknown => details ?? l10n.exploreErrorUnknownSubtitle,
+    };
   }
 }
 
-class _ExploreStatePanel extends StatelessWidget {
-  const _ExploreStatePanel({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    this.trailing,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Widget? trailing;
+class _LoadingOverlay extends StatelessWidget {
+  const _LoadingOverlay();
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Center(
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: scheme.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Icon(icon, size: 34, color: scheme.primary),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.72),
-              ),
-            ),
-            ?trailing,
-          ],
+        padding: const EdgeInsets.only(top: 112), // Below header
+        child: Material(
+          color: Colors.transparent,
+          child: const SizedBox(height: 3, child: LinearProgressIndicator()),
         ),
       ),
     );
