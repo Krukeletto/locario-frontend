@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:locario/shared/services/l10n_service.dart';
 
-Widget buildLocalizedTestApp({required Widget home, Locale locale = const Locale('en')}) {
+Widget buildLocalizedTestApp({
+  required Widget home,
+  Locale locale = const Locale('en'),
+}) {
   return MaterialApp(
     locale: locale,
     supportedLocales: AppLocalizations.supportedLocales,

@@ -28,9 +28,7 @@ void main() {
         ],
       );
 
-      final result = await controller.selectAddress(
-        'Piotrkowska 10, Lodz',
-      );
+      final result = await controller.selectAddress('Piotrkowska 10, Lodz');
 
       expect(result.status, CreateEventLocationLookupStatus.success);
       expect(controller.selection, isNotNull);
