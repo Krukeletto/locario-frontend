@@ -22,6 +22,9 @@ class FakeEventRepository implements EventRepository {
   final Object? createEventError;
 
   EventRequest? lastCreateInput;
+  String? lastUploadedEventId;
+  List<int>? lastUploadedBytes;
+  String? lastUploadedFileName;
 
   @override
   Future<ExploreEvent> createEvent(EventRequest request) async {
@@ -72,7 +75,15 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> uploadEventMedia(String eventId, List<int> bytes, String fileName) async {}
+  Future<void> uploadEventMedia(
+    String eventId,
+    List<int> bytes,
+    String fileName,
+  ) async {
+    lastUploadedEventId = eventId;
+    lastUploadedBytes = bytes;
+    lastUploadedFileName = fileName;
+  }
 
   @override
   Future<void> deleteEventMedia(String eventId, String mediaId) async {}

@@ -2,6 +2,13 @@ import '../../explore/models.dart';
 
 enum CreateEventFormStatus { idle, submitting, success, error }
 
+class CreateEventSelectedImage {
+  const CreateEventSelectedImage({required this.bytes, required this.fileName});
+
+  final List<int> bytes;
+  final String fileName;
+}
+
 class CreateEventState {
   const CreateEventState({
     this.title = '',
@@ -21,7 +28,7 @@ class CreateEventState {
     this.ticketUrlError,
     this.slotLimit,
     this.slotLimitError,
-    this.thumbnailUrl,
+    this.selectedImage,
     this.status = CreateEventFormStatus.idle,
   });
 
@@ -42,7 +49,7 @@ class CreateEventState {
   final String? ticketUrlError;
   final int? slotLimit;
   final String? slotLimitError;
-  final String? thumbnailUrl;
+  final CreateEventSelectedImage? selectedImage;
   final CreateEventFormStatus status;
 
   bool get canSubmit =>
@@ -78,30 +85,40 @@ class CreateEventState {
     String? Function()? ticketUrlError,
     int? Function()? slotLimit,
     String? Function()? slotLimitError,
-    String? Function()? thumbnailUrl,
+    CreateEventSelectedImage? Function()? selectedImage,
     CreateEventFormStatus? status,
   }) {
     return CreateEventState(
       title: title ?? this.title,
       titleError: titleError != null ? titleError() : this.titleError,
       description: description ?? this.description,
-      descriptionError:
-          descriptionError != null ? descriptionError() : this.descriptionError,
+      descriptionError: descriptionError != null
+          ? descriptionError()
+          : this.descriptionError,
       locationLabel: locationLabel ?? this.locationLabel,
-      locationError:
-          locationError != null ? locationError() : this.locationError,
+      locationError: locationError != null
+          ? locationError()
+          : this.locationError,
       selectedDate: selectedDate != null ? selectedDate() : this.selectedDate,
       dateError: dateError != null ? dateError() : this.dateError,
       selectedTime: selectedTime != null ? selectedTime() : this.selectedTime,
       timeError: timeError != null ? timeError() : this.timeError,
       selectedCategories: selectedCategories ?? this.selectedCategories,
-      categoriesError: categoriesError != null ? categoriesError() : this.categoriesError,
+      categoriesError: categoriesError != null
+          ? categoriesError()
+          : this.categoriesError,
       eventStatus: eventStatus ?? this.eventStatus,
       ticketUrl: ticketUrl != null ? ticketUrl() : this.ticketUrl,
-      ticketUrlError: ticketUrlError != null ? ticketUrlError() : this.ticketUrlError,
+      ticketUrlError: ticketUrlError != null
+          ? ticketUrlError()
+          : this.ticketUrlError,
       slotLimit: slotLimit != null ? slotLimit() : this.slotLimit,
-      slotLimitError: slotLimitError != null ? slotLimitError() : this.slotLimitError,
-      thumbnailUrl: thumbnailUrl != null ? thumbnailUrl() : this.thumbnailUrl,
+      slotLimitError: slotLimitError != null
+          ? slotLimitError()
+          : this.slotLimitError,
+      selectedImage: selectedImage != null
+          ? selectedImage()
+          : this.selectedImage,
       status: status ?? this.status,
     );
   }

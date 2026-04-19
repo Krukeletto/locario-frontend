@@ -25,32 +25,40 @@ class CreateEventCategoriesSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CreateEventFieldLabel(text: l10n.hubCreateEventCategoryLabel),
+        const SizedBox(width: double.infinity),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: CreateEventFieldLabel(text: l10n.hubCreateEventCategoryLabel),
+        ),
         const SizedBox(height: 8),
         if (isLoading && available.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
             child: LinearProgressIndicator(),
           ),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            if (available.isEmpty)
-              FilterChip(
-                label: const Text('Dowolna'),
-                selected: state.selectedCategories.isEmpty,
-                onSelected: (_) {},
-              ),
-            ...available.map((category) {
-              final isSelected = state.selectedCategories.contains(category);
-              return FilterChip(
-                label: Text(category.name),
-                selected: isSelected,
-                onSelected: (_) => onCategoryToggled(category),
-              );
-            }),
-          ],
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Wrap(
+            alignment: WrapAlignment.start,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (available.isEmpty)
+                FilterChip(
+                  label: const Text('Dowolna'),
+                  selected: state.selectedCategories.isEmpty,
+                  onSelected: (_) {},
+                ),
+              ...available.map((category) {
+                final isSelected = state.selectedCategories.contains(category);
+                return FilterChip(
+                  label: Text(category.name),
+                  selected: isSelected,
+                  onSelected: (_) => onCategoryToggled(category),
+                );
+              }),
+            ],
+          ),
         ),
         if (state.categoriesError != null)
           Padding(
@@ -58,8 +66,8 @@ class CreateEventCategoriesSection extends StatelessWidget {
             child: Text(
               state.categoriesError!,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           ),
       ],

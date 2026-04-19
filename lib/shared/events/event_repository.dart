@@ -79,7 +79,11 @@ abstract class EventRepository {
   Future<ExploreEvent> fetchEvent(String id);
   Future<ExploreEvent> createEvent(EventRequest request);
   Future<ExploreEvent> updateEvent(String id, EventRequest request);
-  Future<void> uploadEventMedia(String eventId, List<int> bytes, String fileName);
+  Future<void> uploadEventMedia(
+    String eventId,
+    List<int> bytes,
+    String fileName,
+  );
   Future<void> deleteEventMedia(String eventId, String mediaId);
   Future<void> setEventThumbnail(String eventId, String mediaId);
   Future<List<Category>> fetchCategories();
@@ -157,10 +161,12 @@ class HttpEventRepository implements EventRepository {
       if (radiusKm != null) 'radiusKm': radiusKm.toString(),
       if (limit != null) 'limit': limit.toString(),
     };
-    
-    final uri = _uri('/api/events/nearby').replace(queryParameters: queryParams);
+
+    final uri = _uri(
+      '/api/events/nearby',
+    ).replace(queryParameters: queryParams);
     final response = await _client.get(uri);
-    
+
     if (response.statusCode != 200) {
       throw EventRepositoryException(
         'Unable to fetch nearby events',
@@ -185,13 +191,18 @@ class HttpEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> uploadEventMedia(String eventId, List<int> bytes, String fileName) async {
-    final request = http.MultipartRequest('POST', _uri('/api/events/$eventId/media'));
-    request.files.add(http.MultipartFile.fromBytes(
-      'file',
-      bytes,
-      filename: fileName,
-    ));
+  Future<void> uploadEventMedia(
+    String eventId,
+    List<int> bytes,
+    String fileName,
+  ) async {
+    final request = http.MultipartRequest(
+      'POST',
+      _uri('/api/events/$eventId/media'),
+    );
+    request.files.add(
+      http.MultipartFile.fromBytes('file', bytes, filename: fileName),
+    );
 
     final streamedResponse = await _client.send(request);
     final response = await http.Response.fromStream(streamedResponse);
@@ -206,7 +217,9 @@ class HttpEventRepository implements EventRepository {
 
   @override
   Future<void> deleteEventMedia(String eventId, String mediaId) async {
-    final response = await _client.delete(_uri('/api/events/$eventId/media/$mediaId'));
+    final response = await _client.delete(
+      _uri('/api/events/$eventId/media/$mediaId'),
+    );
     if (response.statusCode != 204 && response.statusCode != 200) {
       throw EventRepositoryException(
         'Unable to delete media',
@@ -217,12 +230,10 @@ class HttpEventRepository implements EventRepository {
 
   @override
   Future<void> setEventThumbnail(String eventId, String mediaId) async {
-    final response = await _client.patch(
-      _uri('/api/events/$eventId/thumbnail'),
-      headers: const {'Content-Type': 'application/json'},
-      body: jsonEncode({'mediaId': mediaId}),
+    final response = await _client.put(
+      _uri('/api/events/$eventId/media/$mediaId/thumbnail'),
     );
-    if (response.statusCode != 200) {
+    if (response.statusCode != 204 && response.statusCode != 200) {
       throw EventRepositoryException(
         'Unable to set thumbnail',
         statusCode: response.statusCode,
@@ -259,10 +270,12 @@ class HttpEventRepository implements EventRepository {
   List<ExploreEvent> _decodeEventsList(String responseBody) {
     final decoded = jsonDecode(responseBody);
     final List content;
-    
+
     if (decoded is List) {
       content = decoded;
-    } else if (decoded is Map && decoded.containsKey('content') && decoded['content'] is List) {
+    } else if (decoded is Map &&
+        decoded.containsKey('content') &&
+        decoded['content'] is List) {
       content = decoded['content'] as List;
     } else {
       throw const EventRepositoryException('Unexpected events payload format');
@@ -285,25 +298,29 @@ class HttpEventRepository implements EventRepository {
 
   ExploreEvent _eventFromJson(Map<String, dynamic> json) {
     final l10n = L10nService.l10n;
-    final title = (json['name'] as String?)?.trim() ?? (json['title'] as String?)?.trim();
+    final title =
+        (json['name'] as String?)?.trim() ?? (json['title'] as String?)?.trim();
     final address = (json['address'] as String?)?.trim();
     final description = (json['description'] as String?)?.trim();
-    
+
     final categoryList = json['categories'] as List?;
-    final categories = categoryList
+    final categories =
+        categoryList
             ?.whereType<Map<String, dynamic>>()
             .map((c) => Category.fromJson(c))
             .toList() ??
         [];
 
     final mediaList = json['media'] as List?;
-    final media = mediaList
+    final media =
+        mediaList
             ?.whereType<Map<String, dynamic>>()
             .map((m) => EventMedia.fromJson(m))
             .toList() ??
         [];
 
-    final startsAtRaw = (json['startAt'] as String?) ?? (json['startDate'] as String?);
+    final startsAtRaw =
+        (json['startAt'] as String?) ?? (json['startDate'] as String?);
     final latitude = (json['latitude'] as num?)?.toDouble();
     final longitude = (json['longitude'] as num?)?.toDouble();
     final eventLocation = LatLng(latitude ?? 0, longitude ?? 0);
@@ -321,9 +338,11 @@ class HttpEventRepository implements EventRepository {
       media: media,
       thumbnailUrl: json['thumbnailUrl'] as String?,
       startsAt: DateTime.tryParse(startsAtRaw ?? '') ?? DateTime.now().toUtc(),
-      endsAt: (json['endAt'] != null) 
-          ? DateTime.tryParse(json['endAt'] as String) 
-          : (json['endDate'] != null ? DateTime.tryParse(json['endDate'] as String) : null),
+      endsAt: (json['endAt'] != null)
+          ? DateTime.tryParse(json['endAt'] as String)
+          : (json['endDate'] != null
+                ? DateTime.tryParse(json['endDate'] as String)
+                : null),
       trendingScore: json['trendingScore'] as int? ?? 0,
       venue: address == null || address.isEmpty
           ? fallbackLocationLabel
@@ -338,9 +357,24 @@ class HttpEventRepository implements EventRepository {
       status: EventStatus.fromString(json['status'] as String?),
       slotLimit: json['slotLimit'] as int?,
       ticketUrl: json['ticketUrl'] as String?,
-      organizers: (json['organizers'] as List?)?.cast<String>() ?? const [],
-      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'] as String) : null,
-      updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'] as String) : null,
+      organizers:
+          (json['organizers'] as List?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(
+                (organizer) =>
+                    (organizer['username'] as String?)?.trim() ??
+                    (organizer['userId'] as String?)?.trim() ??
+                    '',
+              )
+              .where((value) => value.isNotEmpty)
+              .toList() ??
+          const [],
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'] as String)
+          : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'] as String)
+          : null,
     );
   }
 }

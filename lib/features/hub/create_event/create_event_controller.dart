@@ -6,9 +6,8 @@ import '../../explore/models.dart';
 import 'create_event_state.dart';
 
 class CreateEventController extends ChangeNotifier {
-  CreateEventController({
-    required EventRepository eventRepository,
-  }) : _eventRepository = eventRepository;
+  CreateEventController({required EventRepository eventRepository})
+    : _eventRepository = eventRepository;
 
   final EventRepository _eventRepository;
   CreateEventState _state = const CreateEventState();
@@ -25,10 +24,7 @@ class CreateEventController extends ChangeNotifier {
       error = l10n.hubCreateEventValidationMinChars3;
     }
 
-    _state = _state.copyWith(
-      title: title,
-      titleError: () => error,
-    );
+    _state = _state.copyWith(title: title, titleError: () => error);
     notifyListeners();
   }
 
@@ -53,7 +49,9 @@ class CreateEventController extends ChangeNotifier {
     _selectedLocation = location;
     _state = _state.copyWith(
       locationLabel: label,
-      locationError: () => location == null ? l10n.hubCreateEventValidationLocationRequired : null,
+      locationError: () => location == null
+          ? l10n.hubCreateEventValidationLocationRequired
+          : null,
     );
     notifyListeners();
   }
@@ -62,7 +60,8 @@ class CreateEventController extends ChangeNotifier {
     final l10n = L10nService.l10n;
     _state = _state.copyWith(
       selectedDate: () => date,
-      dateError: () => date == null ? l10n.hubCreateEventValidationDateTimeRequired : null,
+      dateError: () =>
+          date == null ? l10n.hubCreateEventValidationDateTimeRequired : null,
     );
     notifyListeners();
   }
@@ -71,7 +70,8 @@ class CreateEventController extends ChangeNotifier {
     final l10n = L10nService.l10n;
     _state = _state.copyWith(
       selectedTime: () => time,
-      timeError: () => time == null ? l10n.hubCreateEventValidationDateTimeRequired : null,
+      timeError: () =>
+          time == null ? l10n.hubCreateEventValidationDateTimeRequired : null,
     );
     notifyListeners();
   }
@@ -87,7 +87,8 @@ class CreateEventController extends ChangeNotifier {
 
     _state = _state.copyWith(
       selectedCategories: next,
-      categoriesError: () => next.isEmpty ? l10n.hubCreateEventValidationRequired : null,
+      categoriesError: () =>
+          next.isEmpty ? l10n.hubCreateEventValidationRequired : null,
     );
     notifyListeners();
   }
@@ -106,13 +107,27 @@ class CreateEventController extends ChangeNotifier {
     final l10n = L10nService.l10n;
     _state = _state.copyWith(
       slotLimit: () => limit,
-      slotLimitError: () => (limit != null && limit <= 0) ? l10n.hubCreateEventValidationPositiveNumber : null,
+      slotLimitError: () => (limit != null && limit <= 0)
+          ? l10n.hubCreateEventValidationPositiveNumber
+          : null,
     );
     notifyListeners();
   }
 
-  void updateThumbnailUrl(String? url) {
-    _state = _state.copyWith(thumbnailUrl: () => url);
+  void updateSelectedImage({
+    required List<int> bytes,
+    required String fileName,
+  }) {
+    _state = _state.copyWith(
+      selectedImage: () =>
+          CreateEventSelectedImage(bytes: bytes, fileName: fileName),
+    );
+    notifyListeners();
+  }
+
+  void clearSelectedImage() {
+    if (_state.selectedImage == null) return;
+    _state = _state.copyWith(selectedImage: () => null);
     notifyListeners();
   }
 
@@ -161,7 +176,10 @@ class CreateEventController extends ChangeNotifier {
       final request = EventRequest(
         name: _state.title,
         description: _state.description,
-        startAt: _combineDateAndTime(_state.selectedDate!, _state.selectedTime!),
+        startAt: _combineDateAndTime(
+          _state.selectedDate!,
+          _state.selectedTime!,
+        ),
         latitude: _selectedLocation!.latitude,
         longitude: _selectedLocation!.longitude,
         address: _state.locationLabel,
@@ -169,10 +187,22 @@ class CreateEventController extends ChangeNotifier {
         status: _state.eventStatus,
         ticketUrl: _state.ticketUrl,
         slotLimit: _state.slotLimit,
-        thumbnailUrl: _state.thumbnailUrl,
       );
 
-      await _eventRepository.createEvent(request);
+      final createdEvent = await _eventRepository.createEvent(request);
+      final selectedImage = _state.selectedImage;
+      if (selectedImage != null) {
+        try {
+          await _eventRepository.uploadEventMedia(
+            createdEvent.id,
+            selectedImage.bytes,
+            selectedImage.fileName,
+          );
+        } catch (error, stackTrace) {
+          debugPrint('CreateEventController image upload failed: $error');
+          debugPrintStack(stackTrace: stackTrace);
+        }
+      }
       _state = _state.copyWith(status: CreateEventFormStatus.success);
       notifyListeners();
     } catch (e) {
@@ -182,12 +212,6 @@ class CreateEventController extends ChangeNotifier {
   }
 
   DateTime _combineDateAndTime(DateTime date, DateTime time) {
-    return DateTime(
-      date.year,
-      date.month,
-      date.day,
-      time.hour,
-      time.minute,
-    );
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 }

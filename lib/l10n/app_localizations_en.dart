@@ -39,7 +39,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubTitle => 'Hub';
 
   @override
-  String get hubDescription => 'Shortcuts for creating and managing your local circle';
+  String get hubDescription =>
+      'Shortcuts for creating and managing your local circle';
 
   @override
   String get hubCreateEventTitle => 'Create event';
@@ -66,7 +67,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubCreateEventLocationLoadingLabel => 'Fetching your location';
 
   @override
-  String get hubCreateEventLocationLoadingDescription => 'This may take a moment.';
+  String get hubCreateEventLocationLoadingDescription =>
+      'This may take a moment.';
 
   @override
   String get hubCreateEventDateLabel => 'Date';
@@ -102,7 +104,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubCreateEventTicketingTitle => 'Tickets and entry';
 
   @override
-  String get hubCreateEventTicketingSwitchLabel => 'Enable tickets and seat limits';
+  String get hubCreateEventTicketingSwitchLabel =>
+      'Enable tickets and seat limits';
 
   @override
   String get hubCreateEventTicketSeatsLabel => 'Number of seats';
@@ -123,40 +126,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventStatusDraft => 'Draft';
 
   @override
-  String get eventStatusPublished => 'Published';
+  String get eventStatusPublished => 'Live';
 
   @override
   String get hubCreateEventSubmitButton => 'Create event';
 
   @override
-  String get hubCreateEventValidationMinChars3 => 'Enter at least 3 characters.';
+  String get hubCreateEventSubmitDisabledHint =>
+      'Creating events is temporarily disabled until login is wired into the app.';
+
+  @override
+  String get hubCreateEventValidationMinChars3 =>
+      'Enter at least 3 characters.';
 
   @override
   String get hubCreateEventValidationRequired => 'This field is required.';
 
   @override
-  String get hubCreateEventValidationDescriptionMin10 => 'Description should be at least 10 characters.';
+  String get hubCreateEventValidationDescriptionMin10 =>
+      'Description should be at least 10 characters.';
 
   @override
-  String get hubCreateEventValidationCategoryRequired => 'Choose at least one category.';
+  String get hubCreateEventValidationCategoryRequired =>
+      'Choose at least one category.';
 
   @override
-  String get hubCreateEventValidationPositiveNumber => 'Enter a valid positive number.';
+  String get hubCreateEventValidationPositiveNumber =>
+      'Enter a valid positive number.';
 
   @override
-  String get hubCreateEventValidationDateTimeRequired => 'Choose the event date and time.';
+  String get hubCreateEventValidationDateTimeRequired =>
+      'Choose the event date and time.';
 
   @override
-  String get hubCreateEventValidationLocationRequired => 'Choose the event location.';
+  String get hubCreateEventValidationLocationRequired =>
+      'Choose the event location.';
 
   @override
   String get hubCreateEventCreatedSuccess => 'Event has been created.';
 
   @override
-  String get hubCreateEventCreateFailed => 'Event could not be created. Try again.';
+  String get hubCreateEventCreateFailed =>
+      'Event could not be created. Try again.';
 
   @override
-  String get hubCreateEventLocationLookupFailed => 'We couldn\'t resolve that location. Try another address or point on the map.';
+  String get hubCreateEventLocationLookupFailed =>
+      'We couldn\'t resolve that location. Try another address or point on the map.';
 
   @override
   String get hubCommunityTitle => 'Community';
@@ -174,7 +189,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileTitle => 'Profile';
 
   @override
-  String get profileDescription => 'Account, preferences and your saved places in one calmer section.';
+  String get profileDescription =>
+      'Account, preferences and your saved places in one calmer section.';
 
   @override
   String get settingsTitle => 'Settings';
@@ -186,7 +202,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsScreenTitle => 'Settings';
 
   @override
-  String get settingsScreenDescription => 'Adjust the app basics before the settings surface grows.';
+  String get settingsScreenDescription =>
+      'Adjust the app basics before the settings surface grows.';
 
   @override
   String get savedTitle => 'Saved';
@@ -198,13 +215,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageSectionTitle => 'Language';
 
   @override
-  String get languageSectionSubtitle => 'Choose how the app should speak to you';
+  String get languageSectionSubtitle =>
+      'Choose how the app should speak to you';
 
   @override
   String get themeSectionTitle => 'Appearance';
 
   @override
-  String get themeSectionSubtitle => 'Choose whether the app should follow the system or stay fixed';
+  String get themeSectionSubtitle =>
+      'Choose whether the app should follow the system or stay fixed';
 
   @override
   String get themeModeSystem => 'System';
@@ -230,7 +249,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreLoadingTitle => 'Loading events';
 
   @override
-  String get exploreLoadingSubtitle => 'We are fetching the latest events from the backend.';
+  String get exploreLoadingSubtitle =>
+      'We are fetching the latest events from the backend.';
 
   @override
   String get exploreErrorTitle => 'Events unavailable';
@@ -249,7 +269,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String resultsCount(int count) {
-    return '$count results';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count results',
+      one: '1 result',
+      zero: '0 results',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -377,19 +404,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get areaPickerTitle => 'Choose area';
 
   @override
-  String get areaPickerSubtitle => 'You can type an address, point to a spot on the map or go back to your current location.';
+  String get areaPickerSubtitle =>
+      'You can type an address, point to a spot on the map or go back to your current location.';
 
   @override
   String get areaUseCurrentLocation => 'My location';
 
   @override
-  String get areaUseCurrentLocationSubtitle => 'Use your current position as the reference point';
+  String get areaUseCurrentLocationSubtitle =>
+      'Use your current position as the reference point';
 
   @override
   String get areaEnterAddress => 'Enter address';
 
   @override
-  String get areaEnterAddressSubtitle => 'Type a street, district or exact place';
+  String get areaEnterAddressSubtitle =>
+      'Type a street, district or exact place';
 
   @override
   String get areaPickOnMap => 'Pick on map';
@@ -398,7 +428,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get areaPickOnMapTitle => 'Pick a point on the map';
 
   @override
-  String get areaPickOnMapSubtitle => 'Move the map so the chosen point sits under the center marker.';
+  String get areaPickOnMapSubtitle =>
+      'Move the map so the chosen point sits under the center marker.';
 
   @override
   String get areaPickOnMapConfirm => 'Use this point';
@@ -502,31 +533,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventDetailsUnknownLocation => 'Location unknown';
 
   @override
-  String get eventDetailsFallbackDescription => 'This is a temporary event description. In the next steps we will connect full data from the create event form and backend.';
+  String get eventDetailsFallbackDescription =>
+      'This is a temporary event description. In the next steps we will connect full data from the create event form and backend.';
 
   @override
   String get eventDetailsLoadingTitle => 'Loading event';
 
   @override
-  String get eventDetailsLoadingSubtitle => 'We are fetching the event details from the backend.';
+  String get eventDetailsLoadingSubtitle =>
+      'We are fetching the event details from the backend.';
 
   @override
   String get eventDetailsErrorTitle => 'Event unavailable';
 
   @override
-  String get eventDetailsErrorSubtitle => 'We could not load this event right now.';
+  String get eventDetailsErrorSubtitle =>
+      'We could not load this event right now.';
 
   @override
-  String get eventDetailsJazzDescription => 'An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.';
+  String get eventDetailsJazzDescription =>
+      'An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.';
 
   @override
-  String get eventDetailsSketchingDescription => 'A meetup for people who enjoy sketching and urban illustration. Bring your own materials.';
+  String get eventDetailsSketchingDescription =>
+      'A meetup for people who enjoy sketching and urban illustration. Bring your own materials.';
 
   @override
-  String get eventDetailsRunClubDescription => 'A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.';
+  String get eventDetailsRunClubDescription =>
+      'A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.';
 
   @override
-  String get eventDetailsStreetFoodDescription => 'Street food, curated vinyl records and mini DJ sets. An all-day event.';
+  String get eventDetailsStreetFoodDescription =>
+      'Street food, curated vinyl records and mini DJ sets. An all-day event.';
 
   @override
   String get eventDetailsTicketLabel => 'Tickets';
@@ -591,13 +629,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapLocationSettings => 'Location settings';
 
   @override
-  String get mapServiceDisabled => 'Enable location services to see your position.';
+  String get mapServiceDisabled =>
+      'Enable location services to see your position.';
 
   @override
-  String get mapPermissionDenied => 'Allow location access to center the map on you.';
+  String get mapPermissionDenied =>
+      'Allow location access to center the map on you.';
 
   @override
-  String get mapPermissionDeniedForever => 'Location access is blocked in system settings.';
+  String get mapPermissionDeniedForever =>
+      'Location access is blocked in system settings.';
 
   @override
   String get mapUnableDetermineLocation => 'Unable to determine your location.';
@@ -646,13 +687,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreErrorPermissionTitle => 'Location permission required';
 
   @override
-  String get exploreErrorPermissionSubtitle => 'Please allow location access to see events nearby.';
+  String get exploreErrorPermissionSubtitle =>
+      'Please allow location access to see events nearby.';
 
   @override
   String get exploreErrorUnknownTitle => 'Something went wrong';
 
   @override
-  String get exploreErrorUnknownSubtitle => 'We encountered an unexpected error.';
+  String get exploreErrorUnknownSubtitle =>
+      'We encountered an unexpected error.';
 
   @override
   String shareEventMessage(String title, String url) {

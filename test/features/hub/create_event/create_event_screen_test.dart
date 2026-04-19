@@ -10,10 +10,84 @@ import '../../../test_helpers/fake_event_repository.dart';
 import '../../../test_helpers/fake_location_service.dart';
 import '../../../test_helpers/test_app.dart';
 
+const List<int> _transparentImageBytes = [
+  0x89,
+  0x50,
+  0x4E,
+  0x47,
+  0x0D,
+  0x0A,
+  0x1A,
+  0x0A,
+  0x00,
+  0x00,
+  0x00,
+  0x0D,
+  0x49,
+  0x48,
+  0x44,
+  0x52,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x08,
+  0x06,
+  0x00,
+  0x00,
+  0x00,
+  0x1F,
+  0x15,
+  0xC4,
+  0x89,
+  0x00,
+  0x00,
+  0x00,
+  0x0D,
+  0x49,
+  0x44,
+  0x41,
+  0x54,
+  0x78,
+  0x9C,
+  0x63,
+  0xF8,
+  0xCF,
+  0xC0,
+  0x00,
+  0x00,
+  0x03,
+  0x01,
+  0x01,
+  0x00,
+  0x18,
+  0xDD,
+  0x8D,
+  0xB1,
+  0x00,
+  0x00,
+  0x00,
+  0x00,
+  0x49,
+  0x45,
+  0x4E,
+  0x44,
+  0xAE,
+  0x42,
+  0x60,
+  0x82,
+];
+
 Future<void> _pumpCreateEventScreen(
   WidgetTester tester, {
   FakeEventRepository? repository,
   FakeLocationService? locationService,
+  Future<CreateEventPickedFile?> Function()? pickImageFile,
+  bool canSubmit = true,
 }) async {
   tester.view.physicalSize = const Size(1400, 2600);
   tester.view.devicePixelRatio = 1.0;
@@ -38,6 +112,8 @@ Future<void> _pumpCreateEventScreen(
         child: CreateEventScreen(
           eventRepository: repository ?? FakeEventRepository(),
           locationService: locationService ?? FakeLocationService(),
+          pickImageFile: pickImageFile,
+          canSubmit: canSubmit,
         ),
       ),
     ),
@@ -57,6 +133,22 @@ void main() {
       expect(find.text('Bilety i wstęp'), findsOneWidget);
       expect(
         find.byKey(const Key('create-event-location-button')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('disables submit when auth guard is off', (tester) async {
+      await _pumpCreateEventScreen(tester, canSubmit: false);
+
+      final button = tester.widget<FilledButton>(
+        find.byType(FilledButton).last,
+      );
+
+      expect(button.onPressed, isNull);
+      expect(
+        find.text(
+          'Tworzenie wydarzeń jest tymczasowo wyłączone, dopóki logowanie nie zostanie podpięte w aplikacji.',
+        ),
         findsOneWidget,
       );
     });
@@ -213,11 +305,51 @@ void main() {
 
       expect(repository.lastCreateInput, isNotNull);
       expect(repository.lastCreateInput!.name, 'Koncert');
-      expect(
-        repository.lastCreateInput!.latitude,
-        closeTo(51.7592, 0.0001),
-      );
+      expect(repository.lastCreateInput!.latitude, closeTo(51.7592, 0.0001));
       expect(repository.lastCreateInput!.categoryIds, ['workshops']);
+    });
+
+    testWidgets('uploads selected image after creating the event', (
+      tester,
+    ) async {
+      final repository = FakeEventRepository();
+      await _pumpCreateEventScreen(
+        tester,
+        repository: repository,
+        locationService: FakeLocationService(
+          currentLocation: const LatLng(51.7592, 19.4550),
+        ),
+        pickImageFile: () async => const CreateEventPickedFile(
+          bytes: _transparentImageBytes,
+          fileName: 'poster.jpg',
+        ),
+      );
+
+      await tester.tap(find.byKey(const Key('create-event-image-picker')));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextFormField).at(0), 'Koncert');
+      await tester.enterText(
+        find.byType(TextFormField).at(1),
+        'Wieczorny koncert i spotkanie społeczności.',
+      );
+
+      await _pickDate(tester);
+      await _pickTime(tester);
+      await tester.tap(find.text('Warsztaty'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('create-event-location-button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Moja lokalizacja').first);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Stwórz wydarzenie').first);
+      await tester.pump();
+
+      expect(repository.lastUploadedEventId, repository.eventDetails.id);
+      expect(repository.lastUploadedFileName, 'poster.jpg');
+      expect(repository.lastUploadedBytes, _transparentImageBytes);
     });
   });
 }

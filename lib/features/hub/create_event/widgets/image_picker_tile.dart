@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 /// Tappable image picker tile. Shows a dashed border when no image is selected,
 /// and overlays a semi-transparent scrim when one is set.
@@ -10,19 +11,27 @@ class CreateEventImagePickerTile extends StatelessWidget {
     required this.subtitle,
     required this.onTap,
     this.imageUrl,
+    this.imageBytes,
+    this.selectedFileName,
   });
 
   final String label;
   final String subtitle;
   final VoidCallback onTap;
   final String? imageUrl;
+  final List<int>? imageBytes;
+  final String? selectedFileName;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final hasLocalImage = imageBytes != null && imageBytes!.isNotEmpty;
+    final hasRemoteImage = imageUrl != null && imageUrl!.isNotEmpty;
+    final showImage = hasLocalImage || hasRemoteImage;
 
     return InkWell(
+      key: const Key('create-event-image-picker'),
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: ClipRRect(
@@ -35,38 +44,41 @@ class CreateEventImagePickerTile extends StatelessWidget {
           child: Container(
             width: double.infinity,
             height: 180,
-            decoration: imageUrl != null
+            decoration: showImage
                 ? BoxDecoration(
                     image: DecorationImage(
-                      image: CachedNetworkImageProvider(imageUrl!),
+                      image: hasLocalImage
+                          ? MemoryImage(Uint8List.fromList(imageBytes!))
+                          : CachedNetworkImageProvider(imageUrl!)
+                                as ImageProvider,
                       fit: BoxFit.cover,
                     ),
                   )
                 : null,
             child: Container(
-              color: imageUrl != null ? Colors.black.withValues(alpha: 0.3) : null,
+              color: showImage ? Colors.black.withValues(alpha: 0.3) : null,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    imageUrl != null
+                    showImage
                         ? Icons.photo_library_rounded
                         : Icons.add_a_photo_rounded,
                     size: 42,
-                    color: imageUrl != null ? Colors.white : scheme.primary,
+                    color: showImage ? Colors.white : scheme.primary,
                   ),
                   const SizedBox(height: 12),
                   Text(
                     label,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: imageUrl != null ? Colors.white : null,
+                      color: showImage ? Colors.white : null,
                     ),
                   ),
                   Text(
-                    subtitle,
+                    selectedFileName ?? subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: imageUrl != null
+                      color: showImage
                           ? Colors.white.withValues(alpha: 0.8)
                           : scheme.onSurface.withValues(alpha: 0.6),
                     ),

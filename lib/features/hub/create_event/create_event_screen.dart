@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart' show LatLng;
 import 'package:locario/l10n/app_localizations.dart';
@@ -22,6 +23,13 @@ import 'widgets/form/ticketing_section.dart';
 import 'widgets/form_primitives.dart';
 import 'widgets/image_picker_tile.dart';
 
+class CreateEventPickedFile {
+  const CreateEventPickedFile({required this.bytes, required this.fileName});
+
+  final List<int> bytes;
+  final String fileName;
+}
+
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({
     super.key,
@@ -29,15 +37,20 @@ class CreateEventScreen extends StatefulWidget {
     LocationService? locationService,
     CreateEventGeocoder? geocoder,
     EventRefreshSignal? eventRefreshSignal,
+    Future<CreateEventPickedFile?> Function()? pickImageFile,
+    this.canSubmit = false,
   }) : _eventRepository = eventRepository,
        _locationService = locationService,
        _geocoder = geocoder,
-       _eventRefreshSignal = eventRefreshSignal;
+       _eventRefreshSignal = eventRefreshSignal,
+       _pickImageFile = pickImageFile;
 
   final EventRepository? _eventRepository;
   final LocationService? _locationService;
   final CreateEventGeocoder? _geocoder;
   final EventRefreshSignal? _eventRefreshSignal;
+  final Future<CreateEventPickedFile?> Function()? _pickImageFile;
+  final bool canSubmit;
 
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
@@ -96,6 +109,34 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   void _clearFocus() {
     FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  Future<void> _handleImagePressed() async {
+    _clearFocus();
+    final pickedFile =
+        await (widget._pickImageFile?.call() ?? _pickImageFile());
+    if (!mounted || pickedFile == null) {
+      return;
+    }
+
+    _controller.updateSelectedImage(
+      bytes: pickedFile.bytes,
+      fileName: pickedFile.fileName,
+    );
+  }
+
+  Future<CreateEventPickedFile?> _pickImageFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+    final file = result?.files.singleOrNull;
+    final bytes = file?.bytes;
+    if (file == null || bytes == null || bytes.isEmpty) {
+      return null;
+    }
+
+    return CreateEventPickedFile(bytes: bytes, fileName: file.name);
   }
 
   Future<void> _pickDate() async {
@@ -209,44 +250,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   CreateEventImagePickerTile(
                     label: l10n.hubCreateEventMainPhotoLabel,
                     subtitle: l10n.hubCreateEventMainPhotoSizeHint,
-                    imageUrl: state.thumbnailUrl,
-                    onTap: () async {
-                      final url = await showDialog<String>(
-                        context: context,
-                        builder: (context) {
-                          final controller =
-                              TextEditingController(text: state.thumbnailUrl);
-                          return AlertDialog(
-                            title: Text(l10n.hubCreateEventMainPhotoLabel),
-                            content: TextField(
-                              controller: controller,
-                              decoration: InputDecoration(
-                                hintText: 'https://example.com/image.jpg',
-                                labelText: l10n.hubCreateEventMainPhotoLabel,
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text(MaterialLocalizations.of(
-                                  context,
-                                ).cancelButtonLabel),
-                              ),
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.pop(context, controller.text),
-                                child: Text(MaterialLocalizations.of(
-                                  context,
-                                ).okButtonLabel),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                      if (url != null) {
-                        _controller.updateThumbnailUrl(url);
-                      }
-                    },
+                    selectedFileName: state.selectedImage?.fileName,
+                    imageBytes: state.selectedImage?.bytes,
+                    onTap: _handleImagePressed,
                   ),
                   const SizedBox(height: 16),
                   CreateEventBasicInfoSection(
@@ -290,8 +296,21 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               ),
             ),
             const SizedBox(height: 24),
+            if (!widget.canSubmit)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  l10n.hubCreateEventSubmitDisabledHint,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             FilledButton(
-              onPressed: state.status == CreateEventFormStatus.submitting
+              onPressed:
+                  !widget.canSubmit ||
+                      state.status == CreateEventFormStatus.submitting
                   ? null
                   : () => _controller.submit(),
               child: state.status == CreateEventFormStatus.submitting

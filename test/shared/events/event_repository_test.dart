@@ -27,7 +27,7 @@ void main() {
                 'address': 'Piotrkowska 10, Lodz',
                 'startAt': '2026-04-12T19:00:00Z',
                 'categories': [
-                  {'id': 'music', 'name': 'music', 'slug': 'music'}
+                  {'id': 'music', 'name': 'music', 'slug': 'music'},
                 ],
               },
             ]),
@@ -147,6 +147,61 @@ void main() {
       expect(body['longitude'], 19.455);
       expect(body['address'], 'Piotrkowska 10, Lodz');
       expect(body['startAt'], '2026-04-12T19:00:00.000Z');
+    });
+
+    test(
+      'setEventThumbnail uses the documented media thumbnail endpoint',
+      () async {
+        late http.Request capturedRequest;
+        final repository = HttpEventRepository(
+          client: MockClient((request) async {
+            capturedRequest = request;
+            return http.Response('', 204);
+          }),
+          baseUrl: 'http://example.com',
+        );
+
+        await repository.setEventThumbnail(
+          '11111111-1111-1111-1111-111111111111',
+          '22222222-2222-2222-2222-222222222222',
+        );
+
+        expect(capturedRequest.method, 'PUT');
+        expect(
+          capturedRequest.url.path,
+          '/api/events/11111111-1111-1111-1111-111111111111/media/22222222-2222-2222-2222-222222222222/thumbnail',
+        );
+      },
+    );
+
+    test('fetchEvent maps organizer usernames from backend objects', () async {
+      final repository = HttpEventRepository(
+        client: MockClient((request) async {
+          return http.Response(
+            jsonEncode({
+              'id': '11111111-1111-1111-1111-111111111111',
+              'name': 'Created event',
+              'latitude': 51.7592,
+              'longitude': 19.4550,
+              'startAt': '2026-04-12T19:00:00Z',
+              'organizers': [
+                {
+                  'userId': '33333333-3333-3333-3333-333333333333',
+                  'username': 'alice',
+                },
+              ],
+            }),
+            200,
+          );
+        }),
+        baseUrl: 'http://example.com',
+      );
+
+      final event = await repository.fetchEvent(
+        '11111111-1111-1111-1111-111111111111',
+      );
+
+      expect(event.organizers, ['alice']);
     });
   });
 }
