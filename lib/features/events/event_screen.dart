@@ -92,14 +92,9 @@ class _EventScreenState extends State<EventScreen> {
     }
   }
 
-
   void _shareEvent(ExploreEvent event) {
     final l10n = AppLocalizations.of(context)!;
-    ShareService.shareEvent(
-      eventId: event.id,
-      title: event.title,
-      l10n: l10n,
-    );
+    ShareService.shareEvent(eventId: event.id, title: event.title, l10n: l10n);
   }
 
   @override
@@ -177,9 +172,7 @@ class _EventScreenState extends State<EventScreen> {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
-        SliverToBoxAdapter(
-          child: EventDetailsGallery(event: event),
-        ),
+        SliverToBoxAdapter(child: EventDetailsGallery(event: event)),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
           sliver: SliverToBoxAdapter(

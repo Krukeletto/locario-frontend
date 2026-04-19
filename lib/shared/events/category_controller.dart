@@ -4,7 +4,7 @@ import 'event_repository.dart';
 
 class CategoryController extends ChangeNotifier {
   CategoryController({required EventRepository eventRepository})
-      : _eventRepository = eventRepository;
+    : _eventRepository = eventRepository;
 
   final EventRepository _eventRepository;
 
@@ -26,13 +26,7 @@ class CategoryController extends ChangeNotifier {
     try {
       final fetched = await _eventRepository.fetchCategories();
       if (fetched.isEmpty) {
-        _categories = [
-          const Category(
-            id: 'any',
-            name: 'Dowolna',
-            slug: 'any',
-          ),
-        ];
+        _categories = [const Category(id: 'any', name: 'Dowolna', slug: 'any')];
       } else {
         _categories = fetched;
       }
@@ -41,13 +35,7 @@ class CategoryController extends ChangeNotifier {
     } catch (e) {
       _isLoading = false;
       _error = e.toString();
-      _categories = [
-        const Category(
-          id: 'any',
-          name: 'Dowolna',
-          slug: 'any',
-        ),
-      ];
+      _categories = [const Category(id: 'any', name: 'Dowolna', slug: 'any')];
       notifyListeners();
     }
   }

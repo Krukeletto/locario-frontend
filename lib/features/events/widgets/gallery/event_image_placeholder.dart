@@ -16,11 +16,7 @@ class EventImagePlaceholder extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.image_outlined,
-              size: 44,
-              color: scheme.primary,
-            ),
+            Icon(Icons.image_outlined, size: 44, color: scheme.primary),
             const SizedBox(height: 10),
             Text(
               l10n.eventDetailsImagePlaceholder,

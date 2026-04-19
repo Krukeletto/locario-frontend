@@ -30,8 +30,9 @@ class _EventGalleryState extends State<EventGallery> {
   }
 
   List<EventMedia> _buildImageList() {
-    final images =
-        widget.media.where((m) => m.type == MediaType.image).toList();
+    final images = widget.media
+        .where((m) => m.type == MediaType.image)
+        .toList();
     final thumb = widget.thumbnailUrl;
     if (thumb != null && thumb.isNotEmpty) {
       final alreadyPresent = images.any((m) => m.url == thumb);
@@ -65,10 +66,8 @@ class _EventGalleryState extends State<EventGallery> {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => FullscreenGallery(
-                      images: images,
-                      initialPage: index,
-                    ),
+                    builder: (context) =>
+                        FullscreenGallery(images: images, initialPage: index),
                   ),
                 );
               },

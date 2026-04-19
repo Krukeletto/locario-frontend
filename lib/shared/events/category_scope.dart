@@ -17,7 +17,9 @@ class CategoryScope extends InheritedWidget {
   }
 
   static CategoryController? maybeOf(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<CategoryScope>()?.controller;
+    return context
+        .dependOnInheritedWidgetOfExactType<CategoryScope>()
+        ?.controller;
   }
 
   @override

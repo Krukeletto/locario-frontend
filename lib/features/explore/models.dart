@@ -248,7 +248,8 @@ class ExploreEvent {
     if (categoryName.contains('art') || categoryName.contains('sztuka')) {
       return const Color(0xFF607F5B);
     }
-    if (categoryName.contains('workshop') || categoryName.contains('warsztat')) {
+    if (categoryName.contains('workshop') ||
+        categoryName.contains('warsztat')) {
       return const Color(0xFF2E7D32);
     }
     if (categoryName.contains('food') || categoryName.contains('jedzenie')) {
@@ -266,7 +267,8 @@ class ExploreEvent {
     if (categoryName.contains('art') || categoryName.contains('sztuka')) {
       return Icons.palette_outlined;
     }
-    if (categoryName.contains('workshop') || categoryName.contains('warsztat')) {
+    if (categoryName.contains('workshop') ||
+        categoryName.contains('warsztat')) {
       return Icons.lightbulb_outline_rounded;
     }
     if (categoryName.contains('food') || categoryName.contains('jedzenie')) {
@@ -279,7 +281,9 @@ class ExploreEvent {
     if (thumbnailUrl != null && thumbnailUrl!.isNotEmpty) {
       return thumbnailUrl;
     }
-    final firstImage = media.where((m) => m.type == MediaType.image).firstOrNull;
+    final firstImage = media
+        .where((m) => m.type == MediaType.image)
+        .firstOrNull;
     return firstImage?.url;
   }
 

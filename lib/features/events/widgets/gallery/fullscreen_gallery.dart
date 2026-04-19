@@ -53,10 +53,10 @@ class _FullscreenGalleryState extends State<FullscreenGallery> {
                   child: CachedNetworkImage(
                     imageUrl: widget.images[index].url,
                     fit: BoxFit.contain,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    errorWidget: (context, url, error) => const EventImagePlaceholder(),
+                    placeholder: (context, url) =>
+                        const Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) =>
+                        const EventImagePlaceholder(),
                   ),
                 ),
               );

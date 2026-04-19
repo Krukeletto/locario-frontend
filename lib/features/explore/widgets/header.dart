@@ -111,7 +111,7 @@ class _CategoryFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    
+
     final categoryCount = 1 + availableCategories.length;
 
     return SizedBox(

@@ -24,7 +24,9 @@ class ExploreEventQuery {
       filteredEvents = filteredEvents.where((event) {
         if (event.categories.isEmpty) return false;
         return event.categories.any(
-          (c) => categories.any((selected) => selected.name.toLowerCase() == c.name.toLowerCase()),
+          (c) => categories.any(
+            (selected) => selected.name.toLowerCase() == c.name.toLowerCase(),
+          ),
         );
       });
     }

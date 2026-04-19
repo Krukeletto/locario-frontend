@@ -36,11 +36,7 @@ class SearchThisAreaButton extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.refresh_rounded,
-                size: 18,
-                color: colorScheme.primary,
-              ),
+              Icon(Icons.refresh_rounded, size: 18, color: colorScheme.primary),
               const SizedBox(width: 8),
               Text(
                 l10n.exploreSearchThisArea,

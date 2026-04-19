@@ -25,10 +25,7 @@ class ExploreEmpty extends ExploreState {
 enum ExploreErrorType { network, permission, unknown }
 
 class ExploreError extends ExploreState {
-  const ExploreError({
-    required this.type,
-    this.details,
-  });
+  const ExploreError({required this.type, this.details});
   final ExploreErrorType type;
   final String? details;
 }

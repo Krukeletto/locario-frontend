@@ -65,48 +65,48 @@ class _LocarioAppState extends State<LocarioApp> {
               _themeController,
               _categoryController,
             ]),
-          builder: (context, _) {
-            return MaterialApp.router(
-              scaffoldMessengerKey: rootScaffoldMessengerKey,
-              onGenerateTitle: (context) =>
-                  AppLocalizations.of(context)!.appTitle,
-              debugShowCheckedModeBanner: false,
-              theme: buildLightAppTheme(),
-              darkTheme: buildDarkAppTheme(),
-              themeMode: _themeController.themeMode,
-              routerConfig: appRouter,
-              locale: _localeController.locale,
-              supportedLocales: AppLocalizations.supportedLocales,
-              localizationsDelegates: [
-                AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              builder: (context, child) {
-                // Initialize the L10nService so it can be used without BuildContext.
-                final l10n = AppLocalizations.of(context);
-                if (l10n != null) {
-                  L10nService.update(l10n);
-                }
-                return child!;
-              },
-              localeResolutionCallback: (locale, supportedLocales) {
-                if (locale == null) {
-                  return const Locale('pl');
-                }
-
-                for (final supportedLocale in supportedLocales) {
-                  if (supportedLocale.languageCode == locale.languageCode) {
-                    return supportedLocale;
+            builder: (context, _) {
+              return MaterialApp.router(
+                scaffoldMessengerKey: rootScaffoldMessengerKey,
+                onGenerateTitle: (context) =>
+                    AppLocalizations.of(context)!.appTitle,
+                debugShowCheckedModeBanner: false,
+                theme: buildLightAppTheme(),
+                darkTheme: buildDarkAppTheme(),
+                themeMode: _themeController.themeMode,
+                routerConfig: appRouter,
+                locale: _localeController.locale,
+                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                builder: (context, child) {
+                  // Initialize the L10nService so it can be used without BuildContext.
+                  final l10n = AppLocalizations.of(context);
+                  if (l10n != null) {
+                    L10nService.update(l10n);
                   }
-                }
+                  return child!;
+                },
+                localeResolutionCallback: (locale, supportedLocales) {
+                  if (locale == null) {
+                    return const Locale('pl');
+                  }
 
-                return const Locale('pl');
-              },
-            );
-          },
-        ),
+                  for (final supportedLocale in supportedLocales) {
+                    if (supportedLocale.languageCode == locale.languageCode) {
+                      return supportedLocale;
+                    }
+                  }
+
+                  return const Locale('pl');
+                },
+              );
+            },
+          ),
         ),
       ),
     );

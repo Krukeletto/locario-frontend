@@ -76,7 +76,10 @@ class FeedbackService {
     );
   }
 
-  static String _getMessageText(AppLocalizations l10n, FeedbackMessage message) {
+  static String _getMessageText(
+    AppLocalizations l10n,
+    FeedbackMessage message,
+  ) {
     return switch (message) {
       FeedbackMessage.loginSuccess => l10n.authLoginSuccess,
       FeedbackMessage.loginInvalidCredentials =>
@@ -94,8 +97,8 @@ class FeedbackService {
   static Color _getBackgroundColor(FeedbackStyle style) {
     return switch (style) {
       FeedbackStyle.success => const Color(0xFF2E7D32), // Green 700
-      FeedbackStyle.error => const Color(0xFFC62828),   // Red 800
-      FeedbackStyle.info => const Color(0xFF1565C0),    // Blue 800
+      FeedbackStyle.error => const Color(0xFFC62828), // Red 800
+      FeedbackStyle.info => const Color(0xFF1565C0), // Blue 800
     };
   }
 }

@@ -40,9 +40,7 @@ class EventDetailsInfo extends StatelessWidget {
         decoration: BoxDecoration(
           color: scheme.surface,
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(
-            color: scheme.outline.withValues(alpha: 0.2),
-          ),
+          border: Border.all(color: scheme.outline.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(
