@@ -18,6 +18,87 @@ class AppLocalizationsPl extends AppLocalizations {
   String get localePolish => 'Polski';
 
   @override
+  String get authSubtitle => 'Odkryj lokalne perełki w Twojej okolicy';
+
+  @override
+  String get authGoogleContinue => 'Kontynuuj przez Google';
+
+  @override
+  String get authDividerOr => 'LUB';
+
+  @override
+  String get authEmailLabel => 'E-MAIL';
+
+  @override
+  String get authEmailHint => 'twoj@email.pl';
+
+  @override
+  String get authPasswordLabel => 'HASŁO';
+
+  @override
+  String get authPasswordHint => '********';
+
+  @override
+  String get authFooterTerms => 'REGULAMIN';
+
+  @override
+  String get authFooterPrivacy => 'PRYWATNOŚĆ';
+
+  @override
+  String get authFooterHelp => 'POMOC';
+
+  @override
+  String get authLoginWelcome => 'Witaj ponownie';
+
+  @override
+  String get authLoginSubmit => 'Zaloguj się';
+
+  @override
+  String get authLoginNoAccount => 'Nie masz jeszcze konta?';
+
+  @override
+  String get authLoginCreateAccount => 'Utwórz darmowe konto';
+
+  @override
+  String get authRegisterWelcome => 'Witaj';
+
+  @override
+  String get authRegisterUsernameLabel => 'NAZWA UŻYTKOWNIKA';
+
+  @override
+  String get authRegisterUsernameHint => 'twoja nazwa uzytkownika';
+
+  @override
+  String get authRegisterSubmit => 'Zarejestruj się';
+
+  @override
+  String get authRegisterHasAccount => 'Masz już konto?';
+
+  @override
+  String get authRegisterSignIn => 'Zaloguj się na konto';
+
+  @override
+  String get authValidationUsernameRequired => 'Podaj nazwę użytkownika';
+
+  @override
+  String get authValidationUsernameMin3 => 'Nazwa użytkownika musi mieć min. 3 znaki';
+
+  @override
+  String get authValidationUsernameAllowed => 'Dozwolone: litery, cyfry, . _ -';
+
+  @override
+  String get authValidationEmailRequired => 'Podaj adres e-mail';
+
+  @override
+  String get authValidationEmailInvalid => 'Podaj poprawny adres e-mail';
+
+  @override
+  String get authValidationPasswordRequired => 'Podaj hasło';
+
+  @override
+  String get authValidationPasswordMin8 => 'Hasło musi mieć min. 8 znaków';
+
+  @override
   String get tabExplore => 'Odkrywaj';
 
   @override
@@ -39,8 +120,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubTitle => 'Hub';
 
   @override
-  String get hubDescription =>
-      'Skróty do tworzenia i ogarniania Twojej lokalnej społeczności';
+  String get hubDescription => 'Skróty do tworzenia i ogarniania Twojej lokalnej społeczności';
 
   @override
   String get hubCreateEventTitle => 'Stwórz wydarzenie';
@@ -64,12 +144,10 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubCreateEventLocationHint => 'Gdzie odbędzie się wydarzenie?';
 
   @override
-  String get hubCreateEventLocationLoadingLabel =>
-      'Pobieramy Twoją lokalizację';
+  String get hubCreateEventLocationLoadingLabel => 'Pobieramy Twoją lokalizację';
 
   @override
-  String get hubCreateEventLocationLoadingDescription =>
-      'To może potrwać chwilę.';
+  String get hubCreateEventLocationLoadingDescription => 'To może potrwać chwilę.';
 
   @override
   String get hubCreateEventDateLabel => 'Data';
@@ -102,36 +180,33 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubCreateEventPhotosLabel => 'Dodaj zdjęcia';
 
   @override
-  String get hubCreateEventMainPhotoSizeHint =>
-      'Sugerowany rozmiar: 1600 x 900 px';
+  String get hubCreateEventMainPhotoSizeHint => 'Sugerowany rozmiar: 1600 x 900 px';
 
   @override
   String hubCreateEventSelectedPhotosCount(int count) {
-    return intl.Intl.pluralLogic(
+    String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      zero: 'Brak zdjęć',
-      one: '1 wybrane zdjęcie',
-      few: '$count wybrane zdjęcia',
-      many: '$count wybranych zdjęć',
       other: '$count wybranego zdjęcia',
+      many: '$count wybranych zdjęć',
+      few: '$count wybrane zdjęcia',
+      one: '1 wybrane zdjęcie',
+      zero: 'Brak zdjęć',
     );
+    return '$_temp0';
   }
 
   @override
-  String get hubCreateEventPrimaryPhotoHint =>
-      'Zdjęcie główne (miniatura). Przeciągnij inne zdjęcie na początek, aby je ustawić.';
+  String get hubCreateEventPrimaryPhotoHint => 'Zdjęcie główne (miniatura). Przeciągnij inne zdjęcie na początek, aby je ustawić.';
 
   @override
-  String get hubCreateEventSecondaryPhotoHint =>
-      'Dodatkowe zdjęcie. Przeciągnij, aby zmienić kolejność.';
+  String get hubCreateEventSecondaryPhotoHint => 'Dodatkowe zdjęcie. Przeciągnij, aby zmienić kolejność.';
 
   @override
   String get hubCreateEventTicketingTitle => 'Bilety i wstęp';
 
   @override
-  String get hubCreateEventTicketingSwitchLabel =>
-      'Włącz bilety i limity miejsc';
+  String get hubCreateEventTicketingSwitchLabel => 'Włącz bilety i limity miejsc';
 
   @override
   String get hubCreateEventTicketSeatsLabel => 'Liczba miejsc';
@@ -158,8 +233,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubCreateEventSubmitButton => 'Stwórz wydarzenie';
 
   @override
-  String get hubCreateEventSubmitDisabledHint =>
-      'Tworzenie wydarzeń jest tymczasowo wyłączone, dopóki logowanie nie zostanie podpięte w aplikacji.';
+  String get hubCreateEventSubmitDisabledHint => 'Tworzenie wydarzeń jest tymczasowo wyłączone, dopóki logowanie nie zostanie podpięte w aplikacji.';
 
   @override
   String get hubCreateEventValidationMinChars3 => 'Podaj co najmniej 3 znaki.';
@@ -168,35 +242,28 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubCreateEventValidationRequired => 'To pole jest wymagane.';
 
   @override
-  String get hubCreateEventValidationDescriptionMin10 =>
-      'Opis powinien mieć co najmniej 10 znaków.';
+  String get hubCreateEventValidationDescriptionMin10 => 'Opis powinien mieć co najmniej 10 znaków.';
 
   @override
-  String get hubCreateEventValidationCategoryRequired =>
-      'Wybierz co najmniej jedną kategorię.';
+  String get hubCreateEventValidationCategoryRequired => 'Wybierz co najmniej jedną kategorię.';
 
   @override
-  String get hubCreateEventValidationPositiveNumber =>
-      'Podaj poprawną dodatnią liczbę.';
+  String get hubCreateEventValidationPositiveNumber => 'Podaj poprawną dodatnią liczbę.';
 
   @override
-  String get hubCreateEventValidationDateTimeRequired =>
-      'Wybierz datę i godzinę wydarzenia.';
+  String get hubCreateEventValidationDateTimeRequired => 'Wybierz datę i godzinę wydarzenia.';
 
   @override
-  String get hubCreateEventValidationLocationRequired =>
-      'Wybierz lokalizację wydarzenia.';
+  String get hubCreateEventValidationLocationRequired => 'Wybierz lokalizację wydarzenia.';
 
   @override
   String get hubCreateEventCreatedSuccess => 'Wydarzenie zostało utworzone.';
 
   @override
-  String get hubCreateEventCreateFailed =>
-      'Nie udało się utworzyć wydarzenia. Spróbuj ponownie.';
+  String get hubCreateEventCreateFailed => 'Nie udało się utworzyć wydarzenia. Spróbuj ponownie.';
 
   @override
-  String get hubCreateEventLocationLookupFailed =>
-      'Nie udało się ustalić lokalizacji. Spróbuj wpisać inny adres lub wskaż punkt na mapie.';
+  String get hubCreateEventLocationLookupFailed => 'Nie udało się ustalić lokalizacji. Spróbuj wpisać inny adres lub wskaż punkt na mapie.';
 
   @override
   String get hubCommunityTitle => 'Społeczność';
@@ -214,8 +281,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get profileTitle => 'Profil';
 
   @override
-  String get profileDescription =>
-      'Konto, preferencje i zapisane miejsca w jednej spokojniejszej sekcji.';
+  String get profileDescription => 'Konto, preferencje i zapisane miejsca w jednej spokojniejszej sekcji.';
 
   @override
   String get settingsTitle => 'Ustawienia';
@@ -227,29 +293,25 @@ class AppLocalizationsPl extends AppLocalizations {
   String get settingsScreenTitle => 'Ustawienia';
 
   @override
-  String get settingsScreenDescription =>
-      'Tu możesz ogarnąć podstawy aplikacji, zanim sekcja ustawień bardziej urośnie.';
+  String get settingsScreenDescription => 'Tu możesz ogarnąć podstawy aplikacji, zanim sekcja ustawień bardziej urośnie.';
 
   @override
   String get savedTitle => 'Zapisane';
 
   @override
-  String get savedSubtitle =>
-      'Miejsca, wydarzenia i listy, do których chcesz wrócić';
+  String get savedSubtitle => 'Miejsca, wydarzenia i listy, do których chcesz wrócić';
 
   @override
   String get languageSectionTitle => 'Język';
 
   @override
-  String get languageSectionSubtitle =>
-      'Wybierz, w jakim języku aplikacja ma z Tobą rozmawiać';
+  String get languageSectionSubtitle => 'Wybierz, w jakim języku aplikacja ma z Tobą rozmawiać';
 
   @override
   String get themeSectionTitle => 'Wygląd';
 
   @override
-  String get themeSectionSubtitle =>
-      'Wybierz, czy aplikacja ma podążać za systemem czy trzymać stały motyw';
+  String get themeSectionSubtitle => 'Wybierz, czy aplikacja ma podążać za systemem czy trzymać stały motyw';
 
   @override
   String get themeModeSystem => 'System';
@@ -275,8 +337,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get exploreLoadingTitle => 'Ładowanie wydarzeń';
 
   @override
-  String get exploreLoadingSubtitle =>
-      'Pobieramy najnowsze wydarzenia z backendu.';
+  String get exploreLoadingSubtitle => 'Pobieramy najnowsze wydarzenia z backendu.';
 
   @override
   String get exploreErrorTitle => 'Wydarzenia są niedostępne';
@@ -288,8 +349,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get exploreEmptyTitle => 'Brak wydarzeń';
 
   @override
-  String get exploreEmptySubtitle =>
-      'Spróbuj zmienić obszar albo wróć później.';
+  String get exploreEmptySubtitle => 'Spróbuj zmienić obszar albo wróć później.';
 
   @override
   String get exploreRetryButton => 'Spróbuj ponownie';
@@ -300,8 +360,8 @@ class AppLocalizationsPl extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count wyniku',
-      few: '$count wyniki',
       many: '$count wyników',
+      few: '$count wyniki',
       one: '1 wynik',
       zero: '0 wyników',
     );
@@ -421,8 +481,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get areaMyLocation => 'Moja lokalizacja';
 
   @override
-  String get areaMyLocationDescription =>
-      'Domyślnie wydarzenia najbliżej Ciebie';
+  String get areaMyLocationDescription => 'Domyślnie wydarzenia najbliżej Ciebie';
 
   @override
   String get areaTypedAddressDescription => 'Adres wpisany ręcznie';
@@ -434,22 +493,19 @@ class AppLocalizationsPl extends AppLocalizations {
   String get areaPickerTitle => 'Wybierz obszar';
 
   @override
-  String get areaPickerSubtitle =>
-      'Możesz wpisać adres, wskazać punkt na mapie albo wrócić do bieżącej lokalizacji.';
+  String get areaPickerSubtitle => 'Możesz wpisać adres, wskazać punkt na mapie albo wrócić do bieżącej lokalizacji.';
 
   @override
   String get areaUseCurrentLocation => 'Moja lokalizacja';
 
   @override
-  String get areaUseCurrentLocationSubtitle =>
-      'Użyj Twojej aktualnej pozycji jako punktu odniesienia';
+  String get areaUseCurrentLocationSubtitle => 'Użyj Twojej aktualnej pozycji jako punktu odniesienia';
 
   @override
   String get areaEnterAddress => 'Wpisz adres';
 
   @override
-  String get areaEnterAddressSubtitle =>
-      'Podaj ulicę, dzielnicę albo konkretne miejsce';
+  String get areaEnterAddressSubtitle => 'Podaj ulicę, dzielnicę albo konkretne miejsce';
 
   @override
   String get areaPickOnMap => 'Wskaż na mapie';
@@ -458,8 +514,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get areaPickOnMapTitle => 'Wskaż punkt na mapie';
 
   @override
-  String get areaPickOnMapSubtitle =>
-      'Przesuń mapę tak, aby wybrany punkt był pod znacznikiem na środku.';
+  String get areaPickOnMapSubtitle => 'Przesuń mapę tak, aby wybrany punkt był pod znacznikiem na środku.';
 
   @override
   String get areaPickOnMapConfirm => 'Użyj tego punktu';
@@ -474,8 +529,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get areaAddressNotFound => 'Nie udało się znaleźć tego adresu.';
 
   @override
-  String get areaAddressLookupFailed =>
-      'Nie udało się wyszukać adresu. Spróbuj ponownie.';
+  String get areaAddressLookupFailed => 'Nie udało się wyszukać adresu. Spróbuj ponownie.';
 
   @override
   String get areaDialogCancel => 'Anuluj';
@@ -498,8 +552,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get areaPowisle => 'Powiśle';
 
   @override
-  String get areaPowisleDescription =>
-      'Okolice bulwarów i mostu Poniatowskiego';
+  String get areaPowisleDescription => 'Okolice bulwarów i mostu Poniatowskiego';
 
   @override
   String get areaMokotow => 'Mokotów';
@@ -565,38 +618,31 @@ class AppLocalizationsPl extends AppLocalizations {
   String get eventDetailsUnknownLocation => 'Lokalizacja nieznana';
 
   @override
-  String get eventDetailsFallbackDescription =>
-      'To tymczasowy opis wydarzenia. W kolejnych krokach podepniemy pełne dane z formularza tworzenia wydarzenia i backendu.';
+  String get eventDetailsFallbackDescription => 'To tymczasowy opis wydarzenia. W kolejnych krokach podepniemy pełne dane z formularza tworzenia wydarzenia i backendu.';
 
   @override
   String get eventDetailsLoadingTitle => 'Ładowanie wydarzenia';
 
   @override
-  String get eventDetailsLoadingSubtitle =>
-      'Pobieramy szczegóły wydarzenia z backendu.';
+  String get eventDetailsLoadingSubtitle => 'Pobieramy szczegóły wydarzenia z backendu.';
 
   @override
   String get eventDetailsErrorTitle => 'Wydarzenie jest niedostępne';
 
   @override
-  String get eventDetailsErrorSubtitle =>
-      'Nie udało się teraz wczytać tego wydarzenia.';
+  String get eventDetailsErrorSubtitle => 'Nie udało się teraz wczytać tego wydarzenia.';
 
   @override
-  String get eventDetailsJazzDescription =>
-      'Wieczorny koncert jazzowy pod otwartym niebem. Zabierz znajomych, koc i dobry humor.';
+  String get eventDetailsJazzDescription => 'Wieczorny koncert jazzowy pod otwartym niebem. Zabierz znajomych, koc i dobry humor.';
 
   @override
-  String get eventDetailsSketchingDescription =>
-      'Spotkanie dla osób lubiących szkicowanie i ilustracje miejskie. Materiały we własnym zakresie.';
+  String get eventDetailsSketchingDescription => 'Spotkanie dla osób lubiących szkicowanie i ilustracje miejskie. Materiały we własnym zakresie.';
 
   @override
-  String get eventDetailsRunClubDescription =>
-      'Lekki poranny bieg, potem wspólna kawa i networking. Tempo konwersacyjne, każdy mile widziany.';
+  String get eventDetailsRunClubDescription => 'Lekki poranny bieg, potem wspólna kawa i networking. Tempo konwersacyjne, każdy mile widziany.';
 
   @override
-  String get eventDetailsStreetFoodDescription =>
-      'Street food, selekcja płyt winylowych i mini sety DJ-skie. Wydarzenie całodzienne.';
+  String get eventDetailsStreetFoodDescription => 'Street food, selekcja płyt winylowych i mini sety DJ-skie. Wydarzenie całodzienne.';
 
   @override
   String get eventDetailsTicketLabel => 'Bilety';
@@ -661,28 +707,22 @@ class AppLocalizationsPl extends AppLocalizations {
   String get mapLocationSettings => 'Ustawienia lokalizacji';
 
   @override
-  String get mapServiceDisabled =>
-      'Włącz usługi lokalizacji, aby zobaczyć swoją pozycję.';
+  String get mapServiceDisabled => 'Włącz usługi lokalizacji, aby zobaczyć swoją pozycję.';
 
   @override
-  String get mapPermissionDenied =>
-      'Pozwól na dostęp do lokalizacji, aby wycentrować mapę na Tobie.';
+  String get mapPermissionDenied => 'Pozwól na dostęp do lokalizacji, aby wycentrować mapę na Tobie.';
 
   @override
-  String get mapPermissionDeniedForever =>
-      'Dostęp do lokalizacji jest zablokowany w ustawieniach systemu.';
+  String get mapPermissionDeniedForever => 'Dostęp do lokalizacji jest zablokowany w ustawieniach systemu.';
 
   @override
-  String get mapUnableDetermineLocation =>
-      'Nie udało się ustalić Twojej lokalizacji.';
+  String get mapUnableDetermineLocation => 'Nie udało się ustalić Twojej lokalizacji.';
 
   @override
-  String get mapLocationTimeout =>
-      'Żądanie lokalizacji przekroczyło limit czasu. Spróbuj ponownie.';
+  String get mapLocationTimeout => 'Żądanie lokalizacji przekroczyło limit czasu. Spróbuj ponownie.';
 
   @override
-  String get mapUnableLoadLocation =>
-      'Nie udało się wczytać Twojej lokalizacji.';
+  String get mapUnableLoadLocation => 'Nie udało się wczytać Twojej lokalizacji.';
 
   @override
   String mapClusterSheetTitle(int count) {
@@ -710,8 +750,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get eventPublishSuccess => 'Wydarzenie zostało opublikowane.';
 
   @override
-  String get eventPublishError =>
-      'Nie udało się opublikować wydarzenia. Spróbuj ponownie.';
+  String get eventPublishError => 'Nie udało się opublikować wydarzenia. Spróbuj ponownie.';
 
   @override
   String get networkError => 'Błąd sieci. Sprawdź swoje połączenie.';
@@ -723,8 +762,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get exploreErrorPermissionTitle => 'Wymagany dostęp do lokalizacji';
 
   @override
-  String get exploreErrorPermissionSubtitle =>
-      'Zezwól na dostęp do lokalizacji, aby zobaczyć wydarzenia w pobliżu.';
+  String get exploreErrorPermissionSubtitle => 'Zezwól na dostęp do lokalizacji, aby zobaczyć wydarzenia w pobliżu.';
 
   @override
   String get exploreErrorUnknownTitle => 'Coś poszło nie tak';

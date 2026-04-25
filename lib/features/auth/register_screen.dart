@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
 import 'login_screen.dart';
 
@@ -22,6 +23,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   static final RegExp _emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
   static final RegExp _usernameRegex = RegExp(r'^[a-zA-Z0-9._-]+$');
 
+  AppLocalizations get _l10n => AppLocalizations.of(context)!;
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -33,13 +36,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _validateUsername(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {
-      return 'Podaj nazwę użytkownika';
+      return _l10n.authValidationUsernameRequired;
     }
     if (trimmed.length < 3) {
-      return 'Nazwa użytkownika musi mieć min. 3 znaki';
+      return _l10n.authValidationUsernameMin3;
     }
     if (!_usernameRegex.hasMatch(trimmed)) {
-      return 'Dozwolone: litery, cyfry, . _ -';
+      return _l10n.authValidationUsernameAllowed;
     }
     return null;
   }
@@ -47,20 +50,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _validateEmail(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {
-      return 'Podaj adres e-mail';
+      return _l10n.authValidationEmailRequired;
     }
     if (!_emailRegex.hasMatch(trimmed)) {
-      return 'Podaj poprawny adres e-mail';
+      return _l10n.authValidationEmailInvalid;
     }
     return null;
   }
 
   String? _validatePassword(String value) {
     if (value.isEmpty) {
-      return 'Podaj hasło';
+      return _l10n.authValidationPasswordRequired;
     }
     if (value.length < 8) {
-      return 'Hasło musi mieć min. 8 znaków';
+      return _l10n.authValidationPasswordMin8;
     }
     return null;
   }
@@ -125,17 +128,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final isSystemDark = theme.brightness == Brightness.dark;
+
+    final pageBackground = isSystemDark
+        ? const Color(0xFF0F1512)
+        : scheme.surface;
+    final subtitleColor = isSystemDark
+        ? Colors.white.withValues(alpha: 0.9)
+        : scheme.onSurface.withValues(alpha: 1);
+    final footerTextColor = isSystemDark
+        ? Colors.white.withValues(alpha: 0.86)
+        : scheme.onSurface;
+
+    final subtitleText = l10n.authSubtitle;
 
     return Scaffold(
-      backgroundColor: scheme.surface,
+      backgroundColor: pageBackground,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: RadialGradient(
             center: Alignment.topLeft,
             radius: 0.92,
             colors: [
-              Color.fromARGB(60, 5, 239, 20),
-              Color.fromARGB(0, 24, 201, 36),
+              isSystemDark
+                  ? const Color.fromARGB(74, 69, 180, 95)
+                  : const Color.fromARGB(60, 5, 239, 20),
+              isSystemDark
+                  ? const Color.fromARGB(0, 69, 180, 95)
+                  : const Color.fromARGB(0, 24, 201, 36),
             ],
           ),
         ),
@@ -163,11 +184,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(height: 6),
                       Center(
                         child: Text(
-                          'Odkryj lokalne perełki w Twojej okolicy',
+                          subtitleText,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             fontSize: 17,
-                            color: scheme.onSurface.withValues(alpha: 1),
+                            color: subtitleColor,
                           ),
                         ),
                       ),
@@ -175,6 +196,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       _AuthCard(
                         theme: theme,
                         scheme: scheme,
+                        isSystemDark: isSystemDark,
                         usernameController: _usernameController,
                         emailController: _emailController,
                         passwordController: _passwordController,
@@ -185,6 +207,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onEmailChanged: _handleEmailChanged,
                         onPasswordChanged: _handlePasswordChanged,
                         onSubmit: _handleSubmit,
+                        titleText: l10n.authRegisterWelcome,
+                        googleButtonText: l10n.authGoogleContinue,
+                        dividerText: l10n.authDividerOr,
+                        usernameLabel: l10n.authRegisterUsernameLabel,
+                        usernameHint: l10n.authRegisterUsernameHint,
+                        emailLabel: l10n.authEmailLabel,
+                        emailHint: l10n.authEmailHint,
+                        passwordLabel: l10n.authPasswordLabel,
+                        passwordHint: l10n.authPasswordHint,
+                        submitText: l10n.authRegisterSubmit,
+                        switchPromptText: l10n.authRegisterHasAccount,
+                        switchActionText: l10n.authRegisterSignIn,
                       ),
                       const SizedBox(height: 22),
                       Opacity(
@@ -192,11 +226,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _FooterLink(label: 'REGULAMIN', onTap: () {}),
+                            _FooterLink(
+                              label: l10n.authFooterTerms,
+                              textColor: footerTextColor,
+                              onTap: () {},
+                            ),
                             const SizedBox(width: 18),
-                            _FooterLink(label: 'PRYWATNOŚĆ', onTap: () {}),
+                            _FooterLink(
+                              label: l10n.authFooterPrivacy,
+                              textColor: footerTextColor,
+                              onTap: () {},
+                            ),
                             const SizedBox(width: 18),
-                            _FooterLink(label: 'POMOC', onTap: () {}),
+                            _FooterLink(
+                              label: l10n.authFooterHelp,
+                              textColor: footerTextColor,
+                              onTap: () {},
+                            ),
                           ],
                         ),
                       ),
@@ -216,6 +262,7 @@ class _AuthCard extends StatelessWidget {
   const _AuthCard({
     required this.theme,
     required this.scheme,
+    required this.isSystemDark,
     required this.usernameController,
     required this.emailController,
     required this.passwordController,
@@ -226,10 +273,23 @@ class _AuthCard extends StatelessWidget {
     required this.onEmailChanged,
     required this.onPasswordChanged,
     required this.onSubmit,
+    required this.titleText,
+    required this.googleButtonText,
+    required this.dividerText,
+    required this.usernameLabel,
+    required this.usernameHint,
+    required this.emailLabel,
+    required this.emailHint,
+    required this.passwordLabel,
+    required this.passwordHint,
+    required this.submitText,
+    required this.switchPromptText,
+    required this.switchActionText,
   });
 
   final ThemeData theme;
   final ColorScheme scheme;
+  final bool isSystemDark;
   final TextEditingController usernameController;
   final TextEditingController emailController;
   final TextEditingController passwordController;
@@ -240,6 +300,18 @@ class _AuthCard extends StatelessWidget {
   final ValueChanged<String> onEmailChanged;
   final ValueChanged<String> onPasswordChanged;
   final VoidCallback onSubmit;
+  final String titleText;
+  final String googleButtonText;
+  final String dividerText;
+  final String usernameLabel;
+  final String usernameHint;
+  final String emailLabel;
+  final String emailHint;
+  final String passwordLabel;
+  final String passwordHint;
+  final String submitText;
+  final String switchPromptText;
+  final String switchActionText;
 
   @override
   Widget build(BuildContext context) {
@@ -247,14 +319,16 @@ class _AuthCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isSystemDark ? scheme.surfaceContainerHigh : Colors.white,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
+        border: Border.all(
+          color: isSystemDark
+              ? Colors.white.withValues(alpha: 0.16)
+              : scheme.outline.withValues(alpha: 0.28),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: theme.brightness == Brightness.dark ? 0.22 : 0.05,
-            ),
+            color: Colors.black.withValues(alpha: isSystemDark ? 0.28 : 0.05),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -265,9 +339,9 @@ class _AuthCard extends StatelessWidget {
         children: [
           Center(
             child: Text(
-              'Witaj',
+              titleText,
               style: theme.textTheme.headlineSmall?.copyWith(
-                color: Colors.black87,
+                color: isSystemDark ? Colors.white : Colors.black87,
                 fontWeight: FontWeight.w700,
                 fontSize: 34,
               ),
@@ -279,66 +353,85 @@ class _AuthCard extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: () {},
               style: OutlinedButton.styleFrom(
+                foregroundColor: isSystemDark ? Colors.white : scheme.onSurface,
+                side: BorderSide(
+                  color: isSystemDark
+                      ? Colors.white.withValues(alpha: 0.25)
+                      : scheme.outline.withValues(alpha: 0.45),
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               icon: const Icon(Icons.account_circle_outlined),
-              label: const Text('Kontynuuj przez Google'),
+              label: Text(googleButtonText),
             ),
           ),
           const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
-                child: Divider(color: scheme.outline.withValues(alpha: 0.35)),
+                child: Divider(
+                  color: isSystemDark
+                      ? Colors.white.withValues(alpha: 0.24)
+                      : scheme.outline.withValues(alpha: 0.35),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Text(
-                  'LUB',
+                  dividerText,
                   style: theme.textTheme.labelSmall?.copyWith(
                     letterSpacing: 1.2,
-                    color: scheme.onSurface.withValues(alpha: 0.6),
+                    color: isSystemDark
+                        ? Colors.white.withValues(alpha: 0.76)
+                        : scheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
               Expanded(
-                child: Divider(color: scheme.outline.withValues(alpha: 0.35)),
+                child: Divider(
+                  color: isSystemDark
+                      ? Colors.white.withValues(alpha: 0.24)
+                      : scheme.outline.withValues(alpha: 0.35),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 14),
           _AuthInputField(
-            label: 'NAZWA UŻYTKOWNIKA',
-            hintText: 'twoja nazwa uzytkownika',
+            label: usernameLabel,
+            hintText: usernameHint,
             keyboardType: TextInputType.text,
             obscureText: false,
             controller: usernameController,
             errorText: usernameError,
             onChanged: onUsernameChanged,
+            isSystemDark: isSystemDark,
           ),
           const SizedBox(height: 10),
           _AuthInputField(
-            label: 'E-MAIL',
-            hintText: 'twoj@email.pl',
+            label: emailLabel,
+            hintText: emailHint,
             keyboardType: TextInputType.emailAddress,
             obscureText: false,
             controller: emailController,
             errorText: emailError,
             onChanged: onEmailChanged,
+            isSystemDark: isSystemDark,
           ),
           const SizedBox(height: 10),
           _AuthInputField(
-            label: 'HASŁO',
-            hintText: '********',
+            label: passwordLabel,
+            hintText: passwordHint,
             keyboardType: TextInputType.visiblePassword,
             obscureText: true,
             controller: passwordController,
             errorText: passwordError,
             onChanged: onPasswordChanged,
+            isSystemDark: isSystemDark,
           ),
           const SizedBox(height: 24),
           SizedBox(
@@ -353,7 +446,7 @@ class _AuthCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: Text(
-                'Zarejestruj się',
+                submitText,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontSize: 20,
                   color: Colors.white,
@@ -365,9 +458,11 @@ class _AuthCard extends StatelessWidget {
           const SizedBox(height: 40),
           Center(
             child: Text(
-              'Masz już konto?',
+              switchPromptText,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.7),
+                color: isSystemDark
+                    ? Colors.white.withValues(alpha: 0.76)
+                    : scheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -379,7 +474,7 @@ class _AuthCard extends StatelessWidget {
                 );
               },
               child: Text(
-                'Zaloguj się na konto',
+                switchActionText,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF2E7D32),
@@ -401,6 +496,7 @@ class _AuthInputField extends StatelessWidget {
     required this.obscureText,
     required this.controller,
     required this.onChanged,
+    required this.isSystemDark,
     this.errorText,
   });
 
@@ -410,11 +506,13 @@ class _AuthInputField extends StatelessWidget {
   final bool obscureText;
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
+  final bool isSystemDark;
   final String? errorText;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,7 +521,9 @@ class _AuthInputField extends StatelessWidget {
           label,
           style: theme.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF1B5E20),
+            color: isSystemDark
+                ? const Color(0xFFA5D6A7)
+                : const Color(0xFF1B5E20),
             letterSpacing: 0.3,
           ),
         ),
@@ -433,14 +533,22 @@ class _AuthInputField extends StatelessWidget {
           onChanged: onChanged,
           keyboardType: keyboardType,
           obscureText: obscureText,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: isSystemDark ? Colors.white : Colors.black87,
+          ),
+          cursorColor: isSystemDark
+              ? const Color(0xFF81C784)
+              : const Color(0xFF2E7D32),
           decoration: InputDecoration(
             hintText: hintText,
             errorText: errorText,
             hintStyle: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.black54,
+              color: isSystemDark ? Colors.white70 : Colors.black54,
             ),
             filled: true,
-            fillColor: const Color(0xFFF1F3F4),
+            fillColor: isSystemDark
+                ? scheme.primary.withValues(alpha: 0.14)
+                : const Color(0xFFF1F3F4),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 14,
@@ -455,8 +563,10 @@ class _AuthInputField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFF2E7D32),
+              borderSide: BorderSide(
+                color: isSystemDark
+                    ? const Color(0xFF81C784)
+                    : const Color(0xFF2E7D32),
                 width: 1.5,
               ),
             ),
@@ -468,15 +578,19 @@ class _AuthInputField extends StatelessWidget {
 }
 
 class _FooterLink extends StatelessWidget {
-  const _FooterLink({required this.label, required this.onTap});
+  const _FooterLink({
+    required this.label,
+    required this.textColor,
+    required this.onTap,
+  });
 
   final String label;
+  final Color textColor;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
 
     return InkWell(
       onTap: onTap,
@@ -486,7 +600,7 @@ class _FooterLink extends StatelessWidget {
         child: Text(
           label,
           style: theme.textTheme.labelSmall?.copyWith(
-            color: scheme.onSurface,
+            color: textColor,
             letterSpacing: 0.8,
             fontWeight: FontWeight.w700,
           ),

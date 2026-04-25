@@ -62,8 +62,7 @@ import 'app_localizations_pl.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('pl'),
+    Locale('pl')
   ];
 
   /// No description provided for @appTitle.
@@ -115,6 +112,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Polish'**
   String get localePolish;
+
+  /// No description provided for @authSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover local gems in your area'**
+  String get authSubtitle;
+
+  /// No description provided for @authGoogleContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get authGoogleContinue;
+
+  /// No description provided for @authDividerOr.
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get authDividerOr;
+
+  /// No description provided for @authEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'EMAIL'**
+  String get authEmailLabel;
+
+  /// No description provided for @authEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'your@email.com'**
+  String get authEmailHint;
+
+  /// No description provided for @authPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PASSWORD'**
+  String get authPasswordLabel;
+
+  /// No description provided for @authPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'********'**
+  String get authPasswordHint;
+
+  /// No description provided for @authFooterTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'TERMS'**
+  String get authFooterTerms;
+
+  /// No description provided for @authFooterPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'PRIVACY'**
+  String get authFooterPrivacy;
+
+  /// No description provided for @authFooterHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'HELP'**
+  String get authFooterHelp;
+
+  /// No description provided for @authLoginWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get authLoginWelcome;
+
+  /// No description provided for @authLoginSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get authLoginSubmit;
+
+  /// No description provided for @authLoginNoAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account yet?'**
+  String get authLoginNoAccount;
+
+  /// No description provided for @authLoginCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a free account'**
+  String get authLoginCreateAccount;
+
+  /// No description provided for @authRegisterWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome'**
+  String get authRegisterWelcome;
+
+  /// No description provided for @authRegisterUsernameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'USERNAME'**
+  String get authRegisterUsernameLabel;
+
+  /// No description provided for @authRegisterUsernameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'your_username'**
+  String get authRegisterUsernameHint;
+
+  /// No description provided for @authRegisterSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up'**
+  String get authRegisterSubmit;
+
+  /// No description provided for @authRegisterHasAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get authRegisterHasAccount;
+
+  /// No description provided for @authRegisterSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to your account'**
+  String get authRegisterSignIn;
+
+  /// No description provided for @authValidationUsernameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter username'**
+  String get authValidationUsernameRequired;
+
+  /// No description provided for @authValidationUsernameMin3.
+  ///
+  /// In en, this message translates to:
+  /// **'Username must be at least 3 characters'**
+  String get authValidationUsernameMin3;
+
+  /// No description provided for @authValidationUsernameAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed: letters, numbers, . _ -'**
+  String get authValidationUsernameAllowed;
+
+  /// No description provided for @authValidationEmailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter email address'**
+  String get authValidationEmailRequired;
+
+  /// No description provided for @authValidationEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address'**
+  String get authValidationEmailInvalid;
+
+  /// No description provided for @authValidationPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter password'**
+  String get authValidationPasswordRequired;
+
+  /// No description provided for @authValidationPasswordMin8.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get authValidationPasswordMin8;
 
   /// No description provided for @tabExplore.
   ///
@@ -1383,8 +1542,7 @@ abstract class AppLocalizations {
   String shareEventMessage(String title, String url);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -1393,26 +1551,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'pl'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'pl'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'pl':
-      return AppLocalizationsPl();
+    case 'en': return AppLocalizationsEn();
+    case 'pl': return AppLocalizationsPl();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }
