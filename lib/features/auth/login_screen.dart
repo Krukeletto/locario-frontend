@@ -2,8 +2,95 @@ import 'package:flutter/material.dart';
 
 import 'register_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  String? _emailError;
+  String? _passwordError;
+  bool _hasSubmitted = false;
+
+  static final RegExp _emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  String? _validateEmail(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return 'Podaj adres e-mail';
+    }
+    if (!_emailRegex.hasMatch(trimmed)) {
+      return 'Podaj poprawny adres e-mail';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String value) {
+    if (value.isEmpty) {
+      return 'Podaj hasło';
+    }
+    if (value.length < 8) {
+      return 'Hasło musi mieć min. 8 znaków';
+    }
+    return null;
+  }
+
+  bool _validateForm() {
+    final emailError = _validateEmail(_emailController.text);
+    final passwordError = _validatePassword(_passwordController.text);
+
+    setState(() {
+      _emailError = emailError;
+      _passwordError = passwordError;
+    });
+
+    return emailError == null && passwordError == null;
+  }
+
+  void _handleEmailChanged(String value) {
+    if (!_hasSubmitted) {
+      return;
+    }
+    setState(() {
+      _emailError = _validateEmail(value);
+    });
+  }
+
+  void _handlePasswordChanged(String value) {
+    if (!_hasSubmitted) {
+      return;
+    }
+    setState(() {
+      _passwordError = _validatePassword(value);
+    });
+  }
+
+  void _handleSubmit() {
+    if (!_hasSubmitted) {
+      setState(() {
+        _hasSubmitted = true;
+      });
+    }
+
+    final isValid = _validateForm();
+    if (!isValid) {
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +143,17 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      _AuthCard(theme: theme, scheme: scheme),
+                      _AuthCard(
+                        theme: theme,
+                        scheme: scheme,
+                        emailController: _emailController,
+                        passwordController: _passwordController,
+                        emailError: _emailError,
+                        passwordError: _passwordError,
+                        onEmailChanged: _handleEmailChanged,
+                        onPasswordChanged: _handlePasswordChanged,
+                        onSubmit: _handleSubmit,
+                      ),
                       const SizedBox(height: 22),
                       Opacity(
                         opacity: 0.58,
@@ -84,10 +181,27 @@ class LoginScreen extends StatelessWidget {
 }
 
 class _AuthCard extends StatelessWidget {
-  const _AuthCard({required this.theme, required this.scheme});
+  const _AuthCard({
+    required this.theme,
+    required this.scheme,
+    required this.emailController,
+    required this.passwordController,
+    required this.emailError,
+    required this.passwordError,
+    required this.onEmailChanged,
+    required this.onPasswordChanged,
+    required this.onSubmit,
+  });
 
   final ThemeData theme;
   final ColorScheme scheme;
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final String? emailError;
+  final String? passwordError;
+  final ValueChanged<String> onEmailChanged;
+  final ValueChanged<String> onPasswordChanged;
+  final VoidCallback onSubmit;
 
   @override
   Widget build(BuildContext context) {
@@ -159,24 +273,30 @@ class _AuthCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          const _AuthInputField(
+          _AuthInputField(
             label: 'E-MAIL',
             hintText: 'twoj@email.pl',
             keyboardType: TextInputType.emailAddress,
             obscureText: false,
+            controller: emailController,
+            errorText: emailError,
+            onChanged: onEmailChanged,
           ),
           const SizedBox(height: 10),
-          const _AuthInputField(
+          _AuthInputField(
             label: 'HASŁO',
             hintText: '********',
             keyboardType: TextInputType.visiblePassword,
             obscureText: true,
+            controller: passwordController,
+            errorText: passwordError,
+            onChanged: onPasswordChanged,
           ),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
-              onPressed: () {},
+              onPressed: onSubmit,
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF2E7D32),
                 shape: RoundedRectangleBorder(
@@ -231,12 +351,18 @@ class _AuthInputField extends StatelessWidget {
     required this.hintText,
     required this.keyboardType,
     required this.obscureText,
+    required this.controller,
+    required this.onChanged,
+    this.errorText,
   });
 
   final String label;
   final String hintText;
   final TextInputType keyboardType;
   final bool obscureText;
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
@@ -255,10 +381,13 @@ class _AuthInputField extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         TextField(
+          controller: controller,
+          onChanged: onChanged,
           keyboardType: keyboardType,
           obscureText: obscureText,
           decoration: InputDecoration(
             hintText: hintText,
+            errorText: errorText,
             hintStyle: theme.textTheme.bodyMedium?.copyWith(
               color: Colors.black54,
             ),

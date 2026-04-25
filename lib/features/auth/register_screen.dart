@@ -2,8 +2,124 @@ import 'package:flutter/material.dart';
 
 import 'login_screen.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  String? _usernameError;
+  String? _emailError;
+  String? _passwordError;
+  bool _hasSubmitted = false;
+
+  static final RegExp _emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+  static final RegExp _usernameRegex = RegExp(r'^[a-zA-Z0-9._-]+$');
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  String? _validateUsername(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return 'Podaj nazwę użytkownika';
+    }
+    if (trimmed.length < 3) {
+      return 'Nazwa użytkownika musi mieć min. 3 znaki';
+    }
+    if (!_usernameRegex.hasMatch(trimmed)) {
+      return 'Dozwolone: litery, cyfry, . _ -';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return 'Podaj adres e-mail';
+    }
+    if (!_emailRegex.hasMatch(trimmed)) {
+      return 'Podaj poprawny adres e-mail';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String value) {
+    if (value.isEmpty) {
+      return 'Podaj hasło';
+    }
+    if (value.length < 8) {
+      return 'Hasło musi mieć min. 8 znaków';
+    }
+    return null;
+  }
+
+  bool _validateForm() {
+    final usernameError = _validateUsername(_usernameController.text);
+    final emailError = _validateEmail(_emailController.text);
+    final passwordError = _validatePassword(_passwordController.text);
+
+    setState(() {
+      _usernameError = usernameError;
+      _emailError = emailError;
+      _passwordError = passwordError;
+    });
+
+    return usernameError == null && emailError == null && passwordError == null;
+  }
+
+  void _handleUsernameChanged(String value) {
+    if (!_hasSubmitted) {
+      return;
+    }
+    setState(() {
+      _usernameError = _validateUsername(value);
+    });
+  }
+
+  void _handleEmailChanged(String value) {
+    if (!_hasSubmitted) {
+      return;
+    }
+    setState(() {
+      _emailError = _validateEmail(value);
+    });
+  }
+
+  void _handlePasswordChanged(String value) {
+    if (!_hasSubmitted) {
+      return;
+    }
+    setState(() {
+      _passwordError = _validatePassword(value);
+    });
+  }
+
+  void _handleSubmit() {
+    if (!_hasSubmitted) {
+      setState(() {
+        _hasSubmitted = true;
+      });
+    }
+
+    final isValid = _validateForm();
+    if (!isValid) {
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +172,20 @@ class RegisterScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      _AuthCard(theme: theme, scheme: scheme),
+                      _AuthCard(
+                        theme: theme,
+                        scheme: scheme,
+                        usernameController: _usernameController,
+                        emailController: _emailController,
+                        passwordController: _passwordController,
+                        usernameError: _usernameError,
+                        emailError: _emailError,
+                        passwordError: _passwordError,
+                        onUsernameChanged: _handleUsernameChanged,
+                        onEmailChanged: _handleEmailChanged,
+                        onPasswordChanged: _handlePasswordChanged,
+                        onSubmit: _handleSubmit,
+                      ),
                       const SizedBox(height: 22),
                       Opacity(
                         opacity: 0.58,
@@ -84,10 +213,33 @@ class RegisterScreen extends StatelessWidget {
 }
 
 class _AuthCard extends StatelessWidget {
-  const _AuthCard({required this.theme, required this.scheme});
+  const _AuthCard({
+    required this.theme,
+    required this.scheme,
+    required this.usernameController,
+    required this.emailController,
+    required this.passwordController,
+    required this.usernameError,
+    required this.emailError,
+    required this.passwordError,
+    required this.onUsernameChanged,
+    required this.onEmailChanged,
+    required this.onPasswordChanged,
+    required this.onSubmit,
+  });
 
   final ThemeData theme;
   final ColorScheme scheme;
+  final TextEditingController usernameController;
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final String? usernameError;
+  final String? emailError;
+  final String? passwordError;
+  final ValueChanged<String> onUsernameChanged;
+  final ValueChanged<String> onEmailChanged;
+  final ValueChanged<String> onPasswordChanged;
+  final VoidCallback onSubmit;
 
   @override
   Widget build(BuildContext context) {
@@ -159,31 +311,40 @@ class _AuthCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          const _AuthInputField(
+          _AuthInputField(
             label: 'NAZWA UŻYTKOWNIKA',
             hintText: 'twoja nazwa uzytkownika',
             keyboardType: TextInputType.text,
             obscureText: false,
+            controller: usernameController,
+            errorText: usernameError,
+            onChanged: onUsernameChanged,
           ),
           const SizedBox(height: 10),
-          const _AuthInputField(
+          _AuthInputField(
             label: 'E-MAIL',
             hintText: 'twoj@email.pl',
             keyboardType: TextInputType.emailAddress,
             obscureText: false,
+            controller: emailController,
+            errorText: emailError,
+            onChanged: onEmailChanged,
           ),
           const SizedBox(height: 10),
-          const _AuthInputField(
+          _AuthInputField(
             label: 'HASŁO',
             hintText: '********',
             keyboardType: TextInputType.visiblePassword,
             obscureText: true,
+            controller: passwordController,
+            errorText: passwordError,
+            onChanged: onPasswordChanged,
           ),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
-              onPressed: () {},
+              onPressed: onSubmit,
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF2E7D32),
                 shape: RoundedRectangleBorder(
@@ -238,12 +399,18 @@ class _AuthInputField extends StatelessWidget {
     required this.hintText,
     required this.keyboardType,
     required this.obscureText,
+    required this.controller,
+    required this.onChanged,
+    this.errorText,
   });
 
   final String label;
   final String hintText;
   final TextInputType keyboardType;
   final bool obscureText;
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
@@ -262,10 +429,13 @@ class _AuthInputField extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         TextField(
+          controller: controller,
+          onChanged: onChanged,
           keyboardType: keyboardType,
           obscureText: obscureText,
           decoration: InputDecoration(
             hintText: hintText,
+            errorText: errorText,
             hintStyle: theme.textTheme.bodyMedium?.copyWith(
               color: Colors.black54,
             ),
