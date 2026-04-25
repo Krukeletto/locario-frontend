@@ -32,6 +32,14 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           _ProfileActionCard(
+            // do testów
+            icon: Icons.login_rounded,
+            title: 'Logowanie',
+            subtitle: 'Przejdź do ekranu logowania',
+            onTap: () => context.push('/auth/login'),
+          ),
+          const SizedBox(height: 14),
+          _ProfileActionCard(
             icon: Icons.bookmark_rounded,
             title: l10n.savedTitle,
             subtitle: l10n.savedSubtitle,

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/auth/login_screen.dart';
 import '../features/events/event_screen.dart';
 import '../features/hub/create_event/create_event_screen.dart';
 import '../features/explore/explore_screen.dart';
@@ -163,6 +164,13 @@ final GoRouter appRouter = GoRouter(
       pageBuilder: (context, state) => NoTransitionPage(
         child: EventScreen(eventId: state.pathParameters['eventId']),
       ),
+    ),
+    GoRoute(
+      // do testów
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/auth/login',
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: LoginScreen()),
     ),
   ],
 );
