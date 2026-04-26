@@ -164,13 +164,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 2, 20, 24),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 0, bottom: 6),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainerLow,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: scheme.outline.withValues(alpha: 0.18),
+                            ),
+                          ),
+                          child: IconButton(
+                            onPressed: () => Navigator.of(context).maybePop(),
+                            icon: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: scheme.primary,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
                       Center(
                         child: Text(
                           'Locario',
