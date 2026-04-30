@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../shared/auth/auth_api.dart';
+import '../../shared/auth/auth_scope.dart';
+import '../../shared/services/feedback_service.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _emailError;
   String? _passwordError;
   bool _hasSubmitted = false;
+  bool _isSubmitting = false;
 
   static final RegExp _emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
 
@@ -80,7 +86,11 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
+    if (_isSubmitting) {
+      return;
+    }
+
     if (!_hasSubmitted) {
       setState(() {
         _hasSubmitted = true;
@@ -93,6 +103,51 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     FocusScope.of(context).unfocus();
+
+    final sessionController = AuthScope.maybeOf(context);
+    if (sessionController == null) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      await sessionController.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      if (!mounted) {
+        return;
+      }
+      FeedbackService.showSuccess(FeedbackMessage.loginSuccess);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showAuthError(error);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  void _showAuthError(Object error) {
+    if (error is AuthApiException && error.statusCode == 401) {
+      FeedbackService.showError(FeedbackMessage.loginInvalidCredentials);
+      return;
+    }
+
+    if (error is SocketException) {
+      FeedbackService.showError(FeedbackMessage.networkError);
+      return;
+    }
+
+    FeedbackService.showError(FeedbackMessage.unknownError);
   }
 
   @override

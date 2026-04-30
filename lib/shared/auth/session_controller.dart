@@ -124,6 +124,9 @@ class SessionController extends ChangeNotifier {
       _status = SessionStatus.authenticated;
       notifyListeners();
     } on AuthApiException catch (error) {
+      debugPrint(
+        'Auth: profile fetch failed (api) ${error.statusCode}: ${error.message}',
+      );
       if (error.statusCode == 401) {
         await _authRepository.clear();
         _tokens = null;
@@ -133,7 +136,16 @@ class SessionController extends ChangeNotifier {
         _status = SessionStatus.authenticated;
       }
       notifyListeners();
+    } on AuthRepositoryException catch (error) {
+      debugPrint('Auth: profile fetch failed (repo): ${error.message}');
+      _status = SessionStatus.authenticated;
+      notifyListeners();
     } on SocketException {
+      debugPrint('Auth: profile fetch failed (network)');
+      _status = SessionStatus.authenticated;
+      notifyListeners();
+    } catch (error) {
+      debugPrint('Auth: profile fetch failed (unknown): $error');
       _status = SessionStatus.authenticated;
       notifyListeners();
     }
@@ -151,6 +163,12 @@ class SessionController extends ChangeNotifier {
         rethrow;
       }
       return _authRepository.fetchProfile();
+    } on AuthRepositoryException catch (error) {
+      debugPrint('Auth: profile fetch failed (repo): ${error.message}');
+      rethrow;
+    } catch (error) {
+      debugPrint('Auth: profile fetch failed (unknown): $error');
+      rethrow;
     }
   }
 

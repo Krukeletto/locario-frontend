@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../shared/auth/auth_api.dart';
+import '../../shared/auth/auth_scope.dart';
+import '../../shared/services/feedback_service.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -19,6 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _emailError;
   String? _passwordError;
   bool _hasSubmitted = false;
+  bool _isSubmitting = false;
 
   static final RegExp _emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
   static final RegExp _usernameRegex = RegExp(r'^[a-zA-Z0-9._-]+$');
@@ -109,7 +115,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
+    if (_isSubmitting) {
+      return;
+    }
+
     if (!_hasSubmitted) {
       setState(() {
         _hasSubmitted = true;
@@ -122,6 +132,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     FocusScope.of(context).unfocus();
+
+    final sessionController = AuthScope.maybeOf(context);
+    if (sessionController == null) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      await sessionController.register(
+        email: _emailController.text.trim(),
+        username: _usernameController.text.trim(),
+        password: _passwordController.text,
+      );
+      if (!mounted) {
+        return;
+      }
+      FeedbackService.showSuccess(FeedbackMessage.loginSuccess);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showAuthError(error);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  void _showAuthError(Object error) {
+    if (error is SocketException) {
+      FeedbackService.showError(FeedbackMessage.networkError);
+      return;
+    }
+
+    if (error is AuthApiException && error.statusCode == 401) {
+      FeedbackService.showError(FeedbackMessage.loginInvalidCredentials);
+      return;
+    }
+
+    FeedbackService.showError(FeedbackMessage.unknownError);
   }
 
   @override

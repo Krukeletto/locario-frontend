@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 import '../config/api_config.dart';
 import 'auth_models.dart';
@@ -34,7 +35,10 @@ class AuthApi {
       body: jsonEncode(request.toJson()),
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      debugPrint(
+        'Auth: register failed (${response.statusCode}) ${response.body}',
+      );
       throw AuthApiException(
         'Register failed',
         statusCode: response.statusCode,
@@ -52,6 +56,9 @@ class AuthApi {
     );
 
     if (response.statusCode != 200) {
+      debugPrint(
+        'Auth: login failed (${response.statusCode}) ${response.body}',
+      );
       throw AuthApiException('Login failed', statusCode: response.statusCode);
     }
 
@@ -68,6 +75,9 @@ class AuthApi {
     );
 
     if (response.statusCode != 200) {
+      debugPrint(
+        'Auth: refresh failed (${response.statusCode}) ${response.body}',
+      );
       throw AuthApiException('Refresh failed', statusCode: response.statusCode);
     }
 
@@ -84,6 +94,9 @@ class AuthApi {
     );
 
     if (response.statusCode != 200) {
+      debugPrint(
+        'Auth: logout failed (${response.statusCode}) ${response.body}',
+      );
       throw AuthApiException('Logout failed', statusCode: response.statusCode);
     }
   }
@@ -98,6 +111,9 @@ class AuthApi {
     );
 
     if (response.statusCode != 200) {
+      debugPrint(
+        'Auth: profile failed (${response.statusCode}) ${response.body}',
+      );
       throw AuthApiException(
         'Fetch profile failed',
         statusCode: response.statusCode,
