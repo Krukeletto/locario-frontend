@@ -60,28 +60,18 @@ class RegisterRequest {
   final String password;
 
   Map<String, String> toJson() {
-    return {
-      'email': email,
-      'username': username,
-      'password': password,
-    };
+    return {'email': email, 'username': username, 'password': password};
   }
 }
 
 class LoginRequest {
-  const LoginRequest({
-    required this.email,
-    required this.password,
-  });
+  const LoginRequest({required this.email, required this.password});
 
   final String email;
   final String password;
 
   Map<String, String> toJson() {
-    return {
-      'email': email,
-      'password': password,
-    };
+    return {'email': email, 'password': password};
   }
 }
 
@@ -134,7 +124,8 @@ class UserProfile {
       websiteUrl: json['websiteUrl'] as String?,
       instagramUrl: json['instagramUrl'] as String?,
       facebookUrl: json['facebookUrl'] as String?,
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
       eventRegistrations: registrations is List
           ? List<dynamic>.from(registrations)
