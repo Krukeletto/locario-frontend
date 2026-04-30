@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../shared/auth/auth_scope.dart';
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -10,6 +12,8 @@ class ProfileScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final sessionController = AuthScope.of(context);
+    final isAuthenticated = sessionController.isAuthenticated;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -32,11 +36,21 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           _ProfileActionCard(
-            // do testów
-            icon: Icons.login_rounded,
-            title: 'Logowanie',
-            subtitle: 'Przejdź do ekranu logowania',
-            onTap: () => context.push('/auth/login'),
+            icon: isAuthenticated ? Icons.logout_rounded : Icons.login_rounded,
+            title: isAuthenticated ? 'Wyloguj' : 'Logowanie',
+            subtitle: isAuthenticated
+                ? 'Wyloguj się'
+                : 'Przejdź do ekranu logowania',
+            onTap: () {
+              if (sessionController.isBusy) {
+                return;
+              }
+              if (isAuthenticated) {
+                sessionController.logout();
+              } else {
+                context.push('/auth/login');
+              }
+            },
           ),
           const SizedBox(height: 14),
           _ProfileActionCard(

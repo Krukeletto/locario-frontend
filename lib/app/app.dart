@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
 import 'locale/locale_controller.dart';
@@ -37,6 +38,7 @@ class _LocarioAppState extends State<LocarioApp> {
   late final AuthRepository _authRepository;
   late final AuthStorage _authStorage;
   late final SessionController _sessionController;
+  late final GoRouter _router;
 
   @override
   void initState() {
@@ -47,6 +49,7 @@ class _LocarioAppState extends State<LocarioApp> {
     _authStorage = const AuthStorage();
     _authRepository = AuthRepository(api: _authApi, storage: _authStorage);
     _sessionController = SessionController(authRepository: _authRepository);
+    _router = createAppRouter(_sessionController);
     _localeController = LocaleController(settingsStore: _settingsStore);
     _themeController = ThemeController(settingsStore: _settingsStore);
     _categoryController = CategoryController(eventRepository: _eventRepository);
@@ -91,7 +94,7 @@ class _LocarioAppState extends State<LocarioApp> {
                   theme: buildLightAppTheme(),
                   darkTheme: buildDarkAppTheme(),
                   themeMode: _themeController.themeMode,
-                  routerConfig: appRouter,
+                  routerConfig: _router,
                   locale: _localeController.locale,
                   supportedLocales: AppLocalizations.supportedLocales,
                   localizationsDelegates: [
