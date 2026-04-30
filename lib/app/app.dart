@@ -19,7 +19,7 @@ import '../shared/auth/auth_api.dart';
 import '../shared/auth/auth_repository.dart';
 import '../shared/auth/auth_scope.dart';
 import '../shared/auth/session_controller.dart';
-import '../features/auth/auth_storage.dart';
+import '../shared/auth/auth_storage.dart';
 
 class LocarioApp extends StatefulWidget {
   const LocarioApp({super.key});

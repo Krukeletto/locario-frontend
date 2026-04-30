@@ -1,7 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../../shared/auth/auth_models.dart';
-import '../../shared/auth/auth_repository.dart';
+import 'auth_models.dart';
+import 'auth_repository.dart';
 
 class AuthStorage implements AuthTokenStorage {
   const AuthStorage({FlutterSecureStorage? secureStorage})
@@ -39,8 +39,7 @@ class AuthStorage implements AuthTokenStorage {
       return null;
     }
 
-    final expiresAt =
-        DateTime.tryParse(expiresAtRaw) ??
+    final expiresAt = DateTime.tryParse(expiresAtRaw) ??
         DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
 
     return AuthTokens(
