@@ -1,24 +1,9 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class AuthTokens {
-  const AuthTokens({
-    required this.accessToken,
-    required this.refreshToken,
-    required this.tokenType,
-    required this.expiresAt,
-  });
+import '../../shared/auth/auth_models.dart';
+import '../../shared/auth/auth_repository.dart';
 
-  final String accessToken;
-  final String refreshToken;
-  final String tokenType;
-  final DateTime expiresAt;
-
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
-
-  String get authorizationHeader => '$tokenType $accessToken';
-}
-
-class AuthStorage {
+class AuthStorage implements AuthTokenStorage {
   const AuthStorage({FlutterSecureStorage? secureStorage})
     : _storage = secureStorage ?? const FlutterSecureStorage();
 
@@ -29,6 +14,7 @@ class AuthStorage {
   static const _tokenTypeKey = 'auth.tokenType';
   static const _expiresAtKey = 'auth.expiresAt';
 
+  @override
   Future<void> saveTokens(AuthTokens tokens) async {
     await _storage.write(key: _accessTokenKey, value: tokens.accessToken);
     await _storage.write(key: _refreshTokenKey, value: tokens.refreshToken);
@@ -39,6 +25,7 @@ class AuthStorage {
     );
   }
 
+  @override
   Future<AuthTokens?> readTokens() async {
     final accessToken = await _storage.read(key: _accessTokenKey);
     final refreshToken = await _storage.read(key: _refreshTokenKey);
@@ -64,6 +51,7 @@ class AuthStorage {
     );
   }
 
+  @override
   Future<void> clear() async {
     await _storage.delete(key: _accessTokenKey);
     await _storage.delete(key: _refreshTokenKey);
