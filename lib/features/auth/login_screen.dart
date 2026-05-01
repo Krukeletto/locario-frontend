@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -10,10 +11,12 @@ import '../../shared/auth/auth_scope.dart';
 import '../../shared/config/api_config.dart';
 import '../../shared/services/feedback_service.dart';
 import 'widgets/google_logo_icon.dart';
-import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.returnLocation, this.targetLocation});
+
+  final String? returnLocation;
+  final String? targetLocation;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -37,6 +40,64 @@ class _LoginScreenState extends State<LoginScreen> {
   );
 
   AppLocalizations get _l10n => AppLocalizations.of(context)!;
+
+  String? get _returnLocation {
+    final returnLocation = widget.returnLocation?.trim();
+    if (returnLocation == null || returnLocation.isEmpty) {
+      return null;
+    }
+    return returnLocation;
+  }
+
+  String _buildRegisterLocation() {
+    final queryParameters = <String, String>{};
+    final returnLocation = _returnLocation;
+    final targetLocation = widget.targetLocation?.trim();
+
+    if (returnLocation != null) {
+      queryParameters['from'] = returnLocation;
+    }
+
+    if (targetLocation != null && targetLocation.isNotEmpty) {
+      queryParameters['target'] = targetLocation;
+    }
+
+    return Uri(
+      path: '/auth/register',
+      queryParameters: queryParameters.isEmpty ? null : queryParameters,
+    ).toString();
+  }
+
+  void _handleBackNavigation() {
+    final returnLocation = _returnLocation;
+    if (returnLocation != null) {
+      context.go(returnLocation);
+      return;
+    }
+
+    Navigator.of(context).maybePop();
+  }
+
+  void _handleAuthSuccess() {
+    final targetLocation = widget.targetLocation?.trim();
+    if (targetLocation != null && targetLocation.isNotEmpty) {
+      context.go(targetLocation);
+      return;
+    }
+
+    final returnLocation = _returnLocation;
+    if (returnLocation != null) {
+      context.go(returnLocation);
+      return;
+    }
+
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    context.go('/profile');
+  }
 
   @override
   void dispose() {
@@ -132,6 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       FeedbackService.showSuccess(FeedbackMessage.loginSuccess);
+      _handleAuthSuccess();
     } catch (error) {
       if (!mounted) {
         return;
@@ -160,6 +222,14 @@ class _LoginScreenState extends State<LoginScreen> {
     FeedbackService.showError(FeedbackMessage.unknownError);
   }
 
+  Future<void> _resetGoogleSignInSession() async {
+    try {
+      await _googleSignIn.signOut();
+    } catch (error) {
+      debugPrint('Auth: google sign out before sign-in failed: $error');
+    }
+  }
+
   Future<void> _handleGoogleSignIn() async {
     if (_isSubmitting) {
       return;
@@ -180,6 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
         throw const AuthApiException('Google Sign-In not configured');
       }
 
+      await _resetGoogleSignInSession();
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         return;
@@ -207,6 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       FeedbackService.showSuccess(FeedbackMessage.loginSuccess);
+      _handleAuthSuccess();
     } catch (error) {
       if (!mounted) {
         return;
@@ -240,130 +312,143 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final subtitleText = l10n.authSubtitle;
 
-    return Scaffold(
-      backgroundColor: pageBackground,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.topLeft,
-            radius: 0.92,
-            colors: [
-              isSystemDark
-                  ? const Color.fromARGB(74, 69, 180, 95)
-                  : const Color.fromARGB(60, 5, 239, 20),
-              isSystemDark
-                  ? const Color.fromARGB(0, 69, 180, 95)
-                  : const Color.fromARGB(0, 24, 201, 36),
-            ],
+    return PopScope(
+      canPop: _returnLocation == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _returnLocation != null) {
+          _handleBackNavigation();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: pageBackground,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment.topLeft,
+              radius: 0.92,
+              colors: [
+                isSystemDark
+                    ? const Color.fromARGB(74, 69, 180, 95)
+                    : const Color.fromARGB(60, 5, 239, 20),
+                isSystemDark
+                    ? const Color.fromARGB(0, 69, 180, 95)
+                    : const Color.fromARGB(0, 24, 201, 36),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 2, 20, 24),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 0, bottom: 6),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: scheme.surfaceContainerLow,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: scheme.outline.withValues(alpha: 0.18),
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 2, 20, 24),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 0, bottom: 6),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: scheme.surfaceContainerLow,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: scheme.outline.withValues(alpha: 0.18),
+                              ),
+                            ),
+                            child: IconButton(
+                              onPressed: _handleBackNavigation,
+                              icon: Icon(
+                                Icons.arrow_back_ios_new_rounded,
+                                color: scheme.primary,
+                                size: 18,
+                              ),
                             ),
                           ),
-                          child: IconButton(
-                            onPressed: () => Navigator.of(context).maybePop(),
-                            icon: Icon(
-                              Icons.arrow_back_ios_new_rounded,
+                        ),
+                        const SizedBox(height: 4),
+                        Center(
+                          child: Text(
+                            'Locario',
+                            style: theme.textTheme.displaySmall?.copyWith(
                               color: scheme.primary,
-                              size: 18,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 46,
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Center(
-                        child: Text(
-                          'Locario',
-                          style: theme.textTheme.displaySmall?.copyWith(
-                            color: scheme.primary,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 46,
+                        const SizedBox(height: 6),
+                        Center(
+                          child: Text(
+                            subtitleText,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              fontSize: 17,
+                              color: subtitleColor,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Center(
-                        child: Text(
-                          subtitleText,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            fontSize: 17,
-                            color: subtitleColor,
+                        const SizedBox(height: 24),
+                        _AuthCard(
+                          theme: theme,
+                          scheme: scheme,
+                          isSystemDark: isSystemDark,
+                          emailController: _emailController,
+                          passwordController: _passwordController,
+                          emailError: _emailError,
+                          passwordError: _passwordError,
+                          onEmailChanged: _handleEmailChanged,
+                          onPasswordChanged: _handlePasswordChanged,
+                          onSubmit: _handleSubmit,
+                          onGooglePressed: _handleGoogleSignIn,
+                          titleText: l10n.authLoginWelcome,
+                          googleButtonText: l10n.authGoogleContinue,
+                          dividerText: l10n.authDividerOr,
+                          emailLabel: l10n.authEmailLabel,
+                          emailHint: l10n.authEmailHint,
+                          passwordLabel: l10n.authPasswordLabel,
+                          passwordHint: l10n.authPasswordHint,
+                          submitText: l10n.authLoginSubmit,
+                          switchPromptText: l10n.authLoginNoAccount,
+                          switchActionText: l10n.authLoginCreateAccount,
+                          onSwitchActionPressed: () {
+                            context.push(_buildRegisterLocation());
+                          },
+                        ),
+                        const SizedBox(height: 22),
+                        Opacity(
+                          opacity: 0.58,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _FooterLink(
+                                label: l10n.authFooterTerms,
+                                textColor: footerTextColor,
+                                onTap: () {},
+                              ),
+                              const SizedBox(width: 18),
+                              _FooterLink(
+                                label: l10n.authFooterPrivacy,
+                                textColor: footerTextColor,
+                                onTap: () {},
+                              ),
+                              const SizedBox(width: 18),
+                              _FooterLink(
+                                label: l10n.authFooterHelp,
+                                textColor: footerTextColor,
+                                onTap: () {},
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      _AuthCard(
-                        theme: theme,
-                        scheme: scheme,
-                        isSystemDark: isSystemDark,
-                        emailController: _emailController,
-                        passwordController: _passwordController,
-                        emailError: _emailError,
-                        passwordError: _passwordError,
-                        onEmailChanged: _handleEmailChanged,
-                        onPasswordChanged: _handlePasswordChanged,
-                        onSubmit: _handleSubmit,
-                        onGooglePressed: _handleGoogleSignIn,
-                        titleText: l10n.authLoginWelcome,
-                        googleButtonText: l10n.authGoogleContinue,
-                        dividerText: l10n.authDividerOr,
-                        emailLabel: l10n.authEmailLabel,
-                        emailHint: l10n.authEmailHint,
-                        passwordLabel: l10n.authPasswordLabel,
-                        passwordHint: l10n.authPasswordHint,
-                        submitText: l10n.authLoginSubmit,
-                        switchPromptText: l10n.authLoginNoAccount,
-                        switchActionText: l10n.authLoginCreateAccount,
-                      ),
-                      const SizedBox(height: 22),
-                      Opacity(
-                        opacity: 0.58,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _FooterLink(
-                              label: l10n.authFooterTerms,
-                              textColor: footerTextColor,
-                              onTap: () {},
-                            ),
-                            const SizedBox(width: 18),
-                            _FooterLink(
-                              label: l10n.authFooterPrivacy,
-                              textColor: footerTextColor,
-                              onTap: () {},
-                            ),
-                            const SizedBox(width: 18),
-                            _FooterLink(
-                              label: l10n.authFooterHelp,
-                              textColor: footerTextColor,
-                              onTap: () {},
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -394,6 +479,7 @@ class _AuthCard extends StatelessWidget {
     required this.submitText,
     required this.switchPromptText,
     required this.switchActionText,
+    required this.onSwitchActionPressed,
   });
 
   final ThemeData theme;
@@ -417,6 +503,7 @@ class _AuthCard extends StatelessWidget {
   final String submitText;
   final String switchPromptText;
   final String switchActionText;
+  final VoidCallback onSwitchActionPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -562,11 +649,7 @@ class _AuthCard extends StatelessWidget {
           ),
           Center(
             child: TextButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                );
-              },
+              onPressed: onSwitchActionPressed,
               child: Text(
                 switchActionText,
                 style: theme.textTheme.titleLarge?.copyWith(

@@ -316,6 +316,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get profileAuthLogoutSubtitle => 'Zakończ aktualną sesję';
 
   @override
+  String get profileInboxSubtitle => 'Otwórz wiadomości i powiadomienia';
+
+  @override
   String get settingsTitle => 'Ustawienia';
 
   @override

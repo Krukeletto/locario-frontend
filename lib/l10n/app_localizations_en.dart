@@ -315,6 +315,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileAuthLogoutSubtitle => 'End the current session';
 
   @override
+  String get profileInboxSubtitle => 'Open your messages and notifications';
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override

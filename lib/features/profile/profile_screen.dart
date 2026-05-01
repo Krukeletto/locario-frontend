@@ -55,16 +55,29 @@ class ProfileScreen extends StatelessWidget {
                   FeedbackService.showSuccess(FeedbackMessage.logoutSuccess);
                 });
               } else {
-                context.push('/auth/login');
+                context.push(
+                  '/auth/login?from=${Uri.encodeComponent('/profile')}&target=${Uri.encodeComponent('/profile')}',
+                );
               }
             },
           ),
           const SizedBox(height: 14),
           _ProfileActionCard(
-            icon: Icons.bookmark_rounded,
-            title: l10n.savedTitle,
-            subtitle: l10n.savedSubtitle,
-            onTap: () => context.push('/profile/saved'),
+            icon: Icons.notifications_rounded,
+            title: l10n.tabInbox,
+            subtitle: l10n.profileInboxSubtitle,
+            onTap: () {
+              if (sessionController.isBusy) {
+                return;
+              }
+              if (isAuthenticated) {
+                context.push('/inbox');
+              } else {
+                context.push(
+                  '/auth/login?from=${Uri.encodeComponent('/profile')}&target=${Uri.encodeComponent('/inbox')}',
+                );
+              }
+            },
           ),
           const SizedBox(height: 14),
           _ProfileActionCard(

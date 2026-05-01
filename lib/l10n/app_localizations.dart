@@ -656,6 +656,12 @@ abstract class AppLocalizations {
   /// **'End the current session'**
   String get profileAuthLogoutSubtitle;
 
+  /// No description provided for @profileInboxSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open your messages and notifications'**
+  String get profileInboxSubtitle;
+
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:

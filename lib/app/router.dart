@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/auth/login_screen.dart';
+import '../features/auth/register_screen.dart';
 import '../features/events/event_screen.dart';
 import '../features/hub/create_event/create_event_screen.dart';
 import '../features/explore/explore_screen.dart';
@@ -47,7 +48,12 @@ String? normalizeIncomingLocation(Uri uri) {
   if (uri.scheme.isEmpty &&
       uri.host.isEmpty &&
       pathSegments.length == 1 &&
-      !const {'explore', 'inbox', 'profile'}.contains(pathSegments.first) &&
+      !const {
+        'explore',
+        'saved',
+        'inbox',
+        'profile',
+      }.contains(pathSegments.first) &&
       _uuidLikePattern.hasMatch(pathSegments.first)) {
     return '/events/${pathSegments.first}';
   }
@@ -77,13 +83,17 @@ final List<HubActionItem> hubActionItems = [
 bool _requiresAuth(String location) {
   return location.startsWith('/hub/create-event') ||
       location.startsWith('/hub/friends') ||
+      location.startsWith('/saved') ||
       location.startsWith('/inbox') ||
       location.startsWith('/profile/saved');
 }
 
-String _loginRedirect(Uri uri) {
+String _loginRedirect(Uri uri, {String? targetLocation}) {
   final from = Uri.encodeComponent(uri.toString());
-  return '/auth/login?from=$from';
+  final target = targetLocation == null || targetLocation.isEmpty
+      ? ''
+      : '&target=${Uri.encodeComponent(targetLocation)}';
+  return '/auth/login?from=$from$target';
 }
 
 GoRouter createAppRouter(SessionController sessionController) {
@@ -104,8 +114,15 @@ GoRouter createAppRouter(SessionController sessionController) {
       final location = state.uri.path;
       final isAuthed = sessionController.isAuthenticated;
 
+      if (isAuthed &&
+          (location == '/auth/login' || location == '/auth/register')) {
+        return state.uri.queryParameters['target'] ??
+            state.uri.queryParameters['from'] ??
+            '/profile';
+      }
+
       if (!isAuthed && _requiresAuth(location)) {
-        return _loginRedirect(state.uri);
+        return _loginRedirect(state.uri, targetLocation: state.uri.path);
       }
 
       return null;
@@ -143,9 +160,9 @@ GoRouter createAppRouter(SessionController sessionController) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/inbox',
+                path: '/saved',
                 pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: InboxScreen()),
+                    const NoTransitionPage(child: SavedScreen()),
               ),
             ],
           ),
@@ -187,6 +204,12 @@ GoRouter createAppRouter(SessionController sessionController) {
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
+        path: '/inbox',
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: InboxScreen()),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
         path: '/events/:eventId',
         pageBuilder: (context, state) => NoTransitionPage(
           child: EventScreen(eventId: state.pathParameters['eventId']),
@@ -196,8 +219,23 @@ GoRouter createAppRouter(SessionController sessionController) {
         // do testów
         parentNavigatorKey: _rootNavigatorKey,
         path: '/auth/login',
-        pageBuilder: (context, state) =>
-            const NoTransitionPage(child: LoginScreen()),
+        pageBuilder: (context, state) => NoTransitionPage(
+          child: LoginScreen(
+            returnLocation: state.uri.queryParameters['from'],
+            targetLocation: state.uri.queryParameters['target'],
+          ),
+        ),
+      ),
+      GoRoute(
+        // do testów
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/auth/register',
+        pageBuilder: (context, state) => NoTransitionPage(
+          child: RegisterScreen(
+            returnLocation: state.uri.queryParameters['from'],
+            targetLocation: state.uri.queryParameters['target'],
+          ),
+        ),
       ),
     ],
   );

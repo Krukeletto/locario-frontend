@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -10,10 +11,12 @@ import '../../shared/auth/auth_scope.dart';
 import '../../shared/config/api_config.dart';
 import '../../shared/services/feedback_service.dart';
 import 'widgets/google_logo_icon.dart';
-import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  const RegisterScreen({super.key, this.returnLocation, this.targetLocation});
+
+  final String? returnLocation;
+  final String? targetLocation;
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -40,6 +43,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
   );
 
   AppLocalizations get _l10n => AppLocalizations.of(context)!;
+
+  String? get _returnLocation {
+    final returnLocation = widget.returnLocation?.trim();
+    if (returnLocation == null || returnLocation.isEmpty) {
+      return null;
+    }
+    return returnLocation;
+  }
+
+  void _handleBackNavigation() {
+    Navigator.of(context).maybePop();
+  }
+
+  void _handleAuthSuccess() {
+    final targetLocation = widget.targetLocation?.trim();
+    if (targetLocation != null && targetLocation.isNotEmpty) {
+      context.go(targetLocation);
+      return;
+    }
+
+    final returnLocation = _returnLocation;
+    if (returnLocation != null) {
+      context.go(returnLocation);
+      return;
+    }
+
+    context.go('/profile');
+  }
 
   @override
   void dispose() {
@@ -162,6 +193,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
       FeedbackService.showSuccess(FeedbackMessage.loginSuccess);
+      _handleAuthSuccess();
     } catch (error) {
       if (!mounted) {
         return;
@@ -237,6 +269,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
       FeedbackService.showSuccess(FeedbackMessage.loginSuccess);
+      _handleAuthSuccess();
     } catch (error) {
       if (!mounted) {
         return;
@@ -308,7 +341,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ),
                           child: IconButton(
-                            onPressed: () => Navigator.of(context).maybePop(),
+                            onPressed: _handleBackNavigation,
                             icon: Icon(
                               Icons.arrow_back_ios_new_rounded,
                               color: scheme.primary,
@@ -619,9 +652,7 @@ class _AuthCard extends StatelessWidget {
           Center(
             child: TextButton(
               onPressed: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
+                Navigator.of(context).maybePop();
               },
               child: Text(
                 switchActionText,
