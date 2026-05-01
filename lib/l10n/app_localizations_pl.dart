@@ -18,6 +18,91 @@ class AppLocalizationsPl extends AppLocalizations {
   String get localePolish => 'Polski';
 
   @override
+  String get authSubtitle => 'Odkryj lokalne perełki w Twojej okolicy';
+
+  @override
+  String get authGoogleContinue => 'Kontynuuj przez Google';
+
+  @override
+  String get authDividerOr => 'LUB';
+
+  @override
+  String get authEmailLabel => 'E-MAIL';
+
+  @override
+  String get authEmailHint => 'twoj@email.pl';
+
+  @override
+  String get authPasswordLabel => 'HASŁO';
+
+  @override
+  String get authPasswordHint => '********';
+
+  @override
+  String get authFooterTerms => 'REGULAMIN';
+
+  @override
+  String get authFooterPrivacy => 'PRYWATNOŚĆ';
+
+  @override
+  String get authFooterHelp => 'POMOC';
+
+  @override
+  String get authLoginWelcome => 'Witaj ponownie';
+
+  @override
+  String get authLoginSubmit => 'Zaloguj się';
+
+  @override
+  String get authLoginNoAccount => 'Nie masz jeszcze konta?';
+
+  @override
+  String get authLoginCreateAccount => 'Utwórz darmowe konto';
+
+  @override
+  String get authLogoutSuccess => 'Wylogowano pomyślnie.';
+
+  @override
+  String get authRegisterWelcome => 'Witaj';
+
+  @override
+  String get authRegisterUsernameLabel => 'NAZWA UŻYTKOWNIKA';
+
+  @override
+  String get authRegisterUsernameHint => 'twoja nazwa uzytkownika';
+
+  @override
+  String get authRegisterSubmit => 'Zarejestruj się';
+
+  @override
+  String get authRegisterHasAccount => 'Masz już konto?';
+
+  @override
+  String get authRegisterSignIn => 'Zaloguj się na konto';
+
+  @override
+  String get authValidationUsernameRequired => 'Podaj nazwę użytkownika';
+
+  @override
+  String get authValidationUsernameMin3 =>
+      'Nazwa użytkownika musi mieć min. 3 znaki';
+
+  @override
+  String get authValidationUsernameAllowed => 'Dozwolone: litery, cyfry, . _ -';
+
+  @override
+  String get authValidationEmailRequired => 'Podaj adres e-mail';
+
+  @override
+  String get authValidationEmailInvalid => 'Podaj poprawny adres e-mail';
+
+  @override
+  String get authValidationPasswordRequired => 'Podaj hasło';
+
+  @override
+  String get authValidationPasswordMin8 => 'Hasło musi mieć min. 8 znaków';
+
+  @override
   String get tabExplore => 'Odkrywaj';
 
   @override
@@ -107,15 +192,16 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String hubCreateEventSelectedPhotosCount(int count) {
-    return intl.Intl.pluralLogic(
+    String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      zero: 'Brak zdjęć',
-      one: '1 wybrane zdjęcie',
-      few: '$count wybrane zdjęcia',
-      many: '$count wybranych zdjęć',
       other: '$count wybranego zdjęcia',
+      many: '$count wybranych zdjęć',
+      few: '$count wybrane zdjęcia',
+      one: '1 wybrane zdjęcie',
+      zero: 'Brak zdjęć',
     );
+    return '$_temp0';
   }
 
   @override
@@ -218,6 +304,21 @@ class AppLocalizationsPl extends AppLocalizations {
       'Konto, preferencje i zapisane miejsca w jednej spokojniejszej sekcji.';
 
   @override
+  String get profileAuthLoginTitle => 'Logowanie';
+
+  @override
+  String get profileAuthLoginSubtitle => 'Przejdź do ekranu logowania';
+
+  @override
+  String get profileAuthLogoutTitle => 'Wyloguj';
+
+  @override
+  String get profileAuthLogoutSubtitle => 'Zakończ aktualną sesję';
+
+  @override
+  String get profileInboxSubtitle => 'Otwórz wiadomości i powiadomienia';
+
+  @override
   String get settingsTitle => 'Ustawienia';
 
   @override
@@ -300,8 +401,8 @@ class AppLocalizationsPl extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count wyniku',
-      few: '$count wyniki',
       many: '$count wyników',
+      few: '$count wyniki',
       one: '1 wynik',
       zero: '0 wyników',
     );

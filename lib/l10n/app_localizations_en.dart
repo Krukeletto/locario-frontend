@@ -18,6 +18,93 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localePolish => 'Polish';
 
   @override
+  String get authSubtitle => 'Discover local gems in your area';
+
+  @override
+  String get authGoogleContinue => 'Continue with Google';
+
+  @override
+  String get authDividerOr => 'OR';
+
+  @override
+  String get authEmailLabel => 'EMAIL';
+
+  @override
+  String get authEmailHint => 'your@email.com';
+
+  @override
+  String get authPasswordLabel => 'PASSWORD';
+
+  @override
+  String get authPasswordHint => '********';
+
+  @override
+  String get authFooterTerms => 'TERMS';
+
+  @override
+  String get authFooterPrivacy => 'PRIVACY';
+
+  @override
+  String get authFooterHelp => 'HELP';
+
+  @override
+  String get authLoginWelcome => 'Welcome back';
+
+  @override
+  String get authLoginSubmit => 'Sign in';
+
+  @override
+  String get authLoginNoAccount => 'Don\'t have an account yet?';
+
+  @override
+  String get authLoginCreateAccount => 'Create a free account';
+
+  @override
+  String get authLogoutSuccess => 'Signed out successfully.';
+
+  @override
+  String get authRegisterWelcome => 'Welcome';
+
+  @override
+  String get authRegisterUsernameLabel => 'USERNAME';
+
+  @override
+  String get authRegisterUsernameHint => 'your_username';
+
+  @override
+  String get authRegisterSubmit => 'Sign up';
+
+  @override
+  String get authRegisterHasAccount => 'Already have an account?';
+
+  @override
+  String get authRegisterSignIn => 'Sign in to your account';
+
+  @override
+  String get authValidationUsernameRequired => 'Enter username';
+
+  @override
+  String get authValidationUsernameMin3 =>
+      'Username must be at least 3 characters';
+
+  @override
+  String get authValidationUsernameAllowed =>
+      'Allowed: letters, numbers, . _ -';
+
+  @override
+  String get authValidationEmailRequired => 'Enter email address';
+
+  @override
+  String get authValidationEmailInvalid => 'Enter a valid email address';
+
+  @override
+  String get authValidationPasswordRequired => 'Enter password';
+
+  @override
+  String get authValidationPasswordMin8 =>
+      'Password must be at least 8 characters';
+
+  @override
   String get tabExplore => 'Explore';
 
   @override
@@ -105,13 +192,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String hubCreateEventSelectedPhotosCount(int count) {
-    return intl.Intl.pluralLogic(
+    String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      zero: 'No photos selected',
-      one: '1 photo selected',
       other: '$count photos selected',
+      one: '1 photo selected',
+      zero: 'No photos selected',
     );
+    return '$_temp0';
   }
 
   @override
@@ -213,6 +301,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileDescription =>
       'Account, preferences and your saved places in one calmer section.';
+
+  @override
+  String get profileAuthLoginTitle => 'Sign in';
+
+  @override
+  String get profileAuthLoginSubtitle => 'Go to the login screen';
+
+  @override
+  String get profileAuthLogoutTitle => 'Sign out';
+
+  @override
+  String get profileAuthLogoutSubtitle => 'End the current session';
+
+  @override
+  String get profileInboxSubtitle => 'Open your messages and notifications';
 
   @override
   String get settingsTitle => 'Settings';

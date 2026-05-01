@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
 import 'locale/locale_controller.dart';
@@ -14,6 +15,11 @@ import '../shared/services/l10n_service.dart';
 import '../shared/events/event_repository.dart';
 import '../shared/events/category_controller.dart';
 import '../shared/events/category_scope.dart';
+import '../shared/auth/auth_api.dart';
+import '../shared/auth/auth_repository.dart';
+import '../shared/auth/auth_scope.dart';
+import '../shared/auth/session_controller.dart';
+import '../shared/auth/auth_storage.dart';
 
 class LocarioApp extends StatefulWidget {
   const LocarioApp({super.key});
@@ -28,12 +34,22 @@ class _LocarioAppState extends State<LocarioApp> {
   late final CategoryController _categoryController;
   late final AppSettingsStore _settingsStore;
   late final EventRepository _eventRepository;
+  late final AuthApi _authApi;
+  late final AuthRepository _authRepository;
+  late final AuthStorage _authStorage;
+  late final SessionController _sessionController;
+  late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
     _settingsStore = const SharedPreferencesAppSettingsStore();
     _eventRepository = HttpEventRepository();
+    _authApi = AuthApi();
+    _authStorage = const AuthStorage();
+    _authRepository = AuthRepository(api: _authApi, storage: _authStorage);
+    _sessionController = SessionController(authRepository: _authRepository);
+    _router = createAppRouter(_sessionController);
     _localeController = LocaleController(settingsStore: _settingsStore);
     _themeController = ThemeController(settingsStore: _settingsStore);
     _categoryController = CategoryController(eventRepository: _eventRepository);
@@ -41,6 +57,7 @@ class _LocarioAppState extends State<LocarioApp> {
     _localeController.load();
     _themeController.load();
     _categoryController.loadCategories();
+    _sessionController.load();
   }
 
   @override
@@ -48,6 +65,7 @@ class _LocarioAppState extends State<LocarioApp> {
     _localeController.dispose();
     _themeController.dispose();
     _categoryController.dispose();
+    _sessionController.dispose();
     super.dispose();
   }
 
@@ -55,57 +73,60 @@ class _LocarioAppState extends State<LocarioApp> {
   Widget build(BuildContext context) {
     return CategoryScope(
       controller: _categoryController,
-      child: LocaleScope(
-        controller: _localeController,
-        child: ThemeScope(
-          controller: _themeController,
-          child: AnimatedBuilder(
-            animation: Listenable.merge([
-              _localeController,
-              _themeController,
-              _categoryController,
-            ]),
-            builder: (context, _) {
-              return MaterialApp.router(
-                scaffoldMessengerKey: rootScaffoldMessengerKey,
-                onGenerateTitle: (context) =>
-                    AppLocalizations.of(context)!.appTitle,
-                debugShowCheckedModeBanner: false,
-                theme: buildLightAppTheme(),
-                darkTheme: buildDarkAppTheme(),
-                themeMode: _themeController.themeMode,
-                routerConfig: appRouter,
-                locale: _localeController.locale,
-                supportedLocales: AppLocalizations.supportedLocales,
-                localizationsDelegates: [
-                  AppLocalizations.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                builder: (context, child) {
-                  // Initialize the L10nService so it can be used without BuildContext.
-                  final l10n = AppLocalizations.of(context);
-                  if (l10n != null) {
-                    L10nService.update(l10n);
-                  }
-                  return child!;
-                },
-                localeResolutionCallback: (locale, supportedLocales) {
-                  if (locale == null) {
-                    return const Locale('pl');
-                  }
-
-                  for (final supportedLocale in supportedLocales) {
-                    if (supportedLocale.languageCode == locale.languageCode) {
-                      return supportedLocale;
+      child: AuthScope(
+        controller: _sessionController,
+        child: LocaleScope(
+          controller: _localeController,
+          child: ThemeScope(
+            controller: _themeController,
+            child: AnimatedBuilder(
+              animation: Listenable.merge([
+                _localeController,
+                _themeController,
+                _categoryController,
+              ]),
+              builder: (context, _) {
+                return MaterialApp.router(
+                  scaffoldMessengerKey: rootScaffoldMessengerKey,
+                  onGenerateTitle: (context) =>
+                      AppLocalizations.of(context)!.appTitle,
+                  debugShowCheckedModeBanner: false,
+                  theme: buildLightAppTheme(),
+                  darkTheme: buildDarkAppTheme(),
+                  themeMode: _themeController.themeMode,
+                  routerConfig: _router,
+                  locale: _localeController.locale,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  localizationsDelegates: [
+                    AppLocalizations.delegate,
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                  ],
+                  builder: (context, child) {
+                    // Initialize the L10nService so it can be used without BuildContext.
+                    final l10n = AppLocalizations.of(context);
+                    if (l10n != null) {
+                      L10nService.update(l10n);
                     }
-                  }
+                    return child!;
+                  },
+                  localeResolutionCallback: (locale, supportedLocales) {
+                    if (locale == null) {
+                      return const Locale('pl');
+                    }
 
-                  return const Locale('pl');
-                },
-              );
-            },
+                    for (final supportedLocale in supportedLocales) {
+                      if (supportedLocale.languageCode == locale.languageCode) {
+                        return supportedLocale;
+                      }
+                    }
+
+                    return const Locale('pl');
+                  },
+                );
+              },
+            ),
           ),
         ),
       ),

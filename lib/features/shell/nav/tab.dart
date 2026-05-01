@@ -7,10 +7,10 @@ enum ShellTab {
     selectedIcon: Icons.explore,
     routePath: '/explore',
   ),
-  inbox(
-    icon: Icons.notifications_none_rounded,
-    selectedIcon: Icons.notifications_rounded,
-    routePath: '/inbox',
+  saved(
+    icon: Icons.bookmark_outline_rounded,
+    selectedIcon: Icons.bookmark_rounded,
+    routePath: '/saved',
   ),
   profile(
     icon: Icons.person_outline_rounded,
@@ -31,7 +31,7 @@ enum ShellTab {
   String label(AppLocalizations l10n) {
     return switch (this) {
       ShellTab.explore => l10n.tabExplore,
-      ShellTab.inbox => l10n.tabInbox,
+      ShellTab.saved => l10n.savedTitle,
       ShellTab.profile => l10n.tabProfile,
     };
   }

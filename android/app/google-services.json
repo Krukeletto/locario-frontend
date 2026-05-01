@@ -12,7 +12,20 @@
           "package_name": "com.example.locario"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "931853293854-5uldleah5qnh2of5pgd1dnurclka35gm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.locario",
+            "certificate_hash": "e58d512e27d7b9d991f9e6db02a6c7be84e33a54"
+          }
+        },
+        {
+          "client_id": "931853293854-q32l0nkenfifmkf3saj3c3tjsj36hd7j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDIjolWJUNisFnunNXEgoe5Xo1K-8TV_kA"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "931853293854-q32l0nkenfifmkf3saj3c3tjsj36hd7j.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "931853293854-0u86l9p9fmvg0j2f117obkctu247hq8g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.locario"
+              }
+            }
+          ]
         }
       }
     }

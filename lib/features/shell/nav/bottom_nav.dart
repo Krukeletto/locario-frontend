@@ -17,7 +17,7 @@ class ShellBottomNav extends StatelessWidget {
   final ValueChanged<ShellTab> onTabSelected;
   final VoidCallback onHubToggle;
 
-  // Navigation bar with 4 items: Explore, Inbox, Hub and Profile.
+  // Navigation bar with 4 items: Explore, Saved, Hub and Profile.
   @override
   Widget build(BuildContext context) {
     final safeBottom = MediaQuery.paddingOf(context).bottom;
@@ -62,7 +62,7 @@ class ShellBottomNav extends StatelessWidget {
               ),
               Expanded(
                 child: _NavItem(
-                  tab: ShellTab.inbox,
+                  tab: ShellTab.saved,
                   activeTab: activeTab,
                   hubOpen: hubOpen,
                   onTap: onTabSelected,

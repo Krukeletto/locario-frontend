@@ -116,6 +116,174 @@ abstract class AppLocalizations {
   /// **'Polish'**
   String get localePolish;
 
+  /// No description provided for @authSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover local gems in your area'**
+  String get authSubtitle;
+
+  /// No description provided for @authGoogleContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get authGoogleContinue;
+
+  /// No description provided for @authDividerOr.
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get authDividerOr;
+
+  /// No description provided for @authEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'EMAIL'**
+  String get authEmailLabel;
+
+  /// No description provided for @authEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'your@email.com'**
+  String get authEmailHint;
+
+  /// No description provided for @authPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PASSWORD'**
+  String get authPasswordLabel;
+
+  /// No description provided for @authPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'********'**
+  String get authPasswordHint;
+
+  /// No description provided for @authFooterTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'TERMS'**
+  String get authFooterTerms;
+
+  /// No description provided for @authFooterPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'PRIVACY'**
+  String get authFooterPrivacy;
+
+  /// No description provided for @authFooterHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'HELP'**
+  String get authFooterHelp;
+
+  /// No description provided for @authLoginWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get authLoginWelcome;
+
+  /// No description provided for @authLoginSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get authLoginSubmit;
+
+  /// No description provided for @authLoginNoAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account yet?'**
+  String get authLoginNoAccount;
+
+  /// No description provided for @authLoginCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a free account'**
+  String get authLoginCreateAccount;
+
+  /// No description provided for @authLogoutSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed out successfully.'**
+  String get authLogoutSuccess;
+
+  /// No description provided for @authRegisterWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome'**
+  String get authRegisterWelcome;
+
+  /// No description provided for @authRegisterUsernameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'USERNAME'**
+  String get authRegisterUsernameLabel;
+
+  /// No description provided for @authRegisterUsernameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'your_username'**
+  String get authRegisterUsernameHint;
+
+  /// No description provided for @authRegisterSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up'**
+  String get authRegisterSubmit;
+
+  /// No description provided for @authRegisterHasAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get authRegisterHasAccount;
+
+  /// No description provided for @authRegisterSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to your account'**
+  String get authRegisterSignIn;
+
+  /// No description provided for @authValidationUsernameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter username'**
+  String get authValidationUsernameRequired;
+
+  /// No description provided for @authValidationUsernameMin3.
+  ///
+  /// In en, this message translates to:
+  /// **'Username must be at least 3 characters'**
+  String get authValidationUsernameMin3;
+
+  /// No description provided for @authValidationUsernameAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed: letters, numbers, . _ -'**
+  String get authValidationUsernameAllowed;
+
+  /// No description provided for @authValidationEmailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter email address'**
+  String get authValidationEmailRequired;
+
+  /// No description provided for @authValidationEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address'**
+  String get authValidationEmailInvalid;
+
+  /// No description provided for @authValidationPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter password'**
+  String get authValidationPasswordRequired;
+
+  /// No description provided for @authValidationPasswordMin8.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get authValidationPasswordMin8;
+
   /// No description provided for @tabExplore.
   ///
   /// In en, this message translates to:
@@ -463,6 +631,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account, preferences and your saved places in one calmer section.'**
   String get profileDescription;
+
+  /// No description provided for @profileAuthLoginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get profileAuthLoginTitle;
+
+  /// No description provided for @profileAuthLoginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the login screen'**
+  String get profileAuthLoginSubtitle;
+
+  /// No description provided for @profileAuthLogoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get profileAuthLogoutTitle;
+
+  /// No description provided for @profileAuthLogoutSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'End the current session'**
+  String get profileAuthLogoutSubtitle;
+
+  /// No description provided for @profileInboxSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open your messages and notifications'**
+  String get profileInboxSubtitle;
 
   /// No description provided for @settingsTitle.
   ///
