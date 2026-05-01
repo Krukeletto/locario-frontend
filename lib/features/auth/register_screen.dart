@@ -1,10 +1,15 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:locario/l10n/app_localizations.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../shared/auth/auth_api.dart';
 import '../../shared/auth/auth_scope.dart';
+import '../../shared/config/api_config.dart';
 import '../../shared/services/feedback_service.dart';
 import 'login_screen.dart';
 
@@ -28,6 +33,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   static final RegExp _emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
   static final RegExp _usernameRegex = RegExp(r'^[a-zA-Z0-9._-]+$');
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId: ApiConfig.googleWebClientId.isEmpty
+        ? null
+        : ApiConfig.googleWebClientId,
+    scopes: ['email', 'profile'],
+  );
 
   AppLocalizations get _l10n => AppLocalizations.of(context)!;
 
@@ -180,6 +191,67 @@ class _RegisterScreenState extends State<RegisterScreen> {
     FeedbackService.showError(FeedbackMessage.unknownError);
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    if (_isSubmitting) {
+      return;
+    }
+
+    final sessionController = AuthScope.maybeOf(context);
+    if (sessionController == null) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      if (ApiConfig.googleWebClientId.isEmpty) {
+        debugPrint('Auth: missing Google web client ID configuration.');
+        throw const AuthApiException('Google Sign-In not configured');
+      }
+
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        return;
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+      if (idToken == null || idToken.isEmpty) {
+        throw const AuthApiException('Google Sign-In missing idToken');
+      }
+
+      // Exchange Google credential for Firebase ID token and send that to backend
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
+
+      final userCred = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+      final firebaseIdToken = await userCred.user!.getIdToken();
+
+      await sessionController.loginWithGoogle(idToken: firebaseIdToken!);
+      if (!mounted) {
+        return;
+      }
+      FeedbackService.showSuccess(FeedbackMessage.loginSuccess);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showAuthError(error);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -283,6 +355,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onEmailChanged: _handleEmailChanged,
                         onPasswordChanged: _handlePasswordChanged,
                         onSubmit: _handleSubmit,
+                        onGooglePressed: _handleGoogleSignIn,
                         titleText: l10n.authRegisterWelcome,
                         googleButtonText: l10n.authGoogleContinue,
                         dividerText: l10n.authDividerOr,
@@ -349,6 +422,7 @@ class _AuthCard extends StatelessWidget {
     required this.onEmailChanged,
     required this.onPasswordChanged,
     required this.onSubmit,
+    required this.onGooglePressed,
     required this.titleText,
     required this.googleButtonText,
     required this.dividerText,
@@ -376,6 +450,7 @@ class _AuthCard extends StatelessWidget {
   final ValueChanged<String> onEmailChanged;
   final ValueChanged<String> onPasswordChanged;
   final VoidCallback onSubmit;
+  final VoidCallback onGooglePressed;
   final String titleText;
   final String googleButtonText;
   final String dividerText;
@@ -427,7 +502,7 @@ class _AuthCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: onGooglePressed,
               style: OutlinedButton.styleFrom(
                 foregroundColor: isSystemDark ? Colors.white : scheme.onSurface,
                 side: BorderSide(

@@ -70,6 +70,23 @@ class SessionController extends ChangeNotifier {
     }
   }
 
+  Future<void> loginWithGoogle({required String idToken}) async {
+    if (_isBusy) {
+      return;
+    }
+    _setBusy(true);
+    try {
+      await _authRepository.loginWithGoogle(idToken: idToken);
+      _tokens = await _authRepository.readTokens();
+      _status = _tokens == null
+          ? SessionStatus.unauthenticated
+          : SessionStatus.authenticated;
+      await _loadProfile();
+    } finally {
+      _setBusy(false);
+    }
+  }
+
   Future<void> register({
     required String email,
     required String username,

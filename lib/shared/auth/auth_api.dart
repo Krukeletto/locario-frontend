@@ -84,6 +84,26 @@ class AuthApi {
     return _decodeAuthResponse(response.body);
   }
 
+  Future<AuthResponse> loginWithGoogle(String idToken) async {
+    final response = await _client.post(
+      _uri('/api/auth/oauth2/google'),
+      headers: _jsonHeaders,
+      body: jsonEncode(GoogleOAuthRequest(idToken: idToken).toJson()),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      debugPrint(
+        'Auth: google login failed (${response.statusCode}) ${response.body}',
+      );
+      throw AuthApiException(
+        'Google login failed',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return _decodeAuthResponse(response.body);
+  }
+
   Future<void> logout({
     required String accessToken,
     String tokenType = 'Bearer',

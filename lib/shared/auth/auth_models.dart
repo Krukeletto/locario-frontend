@@ -85,6 +85,16 @@ class RefreshTokenRequest {
   }
 }
 
+class GoogleOAuthRequest {
+  const GoogleOAuthRequest({required this.idToken});
+
+  final String idToken;
+
+  Map<String, String> toJson() {
+    return {'idToken': idToken};
+  }
+}
+
 class UserProfile {
   const UserProfile({
     required this.id,

@@ -54,6 +54,12 @@ class AuthRepository {
     return response;
   }
 
+  Future<AuthResponse> loginWithGoogle({required String idToken}) async {
+    final response = await _api.loginWithGoogle(idToken);
+    await _storage.saveTokens(_tokensFromResponse(response));
+    return response;
+  }
+
   Future<AuthTokens?> refresh() async {
     final tokens = await _storage.readTokens();
     if (tokens == null) {
