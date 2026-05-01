@@ -9,6 +9,7 @@ import '../../shared/auth/auth_api.dart';
 import '../../shared/auth/auth_scope.dart';
 import '../../shared/config/api_config.dart';
 import '../../shared/services/feedback_service.dart';
+import 'widgets/google_logo_icon.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -468,7 +469,7 @@ class _AuthCard extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              icon: const Icon(Icons.account_circle_outlined),
+              icon: const GoogleLogoIcon(),
               label: Text(googleButtonText),
             ),
           ),
