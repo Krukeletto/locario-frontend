@@ -39,7 +39,8 @@ class AuthStorage implements AuthTokenStorage {
       return null;
     }
 
-    final expiresAt = DateTime.tryParse(expiresAtRaw) ??
+    final expiresAt =
+        DateTime.tryParse(expiresAtRaw) ??
         DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
 
     return AuthTokens(

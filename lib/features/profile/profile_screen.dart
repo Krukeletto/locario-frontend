@@ -3,6 +3,7 @@ import 'package:locario/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../shared/auth/auth_scope.dart';
+import '../../shared/services/feedback_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -14,6 +15,12 @@ class ProfileScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final sessionController = AuthScope.of(context);
     final isAuthenticated = sessionController.isAuthenticated;
+    final authTitle = isAuthenticated
+        ? l10n.profileAuthLogoutTitle
+        : l10n.profileAuthLoginTitle;
+    final authSubtitle = isAuthenticated
+        ? l10n.profileAuthLogoutSubtitle
+        : l10n.profileAuthLoginSubtitle;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -37,16 +44,16 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 24),
           _ProfileActionCard(
             icon: isAuthenticated ? Icons.logout_rounded : Icons.login_rounded,
-            title: isAuthenticated ? 'Wyloguj' : 'Logowanie',
-            subtitle: isAuthenticated
-                ? 'Wyloguj się'
-                : 'Przejdź do ekranu logowania',
+            title: authTitle,
+            subtitle: authSubtitle,
             onTap: () {
               if (sessionController.isBusy) {
                 return;
               }
               if (isAuthenticated) {
-                sessionController.logout();
+                sessionController.logout().then((_) {
+                  FeedbackService.showSuccess(FeedbackMessage.logoutSuccess);
+                });
               } else {
                 context.push('/auth/login');
               }

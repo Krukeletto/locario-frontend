@@ -197,6 +197,12 @@ abstract class AppLocalizations {
   /// **'Create a free account'**
   String get authLoginCreateAccount;
 
+  /// No description provided for @authLogoutSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed out successfully.'**
+  String get authLogoutSuccess;
+
   /// No description provided for @authRegisterWelcome.
   ///
   /// In en, this message translates to:
@@ -622,6 +628,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account, preferences and your saved places in one calmer section.'**
   String get profileDescription;
+
+  /// No description provided for @profileAuthLoginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get profileAuthLoginTitle;
+
+  /// No description provided for @profileAuthLoginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the login screen'**
+  String get profileAuthLoginSubtitle;
+
+  /// No description provided for @profileAuthLogoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get profileAuthLogoutTitle;
+
+  /// No description provided for @profileAuthLogoutSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'End the current session'**
+  String get profileAuthLogoutSubtitle;
 
   /// No description provided for @settingsTitle.
   ///

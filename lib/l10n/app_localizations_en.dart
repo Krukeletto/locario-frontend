@@ -60,6 +60,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authLoginCreateAccount => 'Create a free account';
 
   @override
+  String get authLogoutSuccess => 'Signed out successfully.';
+
+  @override
   String get authRegisterWelcome => 'Welcome';
 
   @override
@@ -280,6 +283,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileDescription => 'Account, preferences and your saved places in one calmer section.';
+
+  @override
+  String get profileAuthLoginTitle => 'Sign in';
+
+  @override
+  String get profileAuthLoginSubtitle => 'Go to the login screen';
+
+  @override
+  String get profileAuthLogoutTitle => 'Sign out';
+
+  @override
+  String get profileAuthLogoutSubtitle => 'End the current session';
 
   @override
   String get settingsTitle => 'Settings';

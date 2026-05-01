@@ -60,6 +60,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get authLoginCreateAccount => 'Utwórz darmowe konto';
 
   @override
+  String get authLogoutSuccess => 'Wylogowano pomyślnie.';
+
+  @override
   String get authRegisterWelcome => 'Witaj';
 
   @override
@@ -282,6 +285,18 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get profileDescription => 'Konto, preferencje i zapisane miejsca w jednej spokojniejszej sekcji.';
+
+  @override
+  String get profileAuthLoginTitle => 'Logowanie';
+
+  @override
+  String get profileAuthLoginSubtitle => 'Przejdź do ekranu logowania';
+
+  @override
+  String get profileAuthLogoutTitle => 'Wyloguj';
+
+  @override
+  String get profileAuthLogoutSubtitle => 'Zakończ aktualną sesję';
 
   @override
   String get settingsTitle => 'Ustawienia';

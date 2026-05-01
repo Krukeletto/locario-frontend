@@ -4,6 +4,7 @@ import 'l10n_service.dart';
 
 enum FeedbackMessage {
   loginSuccess,
+  logoutSuccess,
   loginInvalidCredentials,
   networkError,
   eventCreated,
@@ -82,6 +83,7 @@ class FeedbackService {
   ) {
     return switch (message) {
       FeedbackMessage.loginSuccess => l10n.authLoginSuccess,
+      FeedbackMessage.logoutSuccess => l10n.authLogoutSuccess,
       FeedbackMessage.loginInvalidCredentials =>
         l10n.authLoginErrorInvalidCredentials,
       FeedbackMessage.networkError => l10n.networkError,
