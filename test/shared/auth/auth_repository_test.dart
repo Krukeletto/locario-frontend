@@ -203,7 +203,7 @@ void main() {
   test('fetchProfile throws when no tokens', () async {
     final storage = MemoryAuthStorage();
     final repository = AuthRepository(
-      api: FakeAuthApi(onFetchProfile: (_, __) async => _profile()),
+      api: FakeAuthApi(onFetchProfile: (_, _) async => _profile()),
       storage: storage,
     );
 
