@@ -8,11 +8,17 @@ class EventDetailsInfo extends StatelessWidget {
     super.key,
     required this.event,
     required this.overlap,
+    required this.onShowOnMapPressed,
+    required this.onSavePressed,
+    required this.isSaved,
     required this.onJoinPressed,
   });
 
   final ExploreEvent event;
   final double overlap;
+  final VoidCallback onShowOnMapPressed;
+  final VoidCallback onSavePressed;
+  final bool isSaved;
   final VoidCallback onJoinPressed;
 
   String _formatDate(DateTime date) {
@@ -110,6 +116,37 @@ class EventDetailsInfo extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 18),
+            FilledButton.icon(
+              onPressed: onShowOnMapPressed,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(double.infinity, 48),
+                backgroundColor: scheme.secondaryContainer,
+                foregroundColor: scheme.onSecondaryContainer,
+                textStyle: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              icon: const Icon(Icons.map_outlined, size: 20),
+              label: Text(l10n.eventDetailsShowOnMapButton),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: onSavePressed,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 48),
+                textStyle: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              icon: Icon(
+                isSaved ? Icons.bookmark_rounded : Icons.bookmark_add_outlined,
+                size: 20,
+              ),
+              label: Text(
+                isSaved ? l10n.savedRemoveAction : l10n.savedSaveAction,
+              ),
+            ),
+            const SizedBox(height: 10),
             FilledButton(
               onPressed: onJoinPressed,
               style: FilledButton.styleFrom(

@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locario/features/explore/models.dart';
 import 'package:locario/features/events/event_screen.dart';
+import 'package:locario/features/saved/saved_events_controller.dart';
+import 'package:locario/features/saved/saved_events_repository.dart';
+import 'package:locario/features/saved/saved_events_scope.dart';
 import 'package:locario/shared/events/event_repository.dart';
 
 import '../../test_helpers/fake_event_repository.dart';
@@ -12,11 +15,18 @@ import '../../test_helpers/test_app.dart';
 void main() {
   group('EventScreen', () {
     testWidgets('renders info cards for loaded event', (tester) async {
+      final controller = SavedEventsController(
+        repository: _MemorySavedEventsRepository(),
+      );
+
       await tester.pumpWidget(
         buildLocalizedTestApp(
-          home: EventScreen(
-            eventId: '11111111-1111-1111-1111-111111111111',
-            eventRepository: FakeEventRepository(),
+          home: SavedEventsScope(
+            controller: controller,
+            child: EventScreen(
+              eventId: '11111111-1111-1111-1111-111111111111',
+              eventRepository: FakeEventRepository(),
+            ),
           ),
         ),
       );
@@ -25,7 +35,10 @@ void main() {
 
       expect(find.text('Jazz Evening'), findsOneWidget);
       expect(find.text('Piotrkowska 10, Lodz'), findsOneWidget);
-      expect(find.byType(FilledButton), findsOneWidget);
+      expect(find.text('Show on map'), findsOneWidget);
+      expect(find.text('Save event'), findsOneWidget);
+      expect(find.byTooltip('Save event'), findsOneWidget);
+      expect(find.byType(FilledButton), findsNWidgets(2));
     });
 
     testWidgets('shows loading state before fetch completes', (tester) async {
@@ -78,4 +91,21 @@ class _PendingEventRepository extends FakeEventRepository {
       _completer.complete(eventDetails);
     }
   }
+}
+
+class _MemorySavedEventsRepository implements SavedEventsRepository {
+  @override
+  Future<List<SavedEventRecord>> loadSavedEvents() async => const [];
+
+  @override
+  Future<void> upsertSavedEvent(SavedEventRecord record) async {}
+
+  @override
+  Future<void> removeSavedEvent(String eventId) async {}
+
+  @override
+  Future<void> replaceSavedEvents(List<SavedEventRecord> records) async {}
+
+  @override
+  Future<void> clear() async {}
 }
