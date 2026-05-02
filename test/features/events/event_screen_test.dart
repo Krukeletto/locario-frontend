@@ -37,7 +37,6 @@ void main() {
       expect(find.text('Piotrkowska 10, Lodz'), findsOneWidget);
       expect(find.text('Show on map'), findsOneWidget);
       expect(find.text('Save event'), findsOneWidget);
-      expect(find.byTooltip('Save event'), findsOneWidget);
       expect(find.byType(FilledButton), findsNWidgets(2));
     });
 

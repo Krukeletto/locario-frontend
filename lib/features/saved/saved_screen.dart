@@ -154,6 +154,7 @@ class _SavedScreenState extends State<SavedScreen> {
     return Scaffold(
       backgroundColor: scheme.surface,
       body: SafeArea(
+        top: false,
         child: AnimatedBuilder(
           animation: controller,
           builder: (context, _) {
@@ -170,7 +171,7 @@ class _SavedScreenState extends State<SavedScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -192,7 +193,7 @@ class _SavedScreenState extends State<SavedScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                   child: _SavedToolbar(
                     resultsCount: visibleRecords.length,
                     activeFiltersCount: _filters.activeFiltersCount,

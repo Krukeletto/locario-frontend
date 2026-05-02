@@ -194,20 +194,6 @@ class _EventScreenState extends State<EventScreen> {
         actions: [
           if (_event != null)
             IconButton(
-              tooltip: savedController?.isSaved(_event!.id) == true
-                  ? l10n.savedRemoveActionTooltip
-                  : l10n.savedSaveActionTooltip,
-              icon: Icon(
-                savedController?.isSaved(_event!.id) == true
-                    ? Icons.bookmark_rounded
-                    : Icons.bookmark_add_outlined,
-                size: 20,
-                color: scheme.primary,
-              ),
-              onPressed: () => _toggleSaved(_event!),
-            ),
-          if (_event != null)
-            IconButton(
               icon: Icon(Icons.share_rounded, size: 20, color: scheme.primary),
               onPressed: () => _shareEvent(_event!),
             ),
