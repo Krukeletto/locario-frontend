@@ -389,11 +389,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         retryLabel: l10n.exploreRetryButton,
         onRetry: () => _exploreController.loadEvents(forceRefresh: true),
       ),
-      ExploreEmpty() => _buildMainUI(
-        const [],
-        effectiveView,
-        showEmptyResultsMessage: true,
-      ),
+      ExploreEmpty() => _buildMainUI(const [], effectiveView),
       ExploreData(events: var events) => _buildMainUI(events, effectiveView),
       ExploreDataLoading(previous: var previous) => _buildMainUI(
         previous,
@@ -404,9 +400,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget _buildMainUI(
     List<ExploreEvent> events,
-    ExploreContentView currentView, {
-    bool showEmptyResultsMessage = false,
-  }) {
+    ExploreContentView currentView,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     final referenceLocation =
         _exploreController.referenceLocation ?? const LatLng(0, 0);
@@ -458,44 +453,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         _markCurrentAreaAsSearched(force: true);
                         _exploreController.loadEvents(forceRefresh: true);
                       },
-                    ),
-                  ),
-                ),
-              if (showEmptyResultsMessage)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surface.withValues(alpha: 0.92),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outline.withValues(alpha: 0.14),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
-                                blurRadius: 18,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: StatePanel.empty(
-                              title: l10n.exploreEmptyTitle,
-                              subtitle: l10n.exploreEmptySubtitle,
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ),

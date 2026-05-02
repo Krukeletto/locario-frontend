@@ -88,7 +88,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(MapWidget), findsOneWidget);
-      expect(find.text('No events found'), findsOneWidget);
+      expect(find.text('No events found'), findsNothing);
     });
 
     testWidgets('does not show empty notice in list view', (tester) async {
