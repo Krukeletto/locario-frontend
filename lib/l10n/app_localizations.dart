@@ -617,6 +617,12 @@ abstract class AppLocalizations {
   /// **'Your network'**
   String get hubFriendsSubtitle;
 
+  /// No description provided for @featureComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'This section is still being built.'**
+  String get featureComingSoon;
+
   /// No description provided for @profileTitle.
   ///
   /// In en, this message translates to:

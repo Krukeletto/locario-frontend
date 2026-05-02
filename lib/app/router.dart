@@ -72,11 +72,13 @@ final List<HubActionItem> hubActionItems = [
     id: 'community',
     icon: 'groups',
     routePath: '/hub/community',
+    isEnabled: false,
   ),
   const HubActionItem(
     id: 'friends',
     icon: 'person_add',
     routePath: '/hub/friends',
+    isEnabled: false,
   ),
 ];
 

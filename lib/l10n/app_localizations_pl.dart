@@ -281,6 +281,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubFriendsSubtitle => 'Twoja sieć';
 
   @override
+  String get featureComingSoon => 'Ta sekcja jest jeszcze w przygotowaniu.';
+
+  @override
   String get profileTitle => 'Profil';
 
   @override

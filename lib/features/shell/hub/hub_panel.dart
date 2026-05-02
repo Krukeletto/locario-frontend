@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../../shared/services/feedback_service.dart';
 import 'hub_action_item.dart';
 
 class HubPanel extends StatelessWidget {
@@ -77,7 +78,11 @@ class HubPanel extends StatelessWidget {
                     item: item,
                     l10n: l10n,
                     backgroundColor: tileBackground,
-                    onTap: () => onItemSelected(item),
+                    onTap: item.isEnabled
+                        ? () => onItemSelected(item)
+                        : () => FeedbackService.showInfo(
+                            FeedbackMessage.featureComingSoon,
+                          ),
                   );
                 },
               ),
@@ -197,6 +202,16 @@ class _SecondaryActionTile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final accent = item.accent ?? scheme.secondary;
     final isAccent = item.accent != null;
+    final isEnabled = item.isEnabled;
+    final titleColor = isEnabled
+        ? accent
+        : scheme.onSurface.withValues(alpha: 0.45);
+    final subtitleColor = isEnabled
+        ? accent.withValues(alpha: 0.92)
+        : scheme.onSurface.withValues(alpha: 0.38);
+    final iconColor = isEnabled
+        ? accent
+        : scheme.onSurface.withValues(alpha: 0.35);
 
     return InkWell(
       onTap: onTap,
@@ -208,58 +223,66 @@ class _SecondaryActionTile extends StatelessWidget {
           color: backgroundColor,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: isAccent
-                ? accent.withValues(alpha: 0.28)
-                : scheme.outline.withValues(alpha: 0.4),
+            color: isEnabled
+                ? isAccent
+                      ? accent.withValues(alpha: 0.28)
+                      : scheme.outline.withValues(alpha: 0.4)
+                : scheme.outline.withValues(alpha: 0.18),
           ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(
-                alpha: Theme.of(context).brightness == Brightness.dark
-                    ? 0.18
-                    : 0.03,
+                alpha: isEnabled
+                    ? Theme.of(context).brightness == Brightness.dark
+                          ? 0.18
+                          : 0.03
+                    : 0.0,
               ),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(item.iconData, color: accent, size: 24),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.only(right: 8, bottom: 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    item.title(l10n),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: accent,
-                      fontWeight: FontWeight.w700,
-                      height: 1.05,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 180),
+          opacity: isEnabled ? 1 : 0.58,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(item.iconData, color: iconColor, size: 24),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.only(right: 8, bottom: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      item.title(l10n),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: titleColor,
+                        fontWeight: FontWeight.w700,
+                        height: 1.05,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.subtitle(l10n).toUpperCase(),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: accent.withValues(alpha: 0.92),
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.35,
+                    const SizedBox(height: 4),
+                    Text(
+                      item.subtitle(l10n).toUpperCase(),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: subtitleColor,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.35,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
