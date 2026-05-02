@@ -1,0 +1,121 @@
+{
+  "@@locale": "pl",
+  "exploreSearchHint": "Szukaj wydarzeń...",
+  "exploreNearbyEvents": "Wydarzenia w pobliżu",
+  "exploreNearbyWithFilter": "{filter} w pobliżu",
+  "@exploreNearbyWithFilter": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreLoadingTitle": "Ładowanie wydarzeń",
+  "exploreLoadingSubtitle": "Pobieramy najnowsze wydarzenia z backendu.",
+  "exploreErrorTitle": "Wydarzenia są niedostępne",
+  "exploreErrorSubtitle": "Nie udało się teraz pobrać wydarzeń.",
+  "exploreEmptyTitle": "Brak wydarzeń",
+  "exploreEmptySubtitle": "Spróbuj zmienić obszar albo wróć później.",
+  "exploreRetryButton": "Spróbuj ponownie",
+  "exploreErrorPermissionTitle": "Wymagany dostęp do lokalizacji",
+  "exploreErrorPermissionSubtitle": "Zezwól na dostęp do lokalizacji, aby zobaczyć wydarzenia w pobliżu.",
+  "exploreErrorUnknownTitle": "Coś poszło nie tak",
+  "exploreErrorUnknownSubtitle": "Wystąpił nieoczekiwany błąd.",
+  "exploreSearchThisArea": "Przeszukaj ten obszar",
+  "resultsCount": "{count,plural, =0{0 wyników} =1{1 wynik} few{{count} wyniki} many{{count} wyników} other{{count} wyniku}}",
+  "@resultsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sortTooltip": "Sortowanie",
+  "sortDistance": "Odległość",
+  "sortSoonest": "Najbliższy termin",
+  "sortTrending": "Popularność",
+  "distanceFilterTooltip": "Zasięg listy",
+  "distanceFilterAny": "Wszędzie",
+  "distanceFilterWithinKm": "Do {km} km",
+  "@distanceFilterWithinKm": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAll": "Wszystkie",
+  "filterMusic": "Muzyka",
+  "filterArt": "Sztuka",
+  "filterWorkshops": "Warsztaty",
+  "filterFood": "Jedzenie",
+  "filterAdvancedFilters": "Filtry zaawansowane",
+  "filterAdvancedDistance": "Zasięg wyszukiwania",
+  "filterAdvancedDateRange": "Data wydarzenia",
+  "filterAdvancedAge": "Wiek (lata)",
+  "filterAdvancedType": "Typ wydarzenia",
+  "filterAdvancedSource": "Źródło wydarzenia",
+  "filterAdvancedApply": "Pokaż wyniki",
+  "filterAdvancedClear": "Wyczyść",
+  "filterAdvancedDateFrom": "Od",
+  "filterAdvancedDateTo": "Do",
+  "filterAdvancedDateAny": "Dowolna data",
+  "filterAdvancedDateToday": "Dziś",
+  "filterAdvancedDateTomorrow": "Jutro",
+  "filterAdvancedDateCustomRange": "Zakres dat",
+  "filterAdvancedDateOther": "Inna data",
+  "filterAdvancedDateSelection": "Wybrana data",
+  "filterAdvancedAgeFrom": "Min",
+  "filterAdvancedAgeTo": "Max",
+  "filterAdvancedAgeSelection": "Wiek uczestnika",
+  "filterAdvancedAgeCustomRange": "Przedział wieku",
+  "filterAdvancedAgeOther": "Inny wiek",
+  "filterAdvancedAgeRangeSummary": "{from}–{to} lat",
+  "@filterAdvancedAgeRangeSummary": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "areaMyLocation": "Moja lokalizacja",
+  "areaMyLocationDescription": "Domyślnie wydarzenia najbliżej Ciebie",
+  "areaTypedAddressDescription": "Adres wpisany ręcznie",
+  "areaPinnedOnMap": "Punkt na mapie",
+  "areaPickerTitle": "Wybierz obszar",
+  "areaPickerSubtitle": "Możesz wpisać adres, wskazać punkt na mapie albo wrócić do bieżącej lokalizacji.",
+  "areaUseCurrentLocation": "Moja lokalizacja",
+  "areaUseCurrentLocationSubtitle": "Użyj Twojej aktualnej pozycji jako punktu odniesienia",
+  "areaEnterAddress": "Wpisz adres",
+  "areaEnterAddressSubtitle": "Podaj ulicę, dzielnicę albo konkretne miejsce",
+  "areaPickOnMap": "Wskaż na mapie",
+  "areaPickOnMapTitle": "Wskaż punkt na mapie",
+  "areaPickOnMapSubtitle": "Przesuń mapę tak, aby wybrany punkt był pod znacznikiem na środku.",
+  "areaPickOnMapConfirm": "Użyj tego punktu",
+  "areaAddressDialogTitle": "Wpisz adres",
+  "areaAddressDialogHint": "Np. Stary Rynek 12, Poznań",
+  "areaAddressNotFound": "Nie udało się znaleźć tego adresu.",
+  "areaAddressLookupFailed": "Nie udało się wyszukać adresu. Spróbuj ponownie.",
+  "areaDialogCancel": "Anuluj",
+  "areaDialogConfirm": "Gotowe",
+  "areaPinnedCoordinates": "{lat}, {lon}",
+  "@areaPinnedCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "areaWarsawCenter": "Centrum Warszawy",
+  "areaWarsawCenterDescription": "Adres lub pin ustawiony ręcznie",
+  "areaPowisle": "Powiśle",
+  "areaPowisleDescription": "Okolice bulwarów i mostu Poniatowskiego",
+  "areaMokotow": "Mokotów",
+  "areaMokotowDescription": "Rejon Pole Mokotowskie i okolice"
+}

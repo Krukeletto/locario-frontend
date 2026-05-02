@@ -1,0 +1,71 @@
+{
+  "@@locale": "en",
+  "eventJazzTitle": "Jazz in the Botanical Garden",
+  "eventSketchingTitle": "Night sketching by the Vistula",
+  "eventRunClubTitle": "Morning run club and coffee stop",
+  "eventStreetFoodTitle": "Street food and vinyl market",
+  "eventDetailsScreenTitle": "Details",
+  "eventDetailsImagePlaceholder": "Temporary image placeholder",
+  "eventDetailsTitleLabel": "Event title",
+  "eventDetailsLocationLabel": "Location",
+  "eventDetailsDateLabel": "Date",
+  "eventDetailsTimeLabel": "Time",
+  "eventDetailsPriceLabel": "Price",
+  "eventDetailsSeatsLabel": "Seats",
+  "eventDetailsAboutLabel": "About the event",
+  "eventDetailsOrganizerLabel": "Organizer",
+  "eventDetailsChatLabel": "Participants chat",
+  "eventDetailsBuyTicketButton": "Buy ticket",
+  "eventDetailsJoinButton": "Join",
+  "eventDetailsUnknownEventTitle": "Event",
+  "eventDetailsUnknownLocation": "Location unknown",
+  "eventDetailsFallbackDescription": "This is a temporary event description. In the next steps we will connect full data from the create event form and backend.",
+  "eventDetailsLoadingTitle": "Loading event",
+  "eventDetailsLoadingSubtitle": "We are fetching the event details from the backend.",
+  "eventDetailsErrorTitle": "Event unavailable",
+  "eventDetailsErrorSubtitle": "We could not load this event right now.",
+  "eventDetailsJazzDescription": "An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.",
+  "eventDetailsSketchingDescription": "A meetup for people who enjoy sketching and urban illustration. Bring your own materials.",
+  "eventDetailsRunClubDescription": "A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.",
+  "eventDetailsStreetFoodDescription": "Street food, curated vinyl records and mini DJ sets. An all-day event.",
+  "eventDetailsTicketLabel": "Tickets",
+  "eventDetailsSlotsLabel": "Seat limit",
+  "eventDetailsSlotsValue": "{count} seats available",
+  "@eventDetailsSlotsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventDetailsShowOnMapButton": "Show on map",
+  "eventDetailsOpenMapError": "We could not open the map app right now.",
+  "eventToday2030": "Today, 20:30",
+  "eventToday1900": "Today, 19:00",
+  "eventTomorrow0800": "Tomorrow, 08:00",
+  "eventTomorrow1200": "Tomorrow, 12:00",
+  "eventSaveSuccess": "Event saved to your list.",
+  "eventRemoveSuccess": "Event removed from your list.",
+  "eventPublishSuccess": "Event published successfully.",
+  "eventPublishError": "Failed to publish event. Try again.",
+  "venueBotanicalGarden": "Botanical Garden",
+  "venueVistulaBoulevards": "Vistula Boulevards",
+  "venuePoleMokotowskie": "Pole Mokotowskie",
+  "venueHalaKoszyki": "Hala Koszyki",
+  "distanceMeters": "{count} m",
+  "@distanceMeters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "distanceKilometers": "{count} km",
+  "@distanceKilometers": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  }
+}

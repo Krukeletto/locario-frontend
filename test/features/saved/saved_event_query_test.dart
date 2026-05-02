@@ -72,16 +72,8 @@ void main() {
     test('falls back to recent when distance has no reference location', () {
       final query = SavedEventQuery();
       final records = [
-        _record(
-          '1',
-          title: 'Older',
-          savedAt: DateTime.utc(2026, 5, 1, 12),
-        ),
-        _record(
-          '2',
-          title: 'Newer',
-          savedAt: DateTime.utc(2026, 5, 1, 13),
-        ),
+        _record('1', title: 'Older', savedAt: DateTime.utc(2026, 5, 1, 12)),
+        _record('2', title: 'Newer', savedAt: DateTime.utc(2026, 5, 1, 13)),
       ];
 
       final visible = query.visibleRecords(

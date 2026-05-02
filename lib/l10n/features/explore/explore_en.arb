@@ -1,0 +1,121 @@
+{
+  "@@locale": "en",
+  "exploreSearchHint": "Search events...",
+  "exploreNearbyEvents": "Nearby events",
+  "exploreNearbyWithFilter": "{filter} nearby",
+  "@exploreNearbyWithFilter": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreLoadingTitle": "Loading events",
+  "exploreLoadingSubtitle": "We are fetching the latest events from the backend.",
+  "exploreErrorTitle": "Events unavailable",
+  "exploreErrorSubtitle": "We could not load events right now.",
+  "exploreEmptyTitle": "No events found",
+  "exploreEmptySubtitle": "Try a different area or come back later.",
+  "exploreRetryButton": "Retry",
+  "exploreErrorPermissionTitle": "Location permission required",
+  "exploreErrorPermissionSubtitle": "Please allow location access to see events nearby.",
+  "exploreErrorUnknownTitle": "Something went wrong",
+  "exploreErrorUnknownSubtitle": "We encountered an unexpected error.",
+  "exploreSearchThisArea": "Search this area",
+  "resultsCount": "{count,plural, =0{0 results} =1{1 result} other{{count} results}}",
+  "@resultsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sortTooltip": "Sort",
+  "sortDistance": "Distance",
+  "sortSoonest": "Soonest",
+  "sortTrending": "Trending",
+  "distanceFilterTooltip": "List range",
+  "distanceFilterAny": "Anywhere",
+  "distanceFilterWithinKm": "Within {km} km",
+  "@distanceFilterWithinKm": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAll": "All",
+  "filterMusic": "Music",
+  "filterArt": "Art",
+  "filterWorkshops": "Workshops",
+  "filterFood": "Food",
+  "filterAdvancedFilters": "Advanced Filters",
+  "filterAdvancedDistance": "Search Range",
+  "filterAdvancedDateRange": "Event Date",
+  "filterAdvancedAge": "Age (years)",
+  "filterAdvancedType": "Event Type",
+  "filterAdvancedSource": "Event Source",
+  "filterAdvancedApply": "Show Results",
+  "filterAdvancedClear": "Clear",
+  "filterAdvancedDateFrom": "From",
+  "filterAdvancedDateTo": "To",
+  "filterAdvancedDateAny": "Any date",
+  "filterAdvancedDateToday": "Today",
+  "filterAdvancedDateTomorrow": "Tomorrow",
+  "filterAdvancedDateCustomRange": "Date range",
+  "filterAdvancedDateOther": "Other date",
+  "filterAdvancedDateSelection": "Selected date",
+  "filterAdvancedAgeFrom": "Min",
+  "filterAdvancedAgeTo": "Max",
+  "filterAdvancedAgeSelection": "Participant age",
+  "filterAdvancedAgeCustomRange": "Age range",
+  "filterAdvancedAgeOther": "Other age",
+  "filterAdvancedAgeRangeSummary": "{from}-{to} years",
+  "@filterAdvancedAgeRangeSummary": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "areaMyLocation": "My location",
+  "areaMyLocationDescription": "Events closest to you by default",
+  "areaTypedAddressDescription": "Address entered manually",
+  "areaPinnedOnMap": "Pinned on map",
+  "areaPickerTitle": "Choose area",
+  "areaPickerSubtitle": "You can type an address, point to a spot on the map or go back to your current location.",
+  "areaUseCurrentLocation": "My location",
+  "areaUseCurrentLocationSubtitle": "Use your current position as the reference point",
+  "areaEnterAddress": "Enter address",
+  "areaEnterAddressSubtitle": "Type a street, district or exact place",
+  "areaPickOnMap": "Pick on map",
+  "areaPickOnMapTitle": "Pick a point on the map",
+  "areaPickOnMapSubtitle": "Move the map so the chosen point sits under the center marker.",
+  "areaPickOnMapConfirm": "Use this point",
+  "areaAddressDialogTitle": "Enter address",
+  "areaAddressDialogHint": "For example 12 Old Town Sq, Poznan",
+  "areaAddressNotFound": "We couldn't find that address.",
+  "areaAddressLookupFailed": "Address lookup failed. Try again.",
+  "areaDialogCancel": "Cancel",
+  "areaDialogConfirm": "Done",
+  "areaPinnedCoordinates": "{lat}, {lon}",
+  "@areaPinnedCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "areaWarsawCenter": "Warsaw center",
+  "areaWarsawCenterDescription": "Address or pin set manually",
+  "areaPowisle": "Powisle",
+  "areaPowisleDescription": "Boulevards and Poniatowski bridge area",
+  "areaMokotow": "Mokotow",
+  "areaMokotowDescription": "Pole Mokotowskie area and nearby"
+}

@@ -1,0 +1,43 @@
+{
+  "@@locale": "pl",
+  "tabExplore": "Odkrywaj",
+  "tabInbox": "Skrzynka",
+  "tabHub": "Hub",
+  "tabProfile": "Profil",
+  "headerMap": "Mapa",
+  "headerList": "Lista",
+  "mapReturnToLocation": "Wróć do mojej lokalizacji",
+  "mapStyleLoadFailed": "Nie udało się wczytać lokalnego stylu mapy.\n{error}",
+  "@mapStyleLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "mapRetry": "Ponów",
+  "mapAppSettings": "Ustawienia aplikacji",
+  "mapLocationSettings": "Ustawienia lokalizacji",
+  "mapServiceDisabled": "Włącz usługi lokalizacji, aby zobaczyć swoją pozycję.",
+  "mapPermissionDenied": "Pozwól na dostęp do lokalizacji, aby wycentrować mapę na Tobie.",
+  "mapPermissionDeniedForever": "Dostęp do lokalizacji jest zablokowany w ustawieniach systemu.",
+  "mapUnableDetermineLocation": "Nie udało się ustalić Twojej lokalizacji.",
+  "mapLocationTimeout": "Żądanie lokalizacji przekroczyło limit czasu. Spróbuj ponownie.",
+  "mapUnableLoadLocation": "Nie udało się wczytać Twojej lokalizacji.",
+  "mapClusterSheetTitle": "Wybierz wydarzenie ({count})",
+  "@mapClusterSheetTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEventOpenSoon": "Ekran wydarzenia „{title}" dodamy później.",
+  "@mapEventOpenSoon": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
+}

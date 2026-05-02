@@ -1,0 +1,71 @@
+{
+  "@@locale": "pl",
+  "eventJazzTitle": "Jazz w Ogrodzie Botanicznym",
+  "eventSketchingTitle": "Noc szkicowania nad Wisłą",
+  "eventRunClubTitle": "Poranny run club i coffee stop",
+  "eventStreetFoodTitle": "Street food i vinyl market",
+  "eventDetailsScreenTitle": "Szczegóły",
+  "eventDetailsImagePlaceholder": "Tymczasowy placeholder zdjęcia",
+  "eventDetailsTitleLabel": "Tytuł wydarzenia",
+  "eventDetailsLocationLabel": "Lokalizacja",
+  "eventDetailsDateLabel": "Data",
+  "eventDetailsTimeLabel": "Godzina",
+  "eventDetailsPriceLabel": "Cena",
+  "eventDetailsSeatsLabel": "Liczba miejsc",
+  "eventDetailsAboutLabel": "O wydarzeniu",
+  "eventDetailsOrganizerLabel": "Organizator",
+  "eventDetailsChatLabel": "Czat uczestników",
+  "eventDetailsBuyTicketButton": "Kup bilet",
+  "eventDetailsJoinButton": "Zapisz się",
+  "eventDetailsUnknownEventTitle": "Wydarzenie",
+  "eventDetailsUnknownLocation": "Lokalizacja nieznana",
+  "eventDetailsFallbackDescription": "To tymczasowy opis wydarzenia. W kolejnych krokach podepniemy pełne dane z formularza tworzenia wydarzenia i backendu.",
+  "eventDetailsLoadingTitle": "Ładowanie wydarzenia",
+  "eventDetailsLoadingSubtitle": "Pobieramy szczegóły wydarzenia z backendu.",
+  "eventDetailsErrorTitle": "Wydarzenie jest niedostępne",
+  "eventDetailsErrorSubtitle": "Nie udało się teraz wczytać tego wydarzenia.",
+  "eventDetailsJazzDescription": "Wieczorny koncert jazzowy pod otwartym niebem. Zabierz znajomych, koc i dobry humor.",
+  "eventDetailsSketchingDescription": "Spotkanie dla osób lubiących szkicowanie i ilustracje miejskie. Materiały we własnym zakresie.",
+  "eventDetailsRunClubDescription": "Lekki poranny bieg, potem wspólna kawa i networking. Tempo konwersacyjne, każdy mile widziany.",
+  "eventDetailsStreetFoodDescription": "Street food, selekcja płyt winylowych i mini sety DJ-skie. Wydarzenie całodzienne.",
+  "eventDetailsTicketLabel": "Bilety",
+  "eventDetailsSlotsLabel": "Limit miejsc",
+  "eventDetailsSlotsValue": "{count} wolnych miejsc",
+  "@eventDetailsSlotsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventDetailsShowOnMapButton": "Pokaż na mapie",
+  "eventDetailsOpenMapError": "Nie udało się teraz otworzyć aplikacji map.",
+  "eventToday2030": "Dziś, 20:30",
+  "eventToday1900": "Dziś, 19:00",
+  "eventTomorrow0800": "Jutro, 08:00",
+  "eventTomorrow1200": "Jutro, 12:00",
+  "eventSaveSuccess": "Wydarzenie zapisano na Twojej liście.",
+  "eventRemoveSuccess": "Wydarzenie usunięto z Twojej listy.",
+  "eventPublishSuccess": "Wydarzenie zostało opublikowane.",
+  "eventPublishError": "Nie udało się opublikować wydarzenia. Spróbuj ponownie.",
+  "venueBotanicalGarden": "Ogród Botaniczny",
+  "venueVistulaBoulevards": "Bulwary Wiślane",
+  "venuePoleMokotowskie": "Pole Mokotowskie",
+  "venueHalaKoszyki": "Hala Koszyki",
+  "distanceMeters": "{count} m",
+  "@distanceMeters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "distanceKilometers": "{count} km",
+  "@distanceKilometers": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  }
+}

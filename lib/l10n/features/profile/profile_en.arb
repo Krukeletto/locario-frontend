@@ -1,0 +1,21 @@
+{
+  "@@locale": "en",
+  "profileTitle": "Profile",
+  "profileDescription": "Account, preferences and your saved places in one calmer section.",
+  "profileAuthLoginTitle": "Sign in",
+  "profileAuthLoginSubtitle": "Go to the login screen",
+  "profileAuthLogoutTitle": "Sign out",
+  "profileAuthLogoutSubtitle": "End the current session",
+  "profileInboxSubtitle": "Open your messages and notifications",
+  "settingsTitle": "Settings",
+  "settingsSubtitle": "Language, preferences and app defaults",
+  "settingsScreenTitle": "Settings",
+  "settingsScreenDescription": "Adjust the app basics before the settings surface grows.",
+  "languageSectionTitle": "Language",
+  "languageSectionSubtitle": "Choose how the app should speak to you",
+  "themeSectionTitle": "Appearance",
+  "themeSectionSubtitle": "Choose whether the app should follow the system or stay fixed",
+  "themeModeSystem": "System",
+  "themeModeLight": "Light",
+  "themeModeDark": "Dark"
+}

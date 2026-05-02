@@ -16,14 +16,8 @@ void main() {
       final first = _event('1', 'First');
       final second = _event('2', 'Second');
 
-      await controller.saveEvent(
-        first,
-        savedAt: DateTime.utc(2026, 5, 1, 12),
-      );
-      await controller.saveEvent(
-        second,
-        savedAt: DateTime.utc(2026, 5, 1, 13),
-      );
+      await controller.saveEvent(first, savedAt: DateTime.utc(2026, 5, 1, 12));
+      await controller.saveEvent(second, savedAt: DateTime.utc(2026, 5, 1, 13));
 
       expect(controller.records.map((record) => record.event.id), ['2', '1']);
       expect(controller.isSaved('1'), isTrue);
