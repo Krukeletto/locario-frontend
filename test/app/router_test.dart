@@ -1,5 +1,16 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locario/app/router.dart';
+import 'package:locario/features/saved/saved_screen.dart';
+import 'package:locario/features/saved/saved_events_controller.dart';
+import 'package:locario/features/saved/saved_events_repository.dart';
+import 'package:locario/features/saved/saved_events_scope.dart';
+import 'package:locario/shared/auth/auth_api.dart';
+import 'package:locario/shared/auth/auth_models.dart';
+import 'package:locario/shared/auth/auth_repository.dart';
+import 'package:locario/shared/auth/auth_scope.dart';
+import 'package:locario/shared/auth/session_controller.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
 void main() {
   group('normalizeIncomingLocation', () {
@@ -26,4 +37,120 @@ void main() {
       expect(normalizeIncomingLocation(Uri.parse('/profile')), isNull);
     });
   });
+
+  group('createAppRouter', () {
+    testWidgets('allows unauthenticated access to saved route', (tester) async {
+      final sessionController = await _createSessionController();
+      final router = createAppRouter(sessionController);
+
+      await tester.pumpWidget(
+        AuthScope(
+          controller: sessionController,
+          child: SavedEventsScope(
+            controller: SavedEventsController(
+              repository: _MemorySavedEventsRepository(),
+            ),
+            child: MaterialApp.router(
+              locale: const Locale('en'),
+              supportedLocales: AppLocalizations.supportedLocales,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              routerConfig: router,
+            ),
+          ),
+        ),
+      );
+
+      router.go('/saved');
+      await tester.pumpAndSettle();
+
+      expect(router.routerDelegate.currentConfiguration.uri.path, '/saved');
+      expect(find.byType(SavedScreen), findsOneWidget);
+    });
+  });
+}
+
+class _MemoryAuthStorage implements AuthTokenStorage {
+  AuthTokens? stored;
+
+  @override
+  Future<void> saveTokens(AuthTokens tokens) async {
+    stored = tokens;
+  }
+
+  @override
+  Future<AuthTokens?> readTokens() async => stored;
+
+  @override
+  Future<void> clear() async {
+    stored = null;
+  }
+}
+
+class _FakeAuthApi extends AuthApi {
+  _FakeAuthApi() : super();
+
+  @override
+  Future<AuthResponse> login(LoginRequest request) {
+    throw StateError('login not configured');
+  }
+
+  @override
+  Future<UserProfile> fetchProfile({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
+    throw StateError('fetchProfile not configured');
+  }
+
+  @override
+  Future<AuthResponse> register(RegisterRequest request) {
+    throw StateError('register not configured');
+  }
+
+  @override
+  Future<AuthResponse> refresh(String refreshToken) {
+    throw StateError('refresh not configured');
+  }
+
+  @override
+  Future<AuthResponse> loginWithGoogle(String idToken) {
+    throw StateError('loginWithGoogle not configured');
+  }
+
+  @override
+  Future<void> logout({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
+    throw StateError('logout not configured');
+  }
+}
+
+class _MemorySavedEventsRepository implements SavedEventsRepository {
+  @override
+  Future<List<SavedEventRecord>> loadSavedEvents() async => const [];
+
+  @override
+  Future<void> upsertSavedEvent(SavedEventRecord record) async {}
+
+  @override
+  Future<void> removeSavedEvent(String eventId) async {}
+
+  @override
+  Future<void> replaceSavedEvents(List<SavedEventRecord> records) async {}
+
+  @override
+  Future<void> clear() async {}
+}
+
+Future<SessionController> _createSessionController() async {
+  final controller = SessionController(
+    authRepository: AuthRepository(
+      api: _FakeAuthApi(),
+      storage: _MemoryAuthStorage(),
+    ),
+  );
+
+  await controller.load();
+  return controller;
 }

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart' show LatLng;
 import '../../features/explore/models.dart';
 import '../config/api_config.dart';
 import '../services/l10n_service.dart';
@@ -29,6 +28,7 @@ class EventRequest {
     this.slotLimit,
     this.ticketUrl,
     this.categoryIds = const [],
+    this.tags = const [],
     this.status = EventStatus.published,
     this.thumbnailUrl,
   });
@@ -45,6 +45,7 @@ class EventRequest {
   final int? slotLimit;
   final String? ticketUrl;
   final List<String> categoryIds;
+  final List<String> tags;
   final EventStatus status;
   final String? thumbnailUrl;
 
@@ -62,6 +63,7 @@ class EventRequest {
       if (slotLimit != null) 'slotLimit': slotLimit,
       if (ticketUrl != null) 'ticketUrl': ticketUrl,
       'categoryIds': categoryIds,
+      if (tags.isNotEmpty) 'tags': tags,
       'status': status.toJson(),
       if (thumbnailUrl != null) 'thumbnailUrl': thumbnailUrl,
     };
@@ -305,83 +307,17 @@ class HttpEventRepository implements EventRepository {
 
   ExploreEvent _eventFromJson(Map<String, dynamic> json) {
     final l10n = L10nService.l10n;
-    final title =
-        (json['name'] as String?)?.trim() ?? (json['title'] as String?)?.trim();
-    final address = (json['address'] as String?)?.trim();
-    final description = (json['description'] as String?)?.trim();
-
-    final categoryList = json['categories'] as List?;
-    final categories =
-        categoryList
-            ?.whereType<Map<String, dynamic>>()
-            .map((c) => Category.fromJson(c))
-            .toList() ??
-        [];
-
-    final mediaList = json['media'] as List?;
-    final media =
-        mediaList
-            ?.whereType<Map<String, dynamic>>()
-            .map((m) => EventMedia.fromJson(m))
-            .toList() ??
-        [];
-
-    final startsAtRaw =
-        (json['startAt'] as String?) ?? (json['startDate'] as String?);
     final latitude = (json['latitude'] as num?)?.toDouble();
     final longitude = (json['longitude'] as num?)?.toDouble();
-    final eventLocation = LatLng(latitude ?? 0, longitude ?? 0);
     final fallbackLocationLabel = l10n.areaPinnedCoordinates(
-      eventLocation.latitude.toStringAsFixed(4),
-      eventLocation.longitude.toStringAsFixed(4),
+      latitude?.toStringAsFixed(4) ?? '0.0000',
+      longitude?.toStringAsFixed(4) ?? '0.0000',
     );
 
-    return ExploreEvent(
-      id: (json['id'] as String?)?.trim() ?? '',
-      title: title == null || title.isEmpty
-          ? l10n.eventDetailsUnknownEventTitle
-          : title,
-      categories: categories,
-      media: media,
-      thumbnailUrl: json['thumbnailUrl'] as String?,
-      startsAt: DateTime.tryParse(startsAtRaw ?? '') ?? DateTime.now().toUtc(),
-      endsAt: (json['endAt'] != null)
-          ? DateTime.tryParse(json['endAt'] as String)
-          : (json['endDate'] != null
-                ? DateTime.tryParse(json['endDate'] as String)
-                : null),
-      trendingScore: json['trendingScore'] as int? ?? 0,
-      venue: address == null || address.isEmpty
-          ? fallbackLocationLabel
-          : address,
-      location: eventLocation,
-      minAge: json['minAge'] as int?,
-      maxAge: json['maxAge'] as int?,
-      eventType: json['eventType'] as String?,
-      eventSource: json['eventSource'] as String?,
-      description: description,
-      address: address,
-      status: EventStatus.fromString(json['status'] as String?),
-      slotLimit: json['slotLimit'] as int?,
-      ticketUrl: json['ticketUrl'] as String?,
-      organizers:
-          (json['organizers'] as List?)
-              ?.whereType<Map<String, dynamic>>()
-              .map(
-                (organizer) =>
-                    (organizer['username'] as String?)?.trim() ??
-                    (organizer['userId'] as String?)?.trim() ??
-                    '',
-              )
-              .where((value) => value.isNotEmpty)
-              .toList() ??
-          const [],
-      createdAt: json['createdAt'] != null
-          ? DateTime.tryParse(json['createdAt'] as String)
-          : null,
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.tryParse(json['updatedAt'] as String)
-          : null,
+    return ExploreEvent.fromJson(
+      json,
+      fallbackTitle: l10n.eventDetailsUnknownEventTitle,
+      fallbackVenue: fallbackLocationLabel,
     );
   }
 }

@@ -83,9 +83,7 @@ final List<HubActionItem> hubActionItems = [
 bool _requiresAuth(String location) {
   return location.startsWith('/hub/create-event') ||
       location.startsWith('/hub/friends') ||
-      location.startsWith('/saved') ||
-      location.startsWith('/inbox') ||
-      location.startsWith('/profile/saved');
+      location.startsWith('/inbox');
 }
 
 String _loginRedirect(Uri uri, {String? targetLocation}) {

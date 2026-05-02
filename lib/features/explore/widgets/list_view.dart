@@ -1,10 +1,13 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../../shared/services/feedback_service.dart';
+import '../../../shared/widgets/event_list_card.dart';
+import '../../saved/saved_events_controller.dart';
 import '../models.dart';
-import '../../../shared/services/share_service.dart';
 
 class ExploreListView extends StatelessWidget {
   const ExploreListView({
@@ -19,6 +22,7 @@ class ExploreListView extends StatelessWidget {
     required this.onSortOrderToggled,
     this.onSortOpened,
     required this.onEventTap,
+    this.savedEventsController,
   });
 
   final List<ExploreEvent> events;
@@ -31,6 +35,7 @@ class ExploreListView extends StatelessWidget {
   final VoidCallback onSortOrderToggled;
   final VoidCallback? onSortOpened;
   final ValueChanged<ExploreEvent> onEventTap;
+  final SavedEventsController? savedEventsController;
 
   @override
   Widget build(BuildContext context) {
@@ -65,10 +70,29 @@ class ExploreListView extends StatelessWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final event = events[index];
-                return _EventCard(
+                final controller = savedEventsController;
+
+                return EventListCard(
                   event: event,
                   referenceLocation: referenceLocation,
+                  showDistance: true,
+                  actionIcon: Icons.bookmark_add_outlined,
+                  activeActionIcon: Icons.bookmark_rounded,
+                  actionTooltip: l10n.savedSaveActionTooltip,
+                  activeActionTooltip: l10n.savedRemoveActionTooltip,
+                  isActionActive: controller?.isSaved(event.id) ?? false,
                   onTap: () => onEventTap(event),
+                  onActionPressed: controller == null
+                      ? null
+                      : () {
+                          unawaited(
+                            _toggleSaved(
+                              context: context,
+                              controller: controller,
+                              event: event,
+                            ),
+                          );
+                        },
                 );
               },
             ),
@@ -77,6 +101,25 @@ class ExploreListView extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _toggleSaved({
+  required BuildContext context,
+  required SavedEventsController controller,
+  required ExploreEvent event,
+}) async {
+  final wasSaved = controller.isSaved(event.id);
+  final outcome = await controller.toggleSaved(event);
+  if (!context.mounted) {
+    return;
+  }
+
+  if (outcome == SavedToggleOutcome.saved && !wasSaved) {
+    FeedbackService.showSuccess(FeedbackMessage.eventSaveSuccess);
+    return;
+  }
+
+  FeedbackService.showSuccess(FeedbackMessage.eventRemoveSuccess);
 }
 
 class _ListToolbar extends StatelessWidget {
@@ -249,144 +292,6 @@ class _SortMenu extends StatelessWidget {
               color: colorScheme.onSurfaceVariant,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EventCard extends StatelessWidget {
-  const _EventCard({
-    required this.event,
-    required this.referenceLocation,
-    required this.onTap,
-  });
-
-  final ExploreEvent event;
-  final LatLng referenceLocation;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: colorScheme.outline.withValues(alpha: 0.18),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(
-                  alpha: Theme.of(context).brightness == Brightness.dark
-                      ? 0.22
-                      : 0.05,
-                ),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              if (event.effectiveThumbnailUrl != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: CachedNetworkImage(
-                    imageUrl: event.effectiveThumbnailUrl!,
-                    width: 54,
-                    height: 54,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      width: 54,
-                      height: 54,
-                      color: event.accentColor.withValues(alpha: 0.1),
-                      child: const Center(
-                        child: SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      width: 54,
-                      height: 54,
-                      color: event.accentColor.withValues(alpha: 0.14),
-                      child: Icon(event.icon, color: event.accentColor),
-                    ),
-                  ),
-                )
-              else
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: event.accentColor.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Icon(event.icon, color: event.accentColor),
-                ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${event.categoryLabel(l10n)} • ${event.distanceLabel(l10n, referenceLocation)}',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: event.accentColor,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '${event.timeLabel(l10n)} • ${event.venue}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.66),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 4),
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                icon: Icon(
-                  Icons.share_rounded,
-                  size: 20,
-                  color: colorScheme.secondary,
-                ),
-                onPressed: () {
-                  final l10n = AppLocalizations.of(context)!;
-                  ShareService.shareEvent(
-                    eventId: event.id,
-                    title: event.title,
-                    l10n: l10n,
-                  );
-                },
-              ),
-              Icon(Icons.chevron_right_rounded, color: colorScheme.secondary),
-            ],
-          ),
         ),
       ),
     );

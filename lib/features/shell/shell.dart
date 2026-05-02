@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../shared/auth/auth_scope.dart';
 import 'header/header.dart';
 import 'header/header_controller.dart';
 import 'header/header_scope.dart';
@@ -65,23 +64,6 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
   }
 
   void _handleTabSelected(ShellTab tab) {
-    final sessionController = AuthScope.maybeOf(context);
-    if (tab == ShellTab.saved &&
-        sessionController != null &&
-        !sessionController.isAuthenticated) {
-      final returnLocation = switch (widget.navigationShell.currentIndex) {
-        0 => ShellTab.explore.routePath,
-        1 => ShellTab.saved.routePath,
-        2 => ShellTab.profile.routePath,
-        _ => ShellTab.explore.routePath,
-      };
-
-      context.push(
-        '/auth/login?from=${Uri.encodeComponent(returnLocation)}&target=${Uri.encodeComponent(tab.routePath)}',
-      );
-      return;
-    }
-
     final targetIndex = switch (tab) {
       ShellTab.explore => 0,
       ShellTab.saved => 1,

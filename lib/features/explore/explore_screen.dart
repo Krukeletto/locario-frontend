@@ -20,6 +20,7 @@ import 'widgets/list_view.dart';
 import 'widgets/map_view.dart';
 import 'widgets/search_this_area_button.dart';
 import '../../shared/events/category_scope.dart';
+import '../saved/saved_events_scope.dart';
 import '../shell/header/header_controller.dart';
 import '../shell/header/header_scope.dart';
 
@@ -421,6 +422,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     final topContentOffset = (ShellHeaderScope.maybeOf(context) == null)
         ? MediaQuery.paddingOf(context).top + 112
         : 112.0;
+    final savedEventsController = SavedEventsScope.maybeOf(context);
     final content = currentView == ExploreContentView.map
         ? Stack(
             children: [
@@ -501,29 +503,60 @@ class _ExploreScreenState extends State<ExploreScreen> {
           )
         : Stack(
             children: [
-              ExploreListView(
-                events: events,
-                referenceLocation: referenceLocation,
-                selectedFilterSummary:
-                    _exploreController.selectedCategories.isEmpty
-                    ? l10n.filterAll
-                    : _exploreController.selectedCategories
-                          .map((c) => c.name)
-                          .join(', '),
-                selectedSort: _exploreController.selectedSort,
-                sortAscending: _exploreController.sortAscending,
-                isSearchActive: _searchFocusNode.hasFocus,
-                onSortOpened: _dismissSearchFocus,
-                onSortChanged: (sort) {
-                  _dismissSearchFocus();
-                  _exploreController.updateSort(sort);
-                },
-                onSortOrderToggled: _exploreController.toggleSortOrder,
-                onEventTap: (event) {
-                  _dismissSearchFocus();
-                  _handleEventTap(event);
-                },
-              ),
+              if (savedEventsController != null)
+                AnimatedBuilder(
+                  animation: savedEventsController,
+                  builder: (context, _) {
+                    return ExploreListView(
+                      events: events,
+                      referenceLocation: referenceLocation,
+                      selectedFilterSummary:
+                          _exploreController.selectedCategories.isEmpty
+                          ? l10n.filterAll
+                          : _exploreController.selectedCategories
+                                .map((c) => c.name)
+                                .join(', '),
+                      selectedSort: _exploreController.selectedSort,
+                      sortAscending: _exploreController.sortAscending,
+                      isSearchActive: _searchFocusNode.hasFocus,
+                      onSortOpened: _dismissSearchFocus,
+                      onSortChanged: (sort) {
+                        _dismissSearchFocus();
+                        _exploreController.updateSort(sort);
+                      },
+                      onSortOrderToggled: _exploreController.toggleSortOrder,
+                      onEventTap: (event) {
+                        _dismissSearchFocus();
+                        _handleEventTap(event);
+                      },
+                      savedEventsController: savedEventsController,
+                    );
+                  },
+                )
+              else
+                ExploreListView(
+                  events: events,
+                  referenceLocation: referenceLocation,
+                  selectedFilterSummary:
+                      _exploreController.selectedCategories.isEmpty
+                      ? l10n.filterAll
+                      : _exploreController.selectedCategories
+                            .map((c) => c.name)
+                            .join(', '),
+                  selectedSort: _exploreController.selectedSort,
+                  sortAscending: _exploreController.sortAscending,
+                  isSearchActive: _searchFocusNode.hasFocus,
+                  onSortOpened: _dismissSearchFocus,
+                  onSortChanged: (sort) {
+                    _dismissSearchFocus();
+                    _exploreController.updateSort(sort);
+                  },
+                  onSortOrderToggled: _exploreController.toggleSortOrder,
+                  onEventTap: (event) {
+                    _dismissSearchFocus();
+                    _handleEventTap(event);
+                  },
+                ),
             ],
           );
 

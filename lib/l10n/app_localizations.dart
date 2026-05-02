@@ -62,8 +62,7 @@ import 'app_localizations_pl.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('pl'),
+    Locale('pl')
   ];
 
   /// No description provided for @appTitle.
@@ -697,6 +694,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Places, events and lists you want to revisit'**
   String get savedSubtitle;
+
+  /// No description provided for @savedSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save event'**
+  String get savedSaveAction;
+
+  /// No description provided for @savedRemoveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove saved'**
+  String get savedRemoveAction;
+
+  /// No description provided for @savedSaveActionTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Save event'**
+  String get savedSaveActionTooltip;
+
+  /// No description provided for @savedRemoveActionTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from saved'**
+  String get savedRemoveActionTooltip;
+
+  /// No description provided for @savedSortTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved sort'**
+  String get savedSortTooltip;
+
+  /// No description provided for @savedSortRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently saved'**
+  String get savedSortRecent;
+
+  /// No description provided for @savedSortDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get savedSortDistance;
+
+  /// No description provided for @savedFiltersTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved filters'**
+  String get savedFiltersTooltip;
+
+  /// No description provided for @savedFiltersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved filters'**
+  String get savedFiltersTitle;
+
+  /// No description provided for @savedFiltersClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get savedFiltersClear;
+
+  /// No description provided for @savedFiltersApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get savedFiltersApply;
+
+  /// No description provided for @savedFilterCategoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get savedFilterCategoriesTitle;
+
+  /// No description provided for @savedFilterAgeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Age groups'**
+  String get savedFilterAgeTitle;
+
+  /// No description provided for @savedFilterTagsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get savedFilterTagsTitle;
+
+  /// No description provided for @savedAgeGroupAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any age'**
+  String get savedAgeGroupAny;
+
+  /// No description provided for @savedAgeGroup12Plus.
+  ///
+  /// In en, this message translates to:
+  /// **'12+'**
+  String get savedAgeGroup12Plus;
+
+  /// No description provided for @savedAgeGroup18Plus.
+  ///
+  /// In en, this message translates to:
+  /// **'18+'**
+  String get savedAgeGroup18Plus;
+
+  /// No description provided for @savedEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved events yet'**
+  String get savedEmptyTitle;
+
+  /// No description provided for @savedEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save events from Explore to keep them here.'**
+  String get savedEmptySubtitle;
+
+  /// No description provided for @savedEmptyFilteredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No events match the filters'**
+  String get savedEmptyFilteredTitle;
+
+  /// No description provided for @savedEmptyFilteredSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the filters or try a different combination.'**
+  String get savedEmptyFilteredSubtitle;
 
   /// No description provided for @languageSectionTitle.
   ///
@@ -1364,6 +1487,18 @@ abstract class AppLocalizations {
   /// **'{count} seats available'**
   String eventDetailsSlotsValue(int count);
 
+  /// No description provided for @eventDetailsShowOnMapButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on map'**
+  String get eventDetailsShowOnMapButton;
+
+  /// No description provided for @eventDetailsOpenMapError.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not open the map app right now.'**
+  String get eventDetailsOpenMapError;
+
   /// No description provided for @eventToday2030.
   ///
   /// In en, this message translates to:
@@ -1581,8 +1716,7 @@ abstract class AppLocalizations {
   String shareEventMessage(String title, String url);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -1591,26 +1725,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'pl'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'pl'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'pl':
-      return AppLocalizationsPl();
+    case 'en': return AppLocalizationsEn();
+    case 'pl': return AppLocalizationsPl();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }
