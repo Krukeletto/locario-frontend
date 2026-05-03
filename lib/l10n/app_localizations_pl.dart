@@ -297,6 +297,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubFriendsSubtitle => 'Twoja sieć';
 
   @override
+  String get featureComingSoon => 'Ta sekcja jest jeszcze w przygotowaniu.';
+
+  @override
   String get profileTitle => 'Profil';
 
   @override
@@ -337,6 +340,72 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get savedSubtitle =>
       'Miejsca, wydarzenia i listy, do których chcesz wrócić';
+
+  @override
+  String get savedSaveAction => 'Zapisz wydarzenie';
+
+  @override
+  String get savedRemoveAction => 'Usuń z zapisanych';
+
+  @override
+  String get savedSaveActionTooltip => 'Zapisz wydarzenie';
+
+  @override
+  String get savedRemoveActionTooltip => 'Usuń z zapisanych';
+
+  @override
+  String get savedSortTooltip => 'Sortowanie zapisanych';
+
+  @override
+  String get savedSortRecent => 'Ostatnio zapisane';
+
+  @override
+  String get savedSortDistance => 'Odległość';
+
+  @override
+  String get savedFiltersTooltip => 'Filtry zapisanych';
+
+  @override
+  String get savedFiltersTitle => 'Filtry zapisanych';
+
+  @override
+  String get savedFiltersClear => 'Wyczyść';
+
+  @override
+  String get savedFiltersApply => 'Zastosuj';
+
+  @override
+  String get savedFilterCategoriesTitle => 'Kategorie';
+
+  @override
+  String get savedFilterAgeTitle => 'Grupy wiekowe';
+
+  @override
+  String get savedFilterTagsTitle => 'Tagi';
+
+  @override
+  String get savedAgeGroupAny => 'Dowolny wiek';
+
+  @override
+  String get savedAgeGroup12Plus => '12+';
+
+  @override
+  String get savedAgeGroup18Plus => '18+';
+
+  @override
+  String get savedEmptyTitle => 'Brak zapisanych wydarzeń';
+
+  @override
+  String get savedEmptySubtitle =>
+      'Zapisuj wydarzenia z ekranu Odkrywaj, żeby mieć je tutaj.';
+
+  @override
+  String get savedEmptyFilteredTitle =>
+      'Żadne wydarzenia nie pasują do filtrów';
+
+  @override
+  String get savedEmptyFilteredSubtitle =>
+      'Wyczyść filtry albo spróbuj innej kombinacji.';
 
   @override
   String get languageSectionTitle => 'Język';
@@ -709,6 +778,13 @@ class AppLocalizationsPl extends AppLocalizations {
   String eventDetailsSlotsValue(int count) {
     return '$count wolnych miejsc';
   }
+
+  @override
+  String get eventDetailsShowOnMapButton => 'Pokaż na mapie';
+
+  @override
+  String get eventDetailsOpenMapError =>
+      'Nie udało się teraz otworzyć aplikacji map.';
 
   @override
   String get eventToday2030 => 'Dziś, 20:30';

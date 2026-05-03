@@ -620,6 +620,12 @@ abstract class AppLocalizations {
   /// **'Your network'**
   String get hubFriendsSubtitle;
 
+  /// No description provided for @featureComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'This section is still being built.'**
+  String get featureComingSoon;
+
   /// No description provided for @profileTitle.
   ///
   /// In en, this message translates to:
@@ -697,6 +703,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Places, events and lists you want to revisit'**
   String get savedSubtitle;
+
+  /// No description provided for @savedSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save event'**
+  String get savedSaveAction;
+
+  /// No description provided for @savedRemoveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove saved'**
+  String get savedRemoveAction;
+
+  /// No description provided for @savedSaveActionTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Save event'**
+  String get savedSaveActionTooltip;
+
+  /// No description provided for @savedRemoveActionTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from saved'**
+  String get savedRemoveActionTooltip;
+
+  /// No description provided for @savedSortTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved sort'**
+  String get savedSortTooltip;
+
+  /// No description provided for @savedSortRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently saved'**
+  String get savedSortRecent;
+
+  /// No description provided for @savedSortDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get savedSortDistance;
+
+  /// No description provided for @savedFiltersTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved filters'**
+  String get savedFiltersTooltip;
+
+  /// No description provided for @savedFiltersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved filters'**
+  String get savedFiltersTitle;
+
+  /// No description provided for @savedFiltersClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get savedFiltersClear;
+
+  /// No description provided for @savedFiltersApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get savedFiltersApply;
+
+  /// No description provided for @savedFilterCategoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get savedFilterCategoriesTitle;
+
+  /// No description provided for @savedFilterAgeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Age groups'**
+  String get savedFilterAgeTitle;
+
+  /// No description provided for @savedFilterTagsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get savedFilterTagsTitle;
+
+  /// No description provided for @savedAgeGroupAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any age'**
+  String get savedAgeGroupAny;
+
+  /// No description provided for @savedAgeGroup12Plus.
+  ///
+  /// In en, this message translates to:
+  /// **'12+'**
+  String get savedAgeGroup12Plus;
+
+  /// No description provided for @savedAgeGroup18Plus.
+  ///
+  /// In en, this message translates to:
+  /// **'18+'**
+  String get savedAgeGroup18Plus;
+
+  /// No description provided for @savedEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved events yet'**
+  String get savedEmptyTitle;
+
+  /// No description provided for @savedEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save events from Explore to keep them here.'**
+  String get savedEmptySubtitle;
+
+  /// No description provided for @savedEmptyFilteredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No events match the filters'**
+  String get savedEmptyFilteredTitle;
+
+  /// No description provided for @savedEmptyFilteredSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the filters or try a different combination.'**
+  String get savedEmptyFilteredSubtitle;
 
   /// No description provided for @languageSectionTitle.
   ///
@@ -1363,6 +1495,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} seats available'**
   String eventDetailsSlotsValue(int count);
+
+  /// No description provided for @eventDetailsShowOnMapButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on map'**
+  String get eventDetailsShowOnMapButton;
+
+  /// No description provided for @eventDetailsOpenMapError.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not open the map app right now.'**
+  String get eventDetailsOpenMapError;
 
   /// No description provided for @eventToday2030.
   ///

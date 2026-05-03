@@ -8,6 +8,7 @@ class HubActionItem {
     required this.routePath,
     this.accentColor,
     this.isPrimary = false,
+    this.isEnabled = true,
   });
 
   final String id;
@@ -15,6 +16,7 @@ class HubActionItem {
   final String routePath;
   final int? accentColor;
   final bool isPrimary;
+  final bool isEnabled;
 
   String title(AppLocalizations l10n) {
     switch (id) {

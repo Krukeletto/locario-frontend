@@ -159,16 +159,16 @@ Future<GoRouter> _pumpRouterApp(
   return router;
 }
 
-Future<void> _navigateToGuardedInbox(
+Future<void> _navigateToForcedLogin(
   GoRouter router,
   WidgetTester tester,
 ) async {
-  router.go('/profile');
-  await tester.pumpAndSettle();
-
-  await tester.ensureVisible(find.text('Skrzynka'));
-  await tester.tap(find.text('Skrzynka'));
-  await tester.pumpAndSettle();
+  await _navigateToAuthLogin(
+    router,
+    tester,
+    from: '/profile',
+    target: '/inbox',
+  );
 }
 
 Future<void> _navigateToAuthLogin(
@@ -277,7 +277,7 @@ void main() {
         sessionController: sessionController,
       );
 
-      await _navigateToGuardedInbox(router, tester);
+      await _navigateToForcedLogin(router, tester);
 
       expect(find.byType(LoginScreen), findsOneWidget);
 
@@ -294,7 +294,7 @@ void main() {
         sessionController: sessionController,
       );
 
-      await _navigateToGuardedInbox(router, tester);
+      await _navigateToForcedLogin(router, tester);
 
       await tester.enterText(find.byType(TextField).at(0), 'user@example.com');
       await tester.enterText(find.byType(TextField).at(1), 'password123');

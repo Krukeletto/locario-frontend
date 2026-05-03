@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
 import '../../shared/events/event_repository.dart';
+import '../../shared/services/feedback_service.dart';
+import '../../shared/services/map_launch_service.dart';
 import '../../shared/services/share_service.dart';
 import '../../shared/widgets/state_panel.dart';
 import '../explore/models.dart';
+import '../saved/saved_events_controller.dart';
+import '../saved/saved_events_scope.dart';
 import 'widgets/gallery/event_details_gallery.dart';
 import 'widgets/info/event_details_info.dart';
 
@@ -97,12 +101,63 @@ class _EventScreenState extends State<EventScreen> {
     ShareService.shareEvent(eventId: event.id, title: event.title, l10n: l10n);
   }
 
+  Future<void> _toggleSaved(ExploreEvent event) async {
+    final controller = SavedEventsScope.maybeOf(context);
+    if (controller == null) {
+      return;
+    }
+
+    final wasSaved = controller.isSaved(event.id);
+    final outcome = await controller.toggleSaved(event);
+    if (!mounted) {
+      return;
+    }
+
+    if (outcome == SavedToggleOutcome.saved && !wasSaved) {
+      FeedbackService.showSuccess(FeedbackMessage.eventSaveSuccess);
+      return;
+    }
+
+    FeedbackService.showSuccess(FeedbackMessage.eventRemoveSuccess);
+  }
+
+  Future<void> _showEventOnMap(ExploreEvent event) async {
+    final l10n = AppLocalizations.of(context)!;
+    final opened = await MapLaunchService.openLocation(event.location);
+    if (opened || !mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.eventDetailsOpenMapError),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final savedController = SavedEventsScope.maybeOf(context);
+    return savedController == null
+        ? _buildScaffold(context, theme, scheme, l10n, savedController)
+        : AnimatedBuilder(
+            animation: savedController,
+            builder: (context, _) =>
+                _buildScaffold(context, theme, scheme, l10n, savedController),
+          );
+  }
 
+  Scaffold _buildScaffold(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme scheme,
+    AppLocalizations l10n,
+    SavedEventsController? savedController,
+  ) {
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
@@ -145,11 +200,15 @@ class _EventScreenState extends State<EventScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: _buildBody(context, l10n),
+      body: _buildBody(context, l10n, savedController),
     );
   }
 
-  Widget _buildBody(BuildContext context, AppLocalizations l10n) {
+  Widget _buildBody(
+    BuildContext context,
+    AppLocalizations l10n,
+    SavedEventsController? savedController,
+  ) {
     if (_isLoading) {
       return StatePanel.loading(
         title: l10n.eventDetailsLoadingTitle,
@@ -179,6 +238,9 @@ class _EventScreenState extends State<EventScreen> {
             child: EventDetailsInfo(
               event: event,
               overlap: overlap,
+              onShowOnMapPressed: () => _showEventOnMap(event),
+              onSavePressed: () => _toggleSaved(event),
+              isSaved: savedController?.isSaved(event.id) ?? false,
               onJoinPressed: () {},
             ),
           ),

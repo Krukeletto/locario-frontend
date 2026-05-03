@@ -1,0 +1,20 @@
+{
+  "@@locale": "pl",
+  "appTitle": "Locario",
+  "localeEnglish": "Angielski",
+  "localePolish": "Polski",
+  "featureComingSoon": "Ta sekcja jest jeszcze w przygotowaniu.",
+  "networkError": "Błąd sieci. Sprawdź swoje połączenie.",
+  "networkErrorRetry": "Ponów",
+  "shareEventMessage": "Sprawdź to wydarzenie w Locario: {title}\n\n{url}",
+  "@shareEventMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "url": {
+        "type": "String"
+      }
+    }
+  }
+}

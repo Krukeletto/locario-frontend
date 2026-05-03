@@ -20,6 +20,7 @@ import 'widgets/list_view.dart';
 import 'widgets/map_view.dart';
 import 'widgets/search_this_area_button.dart';
 import '../../shared/events/category_scope.dart';
+import '../saved/saved_events_scope.dart';
 import '../shell/header/header_controller.dart';
 import '../shell/header/header_scope.dart';
 
@@ -388,11 +389,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         retryLabel: l10n.exploreRetryButton,
         onRetry: () => _exploreController.loadEvents(forceRefresh: true),
       ),
-      ExploreEmpty() => _buildMainUI(
-        const [],
-        effectiveView,
-        showEmptyResultsMessage: true,
-      ),
+      ExploreEmpty() => _buildMainUI(const [], effectiveView),
       ExploreData(events: var events) => _buildMainUI(events, effectiveView),
       ExploreDataLoading(previous: var previous) => _buildMainUI(
         previous,
@@ -403,9 +400,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget _buildMainUI(
     List<ExploreEvent> events,
-    ExploreContentView currentView, {
-    bool showEmptyResultsMessage = false,
-  }) {
+    ExploreContentView currentView,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     final referenceLocation =
         _exploreController.referenceLocation ?? const LatLng(0, 0);
@@ -421,6 +417,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     final topContentOffset = (ShellHeaderScope.maybeOf(context) == null)
         ? MediaQuery.paddingOf(context).top + 112
         : 112.0;
+    final savedEventsController = SavedEventsScope.maybeOf(context);
     final content = currentView == ExploreContentView.map
         ? Stack(
             children: [
@@ -459,71 +456,64 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     ),
                   ),
                 ),
-              if (showEmptyResultsMessage)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surface.withValues(alpha: 0.92),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outline.withValues(alpha: 0.14),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
-                                blurRadius: 18,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: StatePanel.empty(
-                              title: l10n.exploreEmptyTitle,
-                              subtitle: l10n.exploreEmptySubtitle,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
             ],
           )
         : Stack(
             children: [
-              ExploreListView(
-                events: events,
-                referenceLocation: referenceLocation,
-                selectedFilterSummary:
-                    _exploreController.selectedCategories.isEmpty
-                    ? l10n.filterAll
-                    : _exploreController.selectedCategories
-                          .map((c) => c.name)
-                          .join(', '),
-                selectedSort: _exploreController.selectedSort,
-                sortAscending: _exploreController.sortAscending,
-                isSearchActive: _searchFocusNode.hasFocus,
-                onSortOpened: _dismissSearchFocus,
-                onSortChanged: (sort) {
-                  _dismissSearchFocus();
-                  _exploreController.updateSort(sort);
-                },
-                onSortOrderToggled: _exploreController.toggleSortOrder,
-                onEventTap: (event) {
-                  _dismissSearchFocus();
-                  _handleEventTap(event);
-                },
-              ),
+              if (savedEventsController != null)
+                AnimatedBuilder(
+                  animation: savedEventsController,
+                  builder: (context, _) {
+                    return ExploreListView(
+                      events: events,
+                      referenceLocation: referenceLocation,
+                      selectedFilterSummary:
+                          _exploreController.selectedCategories.isEmpty
+                          ? l10n.filterAll
+                          : _exploreController.selectedCategories
+                                .map((c) => c.name)
+                                .join(', '),
+                      selectedSort: _exploreController.selectedSort,
+                      sortAscending: _exploreController.sortAscending,
+                      isSearchActive: _searchFocusNode.hasFocus,
+                      onSortOpened: _dismissSearchFocus,
+                      onSortChanged: (sort) {
+                        _dismissSearchFocus();
+                        _exploreController.updateSort(sort);
+                      },
+                      onSortOrderToggled: _exploreController.toggleSortOrder,
+                      onEventTap: (event) {
+                        _dismissSearchFocus();
+                        _handleEventTap(event);
+                      },
+                      savedEventsController: savedEventsController,
+                    );
+                  },
+                )
+              else
+                ExploreListView(
+                  events: events,
+                  referenceLocation: referenceLocation,
+                  selectedFilterSummary:
+                      _exploreController.selectedCategories.isEmpty
+                      ? l10n.filterAll
+                      : _exploreController.selectedCategories
+                            .map((c) => c.name)
+                            .join(', '),
+                  selectedSort: _exploreController.selectedSort,
+                  sortAscending: _exploreController.sortAscending,
+                  isSearchActive: _searchFocusNode.hasFocus,
+                  onSortOpened: _dismissSearchFocus,
+                  onSortChanged: (sort) {
+                    _dismissSearchFocus();
+                    _exploreController.updateSort(sort);
+                  },
+                  onSortOrderToggled: _exploreController.toggleSortOrder,
+                  onEventTap: (event) {
+                    _dismissSearchFocus();
+                    _handleEventTap(event);
+                  },
+                ),
             ],
           );
 

@@ -1,0 +1,43 @@
+{
+  "@@locale": "en",
+  "tabExplore": "Explore",
+  "tabInbox": "Inbox",
+  "tabHub": "Hub",
+  "tabProfile": "Profile",
+  "headerMap": "Map",
+  "headerList": "List",
+  "mapReturnToLocation": "Return to my location",
+  "mapStyleLoadFailed": "Unable to load the local map style.\n{error}",
+  "@mapStyleLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "mapRetry": "Retry",
+  "mapAppSettings": "App settings",
+  "mapLocationSettings": "Location settings",
+  "mapServiceDisabled": "Enable location services to see your position.",
+  "mapPermissionDenied": "Allow location access to center the map on you.",
+  "mapPermissionDeniedForever": "Location access is blocked in system settings.",
+  "mapUnableDetermineLocation": "Unable to determine your location.",
+  "mapLocationTimeout": "Location request timed out. Try again.",
+  "mapUnableLoadLocation": "Unable to load your location.",
+  "mapClusterSheetTitle": "Choose an event ({count})",
+  "@mapClusterSheetTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEventOpenSoon": "The event screen for "{title}" will be added later.",
+  "@mapEventOpenSoon": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
+}

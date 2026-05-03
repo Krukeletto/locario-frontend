@@ -296,6 +296,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubFriendsSubtitle => 'Your network';
 
   @override
+  String get featureComingSoon => 'This section is still being built.';
+
+  @override
   String get profileTitle => 'Profile';
 
   @override
@@ -335,6 +338,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savedSubtitle => 'Places, events and lists you want to revisit';
+
+  @override
+  String get savedSaveAction => 'Save event';
+
+  @override
+  String get savedRemoveAction => 'Remove saved';
+
+  @override
+  String get savedSaveActionTooltip => 'Save event';
+
+  @override
+  String get savedRemoveActionTooltip => 'Remove from saved';
+
+  @override
+  String get savedSortTooltip => 'Saved sort';
+
+  @override
+  String get savedSortRecent => 'Recently saved';
+
+  @override
+  String get savedSortDistance => 'Distance';
+
+  @override
+  String get savedFiltersTooltip => 'Saved filters';
+
+  @override
+  String get savedFiltersTitle => 'Saved filters';
+
+  @override
+  String get savedFiltersClear => 'Clear';
+
+  @override
+  String get savedFiltersApply => 'Apply';
+
+  @override
+  String get savedFilterCategoriesTitle => 'Categories';
+
+  @override
+  String get savedFilterAgeTitle => 'Age groups';
+
+  @override
+  String get savedFilterTagsTitle => 'Tags';
+
+  @override
+  String get savedAgeGroupAny => 'Any age';
+
+  @override
+  String get savedAgeGroup12Plus => '12+';
+
+  @override
+  String get savedAgeGroup18Plus => '18+';
+
+  @override
+  String get savedEmptyTitle => 'No saved events yet';
+
+  @override
+  String get savedEmptySubtitle =>
+      'Save events from Explore to keep them here.';
+
+  @override
+  String get savedEmptyFilteredTitle => 'No events match the filters';
+
+  @override
+  String get savedEmptyFilteredSubtitle =>
+      'Clear the filters or try a different combination.';
 
   @override
   String get languageSectionTitle => 'Language';
@@ -701,6 +769,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String eventDetailsSlotsValue(int count) {
     return '$count seats available';
   }
+
+  @override
+  String get eventDetailsShowOnMapButton => 'Show on map';
+
+  @override
+  String get eventDetailsOpenMapError =>
+      'We could not open the map app right now.';
 
   @override
   String get eventToday2030 => 'Today, 20:30';

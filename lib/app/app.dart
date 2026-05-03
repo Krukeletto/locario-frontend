@@ -15,6 +15,9 @@ import '../shared/services/l10n_service.dart';
 import '../shared/events/event_repository.dart';
 import '../shared/events/category_controller.dart';
 import '../shared/events/category_scope.dart';
+import '../features/saved/saved_events_controller.dart';
+import '../features/saved/saved_events_repository.dart';
+import '../features/saved/saved_events_scope.dart';
 import '../shared/auth/auth_api.dart';
 import '../shared/auth/auth_repository.dart';
 import '../shared/auth/auth_scope.dart';
@@ -34,6 +37,7 @@ class _LocarioAppState extends State<LocarioApp> {
   late final CategoryController _categoryController;
   late final AppSettingsStore _settingsStore;
   late final EventRepository _eventRepository;
+  late final SavedEventsController _savedEventsController;
   late final AuthApi _authApi;
   late final AuthRepository _authRepository;
   late final AuthStorage _authStorage;
@@ -53,10 +57,14 @@ class _LocarioAppState extends State<LocarioApp> {
     _localeController = LocaleController(settingsStore: _settingsStore);
     _themeController = ThemeController(settingsStore: _settingsStore);
     _categoryController = CategoryController(eventRepository: _eventRepository);
+    _savedEventsController = SavedEventsController(
+      repository: const SharedPreferencesSavedEventsRepository(),
+    );
 
     _localeController.load();
     _themeController.load();
     _categoryController.loadCategories();
+    _savedEventsController.load();
     _sessionController.load();
   }
 
@@ -65,6 +73,7 @@ class _LocarioAppState extends State<LocarioApp> {
     _localeController.dispose();
     _themeController.dispose();
     _categoryController.dispose();
+    _savedEventsController.dispose();
     _sessionController.dispose();
     super.dispose();
   }
@@ -75,57 +84,62 @@ class _LocarioAppState extends State<LocarioApp> {
       controller: _categoryController,
       child: AuthScope(
         controller: _sessionController,
-        child: LocaleScope(
-          controller: _localeController,
-          child: ThemeScope(
-            controller: _themeController,
-            child: AnimatedBuilder(
-              animation: Listenable.merge([
-                _localeController,
-                _themeController,
-                _categoryController,
-              ]),
-              builder: (context, _) {
-                return MaterialApp.router(
-                  scaffoldMessengerKey: rootScaffoldMessengerKey,
-                  onGenerateTitle: (context) =>
-                      AppLocalizations.of(context)!.appTitle,
-                  debugShowCheckedModeBanner: false,
-                  theme: buildLightAppTheme(),
-                  darkTheme: buildDarkAppTheme(),
-                  themeMode: _themeController.themeMode,
-                  routerConfig: _router,
-                  locale: _localeController.locale,
-                  supportedLocales: AppLocalizations.supportedLocales,
-                  localizationsDelegates: [
-                    AppLocalizations.delegate,
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                  ],
-                  builder: (context, child) {
-                    // Initialize the L10nService so it can be used without BuildContext.
-                    final l10n = AppLocalizations.of(context);
-                    if (l10n != null) {
-                      L10nService.update(l10n);
-                    }
-                    return child!;
-                  },
-                  localeResolutionCallback: (locale, supportedLocales) {
-                    if (locale == null) {
-                      return const Locale('pl');
-                    }
-
-                    for (final supportedLocale in supportedLocales) {
-                      if (supportedLocale.languageCode == locale.languageCode) {
-                        return supportedLocale;
+        child: SavedEventsScope(
+          controller: _savedEventsController,
+          child: LocaleScope(
+            controller: _localeController,
+            child: ThemeScope(
+              controller: _themeController,
+              child: AnimatedBuilder(
+                animation: Listenable.merge([
+                  _localeController,
+                  _themeController,
+                  _categoryController,
+                  _savedEventsController,
+                ]),
+                builder: (context, _) {
+                  return MaterialApp.router(
+                    scaffoldMessengerKey: rootScaffoldMessengerKey,
+                    onGenerateTitle: (context) =>
+                        AppLocalizations.of(context)!.appTitle,
+                    debugShowCheckedModeBanner: false,
+                    theme: buildLightAppTheme(),
+                    darkTheme: buildDarkAppTheme(),
+                    themeMode: _themeController.themeMode,
+                    routerConfig: _router,
+                    locale: _localeController.locale,
+                    supportedLocales: AppLocalizations.supportedLocales,
+                    localizationsDelegates: [
+                      AppLocalizations.delegate,
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate,
+                    ],
+                    builder: (context, child) {
+                      // Initialize the L10nService so it can be used without BuildContext.
+                      final l10n = AppLocalizations.of(context);
+                      if (l10n != null) {
+                        L10nService.update(l10n);
                       }
-                    }
+                      return child!;
+                    },
+                    localeResolutionCallback: (locale, supportedLocales) {
+                      if (locale == null) {
+                        return const Locale('pl');
+                      }
 
-                    return const Locale('pl');
-                  },
-                );
-              },
+                      for (final supportedLocale in supportedLocales) {
+                        if (supportedLocale.languageCode ==
+                            locale.languageCode) {
+                          return supportedLocale;
+                        }
+                      }
+
+                      return const Locale('pl');
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ),

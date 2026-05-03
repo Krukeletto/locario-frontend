@@ -7,6 +7,7 @@ enum FeedbackMessage {
   logoutSuccess,
   loginInvalidCredentials,
   networkError,
+  featureComingSoon,
   eventCreated,
   eventSaveSuccess,
   eventRemoveSuccess,
@@ -25,6 +26,12 @@ class FeedbackService {
 
   static DateTime? _lastMessageTime;
   static FeedbackMessage? _lastMessage;
+
+  @visibleForTesting
+  static void resetForTests() {
+    _lastMessageTime = null;
+    _lastMessage = null;
+  }
 
   /// Shows a success feedback message.
   static void showSuccess(FeedbackMessage message) {
@@ -87,6 +94,7 @@ class FeedbackService {
       FeedbackMessage.loginInvalidCredentials =>
         l10n.authLoginErrorInvalidCredentials,
       FeedbackMessage.networkError => l10n.networkError,
+      FeedbackMessage.featureComingSoon => l10n.featureComingSoon,
       FeedbackMessage.eventCreated => l10n.hubCreateEventCreatedSuccess,
       FeedbackMessage.eventSaveSuccess => l10n.eventSaveSuccess,
       FeedbackMessage.eventRemoveSuccess => l10n.eventRemoveSuccess,

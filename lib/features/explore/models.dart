@@ -106,6 +106,15 @@ class EventMedia {
       sortOrder: json['sortOrder'] as int? ?? 0,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'url': url,
+      'type': type.toJson(),
+      'sortOrder': sortOrder,
+    };
+  }
 }
 
 const Map<ExploreCategory, String?> _backendCategoryIds = {
@@ -206,6 +215,7 @@ class ExploreEvent {
     this.eventSource,
     this.description,
     this.address,
+    this.tags = const [],
     this.status = EventStatus.published,
     this.slotLimit,
     this.ticketUrl,
@@ -231,12 +241,90 @@ class ExploreEvent {
   final String? eventSource;
   final String? description;
   final String? address;
+  final List<String> tags;
   final EventStatus status;
   final int? slotLimit;
   final String? ticketUrl;
   final List<String> organizers;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  factory ExploreEvent.fromJson(
+    Map<String, dynamic> json, {
+    String? fallbackTitle,
+    String? fallbackVenue,
+  }) {
+    final title =
+        _normalizedString(json['name']) ?? _normalizedString(json['title']);
+    final address = _normalizedString(json['address']);
+    final description = _normalizedString(json['description']);
+    final startsAtRaw =
+        _normalizedString(json['startAt']) ??
+        _normalizedString(json['startDate']);
+    final latitude = (json['latitude'] as num?)?.toDouble();
+    final longitude = (json['longitude'] as num?)?.toDouble();
+    final location = LatLng(latitude ?? 0, longitude ?? 0);
+
+    return ExploreEvent(
+      id: _normalizedString(json['id']) ?? '',
+      title: title == null || title.isEmpty
+          ? (fallbackTitle ?? 'Unknown event')
+          : title,
+      categories: _categoriesFromJson(json['categories']),
+      media: _mediaFromJson(json['media']),
+      thumbnailUrl: _normalizedString(json['thumbnailUrl']),
+      startsAt: DateTime.tryParse(startsAtRaw ?? '') ?? DateTime.now().toUtc(),
+      endsAt: _parseDateTime(json['endAt']) ?? _parseDateTime(json['endDate']),
+      trendingScore: json['trendingScore'] as int? ?? 0,
+      venue: address == null || address.isEmpty
+          ? (fallbackVenue ?? _formatCoordinates(location))
+          : address,
+      location: location,
+      minAge: json['minAge'] as int?,
+      maxAge: json['maxAge'] as int?,
+      eventType: _normalizedString(json['eventType']),
+      eventSource: _normalizedString(json['eventSource']),
+      description: description,
+      address: address,
+      tags: _tagsFromJson(json['tags']),
+      status: EventStatus.fromString(json['status'] as String?),
+      slotLimit: json['slotLimit'] as int?,
+      ticketUrl: _normalizedString(json['ticketUrl']),
+      organizers: _organizersFromJson(json['organizers']),
+      createdAt: _parseDateTime(json['createdAt']),
+      updatedAt: _parseDateTime(json['updatedAt']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'name': title,
+      'startsAt': startsAt.toUtc().toIso8601String(),
+      if (endsAt != null) 'endAt': endsAt!.toUtc().toIso8601String(),
+      'trendingScore': trendingScore,
+      'venue': venue,
+      'address': address,
+      'latitude': location.latitude,
+      'longitude': location.longitude,
+      'categories': categories.map((category) => category.toJson()).toList(),
+      'media': media.map((item) => item.toJson()).toList(),
+      if (thumbnailUrl != null) 'thumbnailUrl': thumbnailUrl,
+      if (minAge != null) 'minAge': minAge,
+      if (maxAge != null) 'maxAge': maxAge,
+      if (eventType != null) 'eventType': eventType,
+      if (eventSource != null) 'eventSource': eventSource,
+      if (description != null) 'description': description,
+      'status': status.toJson(),
+      if (slotLimit != null) 'slotLimit': slotLimit,
+      if (ticketUrl != null) 'ticketUrl': ticketUrl,
+      'organizers': organizers,
+      if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt!.toUtc().toIso8601String(),
+      'tags': tags,
+    };
+  }
 
   Color get accentColor {
     if (categories.isEmpty) return const Color(0xFF5B6C8F);
@@ -326,6 +414,106 @@ class ExploreEvent {
     final minutes = date.minute.toString().padLeft(2, '0');
     return '$day.$month, $hours:$minutes';
   }
+}
+
+Map<String, dynamic>? _asMap(dynamic value) {
+  if (value is Map<String, dynamic>) {
+    return value;
+  }
+  if (value is Map) {
+    return Map<String, dynamic>.from(value);
+  }
+  return null;
+}
+
+String? _normalizedString(dynamic value) {
+  final stringValue = value as String?;
+  final trimmed = stringValue?.trim();
+  return trimmed == null || trimmed.isEmpty ? null : trimmed;
+}
+
+DateTime? _parseDateTime(dynamic value) {
+  final raw = _normalizedString(value);
+  if (raw == null) {
+    return null;
+  }
+  return DateTime.tryParse(raw);
+}
+
+List<Category> _categoriesFromJson(dynamic value) {
+  if (value is! List) {
+    return const [];
+  }
+
+  return value
+      .map(_asMap)
+      .whereType<Map<String, dynamic>>()
+      .map(Category.fromJson)
+      .toList(growable: false);
+}
+
+List<EventMedia> _mediaFromJson(dynamic value) {
+  if (value is! List) {
+    return const [];
+  }
+
+  return value
+      .map(_asMap)
+      .whereType<Map<String, dynamic>>()
+      .map(EventMedia.fromJson)
+      .toList(growable: false);
+}
+
+List<String> _tagsFromJson(dynamic value) {
+  if (value is! List) {
+    return const [];
+  }
+
+  return value
+      .map((item) {
+        if (item is String) {
+          return item.trim();
+        }
+        if (item is Map) {
+          final map = Map<String, dynamic>.from(item);
+          return _normalizedString(map['name']) ??
+              _normalizedString(map['label']) ??
+              _normalizedString(map['slug']) ??
+              _normalizedString(map['value']) ??
+              '';
+        }
+        return '';
+      })
+      .where((value) => value.isNotEmpty)
+      .toList(growable: false);
+}
+
+List<String> _organizersFromJson(dynamic value) {
+  if (value is! List) {
+    return const [];
+  }
+
+  return value
+      .map((item) {
+        if (item is String) {
+          return item.trim();
+        }
+        if (item is Map) {
+          final map = Map<String, dynamic>.from(item);
+          return _normalizedString(map['username']) ??
+              _normalizedString(map['userId']) ??
+              '';
+        }
+        return '';
+      })
+      .where((value) => value.isNotEmpty)
+      .toList(growable: false);
+}
+
+String _formatCoordinates(LatLng location) {
+  final lat = location.latitude.toStringAsFixed(4);
+  final lon = location.longitude.toStringAsFixed(4);
+  return '$lat, $lon';
 }
 
 List<ExploreFilter> buildExploreFilters(AppLocalizations l10n) {

@@ -1,0 +1,21 @@
+{
+  "@@locale": "pl",
+  "profileTitle": "Profil",
+  "profileDescription": "Konto, preferencje i zapisane miejsca w jednej spokojniejszej sekcji.",
+  "profileAuthLoginTitle": "Logowanie",
+  "profileAuthLoginSubtitle": "Przejdź do ekranu logowania",
+  "profileAuthLogoutTitle": "Wyloguj",
+  "profileAuthLogoutSubtitle": "Zakończ aktualną sesję",
+  "profileInboxSubtitle": "Otwórz wiadomości i powiadomienia",
+  "settingsTitle": "Ustawienia",
+  "settingsSubtitle": "Język, preferencje i podstawy aplikacji",
+  "settingsScreenTitle": "Ustawienia",
+  "settingsScreenDescription": "Tu możesz ogarnąć podstawy aplikacji, zanim sekcja ustawień bardziej urośnie.",
+  "languageSectionTitle": "Język",
+  "languageSectionSubtitle": "Wybierz, w jakim języku aplikacja ma z Tobą rozmawiać",
+  "themeSectionTitle": "Wygląd",
+  "themeSectionSubtitle": "Wybierz, czy aplikacja ma podążać za systemem czy trzymać stały motyw",
+  "themeModeSystem": "System",
+  "themeModeLight": "Jasny",
+  "themeModeDark": "Ciemny"
+}
