@@ -15,6 +15,7 @@ class ProfileScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final sessionController = AuthScope.of(context);
     final isAuthenticated = sessionController.isAuthenticated;
+    final username = sessionController.profile?.username ?? '';
     final authTitle = isAuthenticated
         ? l10n.profileAuthLogoutTitle
         : l10n.profileAuthLoginTitle;
@@ -27,20 +28,32 @@ class ProfileScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
         children: [
-          Text(
-            l10n.profileTitle,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              color: scheme.primary,
-              fontWeight: FontWeight.w800,
+          if (!isAuthenticated)
+            Text(
+              l10n.profileTitle,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                color: scheme.primary,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.profileDescription,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.72),
+          if (!isAuthenticated) const SizedBox(height: 8),
+          if (isAuthenticated && username.isNotEmpty)
+            Text(
+              username,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: scheme.onSurface.withValues(alpha: 0.9),
+                fontWeight: FontWeight.w700,
+                fontSize: 32,
+              ),
+            )
+          else if (!isAuthenticated)
+            Text(
+              l10n.profileDescription,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurface.withValues(alpha: 0.72),
+              ),
             ),
-          ),
           const SizedBox(height: 24),
           _ProfileActionCard(
             icon: isAuthenticated ? Icons.logout_rounded : Icons.login_rounded,
