@@ -21,6 +21,7 @@ import '../features/saved/saved_events_scope.dart';
 import '../shared/auth/auth_api.dart';
 import '../shared/auth/auth_repository.dart';
 import '../shared/auth/auth_scope.dart';
+import '../shared/auth/favorites_api.dart';
 import '../shared/auth/session_controller.dart';
 import '../shared/auth/auth_storage.dart';
 
@@ -41,6 +42,7 @@ class _LocarioAppState extends State<LocarioApp> {
   late final AuthApi _authApi;
   late final AuthRepository _authRepository;
   late final AuthStorage _authStorage;
+  late final FavoritesApi _favoritesApi;
   late final SessionController _sessionController;
   late final GoRouter _router;
 
@@ -53,12 +55,16 @@ class _LocarioAppState extends State<LocarioApp> {
     _authStorage = const AuthStorage();
     _authRepository = AuthRepository(api: _authApi, storage: _authStorage);
     _sessionController = SessionController(authRepository: _authRepository);
+    _favoritesApi = FavoritesApi();
     _router = createAppRouter(_sessionController);
     _localeController = LocaleController(settingsStore: _settingsStore);
     _themeController = ThemeController(settingsStore: _settingsStore);
     _categoryController = CategoryController(eventRepository: _eventRepository);
     _savedEventsController = SavedEventsController(
       repository: const SharedPreferencesSavedEventsRepository(),
+      favoritesApi: _favoritesApi,
+      sessionController: _sessionController,
+      eventRepository: _eventRepository,
     );
 
     _localeController.load();

@@ -533,6 +533,28 @@ class _ExploreAdvancedFilterSheetState
                           ? () => _setAgeGroup(null, null)
                           : null,
                     ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          l10n.savedShowPastEvents,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Switch(
+                          value: _filters.showPastEvents,
+                          onChanged: (value) {
+                            setState(() {
+                              _filters = _filters.copyWith(
+                                showPastEvents: value,
+                              );
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

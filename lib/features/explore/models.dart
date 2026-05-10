@@ -590,6 +590,7 @@ class ExploreAdvancedFilters {
     this.ageTo,
     this.eventType,
     this.eventSource,
+    this.showPastEvents = false,
   });
 
   final ExploreDistanceFilter distanceFilter;
@@ -599,6 +600,7 @@ class ExploreAdvancedFilters {
   final int? ageTo;
   final String? eventType;
   final String? eventSource;
+  final bool showPastEvents;
 
   static const defaults = ExploreAdvancedFilters();
 
@@ -610,6 +612,7 @@ class ExploreAdvancedFilters {
     int? Function()? ageTo,
     String? Function()? eventType,
     String? Function()? eventSource,
+    bool? showPastEvents,
   }) {
     return ExploreAdvancedFilters(
       distanceFilter: distanceFilter ?? this.distanceFilter,
@@ -619,6 +622,7 @@ class ExploreAdvancedFilters {
       ageTo: ageTo != null ? ageTo() : this.ageTo,
       eventType: eventType != null ? eventType() : this.eventType,
       eventSource: eventSource != null ? eventSource() : this.eventSource,
+      showPastEvents: showPastEvents ?? this.showPastEvents,
     );
   }
 
@@ -644,7 +648,8 @@ class ExploreAdvancedFilters {
         other.ageFrom == ageFrom &&
         other.ageTo == ageTo &&
         other.eventType == eventType &&
-        other.eventSource == eventSource;
+        other.eventSource == eventSource &&
+        other.showPastEvents == showPastEvents;
   }
 
   @override
@@ -656,5 +661,6 @@ class ExploreAdvancedFilters {
     ageTo,
     eventType,
     eventSource,
+    showPastEvents,
   );
 }

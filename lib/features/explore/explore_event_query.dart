@@ -32,11 +32,13 @@ class ExploreEventQuery {
     }
     debugPrint('After category filter: ${filteredEvents.length}');
 
-    final now = DateTime.now();
-    filteredEvents = filteredEvents.where((event) {
-      final cutoff = event.endsAt ?? event.startsAt;
-      return cutoff.isAfter(now);
-    });
+    if (!(advancedFilters?.showPastEvents ?? false)) {
+      final now = DateTime.now();
+      filteredEvents = filteredEvents.where((event) {
+        final cutoff = event.endsAt ?? event.startsAt;
+        return cutoff.isAfter(now);
+      });
+    }
     debugPrint('After past filter: ${filteredEvents.length}');
 
     if (normalizedQuery.isNotEmpty) {

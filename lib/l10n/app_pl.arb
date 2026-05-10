@@ -109,7 +109,7 @@
     }
   },
   "exploreLoadingTitle": "Ładowanie wydarzeń",
-  "exploreLoadingSubtitle": "Pobieramy najnowsze wydarzenia z backendu.",
+  "exploreLoadingSubtitle": "Pobieramy najnowsze wydarzenia, poczekaj chwilkę.",
   "exploreErrorTitle": "Wydarzenia są niedostępne",
   "exploreErrorSubtitle": "Nie udało się teraz pobrać wydarzeń.",
   "exploreEmptyTitle": "Brak wydarzeń",
@@ -312,6 +312,7 @@
   "savedAgeGroupAny": "Dowolny wiek",
   "savedAgeGroup12Plus": "12+",
   "savedAgeGroup18Plus": "18+",
+  "savedShowPastEvents": "Pokaż archiwalne",
   "savedEmptyTitle": "Brak zapisanych wydarzeń",
   "savedEmptySubtitle": "Zapisuj wydarzenia z ekranu Odkrywaj, żeby mieć je tutaj.",
   "savedEmptyFilteredTitle": "Żadne wydarzenia nie pasują do filtrów",

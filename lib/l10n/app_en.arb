@@ -109,7 +109,7 @@
     }
   },
   "exploreLoadingTitle": "Loading events",
-  "exploreLoadingSubtitle": "We are fetching the latest events from the backend.",
+  "exploreLoadingSubtitle": "We are fetching the latest events, please wait.",
   "exploreErrorTitle": "Events unavailable",
   "exploreErrorSubtitle": "We could not load events right now.",
   "exploreEmptyTitle": "No events found",
@@ -312,6 +312,7 @@
   "savedAgeGroupAny": "Any age",
   "savedAgeGroup12Plus": "12+",
   "savedAgeGroup18Plus": "18+",
+  "savedShowPastEvents": "Show past events",
   "savedEmptyTitle": "No saved events yet",
   "savedEmptySubtitle": "Save events from Explore to keep them here.",
   "savedEmptyFilteredTitle": "No events match the filters",

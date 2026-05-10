@@ -11,12 +11,14 @@ class SavedFilters {
     this.selectedTags = const <String>{},
     this.minAge,
     this.maxAge,
+    this.showPastEvents = false,
   });
 
   final Set<String> selectedCategoryIds;
   final Set<String> selectedTags;
   final int? minAge;
   final int? maxAge;
+  final bool showPastEvents;
 
   static const defaults = SavedFilters();
 
@@ -25,12 +27,14 @@ class SavedFilters {
     Set<String>? selectedTags,
     int? Function()? minAge,
     int? Function()? maxAge,
+    bool? showPastEvents,
   }) {
     return SavedFilters(
       selectedCategoryIds: selectedCategoryIds ?? this.selectedCategoryIds,
       selectedTags: selectedTags ?? this.selectedTags,
       minAge: minAge != null ? minAge() : this.minAge,
       maxAge: maxAge != null ? maxAge() : this.maxAge,
+      showPastEvents: showPastEvents ?? this.showPastEvents,
     );
   }
 
@@ -59,6 +63,15 @@ class SavedEventQuery {
     required LatLng? referenceLocation,
   }) {
     Iterable<SavedEventRecord> filteredRecords = records;
+
+    if (!filters.showPastEvents) {
+      final now = DateTime.now();
+      filteredRecords = filteredRecords.where((record) {
+        final event = record.event;
+        final end = event.endsAt ?? event.startsAt;
+        return end.isAfter(now);
+      });
+    }
 
     if (filters.selectedCategoryIds.isNotEmpty) {
       filteredRecords = filteredRecords.where((record) {

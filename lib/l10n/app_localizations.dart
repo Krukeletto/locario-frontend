@@ -587,7 +587,7 @@ abstract class AppLocalizations {
   /// No description provided for @exploreLoadingSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'We are fetching the latest events from the backend.'**
+  /// **'We are fetching the latest events, please wait.'**
   String get exploreLoadingSubtitle;
 
   /// No description provided for @exploreErrorTitle.
@@ -1555,6 +1555,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'18+'**
   String get savedAgeGroup18Plus;
+
+  /// No description provided for @savedShowPastEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Show past events'**
+  String get savedShowPastEvents;
 
   /// No description provided for @savedEmptyTitle.
   ///

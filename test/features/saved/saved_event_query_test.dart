@@ -103,7 +103,7 @@ SavedEventRecord _record(
     event: ExploreEvent(
       id: id,
       title: title,
-      startsAt: DateTime.utc(2026, 5, 1, 18),
+      startsAt: DateTime.utc(2026, 6, 1, 18),
       venue: 'Venue',
       location: location ?? const LatLng(51.7592, 19.4550),
       categories: category == null ? const [] : [category],

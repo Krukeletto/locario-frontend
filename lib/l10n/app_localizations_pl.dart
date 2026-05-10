@@ -271,7 +271,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get exploreLoadingSubtitle =>
-      'Pobieramy najnowsze wydarzenia z backendu.';
+      'Pobieramy najnowsze wydarzenia, poczekaj chwilkę.';
 
   @override
   String get exploreErrorTitle => 'Wydarzenia są niedostępne';
@@ -812,6 +812,9 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get savedAgeGroup18Plus => '18+';
+
+  @override
+  String get savedShowPastEvents => 'Pokaż archiwalne';
 
   @override
   String get savedEmptyTitle => 'Brak zapisanych wydarzeń';

@@ -608,7 +608,7 @@ ExploreEvent _event({
     id: id,
     title: title,
     categories: const [Category(id: 'music', name: 'Music', slug: 'music')],
-    startsAt: DateTime.utc(2026, 4, 12, 19),
+    startsAt: DateTime.utc(2026, 12, 12, 19),
     trendingScore: 1,
     venue: 'Piotrkowska 10, Lodz',
     location: location,

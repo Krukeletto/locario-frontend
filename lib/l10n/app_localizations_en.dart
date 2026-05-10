@@ -272,7 +272,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exploreLoadingSubtitle =>
-      'We are fetching the latest events from the backend.';
+      'We are fetching the latest events, please wait.';
 
   @override
   String get exploreErrorTitle => 'Events unavailable';
@@ -804,6 +804,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savedAgeGroup18Plus => '18+';
+
+  @override
+  String get savedShowPastEvents => 'Show past events';
 
   @override
   String get savedEmptyTitle => 'No saved events yet';

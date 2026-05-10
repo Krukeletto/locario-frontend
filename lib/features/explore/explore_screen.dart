@@ -87,7 +87,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         widget.mapViewModel ??
         ExploreMapViewModel(
           locationService: GeolocatorLocationService(),
-          fallbackCenter: const LatLng(0, 0),
+          fallbackCenter: const LatLng(52.237049, 21.017532),
         );
 
     _styleRepository = widget.styleRepository ?? const MapStyleRepository();
@@ -109,8 +109,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
       }
     });
 
-    _exploreController.loadEvents();
     _mapViewModel.loadInitialLocation();
+    _exploreController.updateReferenceLocation(_mapViewModel.mapCenter);
   }
 
   @override
@@ -227,11 +227,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _maybeEstablishInitialSearchBaseline();
     if (mounted) {
       setState(() {});
-      // If we just got a location and haven't loaded events yet, or if we need to refresh
-      if (_mapViewModel.currentLocation != null &&
-          _exploreController.state is ExploreLoading) {
-        _exploreController.loadEvents();
-      }
     }
   }
 
@@ -377,7 +372,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     _mapViewModel.setPreferredMapCenter(center);
                   },
                 ),
-              if (state is ExploreDataLoading && !_isMinLoadingElapsed)
+              if ((state is ExploreLoading || state is ExploreDataLoading) &&
+                  !_isMinLoadingElapsed)
                 const _LoadingOverlay(),
             ],
           ),
@@ -397,10 +393,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         : currentView;
 
     return switch (state) {
-      ExploreLoading() => StatePanel.loading(
-        title: l10n.exploreLoadingTitle,
-        subtitle: l10n.exploreLoadingSubtitle,
-      ),
+      ExploreLoading() => _buildMainUI(const [], effectiveView),
       ExploreError(type: var type, details: var details) => StatePanel.error(
         title: _errorTitle(type, l10n),
         subtitle: _errorSubtitle(type, l10n, details),

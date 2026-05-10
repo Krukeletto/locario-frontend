@@ -42,7 +42,7 @@ void main() {
         initialRecords: [
           SavedEventRecord(
             event: _event('1', 'Jazz Evening'),
-            savedAt: DateTime.utc(2026, 5, 1, 12),
+            savedAt: DateTime.utc(2026, 6, 1, 12),
           ),
         ],
       );
@@ -111,7 +111,7 @@ ExploreEvent _event(String id, String title) {
   return ExploreEvent(
     id: id,
     title: title,
-    startsAt: DateTime.utc(2026, 5, 1, 18),
+    startsAt: DateTime.utc(2026, 6, 1, 18),
     venue: 'Venue',
     location: const LatLng(51.7592, 19.4550),
     categories: const [Category(id: 'music', name: 'Music', slug: 'music')],

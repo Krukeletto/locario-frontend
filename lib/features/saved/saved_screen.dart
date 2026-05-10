@@ -708,6 +708,27 @@ class _SavedFiltersSheetState extends State<_SavedFiltersSheet> {
                 ),
               ],
             ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.savedShowPastEvents,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Switch(
+                  value: _filters.showPastEvents,
+                  onChanged: (value) {
+                    setState(() {
+                      _filters = _filters.copyWith(showPastEvents: value);
+                    });
+                  },
+                ),
+              ],
+            ),
             if (widget.availableTags.isNotEmpty) ...[
               const SizedBox(height: 20),
               Text(
