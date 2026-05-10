@@ -380,6 +380,36 @@ abstract class AppLocalizations {
   /// **'Join'**
   String get eventDetailsJoinButton;
 
+  /// No description provided for @eventDetailsLeaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave event'**
+  String get eventDetailsLeaveButton;
+
+  /// No description provided for @eventJoinSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re registered for this event.'**
+  String get eventJoinSuccess;
+
+  /// No description provided for @eventLeaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve left this event.'**
+  String get eventLeaveSuccess;
+
+  /// No description provided for @eventJoinError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not register for this event.'**
+  String get eventJoinError;
+
+  /// No description provided for @eventJoinRequiresLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to join this event.'**
+  String get eventJoinRequiresLogin;
+
   /// No description provided for @eventDetailsUnknownEventTitle.
   ///
   /// In en, this message translates to:
@@ -463,6 +493,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} seats available'**
   String eventDetailsSlotsValue(int count);
+
+  /// No description provided for @eventSlotsTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'{registered} / {limit} taken'**
+  String eventSlotsTaken(int registered, int limit);
+
+  /// No description provided for @eventSlotsJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} joined'**
+  String eventSlotsJoined(int count);
+
+  /// No description provided for @eventSlotsSoldOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold out'**
+  String get eventSlotsSoldOut;
+
+  /// No description provided for @eventSlotsWaitlist.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} on waitlist'**
+  String eventSlotsWaitlist(int count);
+
+  /// No description provided for @eventCardSpots.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} spots'**
+  String eventCardSpots(int count);
 
   /// No description provided for @eventDetailsShowOnMapButton.
   ///

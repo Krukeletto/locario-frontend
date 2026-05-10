@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:locario/shared/notifications/notification_entry.dart';
+import 'package:locario/shared/notifications/notification_controller.dart';
 import 'package:locario/shared/notifications/notification_scope.dart';
 import 'package:locario/shared/notifications/notification_type.dart';
+
+enum _InboxFilter { unread, all }
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
@@ -14,6 +17,8 @@ class InboxScreen extends StatefulWidget {
 
 class _InboxScreenState extends State<InboxScreen> {
   final _scrollController = ScrollController();
+  _InboxFilter _filter = _InboxFilter.unread;
+  bool _showRead = false;
 
   @override
   void initState() {
@@ -45,6 +50,11 @@ class _InboxScreenState extends State<InboxScreen> {
     final l10n = AppLocalizations.of(context);
     final controller = NotificationScope.of(context);
 
+    final allHistory = controller.history;
+    final unread = allHistory.where((e) => !e.isRead).toList();
+    final read = allHistory.where((e) => e.isRead).toList();
+    final showLoader = controller.hasMoreHistoryPages;
+
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
@@ -62,7 +72,11 @@ class _InboxScreenState extends State<InboxScreen> {
               border: Border.all(color: scheme.outline.withValues(alpha: 0.18)),
             ),
             child: IconButton(
-              onPressed: () => Navigator.of(context).maybePop(),
+              onPressed: () async {
+                if (!await Navigator.of(context).maybePop()) {
+                  if (context.mounted) context.go('/explore');
+                }
+              },
               icon: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 color: scheme.primary,
@@ -86,7 +100,7 @@ class _InboxScreenState extends State<InboxScreen> {
             ),
         ],
       ),
-      body: controller.history.isEmpty
+      body: allHistory.isEmpty
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -109,31 +123,207 @@ class _InboxScreenState extends State<InboxScreen> {
                 ),
               ),
             )
-          : ListView.builder(
+          : CustomScrollView(
               controller: _scrollController,
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
-              itemCount:
-                  controller.history.length +
-                  (controller.hasMoreHistoryPages ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == controller.history.length) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                return _NotificationTile(
-                  entry: controller.history[index],
-                  onTap: () {
-                    controller.markAsRead(controller.history[index].id);
-                    final route = controller.history[index].route;
-                    if (route != null && route.isNotEmpty) {
-                      context.go(route);
-                    }
-                  },
-                );
-              },
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                    child: _FilterBar(
+                      filter: _filter,
+                      unreadCount: unread.length,
+                      allCount: allHistory.length,
+                      onChanged: (f) => setState(() => _filter = f),
+                    ),
+                  ),
+                ),
+                if (_filter == _InboxFilter.unread) ...[
+                  if (unread.isEmpty)
+                    SliverToBoxAdapter(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 48),
+                          child: Text(
+                            'No unread notifications',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: scheme.onSurface.withValues(alpha: 0.48),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => _NotificationTile(
+                          entry: unread[index],
+                          onTap: () => _onNotificationTap(controller, unread[index]),
+                        ),
+                        childCount: unread.length,
+                      ),
+                    ),
+                  if (showLoader)
+                    SliverToBoxAdapter(
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    ),
+                  if (read.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
+                        child: OutlinedButton.icon(
+                          onPressed: () => setState(() => _filter = _InboxFilter.all),
+                          icon: const Icon(Icons.expand_more_rounded, size: 18),
+                          label: Text('Show read (${read.length})'),
+                        ),
+                      ),
+                    ),
+                ] else ...[
+                  if (unread.isNotEmpty) ...[
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+                        child: Text(
+                          'Unread (${unread.length})',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: scheme.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => _NotificationTile(
+                          entry: unread[index],
+                          onTap: () => _onNotificationTap(controller, unread[index]),
+                        ),
+                        childCount: unread.length,
+                      ),
+                    ),
+                  ],
+                  if (read.isNotEmpty) ...[
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(18),
+                          onTap: () => setState(() => _showRead = !_showRead),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 10,
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  'Read (${read.length})',
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: scheme.onSurface.withValues(alpha: 0.6),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const Spacer(),
+                                AnimatedRotation(
+                                  duration: const Duration(milliseconds: 200),
+                                  turns: _showRead ? 0.5 : 0,
+                                  child: Icon(
+                                    Icons.expand_more_rounded,
+                                    size: 20,
+                                    color: scheme.onSurface.withValues(alpha: 0.4),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (_showRead)
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) => Opacity(
+                            opacity: 0.72,
+                            child: _NotificationTile(
+                              entry: read[index],
+                              onTap: () => _onNotificationTap(controller, read[index]),
+                            ),
+                          ),
+                          childCount: read.length,
+                        ),
+                      ),
+                  ],
+                  if (showLoader)
+                    SliverToBoxAdapter(
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
+                      child: OutlinedButton.icon(
+                        onPressed: () => setState(() => _filter = _InboxFilter.unread),
+                        icon: const Icon(Icons.expand_less_rounded, size: 18),
+                        label: const Text('Show unread only'),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
+    );
+  }
+
+  void _onNotificationTap(
+    NotificationController controller,
+    NotificationEntry entry,
+  ) {
+    controller.markAsRead(entry.id);
+    final route = entry.route;
+    if (route != null && route.isNotEmpty) {
+      context.go(route);
+    }
+  }
+}
+
+class _FilterBar extends StatelessWidget {
+  const _FilterBar({
+    required this.filter,
+    required this.unreadCount,
+    required this.allCount,
+    required this.onChanged,
+  });
+
+  final _InboxFilter filter;
+  final int unreadCount;
+  final int allCount;
+  final ValueChanged<_InboxFilter> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<_InboxFilter>(
+      segments: [
+        ButtonSegment(
+          value: _InboxFilter.unread,
+          label: Text('Unread ($unreadCount)'),
+          icon: const Icon(Icons.mark_email_unread_rounded, size: 18),
+        ),
+        ButtonSegment(
+          value: _InboxFilter.all,
+          label: Text('All ($allCount)'),
+          icon: const Icon(Icons.inbox_rounded, size: 18),
+        ),
+      ],
+      selected: {filter},
+      onSelectionChanged: (v) => onChanged(v.first),
+      style: ButtonStyle(
+        visualDensity: VisualDensity.compact,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
     );
   }
 }
@@ -150,7 +340,7 @@ class _NotificationTile extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(28),

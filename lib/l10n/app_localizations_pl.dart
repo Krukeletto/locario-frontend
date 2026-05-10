@@ -151,6 +151,22 @@ class AppLocalizationsPl extends AppLocalizations {
   String get eventDetailsJoinButton => 'Zapisz się';
 
   @override
+  String get eventDetailsLeaveButton => 'Opuść wydarzenie';
+
+  @override
+  String get eventJoinSuccess => 'Zapisano na wydarzenie.';
+
+  @override
+  String get eventLeaveSuccess => 'Opuściłeś/aś wydarzenie.';
+
+  @override
+  String get eventJoinError => 'Nie udało się zapisać na wydarzenie.';
+
+  @override
+  String get eventJoinRequiresLogin =>
+      'Zaloguj się, aby zapisać się na wydarzenie.';
+
+  @override
   String get eventDetailsUnknownEventTitle => 'Wydarzenie';
 
   @override
@@ -199,6 +215,29 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String eventDetailsSlotsValue(int count) {
     return '$count wolnych miejsc';
+  }
+
+  @override
+  String eventSlotsTaken(int registered, int limit) {
+    return '$registered / $limit zajętych';
+  }
+
+  @override
+  String eventSlotsJoined(int count) {
+    return '$count dołączyło';
+  }
+
+  @override
+  String get eventSlotsSoldOut => 'Brak miejsc';
+
+  @override
+  String eventSlotsWaitlist(int count) {
+    return '$count na liście rezerwowej';
+  }
+
+  @override
+  String eventCardSpots(int count) {
+    return '$count miejsc';
   }
 
   @override

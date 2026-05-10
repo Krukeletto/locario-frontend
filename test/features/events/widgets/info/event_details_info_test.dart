@@ -22,6 +22,7 @@ void main() {
             },
             onSavePressed: () {},
             isSaved: false,
+            isJoined: false,
             onJoinPressed: () {
               joinPressed = true;
             },

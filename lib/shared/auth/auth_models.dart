@@ -126,6 +126,42 @@ class FavoriteEventSummary {
   }
 }
 
+class ProfileEventSummary {
+  const ProfileEventSummary({
+    required this.eventId,
+    required this.name,
+    required this.startAt,
+    this.endAt,
+    this.categoryNames = const [],
+    this.registeredAt,
+  });
+
+  final String eventId;
+  final String name;
+  final DateTime startAt;
+  final DateTime? endAt;
+  final List<String> categoryNames;
+  final DateTime? registeredAt;
+
+  factory ProfileEventSummary.fromJson(Map<String, dynamic> json) {
+    return ProfileEventSummary(
+      eventId: json['eventId'] as String,
+      name: json['name'] as String? ?? '',
+      startAt:
+          DateTime.tryParse(json['startAt'] as String? ?? '') ??
+          DateTime.now().toUtc(),
+      endAt: json['endAt'] != null
+          ? DateTime.tryParse(json['endAt'] as String)
+          : null,
+      categoryNames:
+          (json['categoryNames'] as List?)?.cast<String>() ?? const [],
+      registeredAt: json['registeredAt'] != null
+          ? DateTime.tryParse(json['registeredAt'] as String)
+          : null,
+    );
+  }
+}
+
 class UserProfile {
   const UserProfile({
     required this.id,
@@ -152,7 +188,7 @@ class UserProfile {
   final String? instagramUrl;
   final String? facebookUrl;
   final DateTime createdAt;
-  final List<dynamic> eventRegistrations;
+  final List<ProfileEventSummary> eventRegistrations;
   final List<FavoriteEventSummary> favorites;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -172,7 +208,13 @@ class UserProfile {
           DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
       eventRegistrations: registrations is List
-          ? List<dynamic>.from(registrations)
+          ? registrations
+                .map(
+                  (item) => ProfileEventSummary.fromJson(
+                    Map<String, dynamic>.from(item as Map),
+                  ),
+                )
+                .toList()
           : const [],
       favorites: rawFavorites is List
           ? rawFavorites

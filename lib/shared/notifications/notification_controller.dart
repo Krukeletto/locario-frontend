@@ -172,6 +172,24 @@ class NotificationController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
 
   void scheduleRemindersForSavedEvents(
+    List<({String id, String title, DateTime startsAt})> events, {
+    Set<String>? excludeEventIds,
+  }) {
+    for (final event in events) {
+      if (excludeEventIds?.contains(event.id) == true) continue;
+
+      final type = NotificationType.upcomingEvent;
+      if (!isEnabled(type)) continue;
+
+      NotificationService.scheduleEventReminder(
+        eventId: event.id,
+        title: event.title,
+        startsAt: event.startsAt,
+      );
+    }
+  }
+
+  void scheduleRemindersForJoinedEvents(
     List<({String id, String title, DateTime startsAt})> events,
   ) {
     for (final event in events) {

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../shared/auth/auth_scope.dart';
 import '../../shared/events/event_repository.dart';
+import '../../shared/events/event_slots_response.dart';
 import '../../shared/services/feedback_service.dart';
 import '../../shared/services/map_launch_service.dart';
 import '../../shared/services/share_service.dart';
@@ -9,6 +12,8 @@ import '../../shared/widgets/state_panel.dart';
 import '../explore/models.dart';
 import '../saved/saved_events_controller.dart';
 import '../saved/saved_events_scope.dart';
+import 'joined_events_controller.dart';
+import 'joined_events_scope.dart';
 import 'widgets/gallery/event_details_gallery.dart';
 import 'widgets/info/event_details_info.dart';
 
@@ -31,6 +36,8 @@ class _EventScreenState extends State<EventScreen> {
   bool _isLoading = true;
   String? _error;
   ExploreEvent? _event;
+  EventSlotsResponse? _slots;
+  bool _isJoinLoading = false;
 
   @override
   void initState() {
@@ -67,33 +74,40 @@ class _EventScreenState extends State<EventScreen> {
 
     try {
       final event = await _eventRepository.fetchEvent(eventId);
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       setState(() {
         _event = event;
         _isLoading = false;
       });
+
+      _fetchSlots(eventId);
     } on EventRepositoryException catch (error) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       setState(() {
         _error = error.message;
         _isLoading = false;
       });
     } catch (_) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       setState(() {
         _error = 'unknown';
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _fetchSlots(String eventId) async {
+    final controller = JoinedEventsScope.maybeOf(context);
+    if (controller == null) return;
+
+    try {
+      final slots = await controller.fetchSlots(eventId);
+      if (!mounted) return;
+      setState(() => _slots = slots);
+    } catch (_) {}
   }
 
   void _shareEvent(ExploreEvent event) {
@@ -103,15 +117,11 @@ class _EventScreenState extends State<EventScreen> {
 
   Future<void> _toggleSaved(ExploreEvent event) async {
     final controller = SavedEventsScope.maybeOf(context);
-    if (controller == null) {
-      return;
-    }
+    if (controller == null) return;
 
     final wasSaved = controller.isSaved(event.id);
     final outcome = await controller.toggleSaved(event);
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
 
     if (outcome == SavedToggleOutcome.saved && !wasSaved) {
       FeedbackService.showSuccess(FeedbackMessage.eventSaveSuccess);
@@ -121,12 +131,58 @@ class _EventScreenState extends State<EventScreen> {
     FeedbackService.showSuccess(FeedbackMessage.eventRemoveSuccess);
   }
 
+  Future<void> _joinEvent(ExploreEvent event) async {
+    final joinedController = JoinedEventsScope.maybeOf(context);
+    if (joinedController == null) return;
+
+    final auth = AuthScope.maybeOf(context);
+    if (auth == null || !auth.isAuthenticated) {
+      if (!mounted) return;
+      context.push('/auth/login');
+      return;
+    }
+
+    setState(() => _isJoinLoading = true);
+
+    try {
+      await joinedController.joinEvent(event);
+      if (!mounted) return;
+      FeedbackService.showSuccess(FeedbackMessage.eventJoinSuccess);
+    } catch (e) {
+      if (!mounted) return;
+      FeedbackService.showError(FeedbackMessage.eventJoinError);
+    } finally {
+      if (mounted) setState(() => _isJoinLoading = false);
+    }
+  }
+
+  Future<void> _leaveEvent(ExploreEvent event) async {
+    final joinedController = JoinedEventsScope.maybeOf(context);
+    if (joinedController == null) return;
+
+    setState(() => _isJoinLoading = true);
+
+    try {
+      await joinedController.cancelRegistration(event.id);
+      if (!mounted) return;
+      FeedbackService.showSuccess(FeedbackMessage.eventLeaveSuccess);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to leave event'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isJoinLoading = false);
+    }
+  }
+
   Future<void> _showEventOnMap(ExploreEvent event) async {
     final l10n = AppLocalizations.of(context);
     final opened = await MapLaunchService.openLocation(event.location);
-    if (opened || !mounted) {
-      return;
-    }
+    if (opened || !mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -142,13 +198,17 @@ class _EventScreenState extends State<EventScreen> {
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
     final savedController = SavedEventsScope.maybeOf(context);
-    return savedController == null
-        ? _buildScaffold(context, theme, scheme, l10n, savedController)
-        : AnimatedBuilder(
-            animation: savedController,
-            builder: (context, _) =>
-                _buildScaffold(context, theme, scheme, l10n, savedController),
-          );
+    final joinedController = JoinedEventsScope.maybeOf(context);
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        ?savedController,
+        ?joinedController,
+      ]),
+      builder: (context, _) => _buildScaffold(
+        context, theme, scheme, l10n, savedController, joinedController,
+      ),
+    );
   }
 
   Scaffold _buildScaffold(
@@ -157,6 +217,7 @@ class _EventScreenState extends State<EventScreen> {
     ColorScheme scheme,
     AppLocalizations l10n,
     SavedEventsController? savedController,
+    JoinedEventsController? joinedController,
   ) {
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -200,7 +261,7 @@ class _EventScreenState extends State<EventScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: _buildBody(context, l10n, savedController),
+      body: _buildBody(context, l10n, savedController, joinedController),
     );
   }
 
@@ -208,6 +269,7 @@ class _EventScreenState extends State<EventScreen> {
     BuildContext context,
     AppLocalizations l10n,
     SavedEventsController? savedController,
+    JoinedEventsController? joinedController,
   ) {
     if (_isLoading) {
       return StatePanel.loading(
@@ -216,7 +278,7 @@ class _EventScreenState extends State<EventScreen> {
       );
     }
 
-    if (_error != null || _event == null) {
+    if (_error != null) {
       return StatePanel.error(
         title: l10n.eventDetailsErrorTitle,
         subtitle: l10n.eventDetailsErrorSubtitle,
@@ -225,8 +287,13 @@ class _EventScreenState extends State<EventScreen> {
       );
     }
 
+    if (_event == null) {
+      return const SizedBox.shrink();
+    }
+
     final event = _event!;
     const overlap = 12.0;
+    final isJoined = joinedController?.isJoined(event.id) ?? false;
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -241,7 +308,11 @@ class _EventScreenState extends State<EventScreen> {
               onShowOnMapPressed: () => _showEventOnMap(event),
               onSavePressed: () => _toggleSaved(event),
               isSaved: savedController?.isSaved(event.id) ?? false,
-              onJoinPressed: () {},
+              isJoined: isJoined,
+              onJoinPressed: isJoined ? null : () => _joinEvent(event),
+              onLeavePressed: isJoined ? () => _leaveEvent(event) : null,
+              slots: _slots,
+              isJoinLoading: _isJoinLoading,
             ),
           ),
         ),

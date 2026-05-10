@@ -47,6 +47,11 @@
   "eventDetailsChatLabel": "Czat uczestników",
   "eventDetailsBuyTicketButton": "Kup bilet",
   "eventDetailsJoinButton": "Zapisz się",
+  "eventDetailsLeaveButton": "Opuść wydarzenie",
+  "eventJoinSuccess": "Zapisano na wydarzenie.",
+  "eventLeaveSuccess": "Opuściłeś/aś wydarzenie.",
+  "eventJoinError": "Nie udało się zapisać na wydarzenie.",
+  "eventJoinRequiresLogin": "Zaloguj się, aby zapisać się na wydarzenie.",
   "eventDetailsUnknownEventTitle": "Wydarzenie",
   "eventDetailsUnknownLocation": "Lokalizacja nieznana",
   "eventDetailsFallbackDescription": "To tymczasowy opis wydarzenia. W kolejnych krokach podepniemy pełne dane z formularza tworzenia wydarzenia i backendu.",
@@ -62,6 +67,42 @@
   "eventDetailsSlotsLabel": "Limit miejsc",
   "eventDetailsSlotsValue": "{count} wolnych miejsc",
   "@eventDetailsSlotsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventSlotsTaken": "{registered} / {limit} zajętych",
+  "@eventSlotsTaken": {
+    "placeholders": {
+      "registered": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "eventSlotsJoined": "{count} dołączyło",
+  "@eventSlotsJoined": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventSlotsSoldOut": "Brak miejsc",
+  "eventSlotsWaitlist": "{count} na liście rezerwowej",
+  "@eventSlotsWaitlist": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventCardSpots": "{count} miejsc",
+  "@eventCardSpots": {
     "placeholders": {
       "count": {
         "type": "int"
