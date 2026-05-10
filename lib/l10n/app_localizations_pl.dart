@@ -698,6 +698,47 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubFriendsSubtitle => 'Twoja sieć';
 
   @override
+  String get inboxEmpty => 'Brak powiadomień';
+
+  @override
+  String get inboxMarkAllRead => 'Oznacz wszystkie jako przeczytane';
+
+  @override
+  String get notificationSettingsTitle => 'Powiadomienia Push';
+
+  @override
+  String get notificationSettingsSubtitle =>
+      'Wybierz, które powiadomienia chcesz otrzymywać';
+
+  @override
+  String get notificationTypeUpcomingEvent => 'Nadchodzące wydarzenia';
+
+  @override
+  String get notificationTypeUpcomingEventDesc =>
+      'Przypomnienia przed rozpoczęciem zapisanych wydarzeń';
+
+  @override
+  String get notificationTypeExpiredEvent => 'Zakończone wydarzenia';
+
+  @override
+  String get notificationTypeExpiredEventDesc =>
+      'Gdy zapisane wydarzenie już minęło';
+
+  @override
+  String get notificationTypeEventPublished => 'Nowe wydarzenia';
+
+  @override
+  String get notificationTypeEventPublishedDesc =>
+      'Gdy nowe wydarzenia pojawią się w pobliżu';
+
+  @override
+  String get notificationTypeSystemMessage => 'Wiadomości systemowe';
+
+  @override
+  String get notificationTypeSystemMessageDesc =>
+      'Ważne aktualizacje z aplikacji';
+
+  @override
   String get profileTitle => 'Profil';
 
   @override

@@ -275,6 +275,54 @@
   "hubCommunitySubtitle": "Lokalne aktualizacje",
   "hubFriendsTitle": "Znajomi",
   "hubFriendsSubtitle": "Twoja sieć",
+  "@inboxEmpty": {
+    "description": "Tekst wyświetlany gdy skrzynka odbiorcza jest pusta."
+  },
+  "inboxEmpty": "Brak powiadomień",
+  "@inboxMarkAllRead": {
+    "description": "Tekst przycisku do oznaczenia wszystkich powiadomień jako przeczytane."
+  },
+  "inboxMarkAllRead": "Oznacz wszystkie jako przeczytane",
+  "@notificationSettingsTitle": {
+    "description": "Tytuł sekcji preferencji powiadomień w ustawieniach."
+  },
+  "notificationSettingsTitle": "Powiadomienia Push",
+  "@notificationSettingsSubtitle": {
+    "description": "Podtytuł sekcji preferencji powiadomień w ustawieniach."
+  },
+  "notificationSettingsSubtitle": "Wybierz, które powiadomienia chcesz otrzymywać",
+  "@notificationTypeUpcomingEvent": {
+    "description": "Etykieta powiadomień o nadchodzących wydarzeniach."
+  },
+  "notificationTypeUpcomingEvent": "Nadchodzące wydarzenia",
+  "@notificationTypeUpcomingEventDesc": {
+    "description": "Opis powiadomień o nadchodzących wydarzeniach."
+  },
+  "notificationTypeUpcomingEventDesc": "Przypomnienia przed rozpoczęciem zapisanych wydarzeń",
+  "@notificationTypeExpiredEvent": {
+    "description": "Etykieta powiadomień o zakończonych wydarzeniach."
+  },
+  "notificationTypeExpiredEvent": "Zakończone wydarzenia",
+  "@notificationTypeExpiredEventDesc": {
+    "description": "Opis powiadomień o zakończonych wydarzeniach."
+  },
+  "notificationTypeExpiredEventDesc": "Gdy zapisane wydarzenie już minęło",
+  "@notificationTypeEventPublished": {
+    "description": "Etykieta powiadomień o nowych wydarzeniach."
+  },
+  "notificationTypeEventPublished": "Nowe wydarzenia",
+  "@notificationTypeEventPublishedDesc": {
+    "description": "Opis powiadomień o nowych wydarzeniach."
+  },
+  "notificationTypeEventPublishedDesc": "Gdy nowe wydarzenia pojawią się w pobliżu",
+  "@notificationTypeSystemMessage": {
+    "description": "Etykieta powiadomień systemowych."
+  },
+  "notificationTypeSystemMessage": "Wiadomości systemowe",
+  "@notificationTypeSystemMessageDesc": {
+    "description": "Opis powiadomień systemowych."
+  },
+  "notificationTypeSystemMessageDesc": "Ważne aktualizacje z aplikacji",
   "profileTitle": "Profil",
   "profileDescription": "Konto, preferencje i zapisane miejsca w jednej spokojniejszej sekcji.",
   "profileAuthLoginTitle": "Logowanie",

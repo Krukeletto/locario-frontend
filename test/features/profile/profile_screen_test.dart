@@ -6,7 +6,6 @@ import 'package:locario/shared/auth/auth_models.dart';
 import 'package:locario/shared/auth/auth_repository.dart';
 import 'package:locario/shared/auth/auth_scope.dart';
 import 'package:locario/shared/auth/session_controller.dart';
-import 'package:locario/shared/services/feedback_service.dart';
 
 import '../../test_helpers/test_app.dart';
 
@@ -80,11 +79,7 @@ Future<SessionController> _createSessionController() async {
 }
 
 void main() {
-  testWidgets('shows coming soon toast for disabled inbox card', (
-    tester,
-  ) async {
-    FeedbackService.resetForTests();
-
+  testWidgets('renders inbox card with correct labels', (tester) async {
     final sessionController = await _createSessionController();
 
     await tester.pumpWidget(
@@ -98,16 +93,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final inboxCard = find.ancestor(
-      of: find.text('Inbox'),
-      matching: find.byType(InkWell),
-    );
-    await tester.ensureVisible(inboxCard);
-    await tester.tap(inboxCard);
-    await tester.pumpAndSettle();
-
-    expect(find.text('This section is still being built.'), findsOneWidget);
     expect(find.text('Profile'), findsOneWidget);
+    expect(find.text('Inbox'), findsOneWidget);
     expect(find.text('Open your notifications'), findsOneWidget);
   });
 }

@@ -1334,6 +1334,78 @@ abstract class AppLocalizations {
   /// **'Your network'**
   String get hubFriendsSubtitle;
 
+  /// Text shown when the inbox has no notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get inboxEmpty;
+
+  /// Button text to mark all notifications as read.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as read'**
+  String get inboxMarkAllRead;
+
+  /// Title for notification preferences section in settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Push Notifications'**
+  String get notificationSettingsTitle;
+
+  /// Subtitle for notification preferences section in settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which notifications you want to receive'**
+  String get notificationSettingsSubtitle;
+
+  /// Label for upcoming event notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming events'**
+  String get notificationTypeUpcomingEvent;
+
+  /// Description for upcoming event notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders before saved events start'**
+  String get notificationTypeUpcomingEventDesc;
+
+  /// Label for expired event notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired events'**
+  String get notificationTypeExpiredEvent;
+
+  /// Description for expired event notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'When a saved event has passed'**
+  String get notificationTypeExpiredEventDesc;
+
+  /// Label for new event published notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'New events'**
+  String get notificationTypeEventPublished;
+
+  /// Description for new event published notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'When new events are published nearby'**
+  String get notificationTypeEventPublishedDesc;
+
+  /// Label for system message notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'System messages'**
+  String get notificationTypeSystemMessage;
+
+  /// Description for system message notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Important updates from the app'**
+  String get notificationTypeSystemMessageDesc;
+
   /// No description provided for @profileTitle.
   ///
   /// In en, this message translates to:

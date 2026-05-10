@@ -1,30 +1,262 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
+import 'package:locario/shared/notifications/notification_entry.dart';
+import 'package:locario/shared/notifications/notification_scope.dart';
+import 'package:locario/shared/notifications/notification_type.dart';
 
-import '../../shared/widgets/state_panel.dart';
-
-class InboxScreen extends StatelessWidget {
+class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
 
   @override
+  State<InboxScreen> createState() => _InboxScreenState();
+}
+
+class _InboxScreenState extends State<InboxScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final controller = NotificationScope.of(context);
+      if (controller.hasMoreHistoryPages) {
+        controller.loadMoreHistory();
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final backgroundColor = Color.alphaBlend(
-      Colors.black.withValues(alpha: 0.18),
-      Theme.of(context).colorScheme.primary,
-    );
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
+    final controller = NotificationScope.of(context);
 
     return Scaffold(
-      backgroundColor: backgroundColor,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: StatePanel.empty(
-            title: l10n.tabInbox,
-            subtitle: l10n.featureComingSoon,
+      backgroundColor: scheme.surface,
+      appBar: AppBar(
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        titleSpacing: 8,
+        leadingWidth: 64,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16, top: 6, bottom: 6),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerLow,
+              shape: BoxShape.circle,
+              border: Border.all(color: scheme.outline.withValues(alpha: 0.18)),
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: scheme.primary,
+                size: 18,
+              ),
+            ),
+          ),
+        ),
+        title: Text(
+          l10n.tabInbox,
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: scheme.primary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        actions: [
+          if (controller.unreadCount > 0)
+            TextButton(
+              onPressed: () => controller.markAllAsRead(),
+              child: Text(l10n.inboxMarkAllRead),
+            ),
+        ],
+      ),
+      body: controller.history.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.inbox_rounded,
+                      size: 64,
+                      color: scheme.onSurface.withValues(alpha: 0.24),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.inboxEmpty,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: scheme.onSurface.withValues(alpha: 0.48),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
+              itemCount:
+                  controller.history.length +
+                  (controller.hasMoreHistoryPages ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == controller.history.length) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                return _NotificationTile(
+                  entry: controller.history[index],
+                  onTap: () {
+                    controller.markAsRead(controller.history[index].id);
+                    final route = controller.history[index].route;
+                    if (route != null && route.isNotEmpty) {
+                      context.go(route);
+                    }
+                  },
+                );
+              },
+            ),
+    );
+  }
+}
+
+class _NotificationTile extends StatelessWidget {
+  const _NotificationTile({required this.entry, required this.onTap});
+
+  final NotificationEntry entry;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(28),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: entry.isRead
+                ? scheme.surfaceContainerLow.withValues(alpha: 0.6)
+                : scheme.primaryContainer.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: entry.isRead
+                  ? scheme.outline.withValues(alpha: 0.16)
+                  : scheme.primary.withValues(alpha: 0.24),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: entry.isRead
+                      ? scheme.surfaceContainerHigh
+                      : scheme.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  entry.type.icon,
+                  color: entry.isRead
+                      ? scheme.onSurface.withValues(alpha: 0.48)
+                      : scheme.primary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            entry.title,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: entry.isRead
+                                  ? FontWeight.w500
+                                  : FontWeight.w700,
+                              color: scheme.onSurface,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        if (!entry.isRead)
+                          Container(
+                            width: 8,
+                            height: 8,
+                            margin: const EdgeInsets.only(top: 6),
+                            decoration: BoxDecoration(
+                              color: scheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      entry.body,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurface.withValues(alpha: 0.64),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatTimestamp(entry.timestamp),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurface.withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  String _formatTimestamp(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+
+    if (diff.inMinutes < 1) return 'now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+
+    return '${dt.day}/${dt.month}/${dt.year}';
   }
 }

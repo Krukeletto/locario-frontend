@@ -691,6 +691,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubFriendsSubtitle => 'Your network';
 
   @override
+  String get inboxEmpty => 'No notifications yet';
+
+  @override
+  String get inboxMarkAllRead => 'Mark all as read';
+
+  @override
+  String get notificationSettingsTitle => 'Push Notifications';
+
+  @override
+  String get notificationSettingsSubtitle =>
+      'Choose which notifications you want to receive';
+
+  @override
+  String get notificationTypeUpcomingEvent => 'Upcoming events';
+
+  @override
+  String get notificationTypeUpcomingEventDesc =>
+      'Reminders before saved events start';
+
+  @override
+  String get notificationTypeExpiredEvent => 'Expired events';
+
+  @override
+  String get notificationTypeExpiredEventDesc =>
+      'When a saved event has passed';
+
+  @override
+  String get notificationTypeEventPublished => 'New events';
+
+  @override
+  String get notificationTypeEventPublishedDesc =>
+      'When new events are published nearby';
+
+  @override
+  String get notificationTypeSystemMessage => 'System messages';
+
+  @override
+  String get notificationTypeSystemMessageDesc =>
+      'Important updates from the app';
+
+  @override
   String get profileTitle => 'Profile';
 
   @override

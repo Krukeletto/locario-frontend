@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 
 import 'app/app.dart';
 import 'firebase_options.dart';
+import 'shared/notifications/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await NotificationService.initLocalNotifications();
+
   runApp(const LocarioApp());
 }

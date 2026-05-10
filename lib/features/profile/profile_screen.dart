@@ -66,11 +66,7 @@ class ProfileScreen extends StatelessWidget {
             icon: Icons.notifications_rounded,
             title: l10n.tabInbox,
             subtitle: l10n.profileInboxSubtitle,
-            enabled: false,
-            onTap: () {},
-            onDisabledTap: () {
-              FeedbackService.showInfo(FeedbackMessage.featureComingSoon);
-            },
+            onTap: () => context.push('/inbox'),
           ),
           const SizedBox(height: 14),
           _ProfileActionCard(
@@ -91,16 +87,12 @@ class _ProfileActionCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
-    this.onDisabledTap,
-    this.enabled = true,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-  final VoidCallback? onDisabledTap;
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -108,86 +100,72 @@ class _ProfileActionCard extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return InkWell(
-      onTap: enabled ? onTap : onDisabledTap,
+      onTap: onTap,
       borderRadius: BorderRadius.circular(28),
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: enabled
-              ? scheme.surfaceContainerLow
-              : scheme.surfaceContainerLow.withValues(alpha: 0.76),
+          color: scheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(
-            color: enabled
-                ? scheme.outline.withValues(alpha: 0.28)
-                : scheme.outline.withValues(alpha: 0.16),
-          ),
+          border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(
-                alpha: enabled
-                    ? theme.brightness == Brightness.dark
-                          ? 0.22
-                          : 0.04
-                    : 0.0,
+                alpha: theme.brightness == Brightness.dark ? 0.22 : 0.04,
               ),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
           ],
         ),
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 180),
-          opacity: enabled ? 1 : 0.58,
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: scheme.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Icon(icon, color: scheme.primary, size: 26),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: scheme.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(18),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: scheme.primary,
-                        fontWeight: FontWeight.w800,
-                      ),
+              child: Icon(icon, color: scheme.primary, size: 26),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: scheme.primary,
+                      fontWeight: FontWeight.w800,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.72),
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurface.withValues(alpha: 0.72),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: scheme.primary.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: scheme.primary,
-                  size: 16,
-                ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: scheme.primary.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
               ),
-            ],
-          ),
+              child: Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: scheme.primary,
+                size: 16,
+              ),
+            ),
+          ],
         ),
       ),
     );

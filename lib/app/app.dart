@@ -24,6 +24,11 @@ import '../shared/auth/auth_scope.dart';
 import '../shared/auth/favorites_api.dart';
 import '../shared/auth/session_controller.dart';
 import '../shared/auth/auth_storage.dart';
+import '../shared/notifications/notification_controller.dart';
+import '../shared/notifications/notification_scope.dart';
+import '../shared/notifications/notification_service.dart';
+import '../shared/notifications/shared_prefs_notification_history_repository.dart';
+import '../shared/notifications/shared_prefs_notification_preferences_store.dart';
 
 class LocarioApp extends StatefulWidget {
   const LocarioApp({super.key});
@@ -45,6 +50,7 @@ class _LocarioAppState extends State<LocarioApp> {
   late final FavoritesApi _favoritesApi;
   late final SessionController _sessionController;
   late final GoRouter _router;
+  late final NotificationController _notificationController;
 
   @override
   void initState() {
@@ -66,21 +72,49 @@ class _LocarioAppState extends State<LocarioApp> {
       sessionController: _sessionController,
       eventRepository: _eventRepository,
     );
+    _notificationController = NotificationController(
+      historyRepository: const SharedPrefsNotificationHistoryRepository(),
+      preferencesStore: const SharedPrefsNotificationPreferencesStore(),
+    );
 
     _localeController.load();
     _themeController.load();
     _categoryController.loadCategories();
     _savedEventsController.load();
     _sessionController.load();
+    _notificationController.loadHistory();
+    _notificationController.loadPreferences();
+
+    NotificationService.init(
+      controller: _notificationController,
+      router: _router,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncReminders();
+      _savedEventsController.addListener(_syncReminders);
+    });
+  }
+
+  void _syncReminders() {
+    final events = _savedEventsController.events;
+    if (events.isEmpty) return;
+    _notificationController.scheduleRemindersForSavedEvents(
+      events
+          .map((e) => (id: e.id, title: e.title, startsAt: e.startsAt))
+          .toList(),
+    );
   }
 
   @override
   void dispose() {
+    _savedEventsController.removeListener(_syncReminders);
     _localeController.dispose();
     _themeController.dispose();
     _categoryController.dispose();
     _savedEventsController.dispose();
     _sessionController.dispose();
+    _notificationController.dispose();
     super.dispose();
   }
 
@@ -92,57 +126,60 @@ class _LocarioAppState extends State<LocarioApp> {
         controller: _sessionController,
         child: SavedEventsScope(
           controller: _savedEventsController,
-          child: LocaleScope(
-            controller: _localeController,
-            child: ThemeScope(
-              controller: _themeController,
-              child: AnimatedBuilder(
-                animation: Listenable.merge([
-                  _localeController,
-                  _themeController,
-                  _categoryController,
-                  _savedEventsController,
-                ]),
-                builder: (context, _) {
-                  return MaterialApp.router(
-                    scaffoldMessengerKey: rootScaffoldMessengerKey,
-                    onGenerateTitle: (context) =>
-                        AppLocalizations.of(context).appTitle,
-                    debugShowCheckedModeBanner: false,
-                    theme: buildLightAppTheme(),
-                    darkTheme: buildDarkAppTheme(),
-                    themeMode: _themeController.themeMode,
-                    routerConfig: _router,
-                    locale: _localeController.locale,
-                    supportedLocales: AppLocalizations.supportedLocales,
-                    localizationsDelegates: [
-                      AppLocalizations.delegate,
-                      GlobalMaterialLocalizations.delegate,
-                      GlobalWidgetsLocalizations.delegate,
-                      GlobalCupertinoLocalizations.delegate,
-                    ],
-                    builder: (context, child) {
-                      // Initialize the L10nService so it can be used without BuildContext.
-                      final l10n = AppLocalizations.of(context);
-                      L10nService.update(l10n);
-                      return child!;
-                    },
-                    localeResolutionCallback: (locale, supportedLocales) {
-                      if (locale == null) {
-                        return const Locale('pl');
-                      }
-
-                      for (final supportedLocale in supportedLocales) {
-                        if (supportedLocale.languageCode ==
-                            locale.languageCode) {
-                          return supportedLocale;
+          child: NotificationScope(
+            controller: _notificationController,
+            child: LocaleScope(
+              controller: _localeController,
+              child: ThemeScope(
+                controller: _themeController,
+                child: AnimatedBuilder(
+                  animation: Listenable.merge([
+                    _localeController,
+                    _themeController,
+                    _categoryController,
+                    _savedEventsController,
+                    _notificationController,
+                  ]),
+                  builder: (context, _) {
+                    return MaterialApp.router(
+                      scaffoldMessengerKey: rootScaffoldMessengerKey,
+                      onGenerateTitle: (context) =>
+                          AppLocalizations.of(context).appTitle,
+                      debugShowCheckedModeBanner: false,
+                      theme: buildLightAppTheme(),
+                      darkTheme: buildDarkAppTheme(),
+                      themeMode: _themeController.themeMode,
+                      routerConfig: _router,
+                      locale: _localeController.locale,
+                      supportedLocales: AppLocalizations.supportedLocales,
+                      localizationsDelegates: [
+                        AppLocalizations.delegate,
+                        GlobalMaterialLocalizations.delegate,
+                        GlobalWidgetsLocalizations.delegate,
+                        GlobalCupertinoLocalizations.delegate,
+                      ],
+                      builder: (context, child) {
+                        final l10n = AppLocalizations.of(context);
+                        L10nService.update(l10n);
+                        return child!;
+                      },
+                      localeResolutionCallback: (locale, supportedLocales) {
+                        if (locale == null) {
+                          return const Locale('pl');
                         }
-                      }
 
-                      return const Locale('pl');
-                    },
-                  );
-                },
+                        for (final supportedLocale in supportedLocales) {
+                          if (supportedLocale.languageCode ==
+                              locale.languageCode) {
+                            return supportedLocale;
+                          }
+                        }
+
+                        return const Locale('pl');
+                      },
+                    );
+                  },
+                ),
               ),
             ),
           ),

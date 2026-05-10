@@ -12,8 +12,13 @@ import 'package:locario/shared/auth/auth_models.dart';
 import 'package:locario/shared/auth/auth_repository.dart';
 import 'package:locario/shared/auth/auth_scope.dart';
 import 'package:locario/shared/auth/session_controller.dart';
+import 'package:locario/shared/notifications/notification_controller.dart';
+import 'package:locario/shared/notifications/notification_scope.dart';
+import 'package:locario/shared/notifications/shared_prefs_notification_history_repository.dart';
+import 'package:locario/shared/notifications/shared_prefs_notification_preferences_store.dart';
 import 'package:locario/shared/services/feedback_service.dart';
 import 'package:locario/shared/services/l10n_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MemoryAuthStorage implements AuthTokenStorage {
   AuthTokens? stored;
@@ -135,21 +140,29 @@ Future<GoRouter> _pumpRouterApp(
   required SessionController sessionController,
 }) async {
   final router = createAppRouter(sessionController);
+  SharedPreferences.setMockInitialValues({});
+  final notificationController = NotificationController(
+    historyRepository: const SharedPrefsNotificationHistoryRepository(),
+    preferencesStore: const SharedPrefsNotificationPreferencesStore(),
+  );
 
   await tester.pumpWidget(
-    AuthScope(
-      controller: sessionController,
-      child: MaterialApp.router(
-        scaffoldMessengerKey: rootScaffoldMessengerKey,
-        locale: const Locale('pl'),
-        supportedLocales: AppLocalizations.supportedLocales,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        routerConfig: router,
-        builder: (context, child) {
-          final l10n = AppLocalizations.of(context);
-          L10nService.init(l10n);
-          return child!;
-        },
+    NotificationScope(
+      controller: notificationController,
+      child: AuthScope(
+        controller: sessionController,
+        child: MaterialApp.router(
+          scaffoldMessengerKey: rootScaffoldMessengerKey,
+          locale: const Locale('pl'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          routerConfig: router,
+          builder: (context, child) {
+            final l10n = AppLocalizations.of(context);
+            L10nService.init(l10n);
+            return child!;
+          },
+        ),
       ),
     ),
   );
