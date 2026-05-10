@@ -119,7 +119,7 @@ class _LocarioAppState extends State<LocarioApp> {
                       // Initialize the L10nService so it can be used without BuildContext.
                       final l10n = AppLocalizations.of(context);
                       L10nService.update(l10n);
-                                          return child!;
+                      return child!;
                     },
                     localeResolutionCallback: (locale, supportedLocales) {
                       if (locale == null) {

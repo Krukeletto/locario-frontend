@@ -680,12 +680,6 @@ class AppLocalizationsPl extends AppLocalizations {
       'Nie udało się ustalić lokalizacji. Spróbuj wpisać inny adres lub wskaż punkt na mapie.';
 
   @override
-  String get hubInboxTitle => 'Skrzynka';
-
-  @override
-  String get hubInboxSubtitle => 'Twoje powiadomienia';
-
-  @override
   String get hubMessagesTitle => 'Wiadomości';
 
   @override

@@ -151,7 +151,7 @@ Future<GoRouter> _pumpRouterApp(
         builder: (context, child) {
           final l10n = AppLocalizations.of(context);
           L10nService.init(l10n);
-                  return child!;
+          return child!;
         },
       ),
     ),

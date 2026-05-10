@@ -22,8 +22,6 @@ class HubActionItem {
     switch (id) {
       case 'create-event':
         return l10n.hubCreateEventTitle;
-      case 'inbox':
-        return l10n.hubInboxTitle;
       case 'messages':
         return l10n.hubMessagesTitle;
       case 'community':
@@ -39,8 +37,6 @@ class HubActionItem {
     switch (id) {
       case 'create-event':
         return l10n.hubCreateEventSubtitle;
-      case 'inbox':
-        return l10n.hubInboxSubtitle;
       case 'messages':
         return l10n.hubMessagesSubtitle;
       case 'community':

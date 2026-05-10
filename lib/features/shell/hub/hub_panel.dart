@@ -37,61 +37,120 @@ class HubPanel extends StatelessWidget {
           color: panelBackground,
           borderRadius: BorderRadius.circular(32),
         ),
-        // Scrollable body keeps panel usable on shorter screens.
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        child: SafeArea(
+          top: false,
+          bottom: false,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                l10n.hubTitle,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: scheme.primary,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                l10n.hubDescription,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurface.withValues(alpha: 0.78),
-                  height: 1.15,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l10n.hubTitle,
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: scheme.primary,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.hubDescription,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurface.withValues(alpha: 0.78),
+                        height: 1.15,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
-              // Secondary actions are shown as a fixed 2-column grid.
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                itemCount: secondaryItems.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.9,
-                ),
-                itemBuilder: (context, index) {
-                  final item = secondaryItems[index];
-                  return _SecondaryActionTile(
-                    item: item,
-                    l10n: l10n,
-                    backgroundColor: tileBackground,
-                    onTap: item.isEnabled
-                        ? () => onItemSelected(item)
-                        : () => FeedbackService.showInfo(
-                            FeedbackMessage.featureComingSoon,
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Column(
+                    children: [
+                      for (
+                        var index = 0;
+                        index < secondaryItems.length;
+                        index += 2
+                      )
+                        Padding(
+                          padding: EdgeInsets.only(
+                            bottom: index + 2 < secondaryItems.length ? 12 : 0,
                           ),
-                  );
-                },
+                          child: index + 1 < secondaryItems.length
+                              ? Row(
+                                  children: [
+                                    Expanded(
+                                      child: _SecondaryActionTile(
+                                        item: secondaryItems[index],
+                                        l10n: l10n,
+                                        backgroundColor: tileBackground,
+                                        onTap: secondaryItems[index].isEnabled
+                                            ? () => onItemSelected(
+                                                secondaryItems[index],
+                                              )
+                                            : () => FeedbackService.showInfo(
+                                                FeedbackMessage
+                                                    .featureComingSoon,
+                                              ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _SecondaryActionTile(
+                                        item: secondaryItems[index + 1],
+                                        l10n: l10n,
+                                        backgroundColor: tileBackground,
+                                        onTap:
+                                            secondaryItems[index + 1].isEnabled
+                                            ? () => onItemSelected(
+                                                secondaryItems[index + 1],
+                                              )
+                                            : () => FeedbackService.showInfo(
+                                                FeedbackMessage
+                                                    .featureComingSoon,
+                                              ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  children: [
+                                    Expanded(
+                                      child: _SecondaryActionTile(
+                                        item: secondaryItems[index],
+                                        l10n: l10n,
+                                        backgroundColor: tileBackground,
+                                        onTap: secondaryItems[index].isEnabled
+                                            ? () => onItemSelected(
+                                                secondaryItems[index],
+                                              )
+                                            : () => FeedbackService.showInfo(
+                                                FeedbackMessage
+                                                    .featureComingSoon,
+                                              ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
-              // Primary CTA stays at the bottom of the panel content.
-              _PrimaryActionCard(
-                item: primaryItem,
-                l10n: l10n,
-                onTap: () => onItemSelected(primaryItem),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: _PrimaryActionCard(
+                  item: primaryItem,
+                  l10n: l10n,
+                  onTap: () => onItemSelected(primaryItem),
+                ),
               ),
             ],
           ),
@@ -145,7 +204,7 @@ class _PrimaryActionCard extends StatelessWidget {
               ),
               child: Icon(item.iconData, color: Colors.white, size: 28),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,10 +212,12 @@ class _PrimaryActionCard extends StatelessWidget {
                 children: [
                   Text(
                     item.title(l10n),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
-                      height: 1.05,
+                      height: 1.0,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -246,42 +307,52 @@ class _SecondaryActionTile extends StatelessWidget {
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 180),
           opacity: isEnabled ? 1 : 0.58,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(item.iconData, color: iconColor, size: 24),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.only(right: 8, bottom: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      item.title(l10n),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: titleColor,
-                        fontWeight: FontWeight.w700,
-                        height: 1.05,
-                      ),
+          child: Center(
+            child: SizedBox(
+              width: double.infinity,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(item.iconData, color: iconColor, size: 22),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          item.title(l10n),
+                          maxLines: 2,
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
+                                color: titleColor,
+                                fontWeight: FontWeight.w700,
+                                height: 1.0,
+                              ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          item.subtitle(l10n).toUpperCase(),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                color: subtitleColor,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                                height: 1.0,
+                              ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.subtitle(l10n).toUpperCase(),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: subtitleColor,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.35,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

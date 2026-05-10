@@ -53,8 +53,6 @@
   "hubCreateEventCreatedSuccess": "Wydarzenie zostało utworzone.",
   "hubCreateEventCreateFailed": "Nie udało się utworzyć wydarzenia. Spróbuj ponownie.",
   "hubCreateEventLocationLookupFailed": "Nie udało się ustalić lokalizacji. Spróbuj wpisać inny adres lub wskaż punkt na mapie.",
-  "hubInboxTitle": "Skrzynka",
-  "hubInboxSubtitle": "Twoje powiadomienia",
   "hubMessagesTitle": "Wiadomości",
   "hubMessagesSubtitle": "Wiadomości prywatne",
   "hubCommunityTitle": "Społeczność",

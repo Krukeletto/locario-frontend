@@ -673,12 +673,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t resolve that location. Try another address or point on the map.';
 
   @override
-  String get hubInboxTitle => 'Inbox';
-
-  @override
-  String get hubInboxSubtitle => 'Your notifications';
-
-  @override
   String get hubMessagesTitle => 'Messages';
 
   @override

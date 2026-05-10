@@ -1298,18 +1298,6 @@ abstract class AppLocalizations {
   /// **'We couldn\'t resolve that location. Try another address or point on the map.'**
   String get hubCreateEventLocationLookupFailed;
 
-  /// No description provided for @hubInboxTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Inbox'**
-  String get hubInboxTitle;
-
-  /// No description provided for @hubInboxSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your notifications'**
-  String get hubInboxSubtitle;
-
   /// No description provided for @hubMessagesTitle.
   ///
   /// In en, this message translates to:
