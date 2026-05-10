@@ -70,6 +70,13 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           _ProfileActionCard(
+            icon: Icons.bookmark_rounded,
+            title: l10n.savedTitle,
+            subtitle: l10n.savedSubtitle,
+            onTap: () => context.push('/profile/saved'),
+          ),
+          const SizedBox(height: 14),
+          _ProfileActionCard(
             icon: Icons.settings_outlined,
             title: l10n.settingsTitle,
             subtitle: l10n.settingsSubtitle,

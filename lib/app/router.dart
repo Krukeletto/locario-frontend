@@ -206,19 +206,6 @@ GoRouter createAppRouter(SessionController sessionController) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/saved',
-                pageBuilder: (context, state) => _trackedNoTransitionPage(
-                  controller: navigationHistory,
-                  location: state.uri.toString(),
-                  rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
-                  child: const SavedScreen(),
-                ),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
                 path: '/profile',
                 pageBuilder: (context, state) => _trackedNoTransitionPage(
                   controller: navigationHistory,

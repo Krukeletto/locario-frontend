@@ -66,8 +66,7 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
   void _handleTabSelected(ShellTab tab) {
     final targetIndex = switch (tab) {
       ShellTab.explore => 0,
-      ShellTab.saved => 1,
-      ShellTab.profile => 2,
+      ShellTab.profile => 1,
     };
 
     widget.navigationShell.goBranch(targetIndex);
@@ -110,8 +109,7 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
     final theme = Theme.of(context);
     final activeTab = switch (widget.navigationShell.currentIndex) {
       0 => ShellTab.explore,
-      1 => ShellTab.saved,
-      2 => ShellTab.profile,
+      1 => ShellTab.profile,
       _ => ShellTab.explore,
     };
     const hubPanelBottom = 16.0;

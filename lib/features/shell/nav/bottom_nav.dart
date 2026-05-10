@@ -61,14 +61,6 @@ class ShellBottomNav extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: _NavItem(
-                  tab: ShellTab.saved,
-                  activeTab: activeTab,
-                  hubOpen: hubOpen,
-                  onTap: onTabSelected,
-                ),
-              ),
-              Expanded(
                 child: _HubNavItem(open: hubOpen, onTap: onHubToggle),
               ),
               Expanded(
