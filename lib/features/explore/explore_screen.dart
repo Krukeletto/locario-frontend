@@ -10,6 +10,7 @@ import '../../shared/map/style_repository.dart';
 import '../../shared/widgets/state_panel.dart';
 import 'explore_area_controller.dart';
 import 'explore_controller.dart';
+import 'explore_event_query.dart';
 import 'explore_state.dart';
 import 'map_view_model.dart';
 import 'models.dart';
@@ -21,6 +22,7 @@ import 'widgets/map_view.dart';
 import 'widgets/search_this_area_button.dart';
 import '../../shared/events/category_scope.dart';
 import '../saved/saved_events_scope.dart';
+import '../saved/saved_filters_scope.dart';
 import '../shell/header/header_controller.dart';
 import '../shell/header/header_scope.dart';
 
@@ -69,6 +71,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
   bool _isMinLoadingElapsed = true;
   Timer? _loadingTimer;
   bool _isEmptyResultsNoticeDismissed = false;
+
+  final Set<String> _notifiedEventIds = {};
 
   ShellHeaderController? _activeHeaderController;
 
@@ -211,7 +215,83 @@ class _ExploreScreenState extends State<ExploreScreen> {
       _isMinLoadingElapsed = true;
       _loadingTimer?.cancel();
     }
+
+    final state = _exploreController.state;
+    if (state is ExploreData) {
+      _checkSavedFiltersForEvents(state.events, context);
+    }
+
     setState(() {});
+  }
+
+  void _checkSavedFiltersForEvents(
+    List<ExploreEvent> events,
+    BuildContext context,
+  ) {
+    final savedFiltersController = SavedFiltersScope.maybeOf(context);
+    if (savedFiltersController == null) return;
+
+    final enabledFilters =
+        savedFiltersController.filtersWithNotificationsEnabled;
+    if (enabledFilters.isEmpty) return;
+
+    final query = const ExploreEventQuery();
+    final newMatchingIds = <String>{};
+
+    for (final filter in enabledFilters) {
+      final location = filter.useCurrentLocation
+          ? _mapViewModel.currentLocation
+          : filter.location;
+      if (location == null) continue;
+
+      final matching = query.visibleEvents(
+        events: events,
+        selectedCategories: const [],
+        query: '',
+        sort: ExploreSortOption.distance,
+        isAscending: true,
+        referenceLocation: location,
+        maxDistanceMeters: filter.filters.distanceFilter.maxDistanceMeters,
+        advancedFilters: filter.filters,
+      );
+
+      for (final event in matching) {
+        newMatchingIds.add(event.id);
+      }
+    }
+
+    final unseenIds = newMatchingIds.difference(_notifiedEventIds);
+    if (unseenIds.isEmpty) return;
+
+    _notifiedEventIds.addAll(unseenIds);
+
+    debugPrint(
+      'Filter notifications: ${unseenIds.length} new events match saved filters.',
+    );
+  }
+
+  void _consumePendingFilter(BuildContext context) {
+    final savedFiltersController = SavedFiltersScope.maybeOf(context);
+    if (savedFiltersController == null) return;
+
+    final pending = savedFiltersController.pendingLoadFilter;
+    if (pending == null) return;
+
+    _exploreController.applyFilters(
+      pending.filters,
+      referenceLocation: pending.useCurrentLocation
+          ? _mapViewModel.currentLocation
+          : pending.location,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final headerController =
+          _activeHeaderController ?? _internalHeaderController;
+      headerController.setSelectedView(ExploreContentView.list);
+    });
+
+    savedFiltersController.consumePendingLoad();
   }
 
   void _handleMapViewModelChanged() {
@@ -317,6 +397,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _consumePendingFilter(context);
+
     final state = _exploreController.state;
     final headerController =
         _activeHeaderController ?? _internalHeaderController;

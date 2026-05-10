@@ -21,6 +21,9 @@ import '../features/events/joined_events_scope.dart';
 import '../features/saved/saved_events_controller.dart';
 import '../features/saved/saved_events_repository.dart';
 import '../features/saved/saved_events_scope.dart';
+import '../features/saved/saved_filters_controller.dart';
+import '../features/saved/saved_filters_repository.dart';
+import '../features/saved/saved_filters_scope.dart';
 import '../shared/auth/auth_api.dart';
 import '../shared/auth/auth_repository.dart';
 import '../shared/auth/auth_scope.dart';
@@ -47,6 +50,7 @@ class _LocarioAppState extends State<LocarioApp> {
   late final AppSettingsStore _settingsStore;
   late final EventRepository _eventRepository;
   late final SavedEventsController _savedEventsController;
+  late final SavedFiltersController _savedFiltersController;
   late final AuthApi _authApi;
   late final AuthRepository _authRepository;
   late final AuthStorage _authStorage;
@@ -82,6 +86,9 @@ class _LocarioAppState extends State<LocarioApp> {
       sessionController: _sessionController,
       eventRepository: _eventRepository,
     );
+    _savedFiltersController = SavedFiltersController(
+      repository: const SharedPreferencesSavedFiltersRepository(),
+    );
     _notificationController = NotificationController(
       historyRepository: const SharedPrefsNotificationHistoryRepository(),
       preferencesStore: const SharedPrefsNotificationPreferencesStore(),
@@ -91,6 +98,7 @@ class _LocarioAppState extends State<LocarioApp> {
     _themeController.load();
     _categoryController.loadCategories();
     _savedEventsController.load();
+    _savedFiltersController.loadFilters();
     _joinedEventsController.load();
     _sessionController.load();
     _notificationController.loadHistory();
@@ -114,9 +122,7 @@ class _LocarioAppState extends State<LocarioApp> {
     final profile = _sessionController.profile;
     if (profile != null) {
       final registrations = profile.eventRegistrations
-          .map(
-            (r) => (id: r.eventId, title: r.name, startsAt: r.startAt),
-          )
+          .map((r) => (id: r.eventId, title: r.name, startsAt: r.startAt))
           .toList();
       _notificationController.scheduleRemindersForJoinedEvents(registrations);
     }
@@ -140,6 +146,7 @@ class _LocarioAppState extends State<LocarioApp> {
     _themeController.dispose();
     _categoryController.dispose();
     _savedEventsController.dispose();
+    _savedFiltersController.dispose();
     _joinedEventsController.dispose();
     _sessionController.dispose();
     _notificationController.dispose();
@@ -152,8 +159,10 @@ class _LocarioAppState extends State<LocarioApp> {
       controller: _categoryController,
       child: AuthScope(
         controller: _sessionController,
-          child: SavedEventsScope(
-            controller: _savedEventsController,
+        child: SavedEventsScope(
+          controller: _savedEventsController,
+          child: SavedFiltersScope(
+            controller: _savedFiltersController,
             child: JoinedEventsScope(
               controller: _joinedEventsController,
               child: NotificationScope(
@@ -181,8 +190,7 @@ class _LocarioAppState extends State<LocarioApp> {
                           themeMode: _themeController.themeMode,
                           routerConfig: _router,
                           locale: _localeController.locale,
-                          supportedLocales:
-                              AppLocalizations.supportedLocales,
+                          supportedLocales: AppLocalizations.supportedLocales,
                           localizationsDelegates: [
                             AppLocalizations.delegate,
                             GlobalMaterialLocalizations.delegate,
@@ -194,16 +202,12 @@ class _LocarioAppState extends State<LocarioApp> {
                             L10nService.update(l10n);
                             return child!;
                           },
-                          localeResolutionCallback: (
-                            locale,
-                            supportedLocales,
-                          ) {
+                          localeResolutionCallback: (locale, supportedLocales) {
                             if (locale == null) {
                               return const Locale('pl');
                             }
 
-                            for (final supportedLocale
-                                in supportedLocales) {
+                            for (final supportedLocale in supportedLocales) {
                               if (supportedLocale.languageCode ==
                                   locale.languageCode) {
                                 return supportedLocale;
@@ -214,6 +218,7 @@ class _LocarioAppState extends State<LocarioApp> {
                           },
                         );
                       },
+                    ),
                   ),
                 ),
               ),

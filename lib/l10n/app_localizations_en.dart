@@ -902,6 +902,71 @@ class AppLocalizationsEn extends AppLocalizations {
       'Clear the filters or try a different combination.';
 
   @override
+  String get savedEventsTab => 'Events';
+
+  @override
+  String get savedFiltersTab => 'Filters';
+
+  @override
+  String get savedFiltersEmptyTitle => 'No saved filters yet';
+
+  @override
+  String get savedFiltersEmptySubtitle =>
+      'Custom filter presets you create will appear here.';
+
+  @override
+  String get savedFiltersSaveDialogTitle => 'Save filter';
+
+  @override
+  String get savedFiltersSaveAction => 'Save';
+
+  @override
+  String get savedFiltersNameHint => 'Filter name';
+
+  @override
+  String get savedFiltersDeleteTooltip => 'Delete filter';
+
+  @override
+  String get savedFiltersLoadTooltip => 'Use filter';
+
+  @override
+  String get savedFilterNotificationsLabel => 'Notifications';
+
+  @override
+  String get savedFilterNotificationsTooltip =>
+      'Enable notifications for this filter';
+
+  @override
+  String get savedFiltersLocationCurrent => 'Current location';
+
+  @override
+  String get savedFiltersLocationSaved => 'Saved location';
+
+  @override
+  String get savedFiltersUseCurrentLocation => 'Use current location';
+
+  @override
+  String get savedFiltersUseSavedLocation => 'Use saved location';
+
+  @override
+  String get savedFiltersSaveConfirmation => 'Filter saved';
+
+  @override
+  String get savedFiltersDeleteConfirmation => 'Filter deleted';
+
+  @override
+  String get savedFiltersLoadConfirmation => 'Filter applied';
+
+  @override
+  String get savedFiltersCreateButton => 'Save current filters';
+
+  @override
+  String get savedFiltersCancel => 'Cancel';
+
+  @override
+  String get savedFiltersLocationLabel => 'Location';
+
+  @override
   String get appTitle => 'Locario';
 
   @override

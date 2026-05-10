@@ -149,11 +149,11 @@ class EventListCard extends StatelessWidget {
                           const SizedBox(width: 3),
                           Text(
                             l10n.eventCardSpots(event.slotLimit!),
-                            style:
-                                Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color:
-                                      colorScheme.onSurface
-                                          .withValues(alpha: 0.4),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.4,
+                                  ),
                                 ),
                           ),
                         ],

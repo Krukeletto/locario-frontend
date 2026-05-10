@@ -157,7 +157,8 @@ class _InboxScreenState extends State<InboxScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) => _NotificationTile(
                           entry: unread[index],
-                          onTap: () => _onNotificationTap(controller, unread[index]),
+                          onTap: () =>
+                              _onNotificationTap(controller, unread[index]),
                         ),
                         childCount: unread.length,
                       ),
@@ -174,7 +175,8 @@ class _InboxScreenState extends State<InboxScreen> {
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
                         child: OutlinedButton.icon(
-                          onPressed: () => setState(() => _filter = _InboxFilter.all),
+                          onPressed: () =>
+                              setState(() => _filter = _InboxFilter.all),
                           icon: const Icon(Icons.expand_more_rounded, size: 18),
                           label: Text('Show read (${read.length})'),
                         ),
@@ -198,7 +200,8 @@ class _InboxScreenState extends State<InboxScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) => _NotificationTile(
                           entry: unread[index],
-                          onTap: () => _onNotificationTap(controller, unread[index]),
+                          onTap: () =>
+                              _onNotificationTap(controller, unread[index]),
                         ),
                         childCount: unread.length,
                       ),
@@ -221,7 +224,9 @@ class _InboxScreenState extends State<InboxScreen> {
                                 Text(
                                   'Read (${read.length})',
                                   style: theme.textTheme.labelLarge?.copyWith(
-                                    color: scheme.onSurface.withValues(alpha: 0.6),
+                                    color: scheme.onSurface.withValues(
+                                      alpha: 0.6,
+                                    ),
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -232,7 +237,9 @@ class _InboxScreenState extends State<InboxScreen> {
                                   child: Icon(
                                     Icons.expand_more_rounded,
                                     size: 20,
-                                    color: scheme.onSurface.withValues(alpha: 0.4),
+                                    color: scheme.onSurface.withValues(
+                                      alpha: 0.4,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -248,7 +255,8 @@ class _InboxScreenState extends State<InboxScreen> {
                             opacity: 0.72,
                             child: _NotificationTile(
                               entry: read[index],
-                              onTap: () => _onNotificationTap(controller, read[index]),
+                              onTap: () =>
+                                  _onNotificationTap(controller, read[index]),
                             ),
                           ),
                           childCount: read.length,
@@ -266,7 +274,8 @@ class _InboxScreenState extends State<InboxScreen> {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
                       child: OutlinedButton.icon(
-                        onPressed: () => setState(() => _filter = _InboxFilter.unread),
+                        onPressed: () =>
+                            setState(() => _filter = _InboxFilter.unread),
                         icon: const Icon(Icons.expand_less_rounded, size: 18),
                         label: const Text('Show unread only'),
                       ),

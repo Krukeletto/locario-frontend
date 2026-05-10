@@ -11,8 +11,7 @@ class EventRegistrationApiException implements Exception {
   final int? statusCode;
 
   @override
-  String toString() =>
-      'EventRegistrationApiException($statusCode): $message';
+  String toString() => 'EventRegistrationApiException($statusCode): $message';
 }
 
 class EventRegistrationApi {

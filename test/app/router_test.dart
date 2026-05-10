@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:locario/app/router.dart';
 import 'package:locario/features/auth/login_screen.dart';
 import 'package:locario/features/saved/saved_screen.dart';
 import 'package:locario/features/saved/saved_events_controller.dart';
 import 'package:locario/features/saved/saved_events_repository.dart';
 import 'package:locario/features/saved/saved_events_scope.dart';
+import 'package:locario/features/saved/saved_filters_controller.dart';
+import 'package:locario/features/saved/saved_filters_repository.dart';
+import 'package:locario/features/saved/saved_filters_scope.dart';
 import 'package:locario/shared/auth/auth_api.dart';
 import 'package:locario/shared/auth/auth_models.dart';
 import 'package:locario/shared/auth/auth_repository.dart';
@@ -41,6 +45,7 @@ void main() {
 
   group('createAppRouter', () {
     testWidgets('allows unauthenticated access to saved route', (tester) async {
+      SharedPreferences.setMockInitialValues({});
       final sessionController = await _createSessionController();
       final router = createAppRouter(sessionController);
 
@@ -51,11 +56,16 @@ void main() {
             controller: SavedEventsController(
               repository: _MemorySavedEventsRepository(),
             ),
-            child: MaterialApp.router(
-              locale: const Locale('en'),
-              supportedLocales: AppLocalizations.supportedLocales,
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              routerConfig: router,
+            child: SavedFiltersScope(
+              controller: SavedFiltersController(
+                repository: const SharedPreferencesSavedFiltersRepository(),
+              ),
+              child: MaterialApp.router(
+                locale: const Locale('en'),
+                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                routerConfig: router,
+              ),
             ),
           ),
         ),
@@ -71,6 +81,7 @@ void main() {
     testWidgets(
       'redirects protected create-event route to login with last safe location',
       (tester) async {
+        SharedPreferences.setMockInitialValues({});
         final sessionController = await _createSessionController();
         final router = createAppRouter(sessionController);
 
@@ -81,11 +92,17 @@ void main() {
               controller: SavedEventsController(
                 repository: _MemorySavedEventsRepository(),
               ),
-              child: MaterialApp.router(
-                locale: const Locale('en'),
-                supportedLocales: AppLocalizations.supportedLocales,
-                localizationsDelegates: AppLocalizations.localizationsDelegates,
-                routerConfig: router,
+              child: SavedFiltersScope(
+                controller: SavedFiltersController(
+                  repository: const SharedPreferencesSavedFiltersRepository(),
+                ),
+                child: MaterialApp.router(
+                  locale: const Locale('en'),
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
+                  routerConfig: router,
+                ),
               ),
             ),
           ),

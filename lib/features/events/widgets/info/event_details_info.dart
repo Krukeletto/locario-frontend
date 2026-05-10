@@ -30,7 +30,6 @@ class EventDetailsInfo extends StatelessWidget {
   final EventSlotsResponse? slots;
   final bool isJoinLoading;
 
-
   String _formatDate(DateTime date) {
     final day = date.day.toString().padLeft(2, '0');
     final month = date.month.toString().padLeft(2, '0');
@@ -122,7 +121,10 @@ class EventDetailsInfo extends StatelessWidget {
               EventInfoCard(
                 label: l10n.eventDetailsSlotsLabel,
                 value: slots!.slotLimit > 0
-                    ? l10n.eventSlotsTaken(slots!.registeredCount, slots!.slotLimit)
+                    ? l10n.eventSlotsTaken(
+                        slots!.registeredCount,
+                        slots!.slotLimit,
+                      )
                     : l10n.eventSlotsJoined(slots!.registeredCount),
                 icon: Icons.people_outline_rounded,
               ),

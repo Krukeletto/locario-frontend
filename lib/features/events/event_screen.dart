@@ -201,12 +201,14 @@ class _EventScreenState extends State<EventScreen> {
     final joinedController = JoinedEventsScope.maybeOf(context);
 
     return AnimatedBuilder(
-      animation: Listenable.merge([
-        ?savedController,
-        ?joinedController,
-      ]),
+      animation: Listenable.merge([?savedController, ?joinedController]),
       builder: (context, _) => _buildScaffold(
-        context, theme, scheme, l10n, savedController, joinedController,
+        context,
+        theme,
+        scheme,
+        l10n,
+        savedController,
+        joinedController,
       ),
     );
   }

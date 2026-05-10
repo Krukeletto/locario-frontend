@@ -1718,6 +1718,132 @@ abstract class AppLocalizations {
   /// **'Clear the filters or try a different combination.'**
   String get savedEmptyFilteredSubtitle;
 
+  /// No description provided for @savedEventsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Events'**
+  String get savedEventsTab;
+
+  /// No description provided for @savedFiltersTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get savedFiltersTab;
+
+  /// No description provided for @savedFiltersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved filters yet'**
+  String get savedFiltersEmptyTitle;
+
+  /// No description provided for @savedFiltersEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom filter presets you create will appear here.'**
+  String get savedFiltersEmptySubtitle;
+
+  /// No description provided for @savedFiltersSaveDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save filter'**
+  String get savedFiltersSaveDialogTitle;
+
+  /// No description provided for @savedFiltersSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get savedFiltersSaveAction;
+
+  /// No description provided for @savedFiltersNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter name'**
+  String get savedFiltersNameHint;
+
+  /// No description provided for @savedFiltersDeleteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete filter'**
+  String get savedFiltersDeleteTooltip;
+
+  /// No description provided for @savedFiltersLoadTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Use filter'**
+  String get savedFiltersLoadTooltip;
+
+  /// No description provided for @savedFilterNotificationsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get savedFilterNotificationsLabel;
+
+  /// No description provided for @savedFilterNotificationsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications for this filter'**
+  String get savedFilterNotificationsTooltip;
+
+  /// No description provided for @savedFiltersLocationCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current location'**
+  String get savedFiltersLocationCurrent;
+
+  /// No description provided for @savedFiltersLocationSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved location'**
+  String get savedFiltersLocationSaved;
+
+  /// No description provided for @savedFiltersUseCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use current location'**
+  String get savedFiltersUseCurrentLocation;
+
+  /// No description provided for @savedFiltersUseSavedLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use saved location'**
+  String get savedFiltersUseSavedLocation;
+
+  /// No description provided for @savedFiltersSaveConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter saved'**
+  String get savedFiltersSaveConfirmation;
+
+  /// No description provided for @savedFiltersDeleteConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter deleted'**
+  String get savedFiltersDeleteConfirmation;
+
+  /// No description provided for @savedFiltersLoadConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter applied'**
+  String get savedFiltersLoadConfirmation;
+
+  /// No description provided for @savedFiltersCreateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save current filters'**
+  String get savedFiltersCreateButton;
+
+  /// No description provided for @savedFiltersCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get savedFiltersCancel;
+
+  /// No description provided for @savedFiltersLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get savedFiltersLocationLabel;
+
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:

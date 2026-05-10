@@ -75,6 +75,17 @@ class ExploreController extends ChangeNotifier {
     _onQueryChanged(debounced: false);
   }
 
+  void applyFilters(
+    ExploreAdvancedFilters filters, {
+    LatLng? referenceLocation,
+  }) {
+    _advancedFilters = filters;
+    if (referenceLocation != null) {
+      _referenceLocation = referenceLocation;
+    }
+    _onQueryChanged(debounced: false);
+  }
+
   void updateCategories(Iterable<Category> categories) {
     _selectedCategories = categories;
     _onQueryChanged(debounced: false);

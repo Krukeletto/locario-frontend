@@ -912,6 +912,71 @@ class AppLocalizationsPl extends AppLocalizations {
       'Wyczyść filtry albo spróbuj innej kombinacji.';
 
   @override
+  String get savedEventsTab => 'Wydarzenia';
+
+  @override
+  String get savedFiltersTab => 'Filtry';
+
+  @override
+  String get savedFiltersEmptyTitle => 'Brak zapisanych filtrów';
+
+  @override
+  String get savedFiltersEmptySubtitle =>
+      'Tutaj pojawią się zapisane przez Ciebie presety filtrów.';
+
+  @override
+  String get savedFiltersSaveDialogTitle => 'Zapisz filtr';
+
+  @override
+  String get savedFiltersSaveAction => 'Zapisz';
+
+  @override
+  String get savedFiltersNameHint => 'Nazwa filtru';
+
+  @override
+  String get savedFiltersDeleteTooltip => 'Usuń filtr';
+
+  @override
+  String get savedFiltersLoadTooltip => 'Użyj filtru';
+
+  @override
+  String get savedFilterNotificationsLabel => 'Powiadomienia';
+
+  @override
+  String get savedFilterNotificationsTooltip =>
+      'Włącz powiadomienia dla tego filtru';
+
+  @override
+  String get savedFiltersLocationCurrent => 'Bieżąca lokalizacja';
+
+  @override
+  String get savedFiltersLocationSaved => 'Zapisana lokalizacja';
+
+  @override
+  String get savedFiltersUseCurrentLocation => 'Użyj bieżącej lokalizacji';
+
+  @override
+  String get savedFiltersUseSavedLocation => 'Użyj zapisanej lokalizacji';
+
+  @override
+  String get savedFiltersSaveConfirmation => 'Filtr zapisany';
+
+  @override
+  String get savedFiltersDeleteConfirmation => 'Filtr usunięty';
+
+  @override
+  String get savedFiltersLoadConfirmation => 'Filtr zastosowany';
+
+  @override
+  String get savedFiltersCreateButton => 'Zapisz bieżące filtry';
+
+  @override
+  String get savedFiltersCancel => 'Anuluj';
+
+  @override
+  String get savedFiltersLocationLabel => 'Lokalizacja';
+
+  @override
   String get appTitle => 'Locario';
 
   @override

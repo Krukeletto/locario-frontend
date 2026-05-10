@@ -10,7 +10,8 @@ class JoinedEventsScope extends InheritedNotifier<JoinedEventsController> {
   }) : super(notifier: controller);
 
   static JoinedEventsController? maybeOf(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<JoinedEventsScope>()
+    return context
+        .dependOnInheritedWidgetOfExactType<JoinedEventsScope>()
         ?.notifier;
   }
 
