@@ -18,7 +18,7 @@ class CreateEventLocationSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final locationSelection = locationController.selection;
     final isLoading = locationController.isResolvingSelection;
 

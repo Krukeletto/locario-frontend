@@ -34,7 +34,7 @@ class EventListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final showDistanceLine = showDistance && referenceLocation != null;
     final trailingIcon = isActionActive
         ? activeActionIcon ?? actionIcon

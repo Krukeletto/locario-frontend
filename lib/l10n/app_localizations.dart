@@ -67,8 +67,8 @@ abstract class AppLocalizations {
 
   final String localeName;
 
-  static AppLocalizations? of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
   static const LocalizationsDelegate<AppLocalizations> delegate =
@@ -97,24 +97,6 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('pl'),
   ];
-
-  /// No description provided for @appTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Locario'**
-  String get appTitle;
-
-  /// No description provided for @localeEnglish.
-  ///
-  /// In en, this message translates to:
-  /// **'English'**
-  String get localeEnglish;
-
-  /// No description provided for @localePolish.
-  ///
-  /// In en, this message translates to:
-  /// **'Polish'**
-  String get localePolish;
 
   /// No description provided for @authSubtitle.
   ///
@@ -206,6 +188,18 @@ abstract class AppLocalizations {
   /// **'Signed out successfully.'**
   String get authLogoutSuccess;
 
+  /// No description provided for @authLoginSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged in successfully.'**
+  String get authLoginSuccess;
+
+  /// No description provided for @authLoginErrorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password.'**
+  String get authLoginErrorInvalidCredentials;
+
   /// No description provided for @authRegisterWelcome.
   ///
   /// In en, this message translates to:
@@ -284,41 +278,749 @@ abstract class AppLocalizations {
   /// **'Password must be at least 8 characters'**
   String get authValidationPasswordMin8;
 
-  /// No description provided for @tabExplore.
+  /// No description provided for @eventJazzTitle.
   ///
   /// In en, this message translates to:
-  /// **'Explore'**
-  String get tabExplore;
+  /// **'Jazz in the Botanical Garden'**
+  String get eventJazzTitle;
 
-  /// No description provided for @tabInbox.
+  /// No description provided for @eventSketchingTitle.
   ///
   /// In en, this message translates to:
-  /// **'Inbox'**
-  String get tabInbox;
+  /// **'Night sketching by the Vistula'**
+  String get eventSketchingTitle;
 
-  /// No description provided for @tabHub.
+  /// No description provided for @eventRunClubTitle.
   ///
   /// In en, this message translates to:
-  /// **'Hub'**
-  String get tabHub;
+  /// **'Morning run club and coffee stop'**
+  String get eventRunClubTitle;
 
-  /// No description provided for @tabProfile.
+  /// No description provided for @eventStreetFoodTitle.
   ///
   /// In en, this message translates to:
-  /// **'Profile'**
-  String get tabProfile;
+  /// **'Street food and vinyl market'**
+  String get eventStreetFoodTitle;
 
-  /// No description provided for @headerMap.
+  /// No description provided for @eventDetailsScreenTitle.
   ///
   /// In en, this message translates to:
-  /// **'Map'**
-  String get headerMap;
+  /// **'Details'**
+  String get eventDetailsScreenTitle;
 
-  /// No description provided for @headerList.
+  /// No description provided for @eventDetailsImagePlaceholder.
   ///
   /// In en, this message translates to:
-  /// **'List'**
-  String get headerList;
+  /// **'Temporary image placeholder'**
+  String get eventDetailsImagePlaceholder;
+
+  /// No description provided for @eventDetailsTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Event title'**
+  String get eventDetailsTitleLabel;
+
+  /// No description provided for @eventDetailsLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get eventDetailsLocationLabel;
+
+  /// No description provided for @eventDetailsDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get eventDetailsDateLabel;
+
+  /// No description provided for @eventDetailsTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get eventDetailsTimeLabel;
+
+  /// No description provided for @eventDetailsPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get eventDetailsPriceLabel;
+
+  /// No description provided for @eventDetailsSeatsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Seats'**
+  String get eventDetailsSeatsLabel;
+
+  /// No description provided for @eventDetailsAboutLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'About the event'**
+  String get eventDetailsAboutLabel;
+
+  /// No description provided for @eventDetailsOrganizerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer'**
+  String get eventDetailsOrganizerLabel;
+
+  /// No description provided for @eventDetailsChatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants chat'**
+  String get eventDetailsChatLabel;
+
+  /// No description provided for @eventDetailsBuyTicketButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy ticket'**
+  String get eventDetailsBuyTicketButton;
+
+  /// No description provided for @eventDetailsJoinButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get eventDetailsJoinButton;
+
+  /// No description provided for @eventDetailsUnknownEventTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Event'**
+  String get eventDetailsUnknownEventTitle;
+
+  /// No description provided for @eventDetailsUnknownLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location unknown'**
+  String get eventDetailsUnknownLocation;
+
+  /// No description provided for @eventDetailsFallbackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a temporary event description. In the next steps we will connect full data from the create event form and backend.'**
+  String get eventDetailsFallbackDescription;
+
+  /// No description provided for @eventDetailsLoadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading event'**
+  String get eventDetailsLoadingTitle;
+
+  /// No description provided for @eventDetailsLoadingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We are fetching the event details from the backend.'**
+  String get eventDetailsLoadingSubtitle;
+
+  /// No description provided for @eventDetailsErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Event unavailable'**
+  String get eventDetailsErrorTitle;
+
+  /// No description provided for @eventDetailsErrorSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load this event right now.'**
+  String get eventDetailsErrorSubtitle;
+
+  /// No description provided for @eventDetailsJazzDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.'**
+  String get eventDetailsJazzDescription;
+
+  /// No description provided for @eventDetailsSketchingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A meetup for people who enjoy sketching and urban illustration. Bring your own materials.'**
+  String get eventDetailsSketchingDescription;
+
+  /// No description provided for @eventDetailsRunClubDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.'**
+  String get eventDetailsRunClubDescription;
+
+  /// No description provided for @eventDetailsStreetFoodDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Street food, curated vinyl records and mini DJ sets. An all-day event.'**
+  String get eventDetailsStreetFoodDescription;
+
+  /// No description provided for @eventDetailsTicketLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets'**
+  String get eventDetailsTicketLabel;
+
+  /// No description provided for @eventDetailsSlotsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Seat limit'**
+  String get eventDetailsSlotsLabel;
+
+  /// No description provided for @eventDetailsSlotsValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} seats available'**
+  String eventDetailsSlotsValue(int count);
+
+  /// No description provided for @eventDetailsShowOnMapButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on map'**
+  String get eventDetailsShowOnMapButton;
+
+  /// No description provided for @eventDetailsOpenMapError.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not open the map app right now.'**
+  String get eventDetailsOpenMapError;
+
+  /// No description provided for @eventToday2030.
+  ///
+  /// In en, this message translates to:
+  /// **'Today, 20:30'**
+  String get eventToday2030;
+
+  /// No description provided for @eventToday1900.
+  ///
+  /// In en, this message translates to:
+  /// **'Today, 19:00'**
+  String get eventToday1900;
+
+  /// No description provided for @eventTomorrow0800.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow, 08:00'**
+  String get eventTomorrow0800;
+
+  /// No description provided for @eventTomorrow1200.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow, 12:00'**
+  String get eventTomorrow1200;
+
+  /// No description provided for @eventSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event saved to your list.'**
+  String get eventSaveSuccess;
+
+  /// No description provided for @eventRemoveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event removed from your list.'**
+  String get eventRemoveSuccess;
+
+  /// No description provided for @eventPublishSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event published successfully.'**
+  String get eventPublishSuccess;
+
+  /// No description provided for @eventPublishError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to publish event. Try again.'**
+  String get eventPublishError;
+
+  /// No description provided for @venueBotanicalGarden.
+  ///
+  /// In en, this message translates to:
+  /// **'Botanical Garden'**
+  String get venueBotanicalGarden;
+
+  /// No description provided for @venueVistulaBoulevards.
+  ///
+  /// In en, this message translates to:
+  /// **'Vistula Boulevards'**
+  String get venueVistulaBoulevards;
+
+  /// No description provided for @venuePoleMokotowskie.
+  ///
+  /// In en, this message translates to:
+  /// **'Pole Mokotowskie'**
+  String get venuePoleMokotowskie;
+
+  /// No description provided for @venueHalaKoszyki.
+  ///
+  /// In en, this message translates to:
+  /// **'Hala Koszyki'**
+  String get venueHalaKoszyki;
+
+  /// No description provided for @distanceMeters.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} m'**
+  String distanceMeters(int count);
+
+  /// No description provided for @distanceKilometers.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} km'**
+  String distanceKilometers(String count);
+
+  /// No description provided for @exploreSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search events...'**
+  String get exploreSearchHint;
+
+  /// No description provided for @exploreNearbyEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby events'**
+  String get exploreNearbyEvents;
+
+  /// No description provided for @exploreNearbyWithFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'{filter} nearby'**
+  String exploreNearbyWithFilter(String filter);
+
+  /// No description provided for @exploreLoadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading events'**
+  String get exploreLoadingTitle;
+
+  /// No description provided for @exploreLoadingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We are fetching the latest events from the backend.'**
+  String get exploreLoadingSubtitle;
+
+  /// No description provided for @exploreErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Events unavailable'**
+  String get exploreErrorTitle;
+
+  /// No description provided for @exploreErrorSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load events right now.'**
+  String get exploreErrorSubtitle;
+
+  /// No description provided for @exploreEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No events found'**
+  String get exploreEmptyTitle;
+
+  /// No description provided for @exploreEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different area or come back later.'**
+  String get exploreEmptySubtitle;
+
+  /// No description provided for @exploreRetryButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get exploreRetryButton;
+
+  /// No description provided for @exploreErrorPermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission required'**
+  String get exploreErrorPermissionTitle;
+
+  /// No description provided for @exploreErrorPermissionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Please allow location access to see events nearby.'**
+  String get exploreErrorPermissionSubtitle;
+
+  /// No description provided for @exploreErrorUnknownTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get exploreErrorUnknownTitle;
+
+  /// No description provided for @exploreErrorUnknownSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We encountered an unexpected error.'**
+  String get exploreErrorUnknownSubtitle;
+
+  /// No description provided for @exploreSearchThisArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Search this area'**
+  String get exploreSearchThisArea;
+
+  /// No description provided for @resultsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count,plural, =0{0 results} =1{1 result} other{{count} results}}'**
+  String resultsCount(int count);
+
+  /// No description provided for @sortTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get sortTooltip;
+
+  /// No description provided for @sortDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get sortDistance;
+
+  /// No description provided for @sortSoonest.
+  ///
+  /// In en, this message translates to:
+  /// **'Soonest'**
+  String get sortSoonest;
+
+  /// No description provided for @sortTrending.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending'**
+  String get sortTrending;
+
+  /// No description provided for @distanceFilterTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'List range'**
+  String get distanceFilterTooltip;
+
+  /// No description provided for @distanceFilterAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Anywhere'**
+  String get distanceFilterAny;
+
+  /// No description provided for @distanceFilterWithinKm.
+  ///
+  /// In en, this message translates to:
+  /// **'Within {km} km'**
+  String distanceFilterWithinKm(int km);
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @filterMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get filterMusic;
+
+  /// No description provided for @filterArt.
+  ///
+  /// In en, this message translates to:
+  /// **'Art'**
+  String get filterArt;
+
+  /// No description provided for @filterWorkshops.
+  ///
+  /// In en, this message translates to:
+  /// **'Workshops'**
+  String get filterWorkshops;
+
+  /// No description provided for @filterFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get filterFood;
+
+  /// No description provided for @filterAdvancedFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced Filters'**
+  String get filterAdvancedFilters;
+
+  /// No description provided for @filterAdvancedDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Range'**
+  String get filterAdvancedDistance;
+
+  /// No description provided for @filterAdvancedDateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Event Date'**
+  String get filterAdvancedDateRange;
+
+  /// No description provided for @filterAdvancedAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Age (years)'**
+  String get filterAdvancedAge;
+
+  /// No description provided for @filterAdvancedType.
+  ///
+  /// In en, this message translates to:
+  /// **'Event Type'**
+  String get filterAdvancedType;
+
+  /// No description provided for @filterAdvancedSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Event Source'**
+  String get filterAdvancedSource;
+
+  /// No description provided for @filterAdvancedApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Results'**
+  String get filterAdvancedApply;
+
+  /// No description provided for @filterAdvancedClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get filterAdvancedClear;
+
+  /// No description provided for @filterAdvancedDateFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get filterAdvancedDateFrom;
+
+  /// No description provided for @filterAdvancedDateTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get filterAdvancedDateTo;
+
+  /// No description provided for @filterAdvancedDateAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any date'**
+  String get filterAdvancedDateAny;
+
+  /// No description provided for @filterAdvancedDateToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get filterAdvancedDateToday;
+
+  /// No description provided for @filterAdvancedDateTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get filterAdvancedDateTomorrow;
+
+  /// No description provided for @filterAdvancedDateCustomRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Date range'**
+  String get filterAdvancedDateCustomRange;
+
+  /// No description provided for @filterAdvancedDateOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other date'**
+  String get filterAdvancedDateOther;
+
+  /// No description provided for @filterAdvancedDateSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected date'**
+  String get filterAdvancedDateSelection;
+
+  /// No description provided for @filterAdvancedAgeFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Min'**
+  String get filterAdvancedAgeFrom;
+
+  /// No description provided for @filterAdvancedAgeTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get filterAdvancedAgeTo;
+
+  /// No description provided for @filterAdvancedAgeSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Participant age'**
+  String get filterAdvancedAgeSelection;
+
+  /// No description provided for @filterAdvancedAgeCustomRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Age range'**
+  String get filterAdvancedAgeCustomRange;
+
+  /// No description provided for @filterAdvancedAgeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other age'**
+  String get filterAdvancedAgeOther;
+
+  /// No description provided for @filterAdvancedAgeRangeSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{from}-{to} years'**
+  String filterAdvancedAgeRangeSummary(int from, int to);
+
+  /// No description provided for @areaMyLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'My location'**
+  String get areaMyLocation;
+
+  /// No description provided for @areaMyLocationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Events closest to you by default'**
+  String get areaMyLocationDescription;
+
+  /// No description provided for @areaTypedAddressDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Address entered manually'**
+  String get areaTypedAddressDescription;
+
+  /// No description provided for @areaPinnedOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned on map'**
+  String get areaPinnedOnMap;
+
+  /// No description provided for @areaPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose area'**
+  String get areaPickerTitle;
+
+  /// No description provided for @areaPickerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You can type an address, point to a spot on the map or go back to your current location.'**
+  String get areaPickerSubtitle;
+
+  /// No description provided for @areaUseCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'My location'**
+  String get areaUseCurrentLocation;
+
+  /// No description provided for @areaUseCurrentLocationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your current position as the reference point'**
+  String get areaUseCurrentLocationSubtitle;
+
+  /// No description provided for @areaEnterAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter address'**
+  String get areaEnterAddress;
+
+  /// No description provided for @areaEnterAddressSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a street, district or exact place'**
+  String get areaEnterAddressSubtitle;
+
+  /// No description provided for @areaPickOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick on map'**
+  String get areaPickOnMap;
+
+  /// No description provided for @areaPickOnMapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a point on the map'**
+  String get areaPickOnMapTitle;
+
+  /// No description provided for @areaPickOnMapSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the map so the chosen point sits under the center marker.'**
+  String get areaPickOnMapSubtitle;
+
+  /// No description provided for @areaPickOnMapConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this point'**
+  String get areaPickOnMapConfirm;
+
+  /// No description provided for @areaAddressDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter address'**
+  String get areaAddressDialogTitle;
+
+  /// No description provided for @areaAddressDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example 12 Old Town Sq, Poznan'**
+  String get areaAddressDialogHint;
+
+  /// No description provided for @areaAddressNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find that address.'**
+  String get areaAddressNotFound;
+
+  /// No description provided for @areaAddressLookupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Address lookup failed. Try again.'**
+  String get areaAddressLookupFailed;
+
+  /// No description provided for @areaDialogCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get areaDialogCancel;
+
+  /// No description provided for @areaDialogConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get areaDialogConfirm;
+
+  /// No description provided for @areaPinnedCoordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'{lat}, {lon}'**
+  String areaPinnedCoordinates(String lat, String lon);
+
+  /// No description provided for @areaWarsawCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Warsaw center'**
+  String get areaWarsawCenter;
+
+  /// No description provided for @areaWarsawCenterDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Address or pin set manually'**
+  String get areaWarsawCenterDescription;
+
+  /// No description provided for @areaPowisle.
+  ///
+  /// In en, this message translates to:
+  /// **'Powisle'**
+  String get areaPowisle;
+
+  /// No description provided for @areaPowisleDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Boulevards and Poniatowski bridge area'**
+  String get areaPowisleDescription;
+
+  /// No description provided for @areaMokotow.
+  ///
+  /// In en, this message translates to:
+  /// **'Mokotow'**
+  String get areaMokotow;
+
+  /// No description provided for @areaMokotowDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Pole Mokotowskie area and nearby'**
+  String get areaMokotowDescription;
 
   /// No description provided for @hubTitle.
   ///
@@ -596,6 +1298,30 @@ abstract class AppLocalizations {
   /// **'We couldn\'t resolve that location. Try another address or point on the map.'**
   String get hubCreateEventLocationLookupFailed;
 
+  /// No description provided for @hubInboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inbox'**
+  String get hubInboxTitle;
+
+  /// No description provided for @hubInboxSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your notifications'**
+  String get hubInboxSubtitle;
+
+  /// No description provided for @hubMessagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get hubMessagesTitle;
+
+  /// No description provided for @hubMessagesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct messages'**
+  String get hubMessagesSubtitle;
+
   /// No description provided for @hubCommunityTitle.
   ///
   /// In en, this message translates to:
@@ -619,12 +1345,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your network'**
   String get hubFriendsSubtitle;
-
-  /// No description provided for @featureComingSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'This section is still being built.'**
-  String get featureComingSoon;
 
   /// No description provided for @profileTitle.
   ///
@@ -665,7 +1385,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileInboxSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Open your messages and notifications'**
+  /// **'Open your notifications'**
   String get profileInboxSubtitle;
 
   /// No description provided for @settingsTitle.
@@ -691,6 +1411,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Adjust the app basics before the settings surface grows.'**
   String get settingsScreenDescription;
+
+  /// No description provided for @languageSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get languageSectionTitle;
+
+  /// No description provided for @languageSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how the app should speak to you'**
+  String get languageSectionSubtitle;
+
+  /// No description provided for @themeSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get themeSectionTitle;
+
+  /// No description provided for @themeSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose whether the app should follow the system or stay fixed'**
+  String get themeSectionSubtitle;
+
+  /// No description provided for @themeModeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeModeSystem;
+
+  /// No description provided for @themeModeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeModeLight;
+
+  /// No description provided for @themeModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeModeDark;
 
   /// No description provided for @savedTitle.
   ///
@@ -830,743 +1592,83 @@ abstract class AppLocalizations {
   /// **'Clear the filters or try a different combination.'**
   String get savedEmptyFilteredSubtitle;
 
-  /// No description provided for @languageSectionTitle.
+  /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Language'**
-  String get languageSectionTitle;
+  /// **'Locario'**
+  String get appTitle;
 
-  /// No description provided for @languageSectionSubtitle.
+  /// No description provided for @localeEnglish.
   ///
   /// In en, this message translates to:
-  /// **'Choose how the app should speak to you'**
-  String get languageSectionSubtitle;
+  /// **'English'**
+  String get localeEnglish;
 
-  /// No description provided for @themeSectionTitle.
+  /// No description provided for @localePolish.
   ///
   /// In en, this message translates to:
-  /// **'Appearance'**
-  String get themeSectionTitle;
+  /// **'Polish'**
+  String get localePolish;
 
-  /// No description provided for @themeSectionSubtitle.
+  /// No description provided for @featureComingSoon.
   ///
   /// In en, this message translates to:
-  /// **'Choose whether the app should follow the system or stay fixed'**
-  String get themeSectionSubtitle;
+  /// **'This section is still being built.'**
+  String get featureComingSoon;
 
-  /// No description provided for @themeModeSystem.
+  /// No description provided for @networkError.
   ///
   /// In en, this message translates to:
-  /// **'System'**
-  String get themeModeSystem;
+  /// **'Network error. Please check your connection.'**
+  String get networkError;
 
-  /// No description provided for @themeModeLight.
-  ///
-  /// In en, this message translates to:
-  /// **'Light'**
-  String get themeModeLight;
-
-  /// No description provided for @themeModeDark.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark'**
-  String get themeModeDark;
-
-  /// No description provided for @exploreSearchHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search events...'**
-  String get exploreSearchHint;
-
-  /// No description provided for @exploreNearbyEvents.
-  ///
-  /// In en, this message translates to:
-  /// **'Nearby events'**
-  String get exploreNearbyEvents;
-
-  /// No description provided for @exploreNearbyWithFilter.
-  ///
-  /// In en, this message translates to:
-  /// **'{filter} nearby'**
-  String exploreNearbyWithFilter(String filter);
-
-  /// No description provided for @exploreLoadingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading events'**
-  String get exploreLoadingTitle;
-
-  /// No description provided for @exploreLoadingSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'We are fetching the latest events from the backend.'**
-  String get exploreLoadingSubtitle;
-
-  /// No description provided for @exploreErrorTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Events unavailable'**
-  String get exploreErrorTitle;
-
-  /// No description provided for @exploreErrorSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'We could not load events right now.'**
-  String get exploreErrorSubtitle;
-
-  /// No description provided for @exploreEmptyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'No events found'**
-  String get exploreEmptyTitle;
-
-  /// No description provided for @exploreEmptySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Try a different area or come back later.'**
-  String get exploreEmptySubtitle;
-
-  /// No description provided for @exploreRetryButton.
+  /// No description provided for @networkErrorRetry.
   ///
   /// In en, this message translates to:
   /// **'Retry'**
-  String get exploreRetryButton;
+  String get networkErrorRetry;
 
-  /// No description provided for @resultsCount.
+  /// No description provided for @shareEventMessage.
   ///
   /// In en, this message translates to:
-  /// **'{count,plural, =0{0 results} =1{1 result} other{{count} results}}'**
-  String resultsCount(int count);
+  /// **'Check out this event on Locario: {title}\n\n{url}'**
+  String shareEventMessage(String title, String url);
 
-  /// No description provided for @sortTooltip.
+  /// No description provided for @tabExplore.
   ///
   /// In en, this message translates to:
-  /// **'Sort'**
-  String get sortTooltip;
+  /// **'Explore'**
+  String get tabExplore;
 
-  /// No description provided for @sortDistance.
+  /// No description provided for @tabInbox.
   ///
   /// In en, this message translates to:
-  /// **'Distance'**
-  String get sortDistance;
+  /// **'Inbox'**
+  String get tabInbox;
 
-  /// No description provided for @sortSoonest.
+  /// No description provided for @tabHub.
   ///
   /// In en, this message translates to:
-  /// **'Soonest'**
-  String get sortSoonest;
+  /// **'Hub'**
+  String get tabHub;
 
-  /// No description provided for @sortTrending.
+  /// No description provided for @tabProfile.
   ///
   /// In en, this message translates to:
-  /// **'Trending'**
-  String get sortTrending;
+  /// **'Profile'**
+  String get tabProfile;
 
-  /// No description provided for @distanceFilterTooltip.
+  /// No description provided for @headerMap.
   ///
   /// In en, this message translates to:
-  /// **'List range'**
-  String get distanceFilterTooltip;
+  /// **'Map'**
+  String get headerMap;
 
-  /// No description provided for @distanceFilterAny.
+  /// No description provided for @headerList.
   ///
   /// In en, this message translates to:
-  /// **'Anywhere'**
-  String get distanceFilterAny;
-
-  /// No description provided for @distanceFilterWithinKm.
-  ///
-  /// In en, this message translates to:
-  /// **'Within {km} km'**
-  String distanceFilterWithinKm(int km);
-
-  /// No description provided for @filterAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get filterAll;
-
-  /// No description provided for @filterMusic.
-  ///
-  /// In en, this message translates to:
-  /// **'Music'**
-  String get filterMusic;
-
-  /// No description provided for @filterArt.
-  ///
-  /// In en, this message translates to:
-  /// **'Art'**
-  String get filterArt;
-
-  /// No description provided for @filterWorkshops.
-  ///
-  /// In en, this message translates to:
-  /// **'Workshops'**
-  String get filterWorkshops;
-
-  /// No description provided for @filterFood.
-  ///
-  /// In en, this message translates to:
-  /// **'Food'**
-  String get filterFood;
-
-  /// No description provided for @filterAdvancedFilters.
-  ///
-  /// In en, this message translates to:
-  /// **'Advanced Filters'**
-  String get filterAdvancedFilters;
-
-  /// No description provided for @filterAdvancedDistance.
-  ///
-  /// In en, this message translates to:
-  /// **'Search Range'**
-  String get filterAdvancedDistance;
-
-  /// No description provided for @filterAdvancedDateRange.
-  ///
-  /// In en, this message translates to:
-  /// **'Event Date'**
-  String get filterAdvancedDateRange;
-
-  /// No description provided for @filterAdvancedAge.
-  ///
-  /// In en, this message translates to:
-  /// **'Age (years)'**
-  String get filterAdvancedAge;
-
-  /// No description provided for @filterAdvancedType.
-  ///
-  /// In en, this message translates to:
-  /// **'Event Type'**
-  String get filterAdvancedType;
-
-  /// No description provided for @filterAdvancedSource.
-  ///
-  /// In en, this message translates to:
-  /// **'Event Source'**
-  String get filterAdvancedSource;
-
-  /// No description provided for @filterAdvancedApply.
-  ///
-  /// In en, this message translates to:
-  /// **'Show Results'**
-  String get filterAdvancedApply;
-
-  /// No description provided for @filterAdvancedClear.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear'**
-  String get filterAdvancedClear;
-
-  /// No description provided for @exploreSearchThisArea.
-  ///
-  /// In en, this message translates to:
-  /// **'Search this area'**
-  String get exploreSearchThisArea;
-
-  /// No description provided for @filterAdvancedDateFrom.
-  ///
-  /// In en, this message translates to:
-  /// **'From'**
-  String get filterAdvancedDateFrom;
-
-  /// No description provided for @filterAdvancedDateTo.
-  ///
-  /// In en, this message translates to:
-  /// **'To'**
-  String get filterAdvancedDateTo;
-
-  /// No description provided for @filterAdvancedDateAny.
-  ///
-  /// In en, this message translates to:
-  /// **'Any date'**
-  String get filterAdvancedDateAny;
-
-  /// No description provided for @filterAdvancedDateToday.
-  ///
-  /// In en, this message translates to:
-  /// **'Today'**
-  String get filterAdvancedDateToday;
-
-  /// No description provided for @filterAdvancedDateTomorrow.
-  ///
-  /// In en, this message translates to:
-  /// **'Tomorrow'**
-  String get filterAdvancedDateTomorrow;
-
-  /// No description provided for @filterAdvancedDateCustomRange.
-  ///
-  /// In en, this message translates to:
-  /// **'Date range'**
-  String get filterAdvancedDateCustomRange;
-
-  /// No description provided for @filterAdvancedDateOther.
-  ///
-  /// In en, this message translates to:
-  /// **'Other date'**
-  String get filterAdvancedDateOther;
-
-  /// No description provided for @filterAdvancedDateSelection.
-  ///
-  /// In en, this message translates to:
-  /// **'Selected date'**
-  String get filterAdvancedDateSelection;
-
-  /// No description provided for @filterAdvancedAgeFrom.
-  ///
-  /// In en, this message translates to:
-  /// **'Min'**
-  String get filterAdvancedAgeFrom;
-
-  /// No description provided for @filterAdvancedAgeTo.
-  ///
-  /// In en, this message translates to:
-  /// **'Max'**
-  String get filterAdvancedAgeTo;
-
-  /// No description provided for @filterAdvancedAgeSelection.
-  ///
-  /// In en, this message translates to:
-  /// **'Participant age'**
-  String get filterAdvancedAgeSelection;
-
-  /// No description provided for @filterAdvancedAgeCustomRange.
-  ///
-  /// In en, this message translates to:
-  /// **'Age range'**
-  String get filterAdvancedAgeCustomRange;
-
-  /// No description provided for @filterAdvancedAgeOther.
-  ///
-  /// In en, this message translates to:
-  /// **'Other age'**
-  String get filterAdvancedAgeOther;
-
-  /// No description provided for @filterAdvancedAgeRangeSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'{from}-{to} years'**
-  String filterAdvancedAgeRangeSummary(int from, int to);
-
-  /// No description provided for @areaMyLocation.
-  ///
-  /// In en, this message translates to:
-  /// **'My location'**
-  String get areaMyLocation;
-
-  /// No description provided for @areaMyLocationDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Events closest to you by default'**
-  String get areaMyLocationDescription;
-
-  /// No description provided for @areaTypedAddressDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Address entered manually'**
-  String get areaTypedAddressDescription;
-
-  /// No description provided for @areaPinnedOnMap.
-  ///
-  /// In en, this message translates to:
-  /// **'Pinned on map'**
-  String get areaPinnedOnMap;
-
-  /// No description provided for @areaPickerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose area'**
-  String get areaPickerTitle;
-
-  /// No description provided for @areaPickerSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'You can type an address, point to a spot on the map or go back to your current location.'**
-  String get areaPickerSubtitle;
-
-  /// No description provided for @areaUseCurrentLocation.
-  ///
-  /// In en, this message translates to:
-  /// **'My location'**
-  String get areaUseCurrentLocation;
-
-  /// No description provided for @areaUseCurrentLocationSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Use your current position as the reference point'**
-  String get areaUseCurrentLocationSubtitle;
-
-  /// No description provided for @areaEnterAddress.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter address'**
-  String get areaEnterAddress;
-
-  /// No description provided for @areaEnterAddressSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Type a street, district or exact place'**
-  String get areaEnterAddressSubtitle;
-
-  /// No description provided for @areaPickOnMap.
-  ///
-  /// In en, this message translates to:
-  /// **'Pick on map'**
-  String get areaPickOnMap;
-
-  /// No description provided for @areaPickOnMapTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Pick a point on the map'**
-  String get areaPickOnMapTitle;
-
-  /// No description provided for @areaPickOnMapSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Move the map so the chosen point sits under the center marker.'**
-  String get areaPickOnMapSubtitle;
-
-  /// No description provided for @areaPickOnMapConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Use this point'**
-  String get areaPickOnMapConfirm;
-
-  /// No description provided for @areaAddressDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter address'**
-  String get areaAddressDialogTitle;
-
-  /// No description provided for @areaAddressDialogHint.
-  ///
-  /// In en, this message translates to:
-  /// **'For example 12 Old Town Sq, Poznan'**
-  String get areaAddressDialogHint;
-
-  /// No description provided for @areaAddressNotFound.
-  ///
-  /// In en, this message translates to:
-  /// **'We couldn\'t find that address.'**
-  String get areaAddressNotFound;
-
-  /// No description provided for @areaAddressLookupFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Address lookup failed. Try again.'**
-  String get areaAddressLookupFailed;
-
-  /// No description provided for @areaDialogCancel.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get areaDialogCancel;
-
-  /// No description provided for @areaDialogConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Done'**
-  String get areaDialogConfirm;
-
-  /// No description provided for @areaPinnedCoordinates.
-  ///
-  /// In en, this message translates to:
-  /// **'{lat}, {lon}'**
-  String areaPinnedCoordinates(String lat, String lon);
-
-  /// No description provided for @areaWarsawCenter.
-  ///
-  /// In en, this message translates to:
-  /// **'Warsaw center'**
-  String get areaWarsawCenter;
-
-  /// No description provided for @areaWarsawCenterDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Address or pin set manually'**
-  String get areaWarsawCenterDescription;
-
-  /// No description provided for @areaPowisle.
-  ///
-  /// In en, this message translates to:
-  /// **'Powisle'**
-  String get areaPowisle;
-
-  /// No description provided for @areaPowisleDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Boulevards and Poniatowski bridge area'**
-  String get areaPowisleDescription;
-
-  /// No description provided for @areaMokotow.
-  ///
-  /// In en, this message translates to:
-  /// **'Mokotow'**
-  String get areaMokotow;
-
-  /// No description provided for @areaMokotowDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Pole Mokotowskie area and nearby'**
-  String get areaMokotowDescription;
-
-  /// No description provided for @eventJazzTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Jazz in the Botanical Garden'**
-  String get eventJazzTitle;
-
-  /// No description provided for @eventSketchingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Night sketching by the Vistula'**
-  String get eventSketchingTitle;
-
-  /// No description provided for @eventRunClubTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Morning run club and coffee stop'**
-  String get eventRunClubTitle;
-
-  /// No description provided for @eventStreetFoodTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Street food and vinyl market'**
-  String get eventStreetFoodTitle;
-
-  /// No description provided for @eventDetailsScreenTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Details'**
-  String get eventDetailsScreenTitle;
-
-  /// No description provided for @eventDetailsImagePlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Temporary image placeholder'**
-  String get eventDetailsImagePlaceholder;
-
-  /// No description provided for @eventDetailsTitleLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Event title'**
-  String get eventDetailsTitleLabel;
-
-  /// No description provided for @eventDetailsLocationLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Location'**
-  String get eventDetailsLocationLabel;
-
-  /// No description provided for @eventDetailsDateLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Date'**
-  String get eventDetailsDateLabel;
-
-  /// No description provided for @eventDetailsTimeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Time'**
-  String get eventDetailsTimeLabel;
-
-  /// No description provided for @eventDetailsPriceLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Price'**
-  String get eventDetailsPriceLabel;
-
-  /// No description provided for @eventDetailsSeatsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Seats'**
-  String get eventDetailsSeatsLabel;
-
-  /// No description provided for @eventDetailsAboutLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'About the event'**
-  String get eventDetailsAboutLabel;
-
-  /// No description provided for @eventDetailsOrganizerLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Organizer'**
-  String get eventDetailsOrganizerLabel;
-
-  /// No description provided for @eventDetailsChatLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Participants chat'**
-  String get eventDetailsChatLabel;
-
-  /// No description provided for @eventDetailsBuyTicketButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Buy ticket'**
-  String get eventDetailsBuyTicketButton;
-
-  /// No description provided for @eventDetailsJoinButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Join'**
-  String get eventDetailsJoinButton;
-
-  /// No description provided for @eventDetailsUnknownEventTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Event'**
-  String get eventDetailsUnknownEventTitle;
-
-  /// No description provided for @eventDetailsUnknownLocation.
-  ///
-  /// In en, this message translates to:
-  /// **'Location unknown'**
-  String get eventDetailsUnknownLocation;
-
-  /// No description provided for @eventDetailsFallbackDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'This is a temporary event description. In the next steps we will connect full data from the create event form and backend.'**
-  String get eventDetailsFallbackDescription;
-
-  /// No description provided for @eventDetailsLoadingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading event'**
-  String get eventDetailsLoadingTitle;
-
-  /// No description provided for @eventDetailsLoadingSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'We are fetching the event details from the backend.'**
-  String get eventDetailsLoadingSubtitle;
-
-  /// No description provided for @eventDetailsErrorTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Event unavailable'**
-  String get eventDetailsErrorTitle;
-
-  /// No description provided for @eventDetailsErrorSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'We could not load this event right now.'**
-  String get eventDetailsErrorSubtitle;
-
-  /// No description provided for @eventDetailsJazzDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.'**
-  String get eventDetailsJazzDescription;
-
-  /// No description provided for @eventDetailsSketchingDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'A meetup for people who enjoy sketching and urban illustration. Bring your own materials.'**
-  String get eventDetailsSketchingDescription;
-
-  /// No description provided for @eventDetailsRunClubDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.'**
-  String get eventDetailsRunClubDescription;
-
-  /// No description provided for @eventDetailsStreetFoodDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Street food, curated vinyl records and mini DJ sets. An all-day event.'**
-  String get eventDetailsStreetFoodDescription;
-
-  /// No description provided for @eventDetailsTicketLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Tickets'**
-  String get eventDetailsTicketLabel;
-
-  /// No description provided for @eventDetailsSlotsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Seat limit'**
-  String get eventDetailsSlotsLabel;
-
-  /// No description provided for @eventDetailsSlotsValue.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} seats available'**
-  String eventDetailsSlotsValue(int count);
-
-  /// No description provided for @eventDetailsShowOnMapButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Show on map'**
-  String get eventDetailsShowOnMapButton;
-
-  /// No description provided for @eventDetailsOpenMapError.
-  ///
-  /// In en, this message translates to:
-  /// **'We could not open the map app right now.'**
-  String get eventDetailsOpenMapError;
-
-  /// No description provided for @eventToday2030.
-  ///
-  /// In en, this message translates to:
-  /// **'Today, 20:30'**
-  String get eventToday2030;
-
-  /// No description provided for @eventToday1900.
-  ///
-  /// In en, this message translates to:
-  /// **'Today, 19:00'**
-  String get eventToday1900;
-
-  /// No description provided for @eventTomorrow0800.
-  ///
-  /// In en, this message translates to:
-  /// **'Tomorrow, 08:00'**
-  String get eventTomorrow0800;
-
-  /// No description provided for @eventTomorrow1200.
-  ///
-  /// In en, this message translates to:
-  /// **'Tomorrow, 12:00'**
-  String get eventTomorrow1200;
-
-  /// No description provided for @venueBotanicalGarden.
-  ///
-  /// In en, this message translates to:
-  /// **'Botanical Garden'**
-  String get venueBotanicalGarden;
-
-  /// No description provided for @venueVistulaBoulevards.
-  ///
-  /// In en, this message translates to:
-  /// **'Vistula Boulevards'**
-  String get venueVistulaBoulevards;
-
-  /// No description provided for @venuePoleMokotowskie.
-  ///
-  /// In en, this message translates to:
-  /// **'Pole Mokotowskie'**
-  String get venuePoleMokotowskie;
-
-  /// No description provided for @venueHalaKoszyki.
-  ///
-  /// In en, this message translates to:
-  /// **'Hala Koszyki'**
-  String get venueHalaKoszyki;
-
-  /// No description provided for @distanceMeters.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} m'**
-  String distanceMeters(int count);
-
-  /// No description provided for @distanceKilometers.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} km'**
-  String distanceKilometers(String count);
+  /// **'List'**
+  String get headerList;
 
   /// No description provided for @mapReturnToLocation.
   ///
@@ -1645,84 +1747,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The event screen for “{title}” will be added later.'**
   String mapEventOpenSoon(String title);
-
-  /// No description provided for @authLoginSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Logged in successfully.'**
-  String get authLoginSuccess;
-
-  /// No description provided for @authLoginErrorInvalidCredentials.
-  ///
-  /// In en, this message translates to:
-  /// **'Invalid email or password.'**
-  String get authLoginErrorInvalidCredentials;
-
-  /// No description provided for @eventSaveSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Event saved to your list.'**
-  String get eventSaveSuccess;
-
-  /// No description provided for @eventRemoveSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Event removed from your list.'**
-  String get eventRemoveSuccess;
-
-  /// No description provided for @eventPublishSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Event published successfully.'**
-  String get eventPublishSuccess;
-
-  /// No description provided for @eventPublishError.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to publish event. Try again.'**
-  String get eventPublishError;
-
-  /// No description provided for @networkError.
-  ///
-  /// In en, this message translates to:
-  /// **'Network error. Please check your connection.'**
-  String get networkError;
-
-  /// No description provided for @networkErrorRetry.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry'**
-  String get networkErrorRetry;
-
-  /// No description provided for @exploreErrorPermissionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Location permission required'**
-  String get exploreErrorPermissionTitle;
-
-  /// No description provided for @exploreErrorPermissionSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Please allow location access to see events nearby.'**
-  String get exploreErrorPermissionSubtitle;
-
-  /// No description provided for @exploreErrorUnknownTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Something went wrong'**
-  String get exploreErrorUnknownTitle;
-
-  /// No description provided for @exploreErrorUnknownSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'We encountered an unexpected error.'**
-  String get exploreErrorUnknownSubtitle;
-
-  /// No description provided for @shareEventMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Check out this event on Locario: {title}\n\n{url}'**
-  String shareEventMessage(String title, String url);
 }
 
 class _AppLocalizationsDelegate

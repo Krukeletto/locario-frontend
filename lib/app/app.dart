@@ -101,7 +101,7 @@ class _LocarioAppState extends State<LocarioApp> {
                   return MaterialApp.router(
                     scaffoldMessengerKey: rootScaffoldMessengerKey,
                     onGenerateTitle: (context) =>
-                        AppLocalizations.of(context)!.appTitle,
+                        AppLocalizations.of(context).appTitle,
                     debugShowCheckedModeBanner: false,
                     theme: buildLightAppTheme(),
                     darkTheme: buildDarkAppTheme(),
@@ -118,10 +118,8 @@ class _LocarioAppState extends State<LocarioApp> {
                     builder: (context, child) {
                       // Initialize the L10nService so it can be used without BuildContext.
                       final l10n = AppLocalizations.of(context);
-                      if (l10n != null) {
-                        L10nService.update(l10n);
-                      }
-                      return child!;
+                      L10nService.update(l10n);
+                                          return child!;
                     },
                     localeResolutionCallback: (locale, supportedLocales) {
                       if (locale == null) {

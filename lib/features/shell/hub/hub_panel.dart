@@ -20,7 +20,7 @@ class HubPanel extends StatelessWidget {
     final secondaryItems = items.where((item) => !item.isPrimary).toList();
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final panelBackground = theme.brightness == Brightness.dark
         ? scheme.surfaceContainerLow
         : scheme.surface;

@@ -110,7 +110,7 @@ class _CategoryFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     final categoryCount = 1 + availableCategories.length;
 
@@ -175,7 +175,7 @@ class _SearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final hasQuery = controller.text.trim().isNotEmpty;
     final showResults = hasQuery && results.isNotEmpty;
 

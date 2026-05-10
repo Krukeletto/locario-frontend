@@ -526,7 +526,7 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   Future<void> _showClusterEvents(List<ExploreEvent> events) async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -637,7 +637,7 @@ class _MapWidgetState extends State<MapWidget> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final brightness = Theme.of(context).brightness;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return FutureBuilder<String>(
       future: _styleFuture,
@@ -941,7 +941,7 @@ class _MapMessageBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       key: const Key('map-message-banner'),
@@ -1092,7 +1092,7 @@ class _ClusterEventTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return InkWell(
       onTap: onTap,

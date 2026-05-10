@@ -187,7 +187,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   Future<void> _handleLocationPressed() async {
     _clearFocus();
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final action = await showModalBottomSheet<ExploreAreaSelectionAction>(
       context: context,
       showDragHandle: true,
@@ -241,7 +241,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final state = _controller.state;
 
     return Scaffold(
@@ -386,7 +386,7 @@ class _SelectedImagesList extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxHeight: 280),

@@ -138,7 +138,7 @@ class _SavedScreenState extends State<SavedScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final controller =
         widget.savedEventsController ?? SavedEventsScope.of(context);
     final availableCategories =
@@ -300,8 +300,8 @@ Future<void> _toggleSaved({
   }
 
   final message = outcome == SavedToggleOutcome.saved && !wasSaved
-      ? AppLocalizations.of(context)!.eventSaveSuccess
-      : AppLocalizations.of(context)!.eventRemoveSuccess;
+      ? AppLocalizations.of(context).eventSaveSuccess
+      : AppLocalizations.of(context).eventRemoveSuccess;
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
@@ -331,7 +331,7 @@ class _SavedToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -431,7 +431,7 @@ class _SavedSortMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     final options = [
       SavedSortOption.recent,
@@ -543,7 +543,7 @@ class _SavedEmptyState extends StatelessWidget {
               const SizedBox(height: 16),
               FilledButton.tonal(
                 onPressed: onClearFilters,
-                child: Text(AppLocalizations.of(context)!.savedFiltersClear),
+                child: Text(AppLocalizations.of(context).savedFiltersClear),
               ),
             ],
           ],
@@ -626,7 +626,7 @@ class _SavedFiltersSheetState extends State<_SavedFiltersSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return SafeArea(
       child: SingleChildScrollView(

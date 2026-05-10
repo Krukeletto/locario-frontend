@@ -345,10 +345,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
               _buildContent(context, state, currentView),
               if (_areaController.isPickingAreaOnMap)
                 ExploreMapAreaPickerOverlay(
-                  title: AppLocalizations.of(context)!.areaPickOnMapTitle,
-                  subtitle: AppLocalizations.of(context)!.areaPickOnMapSubtitle,
-                  cancelLabel: AppLocalizations.of(context)!.areaDialogCancel,
-                  confirmLabel: AppLocalizations.of(context)!.areaDialogConfirm,
+                  title: AppLocalizations.of(context).areaPickOnMapTitle,
+                  subtitle: AppLocalizations.of(context).areaPickOnMapSubtitle,
+                  cancelLabel: AppLocalizations.of(context).areaDialogCancel,
+                  confirmLabel: AppLocalizations.of(context).areaDialogConfirm,
                   onCancel: _areaController.cancelMapPicking,
                   onConfirm: () {
                     final center = _areaController.confirmMapPicking(
@@ -373,7 +373,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     ExploreState state,
     ExploreContentView currentView,
   ) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final effectiveView = _areaController.isPickingAreaOnMap
         ? ExploreContentView.map
         : currentView;
@@ -402,7 +402,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     List<ExploreEvent> events,
     ExploreContentView currentView,
   ) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final referenceLocation =
         _exploreController.referenceLocation ?? const LatLng(0, 0);
     final searchRadiusMeters =

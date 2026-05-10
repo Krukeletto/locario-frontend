@@ -30,7 +30,7 @@ class _ExploreAddressInputDialogState extends State<ExploreAddressInputDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
 
     return AlertDialog(
@@ -80,7 +80,7 @@ class ExploreAreaSelectionSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return SafeArea(
       top: false,

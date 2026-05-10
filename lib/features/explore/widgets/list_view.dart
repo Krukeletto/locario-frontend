@@ -40,7 +40,7 @@ class ExploreListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final isKeyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
     final hideToolbar = isKeyboardVisible || isSearchActive;
 
@@ -146,7 +146,7 @@ class _ListToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -234,7 +234,7 @@ class _SortMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return PopupMenuButton<ExploreSortOption>(
       tooltip: l10n.sortTooltip,

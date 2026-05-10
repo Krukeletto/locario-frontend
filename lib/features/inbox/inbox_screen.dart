@@ -12,7 +12,7 @@ class InboxScreen extends StatelessWidget {
       Colors.black.withValues(alpha: 0.18),
       Theme.of(context).colorScheme.primary,
     );
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: backgroundColor,

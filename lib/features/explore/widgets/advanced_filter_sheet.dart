@@ -94,7 +94,7 @@ class _ExploreAdvancedFilterSheetState
   }
 
   Future<void> _handleAreaPressed() async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final action = await showModalBottomSheet<ExploreAreaSelectionAction>(
       context: context,
       showDragHandle: true,
@@ -124,7 +124,7 @@ class _ExploreAdvancedFilterSheetState
   }
 
   Future<void> _handleAddressSelection() async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final address = await showDialog<String>(
       context: context,
       builder: (context) => const ExploreAddressInputDialog(),
@@ -238,7 +238,7 @@ class _ExploreAdvancedFilterSheetState
 
         return StatefulBuilder(
           builder: (context, setModalState) {
-            final l10n = AppLocalizations.of(context)!;
+            final l10n = AppLocalizations.of(context);
             return Padding(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
               child: Column(
@@ -364,7 +364,7 @@ class _ExploreAdvancedFilterSheetState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final distanceIndex = ExploreDistanceFilter.values.indexOf(
       _filters.distanceFilter,
     );

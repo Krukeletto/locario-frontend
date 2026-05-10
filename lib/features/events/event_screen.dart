@@ -41,7 +41,7 @@ class _EventScreenState extends State<EventScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _l10n ??= AppLocalizations.of(context)!;
+    _l10n ??= AppLocalizations.of(context);
     if (_hasRequestedInitialLoad) {
       return;
     }
@@ -97,7 +97,7 @@ class _EventScreenState extends State<EventScreen> {
   }
 
   void _shareEvent(ExploreEvent event) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     ShareService.shareEvent(eventId: event.id, title: event.title, l10n: l10n);
   }
 
@@ -122,7 +122,7 @@ class _EventScreenState extends State<EventScreen> {
   }
 
   Future<void> _showEventOnMap(ExploreEvent event) async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final opened = await MapLaunchService.openLocation(event.location);
     if (opened || !mounted) {
       return;
@@ -140,7 +140,7 @@ class _EventScreenState extends State<EventScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final savedController = SavedEventsScope.maybeOf(context);
     return savedController == null
         ? _buildScaffold(context, theme, scheme, l10n, savedController)

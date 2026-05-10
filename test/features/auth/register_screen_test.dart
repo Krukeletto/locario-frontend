@@ -150,10 +150,8 @@ Future<GoRouter> _pumpRouterApp(
         routerConfig: router,
         builder: (context, child) {
           final l10n = AppLocalizations.of(context);
-          if (l10n != null) {
-            L10nService.init(l10n);
-          }
-          return child!;
+          L10nService.init(l10n);
+                  return child!;
         },
       ),
     ),

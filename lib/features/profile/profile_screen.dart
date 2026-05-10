@@ -12,7 +12,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final sessionController = AuthScope.of(context);
     final isAuthenticated = sessionController.isAuthenticated;
     final authTitle = isAuthenticated

@@ -69,6 +69,18 @@ final List<HubActionItem> hubActionItems = [
     isPrimary: true,
   ),
   const HubActionItem(
+    id: 'inbox',
+    icon: 'inbox',
+    routePath: '/hub/inbox',
+    isEnabled: false,
+  ),
+  const HubActionItem(
+    id: 'messages',
+    icon: 'mail',
+    routePath: '/hub/messages',
+    isEnabled: false,
+  ),
+  const HubActionItem(
     id: 'community',
     icon: 'groups',
     routePath: '/hub/community',
@@ -84,6 +96,8 @@ final List<HubActionItem> hubActionItems = [
 
 bool _requiresAuth(String location) {
   return location.startsWith('/hub/create-event') ||
+      location.startsWith('/hub/inbox') ||
+      location.startsWith('/hub/messages') ||
       location.startsWith('/hub/friends') ||
       location.startsWith('/inbox');
 }

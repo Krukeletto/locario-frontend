@@ -108,5 +108,6 @@ void main() {
 
     expect(find.text('This section is still being built.'), findsOneWidget);
     expect(find.text('Profile'), findsOneWidget);
+    expect(find.text('Open your notifications'), findsOneWidget);
   });
 }

@@ -32,7 +32,7 @@
       }
     }
   },
-  "mapEventOpenSoon": "The event screen for "{title}" will be added later.",
+  "mapEventOpenSoon": "The event screen for “{title}” will be added later.",
   "@mapEventOpenSoon": {
     "placeholders": {
       "title": {

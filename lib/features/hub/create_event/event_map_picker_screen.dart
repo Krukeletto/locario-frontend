@@ -57,7 +57,7 @@ class _EventMapPickerScreenState extends State<EventMapPickerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
