@@ -61,6 +61,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
   StreamSubscription<void>? _refreshSubscription;
   Timer? _autoRefreshTimer;
   LatLng? _lastSearchedLocation;
+  LatLng? _searchBaselineLocation;
+  LatLng? _mapViewportCenter;
   int? _pendingMapSearchRadiusMeters;
   int? _appliedMapSearchRadiusMeters;
 
@@ -83,7 +85,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     _mapViewModel =
         widget.mapViewModel ??
-        ExploreMapViewModel(locationService: GeolocatorLocationService());
+        ExploreMapViewModel(
+          locationService: GeolocatorLocationService(),
+          fallbackCenter: const LatLng(0, 0),
+        );
 
     _styleRepository = widget.styleRepository ?? const MapStyleRepository();
     _internalHeaderController =
@@ -171,6 +176,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
     }
   }
 
+  LatLng _currentMapCenter() {
+    return _mapViewportCenter ?? _mapViewModel.mapCenter;
+  }
+
   void _handleHeaderChanged() {
     _syncControllerParams();
   }
@@ -178,7 +187,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   LatLng _currentSearchAreaCenter() {
     return _areaController.referenceLocation(
       currentLocation: _mapViewModel.currentLocation,
-      fallbackCenter: _mapViewModel.mapCenter,
+      fallbackCenter: _currentMapCenter(),
     );
   }
 
@@ -207,7 +216,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   void _handleMapViewModelChanged() {
     _syncControllerParams();
-    _markCurrentAreaAsSearched();
+    if (_searchBaselineLocation == null && !_mapViewModel.isLocating) {
+      final currentLocation = _mapViewModel.currentLocation;
+      if (currentLocation != null) {
+        _searchBaselineLocation = currentLocation;
+      } else {
+        _searchBaselineLocation ??= _mapViewportCenter;
+      }
+    }
+    _maybeEstablishInitialSearchBaseline();
     if (mounted) {
       setState(() {});
       // If we just got a location and haven't loaded events yet, or if we need to refresh
@@ -260,11 +277,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   bool get _showSearchThisArea {
     if (_areaController.isPickingAreaOnMap) return false;
-    if (_lastSearchedLocation == null) return false;
-    final current = _mapViewModel.mapCenter;
+    final baseline = _searchBaselineLocation;
+    if (baseline == null) return false;
+    final current = _currentMapCenter();
     const distance = Distance();
     final centerChanged =
-        distance.as(LengthUnit.Meter, _lastSearchedLocation!, current) > 500;
+        distance.as(LengthUnit.Meter, baseline, current) > 500;
     final appliedRadius = _appliedMapSearchRadiusMeters;
     final pendingRadius = _pendingMapSearchRadiusMeters;
     final radiusChanged =
@@ -405,15 +423,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     final l10n = AppLocalizations.of(context);
     final referenceLocation =
         _exploreController.referenceLocation ?? const LatLng(0, 0);
-    final searchRadiusMeters =
-        _areaController.selectionMode == ExploreAreaSelectionMode.mapPin
-        ? _appliedMapSearchRadiusMeters ??
-              _exploreController.distanceOverrideMeters ??
-              _exploreController
-                  .advancedFilters
-                  .distanceFilter
-                  .maxDistanceMeters
-        : null;
     final topContentOffset = (ShellHeaderScope.maybeOf(context) == null)
         ? MediaQuery.paddingOf(context).top + 112
         : 112.0;
@@ -426,9 +435,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 styleRepository: _styleRepository,
                 events: events,
                 referenceLocation: referenceLocation,
-                searchRadiusMeters: searchRadiusMeters,
+                showSearchRadiusOverlay: false,
                 onEventTap: _handleEventTap,
-                onCameraCenterChanged: _mapViewModel.setPreferredMapCenter,
+                onCameraCenterChanged: _handleMapCameraCenterChanged,
                 onVisibleRadiusChanged: (radiusMeters) {
                   if (_pendingMapSearchRadiusMeters == radiusMeters) {
                     return;
@@ -446,7 +455,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   child: Center(
                     child: SearchThisAreaButton(
                       onPressed: () {
-                        _areaController.searchInArea(_mapViewModel.mapCenter);
+                        final center = _currentMapCenter();
+                        _areaController.searchInArea(center);
+                        _mapViewModel.setPreferredMapCenter(center);
+                        _searchBaselineLocation = center;
+                        _lastSearchedLocation = center;
                         _appliedMapSearchRadiusMeters =
                             _pendingMapSearchRadiusMeters;
                         _syncControllerParams();
@@ -523,6 +536,39 @@ class _ExploreScreenState extends State<ExploreScreen> {
         Expanded(child: content),
       ],
     );
+  }
+
+  void _handleMapCameraCenterChanged(LatLng center) {
+    final wasShowingSearchThisArea = _showSearchThisArea;
+    _mapViewportCenter = center;
+    _maybeEstablishInitialSearchBaseline();
+    if (mounted && wasShowingSearchThisArea != _showSearchThisArea) {
+      setState(() {});
+    }
+  }
+
+  void _maybeEstablishInitialSearchBaseline() {
+    if (_searchBaselineLocation != null || _mapViewModel.isLocating) {
+      return;
+    }
+
+    final viewportCenter = _mapViewportCenter;
+    if (viewportCenter == null) {
+      return;
+    }
+
+    final currentLocation = _mapViewModel.currentLocation;
+    if (currentLocation == null) {
+      _searchBaselineLocation = viewportCenter;
+      return;
+    }
+
+    const distance = Distance();
+    final isAlignedWithCurrentLocation =
+        distance.as(LengthUnit.Meter, viewportCenter, currentLocation) <= 100;
+    if (isAlignedWithCurrentLocation) {
+      _searchBaselineLocation = currentLocation;
+    }
   }
 
   String _errorTitle(ExploreErrorType type, AppLocalizations l10n) {

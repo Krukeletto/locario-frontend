@@ -12,6 +12,7 @@ void main() {
     test('starts in ready state and locates in the background', () {
       final controller = ExploreMapViewModel(
         locationService: FakeLocationService(),
+        fallbackCenter: const LatLng(0, 0),
       );
 
       expect(controller.status, ExploreMapStatus.ready);
@@ -26,7 +27,10 @@ void main() {
         checkPermissionResult: LocationPermission.denied,
         requestPermissionResult: LocationPermission.denied,
       );
-      final controller = ExploreMapViewModel(locationService: service);
+      final controller = ExploreMapViewModel(
+        locationService: service,
+        fallbackCenter: const LatLng(0, 0),
+      );
 
       await controller.loadInitialLocation();
 
@@ -40,6 +44,7 @@ void main() {
     test('sets serviceDisabled when location service is unavailable', () async {
       final controller = ExploreMapViewModel(
         locationService: FakeLocationService(serviceEnabled: false),
+        fallbackCenter: const LatLng(0, 0),
       );
 
       await controller.loadInitialLocation();
@@ -58,6 +63,7 @@ void main() {
           checkPermissionResult: LocationPermission.whileInUse,
           currentLocation: currentLocation,
         ),
+        fallbackCenter: const LatLng(0, 0),
       );
 
       await controller.loadInitialLocation();
@@ -77,6 +83,7 @@ void main() {
           currentLocationError: TimeoutException('timeout'),
           lastKnownLocation: lastKnownLocation,
         ),
+        fallbackCenter: const LatLng(0, 0),
       );
 
       await controller.loadInitialLocation();
@@ -99,6 +106,7 @@ void main() {
             lastKnownLocation: lastKnownLocation,
             currentLocationCompleter: currentLocationCompleter,
           ),
+          fallbackCenter: const LatLng(0, 0),
         );
 
         final loadFuture = controller.loadInitialLocation();
@@ -124,7 +132,10 @@ void main() {
         supportsLastKnownLocation: false,
         currentLocationError: TimeoutException('timeout'),
       );
-      final controller = ExploreMapViewModel(locationService: service);
+      final controller = ExploreMapViewModel(
+        locationService: service,
+        fallbackCenter: const LatLng(0, 0),
+      );
 
       await controller.loadInitialLocation();
 
@@ -143,6 +154,7 @@ void main() {
             serviceEnabled: true,
             checkPermissionResult: LocationPermission.whileInUse,
           ),
+          fallbackCenter: const LatLng(0, 0),
         );
 
         await controller.loadInitialLocation();

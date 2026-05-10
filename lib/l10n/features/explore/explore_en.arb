@@ -11,7 +11,7 @@
     }
   },
   "exploreLoadingTitle": "Loading events",
-  "exploreLoadingSubtitle": "We are fetching the latest events from the backend.",
+  "exploreLoadingSubtitle": "We are fetching the latest events, please wait.",
   "exploreErrorTitle": "Events unavailable",
   "exploreErrorSubtitle": "We could not load events right now.",
   "exploreEmptyTitle": "No events found",

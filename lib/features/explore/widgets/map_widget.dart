@@ -30,6 +30,7 @@ class MapWidget extends StatefulWidget {
     this.onVisibleRadiusChanged,
     this.searchRadiusCenter,
     this.searchRadiusMeters,
+    this.showSearchRadiusOverlay = true,
   });
 
   final ExploreMapViewModel controller;
@@ -45,6 +46,7 @@ class MapWidget extends StatefulWidget {
   final ValueChanged<int>? onVisibleRadiusChanged;
   final LatLng? searchRadiusCenter;
   final int? searchRadiusMeters;
+  final bool showSearchRadiusOverlay;
 
   @override
   State<MapWidget> createState() => _MapWidgetState();
@@ -63,6 +65,7 @@ class _MapWidgetState extends State<MapWidget> {
   Brightness? _resolvedBrightness;
   late Future<String> _styleFuture;
   int _styleRevision = 0;
+  bool _hasCompletedStartupLoading = false;
   final MapStyleCoordinator _styleCoordinator = MapStyleCoordinator();
   final MapCameraSync _cameraSync = MapCameraSync();
 
@@ -144,7 +147,9 @@ class _MapWidgetState extends State<MapWidget> {
 
     if ((oldWidget.events != widget.events ||
             oldWidget.searchRadiusCenter != widget.searchRadiusCenter ||
-            oldWidget.searchRadiusMeters != widget.searchRadiusMeters) &&
+            oldWidget.searchRadiusMeters != widget.searchRadiusMeters ||
+            oldWidget.showSearchRadiusOverlay !=
+                widget.showSearchRadiusOverlay) &&
         _isStyleLoaded) {
       _syncEventMarkers();
     }
@@ -171,9 +176,10 @@ class _MapWidgetState extends State<MapWidget> {
     }
 
     final targetCenter = widget.controller.mapCenter;
+    final currentLocation = widget.controller.currentLocation;
     final command = _cameraSync.commandForTarget(
       targetCenter: targetCenter,
-      currentLocation: widget.controller.currentLocation,
+      currentLocation: currentLocation,
     );
     if (command == null) {
       return;
@@ -181,6 +187,10 @@ class _MapWidgetState extends State<MapWidget> {
 
     _moveTo(command.center, command.zoom);
     _cameraSync.markSynced(command.center);
+    if (currentLocation != null &&
+        _sameLocation(command.center, currentLocation)) {
+      widget.onCameraCenterChanged?.call(currentLocation);
+    }
     _updateUserLocationVisibility();
   }
 
@@ -206,19 +216,14 @@ class _MapWidgetState extends State<MapWidget> {
 
     if (!mounted) return;
 
-    final currentLocation = widget.controller.currentLocation;
-    if (currentLocation != null) {
-      await _moveTo(currentLocation, _cameraSync.userLocationZoom);
-      _cameraSync.markSynced(currentLocation);
-      widget.onCameraCenterChanged?.call(currentLocation);
-      await _syncEventMarkers();
-      _updateVisibleSearchRadius();
-      _updateUserLocationVisibility();
-      return;
-    }
-
     final targetCenter = widget.controller.mapCenter;
-    await _moveTo(targetCenter, _cameraSync.fallbackZoom);
+    final currentLocation = widget.controller.currentLocation;
+    await _moveTo(
+      targetCenter,
+      currentLocation != null
+          ? _cameraSync.userLocationZoom
+          : _cameraSync.fallbackZoom,
+    );
     _cameraSync.markSynced(targetCenter);
     widget.onCameraCenterChanged?.call(targetCenter);
     await _syncEventMarkers();
@@ -259,6 +264,10 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   Future<void> _initializeSearchRadiusLayers() async {
+    if (!widget.showSearchRadiusOverlay) {
+      return;
+    }
+
     final style = _mapController?.style;
     if (style == null) {
       return;
@@ -307,6 +316,10 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   Future<void> _syncSearchRadiusOverlay() async {
+    if (!widget.showSearchRadiusOverlay) {
+      return;
+    }
+
     final style = _mapController?.style;
     if (style == null) {
       return;
@@ -418,6 +431,10 @@ class _MapWidgetState extends State<MapWidget> {
 
     widget.controller.setPreferredMapCenter(location);
     _moveTo(location, _cameraSync.userLocationZoom, animate: true);
+  }
+
+  bool _sameLocation(LatLng left, LatLng right) {
+    return left.latitude == right.latitude && left.longitude == right.longitude;
   }
 
   void _updateUserLocationVisibility() {
@@ -652,11 +669,24 @@ class _MapWidgetState extends State<MapWidget> {
             final styleLoadError = styleSnapshot.error;
             final isStyleLoading =
                 _supportsMapLibre && !styleLoadFailed && styleJson == null;
+            final isWaitingForStartup =
+                isStyleLoading || controller.isInitialLoading;
+            final showStartupLoading =
+                !_hasCompletedStartupLoading && isWaitingForStartup;
 
             if (styleLoadError != null) {
               debugPrint('Map style load failed: $styleLoadError');
             }
 
+            if (showStartupLoading) {
+              return _StartupLoadingView(
+                colorScheme: colorScheme,
+                title: l10n.exploreLoadingTitle,
+                subtitle: l10n.exploreLoadingSubtitle,
+              );
+            }
+
+            _hasCompletedStartupLoading = true;
             return Stack(
               children: [
                 _buildMapSurface(
@@ -751,6 +781,80 @@ class _MapWidgetState extends State<MapWidget> {
           },
         );
       },
+    );
+  }
+}
+
+class _StartupLoadingView extends StatelessWidget {
+  const _StartupLoadingView({
+    required this.colorScheme,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final ColorScheme colorScheme;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: colorScheme.surfaceContainerLowest,
+      child: Center(
+        child: Semantics(
+          label: title,
+          child: Container(
+            key: const Key('map-startup-loading'),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 22),
+            decoration: BoxDecoration(
+              color: colorScheme.surface.withValues(alpha: 0.94),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.26),
+                  blurRadius: 28,
+                  offset: const Offset(0, 14),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 34,
+                  height: 34,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      colorScheme.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

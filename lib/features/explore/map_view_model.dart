@@ -26,11 +26,8 @@ enum ExploreMapMessage {
 class ExploreMapViewModel extends ChangeNotifier {
   ExploreMapViewModel({
     required LocationService locationService,
-    LatLng? fallbackCenter,
-  }) : _locationService = locationService,
-       fallbackCenter = fallbackCenter ?? _lodzPinsCenter;
-
-  static const LatLng _lodzPinsCenter = LatLng(51.695664, 19.416611);
+    required this.fallbackCenter,
+  }) : _locationService = locationService;
 
   final LocationService _locationService;
   final LatLng fallbackCenter;
@@ -48,6 +45,9 @@ class ExploreMapViewModel extends ChangeNotifier {
   LatLng? get currentLocation => _currentLocation;
   ExploreMapMessage? get message => _message;
   bool get isLocating => _isLocating;
+  bool get isInitialLoading =>
+      _isLocating ||
+      (status == ExploreMapStatus.ready && _currentLocation == null);
   LatLng get mapCenter =>
       _preferredMapCenter ?? _currentLocation ?? fallbackCenter;
   bool get canOpenAppSettings => _locationService.supportsAppSettings;

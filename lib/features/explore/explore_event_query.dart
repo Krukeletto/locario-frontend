@@ -32,6 +32,13 @@ class ExploreEventQuery {
     }
     debugPrint('After category filter: ${filteredEvents.length}');
 
+    final now = DateTime.now();
+    filteredEvents = filteredEvents.where((event) {
+      final cutoff = event.endsAt ?? event.startsAt;
+      return cutoff.isAfter(now);
+    });
+    debugPrint('After past filter: ${filteredEvents.length}');
+
     if (normalizedQuery.isNotEmpty) {
       final l10n = L10nService.l10n;
       filteredEvents = filteredEvents.where((event) {

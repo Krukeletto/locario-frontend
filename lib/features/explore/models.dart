@@ -622,18 +622,11 @@ class ExploreAdvancedFilters {
     );
   }
 
-  bool get hasActiveFilters =>
-      distanceFilter != ExploreDistanceFilter.within1Km ||
-      dateFrom != null ||
-      dateTo != null ||
-      ageFrom != null ||
-      ageTo != null ||
-      eventType != null ||
-      eventSource != null;
+  bool get hasActiveFilters => activeFiltersCount > 0;
 
   int get activeFiltersCount {
     int count = 0;
-    if (distanceFilter != ExploreDistanceFilter.within1Km) count++;
+    if (distanceFilter != defaults.distanceFilter) count++;
     if (dateFrom != null || dateTo != null) count++;
     if (ageFrom != null || ageTo != null) count++;
     if (eventType != null) count++;

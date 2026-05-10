@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
@@ -13,19 +15,27 @@ void main() {
     testWidgets(
       'does not show an error banner while location is still resolving',
       (tester) async {
+        final currentLocationCompleter = Completer<LatLng?>();
         final controller = ExploreMapViewModel(
           locationService: FakeLocationService(
-            currentLocationDelay: const Duration(seconds: 1),
+            currentLocationCompleter: currentLocationCompleter,
           ),
+          fallbackCenter: const LatLng(0, 0),
         );
 
-        controller.loadInitialLocation();
+        final loadFuture = controller.loadInitialLocation();
         await tester.pumpWidget(_buildTestApp(controller));
-
-        expect(find.byKey(const Key('map-message-banner')), findsNothing);
-
-        await tester.pump(const Duration(seconds: 1));
         await tester.pump();
+
+        expect(find.byKey(const Key('map-startup-loading')), findsOneWidget);
+
+        currentLocationCompleter.complete(const LatLng(52.2297, 21.0122));
+        await loadFuture;
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const Key('map-startup-loading')), findsNothing);
+        expect(find.byType(MapWidget), findsOneWidget);
+        expect(find.byKey(const Key('map-message-banner')), findsNothing);
       },
     );
 
@@ -34,6 +44,7 @@ void main() {
     ) async {
       final controller = ExploreMapViewModel(
         locationService: FakeLocationService(serviceEnabled: false),
+        fallbackCenter: const LatLng(0, 0),
       );
 
       await controller.loadInitialLocation();
@@ -54,6 +65,7 @@ void main() {
         locationService: FakeLocationService(
           currentLocation: const LatLng(52.2297, 21.0122),
         ),
+        fallbackCenter: const LatLng(0, 0),
       );
 
       await controller.loadInitialLocation();
@@ -62,6 +74,67 @@ void main() {
 
       expect(find.byType(MapWidget), findsOneWidget);
       expect(find.byKey(const Key('map-message-banner')), findsNothing);
+    });
+
+    testWidgets('follows the resolved current location on startup', (
+      tester,
+    ) async {
+      const currentLocation = LatLng(52.2297, 21.0122);
+      final controller = ExploreMapViewModel(
+        locationService: FakeLocationService(
+          currentLocation: currentLocation,
+          currentLocationDelay: const Duration(seconds: 1),
+        ),
+        fallbackCenter: const LatLng(0, 0),
+      );
+
+      final loadFuture = controller.loadInitialLocation();
+      await tester.pumpWidget(_buildTestApp(controller));
+      await tester.pump();
+
+      expect(controller.currentLocation, isNull);
+      expect(controller.mapCenter, controller.fallbackCenter);
+
+      await tester.pump(const Duration(seconds: 1));
+      await loadFuture;
+      await tester.pumpAndSettle();
+
+      expect(controller.currentLocation, currentLocation);
+      expect(controller.mapCenter, currentLocation);
+    });
+
+    testWidgets('does not show startup loading after map has rendered once', (
+      tester,
+    ) async {
+      const currentLocation = LatLng(52.2297, 21.0122);
+      final controller = ExploreMapViewModel(
+        locationService: FakeLocationService(
+          currentLocation: currentLocation,
+          currentLocationDelay: const Duration(seconds: 1),
+        ),
+        fallbackCenter: const LatLng(0, 0),
+      );
+
+      final loadFuture = controller.loadInitialLocation();
+      await tester.pumpWidget(_buildTestApp(controller));
+      await tester.pump();
+
+      expect(find.byKey(const Key('map-startup-loading')), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 1));
+      await loadFuture;
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('map-startup-loading')), findsNothing);
+
+      final refreshFuture = controller.refreshLocation();
+      await tester.pump();
+
+      expect(controller.isLocating, isTrue);
+      expect(find.byKey(const Key('map-startup-loading')), findsNothing);
+
+      await tester.pump(const Duration(seconds: 1));
+      await refreshFuture;
     });
   });
 }

@@ -106,11 +106,11 @@ class ExploreController extends ChangeNotifier {
     }
 
     final requestId = ++_activeRequestId;
-    final hasData = _allEvents.isNotEmpty;
+    final previousResults = _visiblePreviousResults();
 
-    if (!hasData || forceRefresh) {
-      if (hasData) {
-        _state = ExploreDataLoading(previous: _filterAndSort());
+    if (_allEvents.isEmpty || forceRefresh) {
+      if (previousResults != null) {
+        _state = ExploreDataLoading(previous: previousResults);
       } else {
         _state = const ExploreLoading();
       }
@@ -144,6 +144,16 @@ class ExploreController extends ChangeNotifier {
     }
   }
 
+  List<ExploreEvent>? _visiblePreviousResults() {
+    final state = _state;
+    return switch (state) {
+      ExploreData(events: final events) => events,
+      ExploreDataLoading(previous: final previous) => previous,
+      ExploreEmpty() => const [],
+      _ => _allEvents.isEmpty ? null : _filterAndSort(),
+    };
+  }
+
   void _onQueryChanged({required bool debounced}) {
     _debounceTimer?.cancel();
     if (debounced) {
@@ -156,7 +166,9 @@ class ExploreController extends ChangeNotifier {
   }
 
   void _updateResults() {
-    if (_allEvents.isEmpty && _state is! ExploreLoading) {
+    if (_allEvents.isEmpty &&
+        _state is! ExploreLoading &&
+        _state is! ExploreDataLoading) {
       // If we already have an empty list and just changed a filter, it stays empty.
       // But if we have no events because we haven't loaded them, we keep the loading state.
       return;
