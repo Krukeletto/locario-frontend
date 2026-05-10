@@ -10,6 +10,7 @@ import '../../shared/map/style_repository.dart';
 import '../../shared/widgets/state_panel.dart';
 import 'explore_area_controller.dart';
 import 'explore_controller.dart';
+import 'explore_event_query.dart';
 import 'explore_state.dart';
 import 'map_view_model.dart';
 import 'models.dart';
@@ -21,6 +22,7 @@ import 'widgets/map_view.dart';
 import 'widgets/search_this_area_button.dart';
 import '../../shared/events/category_scope.dart';
 import '../saved/saved_events_scope.dart';
+import '../saved/saved_filters_scope.dart';
 import '../shell/header/header_controller.dart';
 import '../shell/header/header_scope.dart';
 
@@ -61,12 +63,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
   StreamSubscription<void>? _refreshSubscription;
   Timer? _autoRefreshTimer;
   LatLng? _lastSearchedLocation;
+  LatLng? _searchBaselineLocation;
+  LatLng? _mapViewportCenter;
   int? _pendingMapSearchRadiusMeters;
   int? _appliedMapSearchRadiusMeters;
 
   bool _isMinLoadingElapsed = true;
   Timer? _loadingTimer;
   bool _isEmptyResultsNoticeDismissed = false;
+
+  final Set<String> _notifiedEventIds = {};
 
   ShellHeaderController? _activeHeaderController;
 
@@ -83,7 +89,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     _mapViewModel =
         widget.mapViewModel ??
-        ExploreMapViewModel(locationService: GeolocatorLocationService());
+        ExploreMapViewModel(
+          locationService: GeolocatorLocationService(),
+          fallbackCenter: const LatLng(52.237049, 21.017532),
+        );
 
     _styleRepository = widget.styleRepository ?? const MapStyleRepository();
     _internalHeaderController =
@@ -104,8 +113,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
       }
     });
 
-    _exploreController.loadEvents();
     _mapViewModel.loadInitialLocation();
+    _exploreController.updateReferenceLocation(_mapViewModel.mapCenter);
   }
 
   @override
@@ -171,6 +180,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
     }
   }
 
+  LatLng _currentMapCenter() {
+    return _mapViewportCenter ?? _mapViewModel.mapCenter;
+  }
+
   void _handleHeaderChanged() {
     _syncControllerParams();
   }
@@ -178,7 +191,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   LatLng _currentSearchAreaCenter() {
     return _areaController.referenceLocation(
       currentLocation: _mapViewModel.currentLocation,
-      fallbackCenter: _mapViewModel.mapCenter,
+      fallbackCenter: _currentMapCenter(),
     );
   }
 
@@ -202,19 +215,98 @@ class _ExploreScreenState extends State<ExploreScreen> {
       _isMinLoadingElapsed = true;
       _loadingTimer?.cancel();
     }
+
+    final state = _exploreController.state;
+    if (state is ExploreData) {
+      _checkSavedFiltersForEvents(state.events, context);
+    }
+
     setState(() {});
+  }
+
+  void _checkSavedFiltersForEvents(
+    List<ExploreEvent> events,
+    BuildContext context,
+  ) {
+    final savedFiltersController = SavedFiltersScope.maybeOf(context);
+    if (savedFiltersController == null) return;
+
+    final enabledFilters =
+        savedFiltersController.filtersWithNotificationsEnabled;
+    if (enabledFilters.isEmpty) return;
+
+    final query = const ExploreEventQuery();
+    final newMatchingIds = <String>{};
+
+    for (final filter in enabledFilters) {
+      final location = filter.useCurrentLocation
+          ? _mapViewModel.currentLocation
+          : filter.location;
+      if (location == null) continue;
+
+      final matching = query.visibleEvents(
+        events: events,
+        selectedCategories: const [],
+        query: '',
+        sort: ExploreSortOption.distance,
+        isAscending: true,
+        referenceLocation: location,
+        maxDistanceMeters: filter.filters.distanceFilter.maxDistanceMeters,
+        advancedFilters: filter.filters,
+      );
+
+      for (final event in matching) {
+        newMatchingIds.add(event.id);
+      }
+    }
+
+    final unseenIds = newMatchingIds.difference(_notifiedEventIds);
+    if (unseenIds.isEmpty) return;
+
+    _notifiedEventIds.addAll(unseenIds);
+
+    debugPrint(
+      'Filter notifications: ${unseenIds.length} new events match saved filters.',
+    );
+  }
+
+  void _consumePendingFilter(BuildContext context) {
+    final savedFiltersController = SavedFiltersScope.maybeOf(context);
+    if (savedFiltersController == null) return;
+
+    final pending = savedFiltersController.pendingLoadFilter;
+    if (pending == null) return;
+
+    _exploreController.applyFilters(
+      pending.filters,
+      referenceLocation: pending.useCurrentLocation
+          ? _mapViewModel.currentLocation
+          : pending.location,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final headerController =
+          _activeHeaderController ?? _internalHeaderController;
+      headerController.setSelectedView(ExploreContentView.list);
+    });
+
+    savedFiltersController.consumePendingLoad();
   }
 
   void _handleMapViewModelChanged() {
     _syncControllerParams();
-    _markCurrentAreaAsSearched();
+    if (_searchBaselineLocation == null && !_mapViewModel.isLocating) {
+      final currentLocation = _mapViewModel.currentLocation;
+      if (currentLocation != null) {
+        _searchBaselineLocation = currentLocation;
+      } else {
+        _searchBaselineLocation ??= _mapViewportCenter;
+      }
+    }
+    _maybeEstablishInitialSearchBaseline();
     if (mounted) {
       setState(() {});
-      // If we just got a location and haven't loaded events yet, or if we need to refresh
-      if (_mapViewModel.currentLocation != null &&
-          _exploreController.state is ExploreLoading) {
-        _exploreController.loadEvents();
-      }
     }
   }
 
@@ -260,11 +352,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   bool get _showSearchThisArea {
     if (_areaController.isPickingAreaOnMap) return false;
-    if (_lastSearchedLocation == null) return false;
-    final current = _mapViewModel.mapCenter;
+    final baseline = _searchBaselineLocation;
+    if (baseline == null) return false;
+    final current = _currentMapCenter();
     const distance = Distance();
     final centerChanged =
-        distance.as(LengthUnit.Meter, _lastSearchedLocation!, current) > 500;
+        distance.as(LengthUnit.Meter, baseline, current) > 500;
     final appliedRadius = _appliedMapSearchRadiusMeters;
     final pendingRadius = _pendingMapSearchRadiusMeters;
     final radiusChanged =
@@ -304,6 +397,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _consumePendingFilter(context);
+
     final state = _exploreController.state;
     final headerController =
         _activeHeaderController ?? _internalHeaderController;
@@ -345,10 +440,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
               _buildContent(context, state, currentView),
               if (_areaController.isPickingAreaOnMap)
                 ExploreMapAreaPickerOverlay(
-                  title: AppLocalizations.of(context)!.areaPickOnMapTitle,
-                  subtitle: AppLocalizations.of(context)!.areaPickOnMapSubtitle,
-                  cancelLabel: AppLocalizations.of(context)!.areaDialogCancel,
-                  confirmLabel: AppLocalizations.of(context)!.areaDialogConfirm,
+                  title: AppLocalizations.of(context).areaPickOnMapTitle,
+                  subtitle: AppLocalizations.of(context).areaPickOnMapSubtitle,
+                  cancelLabel: AppLocalizations.of(context).areaDialogCancel,
+                  confirmLabel: AppLocalizations.of(context).areaDialogConfirm,
                   onCancel: _areaController.cancelMapPicking,
                   onConfirm: () {
                     final center = _areaController.confirmMapPicking(
@@ -359,7 +454,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     _mapViewModel.setPreferredMapCenter(center);
                   },
                 ),
-              if (state is ExploreDataLoading && !_isMinLoadingElapsed)
+              if ((state is ExploreLoading || state is ExploreDataLoading) &&
+                  !_isMinLoadingElapsed)
                 const _LoadingOverlay(),
             ],
           ),
@@ -373,16 +469,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
     ExploreState state,
     ExploreContentView currentView,
   ) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final effectiveView = _areaController.isPickingAreaOnMap
         ? ExploreContentView.map
         : currentView;
 
     return switch (state) {
-      ExploreLoading() => StatePanel.loading(
-        title: l10n.exploreLoadingTitle,
-        subtitle: l10n.exploreLoadingSubtitle,
-      ),
+      ExploreLoading() => _buildMainUI(const [], effectiveView),
       ExploreError(type: var type, details: var details) => StatePanel.error(
         title: _errorTitle(type, l10n),
         subtitle: _errorSubtitle(type, l10n, details),
@@ -402,18 +495,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
     List<ExploreEvent> events,
     ExploreContentView currentView,
   ) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final referenceLocation =
         _exploreController.referenceLocation ?? const LatLng(0, 0);
-    final searchRadiusMeters =
-        _areaController.selectionMode == ExploreAreaSelectionMode.mapPin
-        ? _appliedMapSearchRadiusMeters ??
-              _exploreController.distanceOverrideMeters ??
-              _exploreController
-                  .advancedFilters
-                  .distanceFilter
-                  .maxDistanceMeters
-        : null;
     final topContentOffset = (ShellHeaderScope.maybeOf(context) == null)
         ? MediaQuery.paddingOf(context).top + 112
         : 112.0;
@@ -426,9 +510,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 styleRepository: _styleRepository,
                 events: events,
                 referenceLocation: referenceLocation,
-                searchRadiusMeters: searchRadiusMeters,
+                showSearchRadiusOverlay: false,
                 onEventTap: _handleEventTap,
-                onCameraCenterChanged: _mapViewModel.setPreferredMapCenter,
+                onCameraCenterChanged: _handleMapCameraCenterChanged,
                 onVisibleRadiusChanged: (radiusMeters) {
                   if (_pendingMapSearchRadiusMeters == radiusMeters) {
                     return;
@@ -446,7 +530,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   child: Center(
                     child: SearchThisAreaButton(
                       onPressed: () {
-                        _areaController.searchInArea(_mapViewModel.mapCenter);
+                        final center = _currentMapCenter();
+                        _areaController.searchInArea(center);
+                        _mapViewModel.setPreferredMapCenter(center);
+                        _searchBaselineLocation = center;
+                        _lastSearchedLocation = center;
                         _appliedMapSearchRadiusMeters =
                             _pendingMapSearchRadiusMeters;
                         _syncControllerParams();
@@ -523,6 +611,39 @@ class _ExploreScreenState extends State<ExploreScreen> {
         Expanded(child: content),
       ],
     );
+  }
+
+  void _handleMapCameraCenterChanged(LatLng center) {
+    final wasShowingSearchThisArea = _showSearchThisArea;
+    _mapViewportCenter = center;
+    _maybeEstablishInitialSearchBaseline();
+    if (mounted && wasShowingSearchThisArea != _showSearchThisArea) {
+      setState(() {});
+    }
+  }
+
+  void _maybeEstablishInitialSearchBaseline() {
+    if (_searchBaselineLocation != null || _mapViewModel.isLocating) {
+      return;
+    }
+
+    final viewportCenter = _mapViewportCenter;
+    if (viewportCenter == null) {
+      return;
+    }
+
+    final currentLocation = _mapViewModel.currentLocation;
+    if (currentLocation == null) {
+      _searchBaselineLocation = viewportCenter;
+      return;
+    }
+
+    const distance = Distance();
+    final isAlignedWithCurrentLocation =
+        distance.as(LengthUnit.Meter, viewportCenter, currentLocation) <= 100;
+    if (isAlignedWithCurrentLocation) {
+      _searchBaselineLocation = currentLocation;
+    }
   }
 
   String _errorTitle(ExploreErrorType type, AppLocalizations l10n) {

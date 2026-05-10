@@ -17,7 +17,7 @@ class CreateEventCategoriesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final categoriesController = CategoryScope.maybeOf(context);
     final available = categoriesController?.categories ?? const [];
     final isLoading = categoriesController?.isLoading ?? false;

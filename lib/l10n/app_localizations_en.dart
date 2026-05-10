@@ -9,15 +9,6 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Locario';
-
-  @override
-  String get localeEnglish => 'English';
-
-  @override
-  String get localePolish => 'Polish';
-
-  @override
   String get authSubtitle => 'Discover local gems in your area';
 
   @override
@@ -63,6 +54,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authLogoutSuccess => 'Signed out successfully.';
 
   @override
+  String get authLoginSuccess => 'Logged in successfully.';
+
+  @override
+  String get authLoginErrorInvalidCredentials => 'Invalid email or password.';
+
+  @override
   String get authRegisterWelcome => 'Welcome';
 
   @override
@@ -105,22 +102,452 @@ class AppLocalizationsEn extends AppLocalizations {
       'Password must be at least 8 characters';
 
   @override
-  String get tabExplore => 'Explore';
+  String get eventJazzTitle => 'Jazz in the Botanical Garden';
 
   @override
-  String get tabInbox => 'Inbox';
+  String get eventSketchingTitle => 'Night sketching by the Vistula';
 
   @override
-  String get tabHub => 'Hub';
+  String get eventRunClubTitle => 'Morning run club and coffee stop';
 
   @override
-  String get tabProfile => 'Profile';
+  String get eventStreetFoodTitle => 'Street food and vinyl market';
 
   @override
-  String get headerMap => 'Map';
+  String get eventDetailsScreenTitle => 'Details';
 
   @override
-  String get headerList => 'List';
+  String get eventDetailsImagePlaceholder => 'Temporary image placeholder';
+
+  @override
+  String get eventDetailsTitleLabel => 'Event title';
+
+  @override
+  String get eventDetailsLocationLabel => 'Location';
+
+  @override
+  String get eventDetailsDateLabel => 'Date';
+
+  @override
+  String get eventDetailsTimeLabel => 'Time';
+
+  @override
+  String get eventDetailsPriceLabel => 'Price';
+
+  @override
+  String get eventDetailsSeatsLabel => 'Seats';
+
+  @override
+  String get eventDetailsAboutLabel => 'About the event';
+
+  @override
+  String get eventDetailsOrganizerLabel => 'Organizer';
+
+  @override
+  String get eventDetailsChatLabel => 'Participants chat';
+
+  @override
+  String get eventDetailsBuyTicketButton => 'Buy ticket';
+
+  @override
+  String get eventDetailsJoinButton => 'Join';
+
+  @override
+  String get eventDetailsLeaveButton => 'Leave event';
+
+  @override
+  String get eventJoinSuccess => 'You\'re registered for this event.';
+
+  @override
+  String get eventLeaveSuccess => 'You\'ve left this event.';
+
+  @override
+  String get eventJoinError => 'Could not register for this event.';
+
+  @override
+  String get eventJoinRequiresLogin => 'Sign in to join this event.';
+
+  @override
+  String get eventDetailsUnknownEventTitle => 'Event';
+
+  @override
+  String get eventDetailsUnknownLocation => 'Location unknown';
+
+  @override
+  String get eventDetailsFallbackDescription =>
+      'This is a temporary event description. In the next steps we will connect full data from the create event form and backend.';
+
+  @override
+  String get eventDetailsLoadingTitle => 'Loading event';
+
+  @override
+  String get eventDetailsLoadingSubtitle =>
+      'We are fetching the event details from the backend.';
+
+  @override
+  String get eventDetailsErrorTitle => 'Event unavailable';
+
+  @override
+  String get eventDetailsErrorSubtitle =>
+      'We could not load this event right now.';
+
+  @override
+  String get eventDetailsJazzDescription =>
+      'An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.';
+
+  @override
+  String get eventDetailsSketchingDescription =>
+      'A meetup for people who enjoy sketching and urban illustration. Bring your own materials.';
+
+  @override
+  String get eventDetailsRunClubDescription =>
+      'A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.';
+
+  @override
+  String get eventDetailsStreetFoodDescription =>
+      'Street food, curated vinyl records and mini DJ sets. An all-day event.';
+
+  @override
+  String get eventDetailsTicketLabel => 'Tickets';
+
+  @override
+  String get eventDetailsSlotsLabel => 'Seat limit';
+
+  @override
+  String eventDetailsSlotsValue(int count) {
+    return '$count seats available';
+  }
+
+  @override
+  String eventSlotsTaken(int registered, int limit) {
+    return '$registered / $limit taken';
+  }
+
+  @override
+  String eventSlotsJoined(int count) {
+    return '$count joined';
+  }
+
+  @override
+  String get eventSlotsSoldOut => 'Sold out';
+
+  @override
+  String eventSlotsWaitlist(int count) {
+    return '$count on waitlist';
+  }
+
+  @override
+  String eventCardSpots(int count) {
+    return '$count spots';
+  }
+
+  @override
+  String get eventDetailsShowOnMapButton => 'Show on map';
+
+  @override
+  String get eventDetailsOpenMapError =>
+      'We could not open the map app right now.';
+
+  @override
+  String get eventToday2030 => 'Today, 20:30';
+
+  @override
+  String get eventToday1900 => 'Today, 19:00';
+
+  @override
+  String get eventTomorrow0800 => 'Tomorrow, 08:00';
+
+  @override
+  String get eventTomorrow1200 => 'Tomorrow, 12:00';
+
+  @override
+  String get eventSaveSuccess => 'Event saved to your list.';
+
+  @override
+  String get eventRemoveSuccess => 'Event removed from your list.';
+
+  @override
+  String get eventPublishSuccess => 'Event published successfully.';
+
+  @override
+  String get eventPublishError => 'Failed to publish event. Try again.';
+
+  @override
+  String get venueBotanicalGarden => 'Botanical Garden';
+
+  @override
+  String get venueVistulaBoulevards => 'Vistula Boulevards';
+
+  @override
+  String get venuePoleMokotowskie => 'Pole Mokotowskie';
+
+  @override
+  String get venueHalaKoszyki => 'Hala Koszyki';
+
+  @override
+  String distanceMeters(int count) {
+    return '$count m';
+  }
+
+  @override
+  String distanceKilometers(String count) {
+    return '$count km';
+  }
+
+  @override
+  String get exploreSearchHint => 'Search events...';
+
+  @override
+  String get exploreNearbyEvents => 'Nearby events';
+
+  @override
+  String exploreNearbyWithFilter(String filter) {
+    return '$filter nearby';
+  }
+
+  @override
+  String get exploreLoadingTitle => 'Loading events';
+
+  @override
+  String get exploreLoadingSubtitle =>
+      'We are fetching the latest events, please wait.';
+
+  @override
+  String get exploreErrorTitle => 'Events unavailable';
+
+  @override
+  String get exploreErrorSubtitle => 'We could not load events right now.';
+
+  @override
+  String get exploreEmptyTitle => 'No events found';
+
+  @override
+  String get exploreEmptySubtitle => 'Try a different area or come back later.';
+
+  @override
+  String get exploreRetryButton => 'Retry';
+
+  @override
+  String get exploreErrorPermissionTitle => 'Location permission required';
+
+  @override
+  String get exploreErrorPermissionSubtitle =>
+      'Please allow location access to see events nearby.';
+
+  @override
+  String get exploreErrorUnknownTitle => 'Something went wrong';
+
+  @override
+  String get exploreErrorUnknownSubtitle =>
+      'We encountered an unexpected error.';
+
+  @override
+  String get exploreSearchThisArea => 'Search this area';
+
+  @override
+  String resultsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count results',
+      one: '1 result',
+      zero: '0 results',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sortTooltip => 'Sort';
+
+  @override
+  String get sortDistance => 'Distance';
+
+  @override
+  String get sortSoonest => 'Soonest';
+
+  @override
+  String get sortTrending => 'Trending';
+
+  @override
+  String get distanceFilterTooltip => 'List range';
+
+  @override
+  String get distanceFilterAny => 'Anywhere';
+
+  @override
+  String distanceFilterWithinKm(int km) {
+    return 'Within $km km';
+  }
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterMusic => 'Music';
+
+  @override
+  String get filterArt => 'Art';
+
+  @override
+  String get filterWorkshops => 'Workshops';
+
+  @override
+  String get filterFood => 'Food';
+
+  @override
+  String get filterAdvancedFilters => 'Advanced Filters';
+
+  @override
+  String get filterAdvancedDistance => 'Search Range';
+
+  @override
+  String get filterAdvancedDateRange => 'Event Date';
+
+  @override
+  String get filterAdvancedAge => 'Age (years)';
+
+  @override
+  String get filterAdvancedType => 'Event Type';
+
+  @override
+  String get filterAdvancedSource => 'Event Source';
+
+  @override
+  String get filterAdvancedApply => 'Show Results';
+
+  @override
+  String get filterAdvancedClear => 'Clear';
+
+  @override
+  String get filterAdvancedDateFrom => 'From';
+
+  @override
+  String get filterAdvancedDateTo => 'To';
+
+  @override
+  String get filterAdvancedDateAny => 'Any date';
+
+  @override
+  String get filterAdvancedDateToday => 'Today';
+
+  @override
+  String get filterAdvancedDateTomorrow => 'Tomorrow';
+
+  @override
+  String get filterAdvancedDateCustomRange => 'Date range';
+
+  @override
+  String get filterAdvancedDateOther => 'Other date';
+
+  @override
+  String get filterAdvancedDateSelection => 'Selected date';
+
+  @override
+  String get filterAdvancedAgeFrom => 'Min';
+
+  @override
+  String get filterAdvancedAgeTo => 'Max';
+
+  @override
+  String get filterAdvancedAgeSelection => 'Participant age';
+
+  @override
+  String get filterAdvancedAgeCustomRange => 'Age range';
+
+  @override
+  String get filterAdvancedAgeOther => 'Other age';
+
+  @override
+  String filterAdvancedAgeRangeSummary(int from, int to) {
+    return '$from-$to years';
+  }
+
+  @override
+  String get areaMyLocation => 'My location';
+
+  @override
+  String get areaMyLocationDescription => 'Events closest to you by default';
+
+  @override
+  String get areaTypedAddressDescription => 'Address entered manually';
+
+  @override
+  String get areaPinnedOnMap => 'Pinned on map';
+
+  @override
+  String get areaPickerTitle => 'Choose area';
+
+  @override
+  String get areaPickerSubtitle =>
+      'You can type an address, point to a spot on the map or go back to your current location.';
+
+  @override
+  String get areaUseCurrentLocation => 'My location';
+
+  @override
+  String get areaUseCurrentLocationSubtitle =>
+      'Use your current position as the reference point';
+
+  @override
+  String get areaEnterAddress => 'Enter address';
+
+  @override
+  String get areaEnterAddressSubtitle =>
+      'Type a street, district or exact place';
+
+  @override
+  String get areaPickOnMap => 'Pick on map';
+
+  @override
+  String get areaPickOnMapTitle => 'Pick a point on the map';
+
+  @override
+  String get areaPickOnMapSubtitle =>
+      'Move the map so the chosen point sits under the center marker.';
+
+  @override
+  String get areaPickOnMapConfirm => 'Use this point';
+
+  @override
+  String get areaAddressDialogTitle => 'Enter address';
+
+  @override
+  String get areaAddressDialogHint => 'For example 12 Old Town Sq, Poznan';
+
+  @override
+  String get areaAddressNotFound => 'We couldn\'t find that address.';
+
+  @override
+  String get areaAddressLookupFailed => 'Address lookup failed. Try again.';
+
+  @override
+  String get areaDialogCancel => 'Cancel';
+
+  @override
+  String get areaDialogConfirm => 'Done';
+
+  @override
+  String areaPinnedCoordinates(String lat, String lon) {
+    return '$lat, $lon';
+  }
+
+  @override
+  String get areaWarsawCenter => 'Warsaw center';
+
+  @override
+  String get areaWarsawCenterDescription => 'Address or pin set manually';
+
+  @override
+  String get areaPowisle => 'Powisle';
+
+  @override
+  String get areaPowisleDescription => 'Boulevards and Poniatowski bridge area';
+
+  @override
+  String get areaMokotow => 'Mokotow';
+
+  @override
+  String get areaMokotowDescription => 'Pole Mokotowskie area and nearby';
 
   @override
   String get hubTitle => 'Hub';
@@ -284,6 +711,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t resolve that location. Try another address or point on the map.';
 
   @override
+  String get hubMessagesTitle => 'Messages';
+
+  @override
+  String get hubMessagesSubtitle => 'Direct messages';
+
+  @override
   String get hubCommunityTitle => 'Community';
 
   @override
@@ -296,7 +729,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubFriendsSubtitle => 'Your network';
 
   @override
-  String get featureComingSoon => 'This section is still being built.';
+  String get inboxEmpty => 'No notifications yet';
+
+  @override
+  String get inboxMarkAllRead => 'Mark all as read';
+
+  @override
+  String get notificationSettingsTitle => 'Push Notifications';
+
+  @override
+  String get notificationSettingsSubtitle =>
+      'Choose which notifications you want to receive';
+
+  @override
+  String get notificationTypeUpcomingEvent => 'Upcoming events';
+
+  @override
+  String get notificationTypeUpcomingEventDesc =>
+      'Reminders before saved events start';
+
+  @override
+  String get notificationTypeExpiredEvent => 'Expired events';
+
+  @override
+  String get notificationTypeExpiredEventDesc =>
+      'When a saved event has passed';
+
+  @override
+  String get notificationTypeEventPublished => 'New events';
+
+  @override
+  String get notificationTypeEventPublishedDesc =>
+      'When new events are published nearby';
+
+  @override
+  String get notificationTypeSystemMessage => 'System messages';
+
+  @override
+  String get notificationTypeSystemMessageDesc =>
+      'Important updates from the app';
 
   @override
   String get profileTitle => 'Profile';
@@ -318,7 +789,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileAuthLogoutSubtitle => 'End the current session';
 
   @override
-  String get profileInboxSubtitle => 'Open your messages and notifications';
+  String get profileInboxSubtitle => 'Open your notifications';
 
   @override
   String get settingsTitle => 'Settings';
@@ -332,6 +803,29 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsScreenDescription =>
       'Adjust the app basics before the settings surface grows.';
+
+  @override
+  String get languageSectionTitle => 'Language';
+
+  @override
+  String get languageSectionSubtitle =>
+      'Choose how the app should speak to you';
+
+  @override
+  String get themeSectionTitle => 'Appearance';
+
+  @override
+  String get themeSectionSubtitle =>
+      'Choose whether the app should follow the system or stay fixed';
+
+  @override
+  String get themeModeSystem => 'System';
+
+  @override
+  String get themeModeLight => 'Light';
+
+  @override
+  String get themeModeDark => 'Dark';
 
   @override
   String get savedTitle => 'Saved';
@@ -391,6 +885,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get savedAgeGroup18Plus => '18+';
 
   @override
+  String get savedShowPastEvents => 'Show past events';
+
+  @override
   String get savedEmptyTitle => 'No saved events yet';
 
   @override
@@ -405,411 +902,110 @@ class AppLocalizationsEn extends AppLocalizations {
       'Clear the filters or try a different combination.';
 
   @override
-  String get languageSectionTitle => 'Language';
+  String get savedEventsTab => 'Events';
 
   @override
-  String get languageSectionSubtitle =>
-      'Choose how the app should speak to you';
+  String get savedFiltersTab => 'Filters';
 
   @override
-  String get themeSectionTitle => 'Appearance';
+  String get savedFiltersEmptyTitle => 'No saved filters yet';
 
   @override
-  String get themeSectionSubtitle =>
-      'Choose whether the app should follow the system or stay fixed';
+  String get savedFiltersEmptySubtitle =>
+      'Custom filter presets you create will appear here.';
 
   @override
-  String get themeModeSystem => 'System';
+  String get savedFiltersSaveDialogTitle => 'Save filter';
 
   @override
-  String get themeModeLight => 'Light';
+  String get savedFiltersSaveAction => 'Save';
 
   @override
-  String get themeModeDark => 'Dark';
+  String get savedFiltersNameHint => 'Filter name';
 
   @override
-  String get exploreSearchHint => 'Search events...';
+  String get savedFiltersDeleteTooltip => 'Delete filter';
 
   @override
-  String get exploreNearbyEvents => 'Nearby events';
+  String get savedFiltersLoadTooltip => 'Use filter';
 
   @override
-  String exploreNearbyWithFilter(String filter) {
-    return '$filter nearby';
+  String get savedFilterNotificationsLabel => 'Notifications';
+
+  @override
+  String get savedFilterNotificationsTooltip =>
+      'Enable notifications for this filter';
+
+  @override
+  String get savedFiltersLocationCurrent => 'Current location';
+
+  @override
+  String get savedFiltersLocationSaved => 'Saved location';
+
+  @override
+  String get savedFiltersUseCurrentLocation => 'Use current location';
+
+  @override
+  String get savedFiltersUseSavedLocation => 'Use saved location';
+
+  @override
+  String get savedFiltersSaveConfirmation => 'Filter saved';
+
+  @override
+  String get savedFiltersDeleteConfirmation => 'Filter deleted';
+
+  @override
+  String get savedFiltersLoadConfirmation => 'Filter applied';
+
+  @override
+  String get savedFiltersCreateButton => 'Save current filters';
+
+  @override
+  String get savedFiltersCancel => 'Cancel';
+
+  @override
+  String get savedFiltersLocationLabel => 'Location';
+
+  @override
+  String get appTitle => 'Locario';
+
+  @override
+  String get localeEnglish => 'English';
+
+  @override
+  String get localePolish => 'Polish';
+
+  @override
+  String get featureComingSoon => 'This section is still being built.';
+
+  @override
+  String get networkError => 'Network error. Please check your connection.';
+
+  @override
+  String get networkErrorRetry => 'Retry';
+
+  @override
+  String shareEventMessage(String title, String url) {
+    return 'Check out this event on Locario: $title\n\n$url';
   }
 
   @override
-  String get exploreLoadingTitle => 'Loading events';
+  String get tabExplore => 'Explore';
 
   @override
-  String get exploreLoadingSubtitle =>
-      'We are fetching the latest events from the backend.';
+  String get tabInbox => 'Inbox';
 
   @override
-  String get exploreErrorTitle => 'Events unavailable';
+  String get tabHub => 'Hub';
 
   @override
-  String get exploreErrorSubtitle => 'We could not load events right now.';
+  String get tabProfile => 'Profile';
 
   @override
-  String get exploreEmptyTitle => 'No events found';
+  String get headerMap => 'Map';
 
   @override
-  String get exploreEmptySubtitle => 'Try a different area or come back later.';
-
-  @override
-  String get exploreRetryButton => 'Retry';
-
-  @override
-  String resultsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count results',
-      one: '1 result',
-      zero: '0 results',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get sortTooltip => 'Sort';
-
-  @override
-  String get sortDistance => 'Distance';
-
-  @override
-  String get sortSoonest => 'Soonest';
-
-  @override
-  String get sortTrending => 'Trending';
-
-  @override
-  String get distanceFilterTooltip => 'List range';
-
-  @override
-  String get distanceFilterAny => 'Anywhere';
-
-  @override
-  String distanceFilterWithinKm(int km) {
-    return 'Within $km km';
-  }
-
-  @override
-  String get filterAll => 'All';
-
-  @override
-  String get filterMusic => 'Music';
-
-  @override
-  String get filterArt => 'Art';
-
-  @override
-  String get filterWorkshops => 'Workshops';
-
-  @override
-  String get filterFood => 'Food';
-
-  @override
-  String get filterAdvancedFilters => 'Advanced Filters';
-
-  @override
-  String get filterAdvancedDistance => 'Search Range';
-
-  @override
-  String get filterAdvancedDateRange => 'Event Date';
-
-  @override
-  String get filterAdvancedAge => 'Age (years)';
-
-  @override
-  String get filterAdvancedType => 'Event Type';
-
-  @override
-  String get filterAdvancedSource => 'Event Source';
-
-  @override
-  String get filterAdvancedApply => 'Show Results';
-
-  @override
-  String get filterAdvancedClear => 'Clear';
-
-  @override
-  String get exploreSearchThisArea => 'Search this area';
-
-  @override
-  String get filterAdvancedDateFrom => 'From';
-
-  @override
-  String get filterAdvancedDateTo => 'To';
-
-  @override
-  String get filterAdvancedDateAny => 'Any date';
-
-  @override
-  String get filterAdvancedDateToday => 'Today';
-
-  @override
-  String get filterAdvancedDateTomorrow => 'Tomorrow';
-
-  @override
-  String get filterAdvancedDateCustomRange => 'Date range';
-
-  @override
-  String get filterAdvancedDateOther => 'Other date';
-
-  @override
-  String get filterAdvancedDateSelection => 'Selected date';
-
-  @override
-  String get filterAdvancedAgeFrom => 'Min';
-
-  @override
-  String get filterAdvancedAgeTo => 'Max';
-
-  @override
-  String get filterAdvancedAgeSelection => 'Participant age';
-
-  @override
-  String get filterAdvancedAgeCustomRange => 'Age range';
-
-  @override
-  String get filterAdvancedAgeOther => 'Other age';
-
-  @override
-  String filterAdvancedAgeRangeSummary(int from, int to) {
-    return '$from-$to years';
-  }
-
-  @override
-  String get areaMyLocation => 'My location';
-
-  @override
-  String get areaMyLocationDescription => 'Events closest to you by default';
-
-  @override
-  String get areaTypedAddressDescription => 'Address entered manually';
-
-  @override
-  String get areaPinnedOnMap => 'Pinned on map';
-
-  @override
-  String get areaPickerTitle => 'Choose area';
-
-  @override
-  String get areaPickerSubtitle =>
-      'You can type an address, point to a spot on the map or go back to your current location.';
-
-  @override
-  String get areaUseCurrentLocation => 'My location';
-
-  @override
-  String get areaUseCurrentLocationSubtitle =>
-      'Use your current position as the reference point';
-
-  @override
-  String get areaEnterAddress => 'Enter address';
-
-  @override
-  String get areaEnterAddressSubtitle =>
-      'Type a street, district or exact place';
-
-  @override
-  String get areaPickOnMap => 'Pick on map';
-
-  @override
-  String get areaPickOnMapTitle => 'Pick a point on the map';
-
-  @override
-  String get areaPickOnMapSubtitle =>
-      'Move the map so the chosen point sits under the center marker.';
-
-  @override
-  String get areaPickOnMapConfirm => 'Use this point';
-
-  @override
-  String get areaAddressDialogTitle => 'Enter address';
-
-  @override
-  String get areaAddressDialogHint => 'For example 12 Old Town Sq, Poznan';
-
-  @override
-  String get areaAddressNotFound => 'We couldn\'t find that address.';
-
-  @override
-  String get areaAddressLookupFailed => 'Address lookup failed. Try again.';
-
-  @override
-  String get areaDialogCancel => 'Cancel';
-
-  @override
-  String get areaDialogConfirm => 'Done';
-
-  @override
-  String areaPinnedCoordinates(String lat, String lon) {
-    return '$lat, $lon';
-  }
-
-  @override
-  String get areaWarsawCenter => 'Warsaw center';
-
-  @override
-  String get areaWarsawCenterDescription => 'Address or pin set manually';
-
-  @override
-  String get areaPowisle => 'Powisle';
-
-  @override
-  String get areaPowisleDescription => 'Boulevards and Poniatowski bridge area';
-
-  @override
-  String get areaMokotow => 'Mokotow';
-
-  @override
-  String get areaMokotowDescription => 'Pole Mokotowskie area and nearby';
-
-  @override
-  String get eventJazzTitle => 'Jazz in the Botanical Garden';
-
-  @override
-  String get eventSketchingTitle => 'Night sketching by the Vistula';
-
-  @override
-  String get eventRunClubTitle => 'Morning run club and coffee stop';
-
-  @override
-  String get eventStreetFoodTitle => 'Street food and vinyl market';
-
-  @override
-  String get eventDetailsScreenTitle => 'Details';
-
-  @override
-  String get eventDetailsImagePlaceholder => 'Temporary image placeholder';
-
-  @override
-  String get eventDetailsTitleLabel => 'Event title';
-
-  @override
-  String get eventDetailsLocationLabel => 'Location';
-
-  @override
-  String get eventDetailsDateLabel => 'Date';
-
-  @override
-  String get eventDetailsTimeLabel => 'Time';
-
-  @override
-  String get eventDetailsPriceLabel => 'Price';
-
-  @override
-  String get eventDetailsSeatsLabel => 'Seats';
-
-  @override
-  String get eventDetailsAboutLabel => 'About the event';
-
-  @override
-  String get eventDetailsOrganizerLabel => 'Organizer';
-
-  @override
-  String get eventDetailsChatLabel => 'Participants chat';
-
-  @override
-  String get eventDetailsBuyTicketButton => 'Buy ticket';
-
-  @override
-  String get eventDetailsJoinButton => 'Join';
-
-  @override
-  String get eventDetailsUnknownEventTitle => 'Event';
-
-  @override
-  String get eventDetailsUnknownLocation => 'Location unknown';
-
-  @override
-  String get eventDetailsFallbackDescription =>
-      'This is a temporary event description. In the next steps we will connect full data from the create event form and backend.';
-
-  @override
-  String get eventDetailsLoadingTitle => 'Loading event';
-
-  @override
-  String get eventDetailsLoadingSubtitle =>
-      'We are fetching the event details from the backend.';
-
-  @override
-  String get eventDetailsErrorTitle => 'Event unavailable';
-
-  @override
-  String get eventDetailsErrorSubtitle =>
-      'We could not load this event right now.';
-
-  @override
-  String get eventDetailsJazzDescription =>
-      'An evening jazz concert under the open sky. Bring your friends, a blanket and a good mood.';
-
-  @override
-  String get eventDetailsSketchingDescription =>
-      'A meetup for people who enjoy sketching and urban illustration. Bring your own materials.';
-
-  @override
-  String get eventDetailsRunClubDescription =>
-      'A light morning run followed by coffee and networking. Conversational pace, everyone is welcome.';
-
-  @override
-  String get eventDetailsStreetFoodDescription =>
-      'Street food, curated vinyl records and mini DJ sets. An all-day event.';
-
-  @override
-  String get eventDetailsTicketLabel => 'Tickets';
-
-  @override
-  String get eventDetailsSlotsLabel => 'Seat limit';
-
-  @override
-  String eventDetailsSlotsValue(int count) {
-    return '$count seats available';
-  }
-
-  @override
-  String get eventDetailsShowOnMapButton => 'Show on map';
-
-  @override
-  String get eventDetailsOpenMapError =>
-      'We could not open the map app right now.';
-
-  @override
-  String get eventToday2030 => 'Today, 20:30';
-
-  @override
-  String get eventToday1900 => 'Today, 19:00';
-
-  @override
-  String get eventTomorrow0800 => 'Tomorrow, 08:00';
-
-  @override
-  String get eventTomorrow1200 => 'Tomorrow, 12:00';
-
-  @override
-  String get venueBotanicalGarden => 'Botanical Garden';
-
-  @override
-  String get venueVistulaBoulevards => 'Vistula Boulevards';
-
-  @override
-  String get venuePoleMokotowskie => 'Pole Mokotowskie';
-
-  @override
-  String get venueHalaKoszyki => 'Hala Koszyki';
-
-  @override
-  String distanceMeters(int count) {
-    return '$count m';
-  }
-
-  @override
-  String distanceKilometers(String count) {
-    return '$count km';
-  }
+  String get headerList => 'List';
 
   @override
   String get mapReturnToLocation => 'Return to my location';
@@ -857,48 +1053,5 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String mapEventOpenSoon(String title) {
     return 'The event screen for “$title” will be added later.';
-  }
-
-  @override
-  String get authLoginSuccess => 'Logged in successfully.';
-
-  @override
-  String get authLoginErrorInvalidCredentials => 'Invalid email or password.';
-
-  @override
-  String get eventSaveSuccess => 'Event saved to your list.';
-
-  @override
-  String get eventRemoveSuccess => 'Event removed from your list.';
-
-  @override
-  String get eventPublishSuccess => 'Event published successfully.';
-
-  @override
-  String get eventPublishError => 'Failed to publish event. Try again.';
-
-  @override
-  String get networkError => 'Network error. Please check your connection.';
-
-  @override
-  String get networkErrorRetry => 'Retry';
-
-  @override
-  String get exploreErrorPermissionTitle => 'Location permission required';
-
-  @override
-  String get exploreErrorPermissionSubtitle =>
-      'Please allow location access to see events nearby.';
-
-  @override
-  String get exploreErrorUnknownTitle => 'Something went wrong';
-
-  @override
-  String get exploreErrorUnknownSubtitle =>
-      'We encountered an unexpected error.';
-
-  @override
-  String shareEventMessage(String title, String url) {
-    return 'Check out this event on Locario: $title\n\n$url';
   }
 }

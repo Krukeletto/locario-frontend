@@ -590,6 +590,7 @@ class ExploreAdvancedFilters {
     this.ageTo,
     this.eventType,
     this.eventSource,
+    this.showPastEvents = false,
   });
 
   final ExploreDistanceFilter distanceFilter;
@@ -599,6 +600,7 @@ class ExploreAdvancedFilters {
   final int? ageTo;
   final String? eventType;
   final String? eventSource;
+  final bool showPastEvents;
 
   static const defaults = ExploreAdvancedFilters();
 
@@ -610,6 +612,7 @@ class ExploreAdvancedFilters {
     int? Function()? ageTo,
     String? Function()? eventType,
     String? Function()? eventSource,
+    bool? showPastEvents,
   }) {
     return ExploreAdvancedFilters(
       distanceFilter: distanceFilter ?? this.distanceFilter,
@@ -619,21 +622,15 @@ class ExploreAdvancedFilters {
       ageTo: ageTo != null ? ageTo() : this.ageTo,
       eventType: eventType != null ? eventType() : this.eventType,
       eventSource: eventSource != null ? eventSource() : this.eventSource,
+      showPastEvents: showPastEvents ?? this.showPastEvents,
     );
   }
 
-  bool get hasActiveFilters =>
-      distanceFilter != ExploreDistanceFilter.within1Km ||
-      dateFrom != null ||
-      dateTo != null ||
-      ageFrom != null ||
-      ageTo != null ||
-      eventType != null ||
-      eventSource != null;
+  bool get hasActiveFilters => activeFiltersCount > 0;
 
   int get activeFiltersCount {
     int count = 0;
-    if (distanceFilter != ExploreDistanceFilter.within1Km) count++;
+    if (distanceFilter != defaults.distanceFilter) count++;
     if (dateFrom != null || dateTo != null) count++;
     if (ageFrom != null || ageTo != null) count++;
     if (eventType != null) count++;
@@ -651,7 +648,8 @@ class ExploreAdvancedFilters {
         other.ageFrom == ageFrom &&
         other.ageTo == ageTo &&
         other.eventType == eventType &&
-        other.eventSource == eventSource;
+        other.eventSource == eventSource &&
+        other.showPastEvents == showPastEvents;
   }
 
   @override
@@ -663,5 +661,81 @@ class ExploreAdvancedFilters {
     ageTo,
     eventType,
     eventSource,
+    showPastEvents,
   );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'distanceFilter': distanceFilter.name,
+      if (dateFrom != null) 'dateFrom': dateFrom!.toUtc().toIso8601String(),
+      if (dateTo != null) 'dateTo': dateTo!.toUtc().toIso8601String(),
+      if (ageFrom != null) 'ageFrom': ageFrom,
+      if (ageTo != null) 'ageTo': ageTo,
+      if (eventType != null) 'eventType': eventType,
+      if (eventSource != null) 'eventSource': eventSource,
+      'showPastEvents': showPastEvents,
+    };
+  }
+
+  factory ExploreAdvancedFilters.fromJson(Map<String, dynamic> json) {
+    return ExploreAdvancedFilters(
+      distanceFilter: ExploreDistanceFilter.values.firstWhere(
+        (f) => f.name == json['distanceFilter'],
+        orElse: () => ExploreDistanceFilter.within10Km,
+      ),
+      dateFrom: json['dateFrom'] != null
+          ? DateTime.tryParse(json['dateFrom'] as String)
+          : null,
+      dateTo: json['dateTo'] != null
+          ? DateTime.tryParse(json['dateTo'] as String)
+          : null,
+      ageFrom: json['ageFrom'] as int?,
+      ageTo: json['ageTo'] as int?,
+      eventType: json['eventType'] as String?,
+      eventSource: json['eventSource'] as String?,
+      showPastEvents: json['showPastEvents'] as bool? ?? false,
+    );
+  }
+
+  String toShortSummary(AppLocalizations l10n) {
+    final parts = <String>[
+      l10n.distanceFilterWithinKm(
+        (distanceFilter.maxDistanceMeters / 1000).round(),
+      ),
+    ];
+    if (dateFrom != null || dateTo != null) {
+      if (dateFrom != null && dateTo != null) {
+        final sameDay =
+            dateFrom!.year == dateTo!.year &&
+            dateFrom!.month == dateTo!.month &&
+            dateFrom!.day == dateTo!.day;
+        parts.add(
+          sameDay
+              ? '${dateFrom!.day}.${dateFrom!.month}'
+              : '${dateFrom!.day}.${dateFrom!.month}-${dateTo!.day}.${dateTo!.month}',
+        );
+      } else if (dateFrom != null) {
+        parts.add(
+          '${l10n.filterAdvancedDateFrom} ${dateFrom!.day}.${dateFrom!.month}',
+        );
+      } else if (dateTo != null) {
+        parts.add(
+          '${l10n.filterAdvancedDateTo} ${dateTo!.day}.${dateTo!.month}',
+        );
+      }
+    }
+    if (ageFrom != null || ageTo != null) {
+      if (ageFrom != null && ageTo != null) {
+        parts.add('$ageFrom-$ageTo');
+      } else if (ageFrom != null) {
+        parts.add('$ageFrom+');
+      } else if (ageTo != null) {
+        parts.add('-$ageTo');
+      }
+    }
+    if (showPastEvents) {
+      parts.add(l10n.savedShowPastEvents);
+    }
+    return parts.join(' | ');
+  }
 }

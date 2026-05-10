@@ -85,6 +85,10 @@
 				</array>
 			</dict>
 		</array>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>remote-notification</string>
+		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
 	</dict>

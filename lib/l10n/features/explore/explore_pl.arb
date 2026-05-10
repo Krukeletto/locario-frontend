@@ -11,7 +11,7 @@
     }
   },
   "exploreLoadingTitle": "Ładowanie wydarzeń",
-  "exploreLoadingSubtitle": "Pobieramy najnowsze wydarzenia z backendu.",
+  "exploreLoadingSubtitle": "Pobieramy najnowsze wydarzenia, poczekaj chwilkę.",
   "exploreErrorTitle": "Wydarzenia są niedostępne",
   "exploreErrorSubtitle": "Nie udało się teraz pobrać wydarzeń.",
   "exploreEmptyTitle": "Brak wydarzeń",

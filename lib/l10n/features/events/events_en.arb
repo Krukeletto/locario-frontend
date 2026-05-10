@@ -17,6 +17,11 @@
   "eventDetailsChatLabel": "Participants chat",
   "eventDetailsBuyTicketButton": "Buy ticket",
   "eventDetailsJoinButton": "Join",
+  "eventDetailsLeaveButton": "Leave event",
+  "eventJoinSuccess": "You're registered for this event.",
+  "eventLeaveSuccess": "You've left this event.",
+  "eventJoinError": "Could not register for this event.",
+  "eventJoinRequiresLogin": "Sign in to join this event.",
   "eventDetailsUnknownEventTitle": "Event",
   "eventDetailsUnknownLocation": "Location unknown",
   "eventDetailsFallbackDescription": "This is a temporary event description. In the next steps we will connect full data from the create event form and backend.",
@@ -32,6 +37,42 @@
   "eventDetailsSlotsLabel": "Seat limit",
   "eventDetailsSlotsValue": "{count} seats available",
   "@eventDetailsSlotsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventSlotsTaken": "{registered} / {limit} taken",
+  "@eventSlotsTaken": {
+    "placeholders": {
+      "registered": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "eventSlotsJoined": "{count} joined",
+  "@eventSlotsJoined": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventSlotsSoldOut": "Sold out",
+  "eventSlotsWaitlist": "{count} on waitlist",
+  "@eventSlotsWaitlist": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventCardSpots": "{count} spots",
+  "@eventCardSpots": {
     "placeholders": {
       "count": {
         "type": "int"

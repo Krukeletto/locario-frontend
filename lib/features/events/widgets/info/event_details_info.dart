@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import '../../../explore/models.dart';
+import '../../../../shared/events/event_slots_response.dart';
 import './event_info_card.dart';
 
 class EventDetailsInfo extends StatelessWidget {
@@ -11,7 +12,11 @@ class EventDetailsInfo extends StatelessWidget {
     required this.onShowOnMapPressed,
     required this.onSavePressed,
     required this.isSaved,
-    required this.onJoinPressed,
+    required this.isJoined,
+    this.onJoinPressed,
+    this.onLeavePressed,
+    this.slots,
+    this.isJoinLoading = false,
   });
 
   final ExploreEvent event;
@@ -19,7 +24,11 @@ class EventDetailsInfo extends StatelessWidget {
   final VoidCallback onShowOnMapPressed;
   final VoidCallback onSavePressed;
   final bool isSaved;
-  final VoidCallback onJoinPressed;
+  final bool isJoined;
+  final VoidCallback? onJoinPressed;
+  final VoidCallback? onLeavePressed;
+  final EventSlotsResponse? slots;
+  final bool isJoinLoading;
 
   String _formatDate(DateTime date) {
     final day = date.day.toString().padLeft(2, '0');
@@ -37,7 +46,7 @@ class EventDetailsInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return Transform.translate(
       offset: Offset(0, -overlap),
@@ -107,7 +116,61 @@ class EventDetailsInfo extends StatelessWidget {
                 icon: Icons.confirmation_number_outlined,
               ),
             ],
-            if (event.slotLimit != null) ...[
+            if (slots != null) ...[
+              const SizedBox(height: 12),
+              EventInfoCard(
+                label: l10n.eventDetailsSlotsLabel,
+                value: slots!.slotLimit > 0
+                    ? l10n.eventSlotsTaken(
+                        slots!.registeredCount,
+                        slots!.slotLimit,
+                      )
+                    : l10n.eventSlotsJoined(slots!.registeredCount),
+                icon: Icons.people_outline_rounded,
+              ),
+              if (slots!.soldOut)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        size: 14,
+                        color: scheme.error,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        l10n.eventSlotsSoldOut,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: scheme.error,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (slots!.waitlistCount > 0)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.horizontal_split_rounded,
+                        size: 14,
+                        color: scheme.tertiary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        l10n.eventSlotsWaitlist(slots!.waitlistCount),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: scheme.tertiary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ] else if (event.slotLimit != null && event.slotLimit! > 0) ...[
               const SizedBox(height: 12),
               EventInfoCard(
                 label: l10n.eventDetailsSlotsLabel,
@@ -146,17 +209,54 @@ class EventDetailsInfo extends StatelessWidget {
                 isSaved ? l10n.savedRemoveAction : l10n.savedSaveAction,
               ),
             ),
-            const SizedBox(height: 10),
-            FilledButton(
-              onPressed: onJoinPressed,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48),
-                textStyle: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+            if (isJoined) ...[
+              const SizedBox(height: 10),
+              FilledButton.tonalIcon(
+                onPressed: isJoinLoading ? null : onLeavePressed,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                  backgroundColor: scheme.errorContainer,
+                  foregroundColor: scheme.onErrorContainer,
+                  textStyle: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
+                icon: isJoinLoading
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: scheme.onErrorContainer,
+                        ),
+                      )
+                    : const Icon(Icons.exit_to_app_rounded, size: 20),
+                label: Text(l10n.eventDetailsLeaveButton),
               ),
-              child: Text(l10n.eventDetailsJoinButton),
-            ),
+            ] else ...[
+              const SizedBox(height: 10),
+              FilledButton(
+                onPressed: isJoinLoading || onJoinPressed == null
+                    ? null
+                    : onJoinPressed,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                  textStyle: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                child: isJoinLoading
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.colorScheme.onPrimary,
+                        ),
+                      )
+                    : Text(l10n.eventDetailsJoinButton),
+              ),
+            ],
           ],
         ),
       ),

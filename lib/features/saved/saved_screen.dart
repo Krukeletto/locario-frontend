@@ -14,22 +14,28 @@ import 'saved_event_query.dart';
 import 'saved_events_controller.dart';
 import 'saved_events_scope.dart';
 import 'saved_events_repository.dart';
+import 'saved_filter_model.dart';
+import 'saved_filters_controller.dart';
+import 'saved_filters_scope.dart';
 
 class SavedScreen extends StatefulWidget {
   const SavedScreen({
     super.key,
     this.savedEventsController,
+    this.savedFiltersController,
     this.locationService,
   });
 
   final SavedEventsController? savedEventsController;
+  final SavedFiltersController? savedFiltersController;
   final LocationService? locationService;
 
   @override
   State<SavedScreen> createState() => _SavedScreenState();
 }
 
-class _SavedScreenState extends State<SavedScreen> {
+class _SavedScreenState extends State<SavedScreen>
+    with SingleTickerProviderStateMixin {
   final SavedEventQuery _query = const SavedEventQuery();
   SavedFilters _filters = SavedFilters.defaults;
   SavedSortOption _sort = SavedSortOption.recent;
@@ -79,10 +85,7 @@ class _SavedScreenState extends State<SavedScreen> {
           _sort = SavedSortOption.recent;
         }
       });
-    } catch (_) {
-      // Distance sorting is optional. If location cannot be resolved, keep the
-      // screen functional and stay on the recent sort.
-    }
+    } catch (_) {}
   }
 
   Future<void> _openFilters({
@@ -138,9 +141,11 @@ class _SavedScreenState extends State<SavedScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-    final controller =
+    final l10n = AppLocalizations.of(context);
+    final eventsController =
         widget.savedEventsController ?? SavedEventsScope.of(context);
+    final savedFiltersController =
+        widget.savedFiltersController ?? SavedFiltersScope.of(context);
     final availableCategories =
         CategoryScope.maybeOf(
           context,
@@ -151,120 +156,74 @@ class _SavedScreenState extends State<SavedScreen> {
         ? SavedSortOption.recent
         : _sort;
 
-    return Scaffold(
-      backgroundColor: scheme.surface,
-      body: SafeArea(
-        top: false,
-        child: AnimatedBuilder(
-          animation: controller,
-          builder: (context, _) {
-            final visibleRecords = _query.visibleRecords(
-              records: controller.records,
-              filters: _filters,
-              sort: effectiveSort,
-              referenceLocation: _referenceLocation,
-            );
-            final hasSavedItems = controller.records.isNotEmpty;
-            final filteredOut = hasSavedItems && visibleRecords.isEmpty;
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.savedTitle,
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w800,
-                        ),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: scheme.surface,
+        body: SafeArea(
+          top: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.savedTitle,
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: scheme.primary,
+                        fontWeight: FontWeight.w800,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l10n.savedSubtitle,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurface.withValues(alpha: 0.72),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  child: _SavedToolbar(
-                    resultsCount: visibleRecords.length,
-                    activeFiltersCount: _filters.activeFiltersCount,
-                    selectedSort: effectiveSort,
-                    canSortByDistance: _referenceLocation != null,
-                    onSortChanged: _setSort,
-                    onFiltersPressed: () => _openFilters(
-                      availableCategories: availableCategories,
-                      availableTags: _availableTags(controller.records),
                     ),
-                    onClearFilters: _filters.hasActiveFilters
-                        ? _resetFilters
-                        : null,
-                  ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.savedSubtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurface.withValues(alpha: 0.72),
+                      ),
+                    ),
+                  ],
                 ),
-                if (controller.isLoading)
-                  const LinearProgressIndicator(minHeight: 2),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: filteredOut
-                        ? _SavedEmptyState(
-                            title: l10n.savedEmptyFilteredTitle,
-                            subtitle: l10n.savedEmptyFilteredSubtitle,
-                            onClearFilters: _filters.hasActiveFilters
-                                ? _resetFilters
-                                : null,
-                          )
-                        : hasSavedItems
-                        ? ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
-                            itemCount: visibleRecords.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final record = visibleRecords[index];
-                              return EventListCard(
-                                event: record.event,
-                                referenceLocation: _referenceLocation,
-                                showDistance: _referenceLocation != null,
-                                actionIcon: Icons.bookmark_add_outlined,
-                                activeActionIcon: Icons.bookmark_rounded,
-                                actionTooltip: l10n.savedSaveActionTooltip,
-                                activeActionTooltip:
-                                    l10n.savedRemoveActionTooltip,
-                                isActionActive: controller.isSaved(
-                                  record.event.id,
-                                ),
-                                onTap: () =>
-                                    context.push('/events/${record.event.id}'),
-                                onActionPressed: () {
-                                  unawaited(
-                                    _toggleSaved(
-                                      context: context,
-                                      controller: controller,
-                                      event: record.event,
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          )
-                        : _SavedEmptyState(
-                            title: l10n.savedEmptyTitle,
-                            subtitle: l10n.savedEmptySubtitle,
-                          ),
-                  ),
+              ),
+              const SizedBox(height: 8),
+              TabBar(
+                tabs: [
+                  Tab(text: l10n.savedEventsTab),
+                  Tab(text: l10n.savedFiltersTab),
+                ],
+                labelColor: scheme.primary,
+                unselectedLabelColor: scheme.onSurfaceVariant,
+                indicatorColor: scheme.primary,
+              ),
+              const SizedBox(height: 4),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    _SavedEventsTab(
+                      query: _query,
+                      filters: _filters,
+                      sort: effectiveSort,
+                      referenceLocation: _referenceLocation,
+                      eventsController: eventsController,
+                      availableCategories: availableCategories,
+                      onFiltersPressed: () => _openFilters(
+                        availableCategories: availableCategories,
+                        availableTags: _availableTags(eventsController.records),
+                      ),
+                      onResetFilters: _resetFilters,
+                      onSortChanged: _setSort,
+                      hasActiveFilters: _filters.hasActiveFilters,
+                    ),
+                    _SavedFiltersTab(
+                      savedFiltersController: savedFiltersController,
+                    ),
+                  ],
                 ),
-              ],
-            );
-          },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -288,6 +247,350 @@ class _SavedScreenState extends State<SavedScreen> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Events Tab
+// ---------------------------------------------------------------------------
+
+class _SavedEventsTab extends StatelessWidget {
+  const _SavedEventsTab({
+    required this.query,
+    required this.filters,
+    required this.sort,
+    required this.referenceLocation,
+    required this.eventsController,
+    required this.availableCategories,
+    required this.onFiltersPressed,
+    required this.onResetFilters,
+    required this.onSortChanged,
+    required this.hasActiveFilters,
+  });
+
+  final SavedEventQuery query;
+  final SavedFilters filters;
+  final SavedSortOption sort;
+  final LatLng? referenceLocation;
+  final SavedEventsController eventsController;
+  final List<Category> availableCategories;
+  final VoidCallback onFiltersPressed;
+  final VoidCallback onResetFilters;
+  final ValueChanged<SavedSortOption> onSortChanged;
+  final bool hasActiveFilters;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return AnimatedBuilder(
+      animation: eventsController,
+      builder: (context, _) {
+        final visibleRecords = query.visibleRecords(
+          records: eventsController.records,
+          filters: filters,
+          sort: sort,
+          referenceLocation: referenceLocation,
+        );
+        final hasSavedItems = eventsController.records.isNotEmpty;
+        final filteredOut = hasSavedItems && visibleRecords.isEmpty;
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              child: _SavedToolbar(
+                resultsCount: visibleRecords.length,
+                activeFiltersCount: filters.activeFiltersCount,
+                selectedSort: sort,
+                canSortByDistance: referenceLocation != null,
+                onSortChanged: onSortChanged,
+                onFiltersPressed: onFiltersPressed,
+                onClearFilters: hasActiveFilters ? onResetFilters : null,
+              ),
+            ),
+            if (eventsController.isLoading)
+              const LinearProgressIndicator(minHeight: 2),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: filteredOut
+                    ? _SavedEmptyState(
+                        title: l10n.savedEmptyFilteredTitle,
+                        subtitle: l10n.savedEmptyFilteredSubtitle,
+                        onClearFilters: hasActiveFilters
+                            ? onResetFilters
+                            : null,
+                      )
+                    : hasSavedItems
+                    ? ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+                        itemCount: visibleRecords.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final record = visibleRecords[index];
+                          return EventListCard(
+                            event: record.event,
+                            referenceLocation: referenceLocation,
+                            showDistance: referenceLocation != null,
+                            actionIcon: Icons.bookmark_add_outlined,
+                            activeActionIcon: Icons.bookmark_rounded,
+                            actionTooltip: l10n.savedSaveActionTooltip,
+                            activeActionTooltip: l10n.savedRemoveActionTooltip,
+                            isActionActive: eventsController.isSaved(
+                              record.event.id,
+                            ),
+                            onTap: () =>
+                                context.push('/events/${record.event.id}'),
+                            onActionPressed: () {
+                              unawaited(
+                                _toggleSaved(
+                                  context: context,
+                                  controller: eventsController,
+                                  event: record.event,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      )
+                    : _SavedEmptyState(
+                        title: l10n.savedEmptyTitle,
+                        subtitle: l10n.savedEmptySubtitle,
+                      ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Filters Tab
+// ---------------------------------------------------------------------------
+
+class _SavedFiltersTab extends StatelessWidget {
+  const _SavedFiltersTab({required this.savedFiltersController});
+
+  final SavedFiltersController savedFiltersController;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return AnimatedBuilder(
+      animation: savedFiltersController,
+      builder: (context, _) {
+        final savedFilters = savedFiltersController.filters;
+
+        if (savedFilters.isEmpty) {
+          return _SavedEmptyState(
+            title: l10n.savedFiltersEmptyTitle,
+            subtitle: l10n.savedFiltersEmptySubtitle,
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+          itemCount: savedFilters.length,
+          itemBuilder: (context, index) {
+            final savedFilter = savedFilters[index];
+            return _SavedFilterCard(
+              savedFilter: savedFilter,
+              onTap: () async {
+                await savedFiltersController.loadFilterToExplore(savedFilter);
+                if (!context.mounted) return;
+                final shell = StatefulNavigationShell.of(context);
+                shell.goBranch(0);
+              },
+              onDelete: () async {
+                await savedFiltersController.deleteFilter(savedFilter.id);
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.savedFiltersDeleteConfirmation),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              onNotificationsChanged: (enabled) {
+                savedFiltersController.toggleNotifications(
+                  savedFilter.id,
+                  enabled,
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _SavedFilterCard extends StatelessWidget {
+  const _SavedFilterCard({
+    required this.savedFilter,
+    required this.onTap,
+    required this.onDelete,
+    required this.onNotificationsChanged,
+  });
+
+  final SavedFilter savedFilter;
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
+  final ValueChanged<bool> onNotificationsChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final filters = savedFilter.filters;
+    final summary = filters.toShortSummary(l10n);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(22),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(22),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.filter_alt_rounded,
+                      color: scheme.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        savedFilter.name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: l10n.savedFiltersLoadTooltip,
+                      icon: Icon(
+                        Icons.play_arrow_rounded,
+                        color: scheme.primary,
+                      ),
+                      onPressed: onTap,
+                    ),
+                    PopupMenuButton<_FilterAction>(
+                      icon: const Icon(Icons.more_vert_rounded),
+                      tooltip: l10n.savedFiltersDeleteTooltip,
+                      onSelected: (action) {
+                        switch (action) {
+                          case _FilterAction.toggleNotifications:
+                            onNotificationsChanged(
+                              !savedFilter.notificationsEnabled,
+                            );
+                          case _FilterAction.delete:
+                            onDelete();
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: _FilterAction.toggleNotifications,
+                          child: Row(
+                            children: [
+                              Icon(
+                                savedFilter.notificationsEnabled
+                                    ? Icons.notifications_off_outlined
+                                    : Icons.notifications_outlined,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                savedFilter.notificationsEnabled
+                                    ? l10n.savedFilterNotificationsLabel
+                                    : l10n.savedFilterNotificationsLabel,
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: _FilterAction.delete,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete_outline_rounded,
+                                size: 18,
+                                color: scheme.error,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                l10n.savedFiltersDeleteTooltip,
+                                style: TextStyle(color: scheme.error),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  summary,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.72),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      savedFilter.useCurrentLocation
+                          ? Icons.my_location_rounded
+                          : Icons.location_on_rounded,
+                      size: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      savedFilter.useCurrentLocation
+                          ? l10n.savedFiltersLocationCurrent
+                          : l10n.savedFiltersLocationSaved,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(
+                      savedFilter.notificationsEnabled
+                          ? Icons.notifications_active_rounded
+                          : Icons.notifications_off_outlined,
+                      size: 16,
+                      color: savedFilter.notificationsEnabled
+                          ? scheme.primary
+                          : scheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum _FilterAction { toggleNotifications, delete }
+
+// ---------------------------------------------------------------------------
+// Shared widgets
+// ---------------------------------------------------------------------------
+
 Future<void> _toggleSaved({
   required BuildContext context,
   required SavedEventsController controller,
@@ -300,8 +603,8 @@ Future<void> _toggleSaved({
   }
 
   final message = outcome == SavedToggleOutcome.saved && !wasSaved
-      ? AppLocalizations.of(context)!.eventSaveSuccess
-      : AppLocalizations.of(context)!.eventRemoveSuccess;
+      ? AppLocalizations.of(context).eventSaveSuccess
+      : AppLocalizations.of(context).eventRemoveSuccess;
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
@@ -331,7 +634,7 @@ class _SavedToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -431,7 +734,7 @@ class _SavedSortMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     final options = [
       SavedSortOption.recent,
@@ -543,7 +846,7 @@ class _SavedEmptyState extends StatelessWidget {
               const SizedBox(height: 16),
               FilledButton.tonal(
                 onPressed: onClearFilters,
-                child: Text(AppLocalizations.of(context)!.savedFiltersClear),
+                child: Text(AppLocalizations.of(context).savedFiltersClear),
               ),
             ],
           ],
@@ -552,6 +855,10 @@ class _SavedEmptyState extends StatelessWidget {
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Filters bottom sheet (for event filters)
+// ---------------------------------------------------------------------------
 
 class _SavedFiltersSheet extends StatefulWidget {
   const _SavedFiltersSheet({
@@ -626,7 +933,7 @@ class _SavedFiltersSheetState extends State<_SavedFiltersSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -705,6 +1012,27 @@ class _SavedFiltersSheetState extends State<_SavedFiltersSheet> {
                   label: Text(l10n.savedAgeGroup18Plus),
                   selected: _isAgeSelected(18, null),
                   onSelected: (_) => _setAgePreset(18, null),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.savedShowPastEvents,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Switch(
+                  value: _filters.showPastEvents,
+                  onChanged: (value) {
+                    setState(() {
+                      _filters = _filters.copyWith(showPastEvents: value);
+                    });
+                  },
                 ),
               ],
             ),

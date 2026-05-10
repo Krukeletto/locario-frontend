@@ -5,6 +5,10 @@ import 'package:locario/features/saved/saved_screen.dart';
 import 'package:locario/features/saved/saved_events_controller.dart';
 import 'package:locario/features/saved/saved_events_repository.dart';
 import 'package:locario/features/saved/saved_events_scope.dart';
+import 'package:locario/features/saved/saved_filters_controller.dart';
+import 'package:locario/features/saved/saved_filters_repository.dart';
+import 'package:locario/features/saved/saved_filters_scope.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../test_helpers/fake_location_service.dart';
 import '../../test_helpers/test_app.dart';
@@ -14,17 +18,28 @@ void main() {
     testWidgets('shows empty state for guests with no saved events', (
       tester,
     ) async {
-      final controller = SavedEventsController(
+      SharedPreferences.setMockInitialValues({});
+      final eventsController = SavedEventsController(
         repository: _MemorySavedEventsRepository(),
       );
-      await controller.load();
+      await eventsController.load();
+
+      final filtersController = SavedFiltersController(
+        repository: const SharedPreferencesSavedFiltersRepository(),
+      );
+      await filtersController.loadFilters();
 
       await tester.pumpWidget(
         buildLocalizedTestApp(
           home: SavedEventsScope(
-            controller: controller,
-            child: SavedScreen(
-              locationService: FakeLocationService(serviceEnabled: false),
+            controller: eventsController,
+            child: SavedFiltersScope(
+              controller: filtersController,
+              child: SavedScreen(
+                savedEventsController: eventsController,
+                savedFiltersController: filtersController,
+                locationService: FakeLocationService(serviceEnabled: false),
+              ),
             ),
           ),
         ),
@@ -38,23 +53,34 @@ void main() {
     testWidgets('lists saved events and lets the user remove them', (
       tester,
     ) async {
+      SharedPreferences.setMockInitialValues({});
       final repository = _MemorySavedEventsRepository(
         initialRecords: [
           SavedEventRecord(
             event: _event('1', 'Jazz Evening'),
-            savedAt: DateTime.utc(2026, 5, 1, 12),
+            savedAt: DateTime.utc(2026, 6, 1, 12),
           ),
         ],
       );
-      final controller = SavedEventsController(repository: repository);
-      await controller.load();
+      final eventsController = SavedEventsController(repository: repository);
+      await eventsController.load();
+
+      final filtersController = SavedFiltersController(
+        repository: const SharedPreferencesSavedFiltersRepository(),
+      );
+      await filtersController.loadFilters();
 
       await tester.pumpWidget(
         buildLocalizedTestApp(
           home: SavedEventsScope(
-            controller: controller,
-            child: SavedScreen(
-              locationService: FakeLocationService(serviceEnabled: false),
+            controller: eventsController,
+            child: SavedFiltersScope(
+              controller: filtersController,
+              child: SavedScreen(
+                savedEventsController: eventsController,
+                savedFiltersController: filtersController,
+                locationService: FakeLocationService(serviceEnabled: false),
+              ),
             ),
           ),
         ),
@@ -68,7 +94,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('No saved events yet'), findsOneWidget);
-      expect(controller.records, isEmpty);
+      expect(eventsController.records, isEmpty);
     });
   });
 }
@@ -111,7 +137,7 @@ ExploreEvent _event(String id, String title) {
   return ExploreEvent(
     id: id,
     title: title,
-    startsAt: DateTime.utc(2026, 5, 1, 18),
+    startsAt: DateTime.utc(2026, 6, 1, 18),
     venue: 'Venue',
     location: const LatLng(51.7592, 19.4550),
     categories: const [Category(id: 'music', name: 'Music', slug: 'music')],

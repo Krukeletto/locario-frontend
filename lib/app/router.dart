@@ -13,6 +13,7 @@ import '../features/profile/settings_screen.dart';
 import '../features/saved/saved_screen.dart';
 import '../features/shell/shell.dart';
 import '../features/shell/hub/hub_action_item.dart';
+import 'navigation_history.dart';
 import '../shared/auth/session_controller.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -27,14 +28,12 @@ final RegExp _uuidLikePattern = RegExp(
 String? normalizeIncomingLocation(Uri uri) {
   final pathSegments = uri.pathSegments;
 
-  // Accept the shared custom scheme `locario://events/<id>` (legacy)
   if (uri.scheme == 'locario' &&
       uri.host == 'events' &&
       pathSegments.length == 1) {
     return '/events/${pathSegments.first}';
   }
 
-  // Accept the new HTTPS deep link `https://locario-events.web.app/events/<id>`
   if (uri.scheme == 'https' &&
       uri.host == 'locario-events.web.app' &&
       pathSegments.length == 2 &&
@@ -42,9 +41,6 @@ String? normalizeIncomingLocation(Uri uri) {
     return '/events/${pathSegments.last}';
   }
 
-  // Some platforms can surface the deep link to Flutter as only the path
-  // portion. Support a single UUID-like segment and normalize it to the event
-  // details route while leaving known top-level sections untouched.
   if (uri.scheme.isEmpty &&
       uri.host.isEmpty &&
       pathSegments.length == 1 &&
@@ -69,9 +65,9 @@ final List<HubActionItem> hubActionItems = [
     isPrimary: true,
   ),
   const HubActionItem(
-    id: 'community',
-    icon: 'groups',
-    routePath: '/hub/community',
+    id: 'messages',
+    icon: 'mail',
+    routePath: '/hub/messages',
     isEnabled: false,
   ),
   const HubActionItem(
@@ -80,23 +76,62 @@ final List<HubActionItem> hubActionItems = [
     routePath: '/hub/friends',
     isEnabled: false,
   ),
+  const HubActionItem(
+    id: 'community',
+    icon: 'groups',
+    routePath: '/hub/community',
+    isEnabled: false,
+  ),
 ];
 
 bool _requiresAuth(String location) {
   return location.startsWith('/hub/create-event') ||
+      location.startsWith('/hub/messages') ||
       location.startsWith('/hub/friends') ||
       location.startsWith('/inbox');
 }
 
-String _loginRedirect(Uri uri, {String? targetLocation}) {
-  final from = Uri.encodeComponent(uri.toString());
-  final target = targetLocation == null || targetLocation.isEmpty
-      ? ''
-      : '&target=${Uri.encodeComponent(targetLocation)}';
-  return '/auth/login?from=$from$target';
+bool _shouldRememberAsSafeLocation(String location) {
+  return !_requiresAuth(location) &&
+      location != '/auth/login' &&
+      location != '/auth/register';
+}
+
+String _loginRedirect({String? returnLocation, String? targetLocation}) {
+  final queryParameters = <String, String>{};
+
+  if (returnLocation != null && returnLocation.isNotEmpty) {
+    queryParameters['from'] = returnLocation;
+  }
+
+  if (targetLocation != null && targetLocation.isNotEmpty) {
+    queryParameters['target'] = targetLocation;
+  }
+
+  return Uri(
+    path: '/auth/login',
+    queryParameters: queryParameters.isEmpty ? null : queryParameters,
+  ).toString();
+}
+
+Page<void> _trackedNoTransitionPage({
+  required NavigationHistoryController controller,
+  required String location,
+  required bool rememberAsSafe,
+  required Widget child,
+}) {
+  return NoTransitionPage<void>(
+    child: RouteHistoryReporter(
+      controller: controller,
+      location: location,
+      rememberAsSafe: rememberAsSafe,
+      child: child,
+    ),
+  );
 }
 
 GoRouter createAppRouter(SessionController sessionController) {
+  final navigationHistory = NavigationHistoryController();
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/explore',
@@ -122,13 +157,15 @@ GoRouter createAppRouter(SessionController sessionController) {
       }
 
       if (!isAuthed && _requiresAuth(location)) {
-        return _loginRedirect(state.uri, targetLocation: state.uri.path);
+        return _loginRedirect(
+          returnLocation: navigationHistory.lastSafeLocation,
+          targetLocation: state.uri.path,
+        );
       }
 
       return null;
     },
     routes: [
-      // Indexed stack keeps tab navigator state alive between tab switches.
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           final currentSection = state.uri.pathSegments.isNotEmpty
@@ -140,11 +177,16 @@ GoRouter createAppRouter(SessionController sessionController) {
               isRootSectionScreen;
           final showViewToggle = showHeader && currentSection == 'explore';
 
-          return Shell(
-            navigationShell: navigationShell,
-            hubItems: hubActionItems,
-            showHeader: showHeader,
-            showViewToggle: showViewToggle,
+          return RouteHistoryReporter(
+            controller: navigationHistory,
+            location: state.uri.toString(),
+            rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+            child: Shell(
+              navigationShell: navigationShell,
+              hubItems: hubActionItems,
+              showHeader: showHeader,
+              showViewToggle: showViewToggle,
+            ),
           );
         },
         branches: [
@@ -152,17 +194,12 @@ GoRouter createAppRouter(SessionController sessionController) {
             routes: [
               GoRoute(
                 path: '/explore',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: ExploreScreen()),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/saved',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: SavedScreen()),
+                pageBuilder: (context, state) => _trackedNoTransitionPage(
+                  controller: navigationHistory,
+                  location: state.uri.toString(),
+                  rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+                  child: const ExploreScreen(),
+                ),
               ),
             ],
           ),
@@ -170,18 +207,34 @@ GoRouter createAppRouter(SessionController sessionController) {
             routes: [
               GoRoute(
                 path: '/profile',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: ProfileScreen()),
+                pageBuilder: (context, state) => _trackedNoTransitionPage(
+                  controller: navigationHistory,
+                  location: state.uri.toString(),
+                  rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+                  child: const ProfileScreen(),
+                ),
                 routes: [
                   GoRoute(
                     path: 'saved',
-                    pageBuilder: (context, state) =>
-                        const NoTransitionPage(child: SavedScreen()),
+                    pageBuilder: (context, state) => _trackedNoTransitionPage(
+                      controller: navigationHistory,
+                      location: state.uri.toString(),
+                      rememberAsSafe: _shouldRememberAsSafeLocation(
+                        state.uri.path,
+                      ),
+                      child: const SavedScreen(),
+                    ),
                   ),
                   GoRoute(
                     path: 'settings',
-                    pageBuilder: (context, state) =>
-                        const NoTransitionPage(child: SettingsScreen()),
+                    pageBuilder: (context, state) => _trackedNoTransitionPage(
+                      controller: navigationHistory,
+                      location: state.uri.toString(),
+                      rememberAsSafe: _shouldRememberAsSafeLocation(
+                        state.uri.path,
+                      ),
+                      child: const SettingsScreen(),
+                    ),
                   ),
                 ],
               ),
@@ -189,37 +242,50 @@ GoRouter createAppRouter(SessionController sessionController) {
           ),
         ],
       ),
-      // Hub actions open above the shell on the root navigator.
       ...hubActionItems.map(
         (item) => GoRoute(
           parentNavigatorKey: _rootNavigatorKey,
           path: item.routePath,
           pageBuilder: (context, state) {
-            if (item.id == 'create-event') {
-              return const NoTransitionPage(child: CreateEventScreen());
-            }
-            return NoTransitionPage(child: HubPlaceholderScreen(item: item));
+            final child = item.id == 'create-event'
+                ? const CreateEventScreen()
+                : HubPlaceholderScreen(item: item);
+            return _trackedNoTransitionPage(
+              controller: navigationHistory,
+              location: state.uri.toString(),
+              rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+              child: child,
+            );
           },
         ),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/inbox',
-        pageBuilder: (context, state) =>
-            const NoTransitionPage(child: InboxScreen()),
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: const InboxScreen(),
+        ),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/events/:eventId',
-        pageBuilder: (context, state) => NoTransitionPage(
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
           child: EventScreen(eventId: state.pathParameters['eventId']),
         ),
       ),
       GoRoute(
-        // do testów
         parentNavigatorKey: _rootNavigatorKey,
         path: '/auth/login',
-        pageBuilder: (context, state) => NoTransitionPage(
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
           child: LoginScreen(
             returnLocation: state.uri.queryParameters['from'],
             targetLocation: state.uri.queryParameters['target'],
@@ -227,10 +293,12 @@ GoRouter createAppRouter(SessionController sessionController) {
         ),
       ),
       GoRoute(
-        // do testów
         parentNavigatorKey: _rootNavigatorKey,
         path: '/auth/register',
-        pageBuilder: (context, state) => NoTransitionPage(
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
           child: RegisterScreen(
             returnLocation: state.uri.queryParameters['from'],
             targetLocation: state.uri.queryParameters['target'],

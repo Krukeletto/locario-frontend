@@ -9,15 +9,6 @@ class AppLocalizationsPl extends AppLocalizations {
   AppLocalizationsPl([String locale = 'pl']) : super(locale);
 
   @override
-  String get appTitle => 'Locario';
-
-  @override
-  String get localeEnglish => 'Angielski';
-
-  @override
-  String get localePolish => 'Polski';
-
-  @override
   String get authSubtitle => 'Odkryj lokalne perełki w Twojej okolicy';
 
   @override
@@ -63,6 +54,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get authLogoutSuccess => 'Wylogowano pomyślnie.';
 
   @override
+  String get authLoginSuccess => 'Zalogowano pomyślnie.';
+
+  @override
+  String get authLoginErrorInvalidCredentials => 'Błędny e-mail lub hasło.';
+
+  @override
   String get authRegisterWelcome => 'Witaj';
 
   @override
@@ -103,22 +100,459 @@ class AppLocalizationsPl extends AppLocalizations {
   String get authValidationPasswordMin8 => 'Hasło musi mieć min. 8 znaków';
 
   @override
-  String get tabExplore => 'Odkrywaj';
+  String get eventJazzTitle => 'Jazz w Ogrodzie Botanicznym';
 
   @override
-  String get tabInbox => 'Skrzynka';
+  String get eventSketchingTitle => 'Noc szkicowania nad Wisłą';
 
   @override
-  String get tabHub => 'Hub';
+  String get eventRunClubTitle => 'Poranny run club i coffee stop';
 
   @override
-  String get tabProfile => 'Profil';
+  String get eventStreetFoodTitle => 'Street food i vinyl market';
 
   @override
-  String get headerMap => 'Mapa';
+  String get eventDetailsScreenTitle => 'Szczegóły';
 
   @override
-  String get headerList => 'Lista';
+  String get eventDetailsImagePlaceholder => 'Tymczasowy placeholder zdjęcia';
+
+  @override
+  String get eventDetailsTitleLabel => 'Tytuł wydarzenia';
+
+  @override
+  String get eventDetailsLocationLabel => 'Lokalizacja';
+
+  @override
+  String get eventDetailsDateLabel => 'Data';
+
+  @override
+  String get eventDetailsTimeLabel => 'Godzina';
+
+  @override
+  String get eventDetailsPriceLabel => 'Cena';
+
+  @override
+  String get eventDetailsSeatsLabel => 'Liczba miejsc';
+
+  @override
+  String get eventDetailsAboutLabel => 'O wydarzeniu';
+
+  @override
+  String get eventDetailsOrganizerLabel => 'Organizator';
+
+  @override
+  String get eventDetailsChatLabel => 'Czat uczestników';
+
+  @override
+  String get eventDetailsBuyTicketButton => 'Kup bilet';
+
+  @override
+  String get eventDetailsJoinButton => 'Zapisz się';
+
+  @override
+  String get eventDetailsLeaveButton => 'Opuść wydarzenie';
+
+  @override
+  String get eventJoinSuccess => 'Zapisano na wydarzenie.';
+
+  @override
+  String get eventLeaveSuccess => 'Opuściłeś/aś wydarzenie.';
+
+  @override
+  String get eventJoinError => 'Nie udało się zapisać na wydarzenie.';
+
+  @override
+  String get eventJoinRequiresLogin =>
+      'Zaloguj się, aby zapisać się na wydarzenie.';
+
+  @override
+  String get eventDetailsUnknownEventTitle => 'Wydarzenie';
+
+  @override
+  String get eventDetailsUnknownLocation => 'Lokalizacja nieznana';
+
+  @override
+  String get eventDetailsFallbackDescription =>
+      'To tymczasowy opis wydarzenia. W kolejnych krokach podepniemy pełne dane z formularza tworzenia wydarzenia i backendu.';
+
+  @override
+  String get eventDetailsLoadingTitle => 'Ładowanie wydarzenia';
+
+  @override
+  String get eventDetailsLoadingSubtitle =>
+      'Pobieramy szczegóły wydarzenia z backendu.';
+
+  @override
+  String get eventDetailsErrorTitle => 'Wydarzenie jest niedostępne';
+
+  @override
+  String get eventDetailsErrorSubtitle =>
+      'Nie udało się teraz wczytać tego wydarzenia.';
+
+  @override
+  String get eventDetailsJazzDescription =>
+      'Wieczorny koncert jazzowy pod otwartym niebem. Zabierz znajomych, koc i dobry humor.';
+
+  @override
+  String get eventDetailsSketchingDescription =>
+      'Spotkanie dla osób lubiących szkicowanie i ilustracje miejskie. Materiały we własnym zakresie.';
+
+  @override
+  String get eventDetailsRunClubDescription =>
+      'Lekki poranny bieg, potem wspólna kawa i networking. Tempo konwersacyjne, każdy mile widziany.';
+
+  @override
+  String get eventDetailsStreetFoodDescription =>
+      'Street food, selekcja płyt winylowych i mini sety DJ-skie. Wydarzenie całodzienne.';
+
+  @override
+  String get eventDetailsTicketLabel => 'Bilety';
+
+  @override
+  String get eventDetailsSlotsLabel => 'Limit miejsc';
+
+  @override
+  String eventDetailsSlotsValue(int count) {
+    return '$count wolnych miejsc';
+  }
+
+  @override
+  String eventSlotsTaken(int registered, int limit) {
+    return '$registered / $limit zajętych';
+  }
+
+  @override
+  String eventSlotsJoined(int count) {
+    return '$count dołączyło';
+  }
+
+  @override
+  String get eventSlotsSoldOut => 'Brak miejsc';
+
+  @override
+  String eventSlotsWaitlist(int count) {
+    return '$count na liście rezerwowej';
+  }
+
+  @override
+  String eventCardSpots(int count) {
+    return '$count miejsc';
+  }
+
+  @override
+  String get eventDetailsShowOnMapButton => 'Pokaż na mapie';
+
+  @override
+  String get eventDetailsOpenMapError =>
+      'Nie udało się teraz otworzyć aplikacji map.';
+
+  @override
+  String get eventToday2030 => 'Dziś, 20:30';
+
+  @override
+  String get eventToday1900 => 'Dziś, 19:00';
+
+  @override
+  String get eventTomorrow0800 => 'Jutro, 08:00';
+
+  @override
+  String get eventTomorrow1200 => 'Jutro, 12:00';
+
+  @override
+  String get eventSaveSuccess => 'Wydarzenie zapisano na Twojej liście.';
+
+  @override
+  String get eventRemoveSuccess => 'Wydarzenie usunięto z Twojej listy.';
+
+  @override
+  String get eventPublishSuccess => 'Wydarzenie zostało opublikowane.';
+
+  @override
+  String get eventPublishError =>
+      'Nie udało się opublikować wydarzenia. Spróbuj ponownie.';
+
+  @override
+  String get venueBotanicalGarden => 'Ogród Botaniczny';
+
+  @override
+  String get venueVistulaBoulevards => 'Bulwary Wiślane';
+
+  @override
+  String get venuePoleMokotowskie => 'Pole Mokotowskie';
+
+  @override
+  String get venueHalaKoszyki => 'Hala Koszyki';
+
+  @override
+  String distanceMeters(int count) {
+    return '$count m';
+  }
+
+  @override
+  String distanceKilometers(String count) {
+    return '$count km';
+  }
+
+  @override
+  String get exploreSearchHint => 'Szukaj wydarzeń...';
+
+  @override
+  String get exploreNearbyEvents => 'Wydarzenia w pobliżu';
+
+  @override
+  String exploreNearbyWithFilter(String filter) {
+    return '$filter w pobliżu';
+  }
+
+  @override
+  String get exploreLoadingTitle => 'Ładowanie wydarzeń';
+
+  @override
+  String get exploreLoadingSubtitle =>
+      'Pobieramy najnowsze wydarzenia, poczekaj chwilkę.';
+
+  @override
+  String get exploreErrorTitle => 'Wydarzenia są niedostępne';
+
+  @override
+  String get exploreErrorSubtitle => 'Nie udało się teraz pobrać wydarzeń.';
+
+  @override
+  String get exploreEmptyTitle => 'Brak wydarzeń';
+
+  @override
+  String get exploreEmptySubtitle =>
+      'Spróbuj zmienić obszar albo wróć później.';
+
+  @override
+  String get exploreRetryButton => 'Spróbuj ponownie';
+
+  @override
+  String get exploreErrorPermissionTitle => 'Wymagany dostęp do lokalizacji';
+
+  @override
+  String get exploreErrorPermissionSubtitle =>
+      'Zezwól na dostęp do lokalizacji, aby zobaczyć wydarzenia w pobliżu.';
+
+  @override
+  String get exploreErrorUnknownTitle => 'Coś poszło nie tak';
+
+  @override
+  String get exploreErrorUnknownSubtitle => 'Wystąpił nieoczekiwany błąd.';
+
+  @override
+  String get exploreSearchThisArea => 'Przeszukaj ten obszar';
+
+  @override
+  String resultsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count wyniku',
+      many: '$count wyników',
+      few: '$count wyniki',
+      one: '1 wynik',
+      zero: '0 wyników',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sortTooltip => 'Sortowanie';
+
+  @override
+  String get sortDistance => 'Odległość';
+
+  @override
+  String get sortSoonest => 'Najbliższy termin';
+
+  @override
+  String get sortTrending => 'Popularność';
+
+  @override
+  String get distanceFilterTooltip => 'Zasięg listy';
+
+  @override
+  String get distanceFilterAny => 'Wszędzie';
+
+  @override
+  String distanceFilterWithinKm(int km) {
+    return 'Do $km km';
+  }
+
+  @override
+  String get filterAll => 'Wszystkie';
+
+  @override
+  String get filterMusic => 'Muzyka';
+
+  @override
+  String get filterArt => 'Sztuka';
+
+  @override
+  String get filterWorkshops => 'Warsztaty';
+
+  @override
+  String get filterFood => 'Jedzenie';
+
+  @override
+  String get filterAdvancedFilters => 'Filtry zaawansowane';
+
+  @override
+  String get filterAdvancedDistance => 'Zasięg wyszukiwania';
+
+  @override
+  String get filterAdvancedDateRange => 'Data wydarzenia';
+
+  @override
+  String get filterAdvancedAge => 'Wiek (lata)';
+
+  @override
+  String get filterAdvancedType => 'Typ wydarzenia';
+
+  @override
+  String get filterAdvancedSource => 'Źródło wydarzenia';
+
+  @override
+  String get filterAdvancedApply => 'Pokaż wyniki';
+
+  @override
+  String get filterAdvancedClear => 'Wyczyść';
+
+  @override
+  String get filterAdvancedDateFrom => 'Od';
+
+  @override
+  String get filterAdvancedDateTo => 'Do';
+
+  @override
+  String get filterAdvancedDateAny => 'Dowolna data';
+
+  @override
+  String get filterAdvancedDateToday => 'Dziś';
+
+  @override
+  String get filterAdvancedDateTomorrow => 'Jutro';
+
+  @override
+  String get filterAdvancedDateCustomRange => 'Zakres dat';
+
+  @override
+  String get filterAdvancedDateOther => 'Inna data';
+
+  @override
+  String get filterAdvancedDateSelection => 'Wybrana data';
+
+  @override
+  String get filterAdvancedAgeFrom => 'Min';
+
+  @override
+  String get filterAdvancedAgeTo => 'Max';
+
+  @override
+  String get filterAdvancedAgeSelection => 'Wiek uczestnika';
+
+  @override
+  String get filterAdvancedAgeCustomRange => 'Przedział wieku';
+
+  @override
+  String get filterAdvancedAgeOther => 'Inny wiek';
+
+  @override
+  String filterAdvancedAgeRangeSummary(int from, int to) {
+    return '$from–$to lat';
+  }
+
+  @override
+  String get areaMyLocation => 'Moja lokalizacja';
+
+  @override
+  String get areaMyLocationDescription =>
+      'Domyślnie wydarzenia najbliżej Ciebie';
+
+  @override
+  String get areaTypedAddressDescription => 'Adres wpisany ręcznie';
+
+  @override
+  String get areaPinnedOnMap => 'Punkt na mapie';
+
+  @override
+  String get areaPickerTitle => 'Wybierz obszar';
+
+  @override
+  String get areaPickerSubtitle =>
+      'Możesz wpisać adres, wskazać punkt na mapie albo wrócić do bieżącej lokalizacji.';
+
+  @override
+  String get areaUseCurrentLocation => 'Moja lokalizacja';
+
+  @override
+  String get areaUseCurrentLocationSubtitle =>
+      'Użyj Twojej aktualnej pozycji jako punktu odniesienia';
+
+  @override
+  String get areaEnterAddress => 'Wpisz adres';
+
+  @override
+  String get areaEnterAddressSubtitle =>
+      'Podaj ulicę, dzielnicę albo konkretne miejsce';
+
+  @override
+  String get areaPickOnMap => 'Wskaż na mapie';
+
+  @override
+  String get areaPickOnMapTitle => 'Wskaż punkt na mapie';
+
+  @override
+  String get areaPickOnMapSubtitle =>
+      'Przesuń mapę tak, aby wybrany punkt był pod znacznikiem na środku.';
+
+  @override
+  String get areaPickOnMapConfirm => 'Użyj tego punktu';
+
+  @override
+  String get areaAddressDialogTitle => 'Wpisz adres';
+
+  @override
+  String get areaAddressDialogHint => 'Np. Stary Rynek 12, Poznań';
+
+  @override
+  String get areaAddressNotFound => 'Nie udało się znaleźć tego adresu.';
+
+  @override
+  String get areaAddressLookupFailed =>
+      'Nie udało się wyszukać adresu. Spróbuj ponownie.';
+
+  @override
+  String get areaDialogCancel => 'Anuluj';
+
+  @override
+  String get areaDialogConfirm => 'Gotowe';
+
+  @override
+  String areaPinnedCoordinates(String lat, String lon) {
+    return '$lat, $lon';
+  }
+
+  @override
+  String get areaWarsawCenter => 'Centrum Warszawy';
+
+  @override
+  String get areaWarsawCenterDescription => 'Adres lub pin ustawiony ręcznie';
+
+  @override
+  String get areaPowisle => 'Powiśle';
+
+  @override
+  String get areaPowisleDescription =>
+      'Okolice bulwarów i mostu Poniatowskiego';
+
+  @override
+  String get areaMokotow => 'Mokotów';
+
+  @override
+  String get areaMokotowDescription => 'Rejon Pole Mokotowskie i okolice';
 
   @override
   String get hubTitle => 'Hub';
@@ -285,6 +719,12 @@ class AppLocalizationsPl extends AppLocalizations {
       'Nie udało się ustalić lokalizacji. Spróbuj wpisać inny adres lub wskaż punkt na mapie.';
 
   @override
+  String get hubMessagesTitle => 'Wiadomości';
+
+  @override
+  String get hubMessagesSubtitle => 'Wiadomości prywatne';
+
+  @override
   String get hubCommunityTitle => 'Społeczność';
 
   @override
@@ -297,7 +737,45 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubFriendsSubtitle => 'Twoja sieć';
 
   @override
-  String get featureComingSoon => 'Ta sekcja jest jeszcze w przygotowaniu.';
+  String get inboxEmpty => 'Brak powiadomień';
+
+  @override
+  String get inboxMarkAllRead => 'Oznacz wszystkie jako przeczytane';
+
+  @override
+  String get notificationSettingsTitle => 'Powiadomienia Push';
+
+  @override
+  String get notificationSettingsSubtitle =>
+      'Wybierz, które powiadomienia chcesz otrzymywać';
+
+  @override
+  String get notificationTypeUpcomingEvent => 'Nadchodzące wydarzenia';
+
+  @override
+  String get notificationTypeUpcomingEventDesc =>
+      'Przypomnienia przed rozpoczęciem zapisanych wydarzeń';
+
+  @override
+  String get notificationTypeExpiredEvent => 'Zakończone wydarzenia';
+
+  @override
+  String get notificationTypeExpiredEventDesc =>
+      'Gdy zapisane wydarzenie już minęło';
+
+  @override
+  String get notificationTypeEventPublished => 'Nowe wydarzenia';
+
+  @override
+  String get notificationTypeEventPublishedDesc =>
+      'Gdy nowe wydarzenia pojawią się w pobliżu';
+
+  @override
+  String get notificationTypeSystemMessage => 'Wiadomości systemowe';
+
+  @override
+  String get notificationTypeSystemMessageDesc =>
+      'Ważne aktualizacje z aplikacji';
 
   @override
   String get profileTitle => 'Profil';
@@ -319,7 +797,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get profileAuthLogoutSubtitle => 'Zakończ aktualną sesję';
 
   @override
-  String get profileInboxSubtitle => 'Otwórz wiadomości i powiadomienia';
+  String get profileInboxSubtitle => 'Otwórz powiadomienia';
 
   @override
   String get settingsTitle => 'Ustawienia';
@@ -333,6 +811,29 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get settingsScreenDescription =>
       'Tu możesz ogarnąć podstawy aplikacji, zanim sekcja ustawień bardziej urośnie.';
+
+  @override
+  String get languageSectionTitle => 'Język';
+
+  @override
+  String get languageSectionSubtitle =>
+      'Wybierz, w jakim języku aplikacja ma z Tobą rozmawiać';
+
+  @override
+  String get themeSectionTitle => 'Wygląd';
+
+  @override
+  String get themeSectionSubtitle =>
+      'Wybierz, czy aplikacja ma podążać za systemem czy trzymać stały motyw';
+
+  @override
+  String get themeModeSystem => 'System';
+
+  @override
+  String get themeModeLight => 'Jasny';
+
+  @override
+  String get themeModeDark => 'Ciemny';
 
   @override
   String get savedTitle => 'Zapisane';
@@ -393,6 +894,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get savedAgeGroup18Plus => '18+';
 
   @override
+  String get savedShowPastEvents => 'Pokaż archiwalne';
+
+  @override
   String get savedEmptyTitle => 'Brak zapisanych wydarzeń';
 
   @override
@@ -408,417 +912,110 @@ class AppLocalizationsPl extends AppLocalizations {
       'Wyczyść filtry albo spróbuj innej kombinacji.';
 
   @override
-  String get languageSectionTitle => 'Język';
+  String get savedEventsTab => 'Wydarzenia';
 
   @override
-  String get languageSectionSubtitle =>
-      'Wybierz, w jakim języku aplikacja ma z Tobą rozmawiać';
+  String get savedFiltersTab => 'Filtry';
 
   @override
-  String get themeSectionTitle => 'Wygląd';
+  String get savedFiltersEmptyTitle => 'Brak zapisanych filtrów';
 
   @override
-  String get themeSectionSubtitle =>
-      'Wybierz, czy aplikacja ma podążać za systemem czy trzymać stały motyw';
+  String get savedFiltersEmptySubtitle =>
+      'Tutaj pojawią się zapisane przez Ciebie presety filtrów.';
 
   @override
-  String get themeModeSystem => 'System';
+  String get savedFiltersSaveDialogTitle => 'Zapisz filtr';
 
   @override
-  String get themeModeLight => 'Jasny';
+  String get savedFiltersSaveAction => 'Zapisz';
 
   @override
-  String get themeModeDark => 'Ciemny';
+  String get savedFiltersNameHint => 'Nazwa filtru';
 
   @override
-  String get exploreSearchHint => 'Szukaj wydarzeń...';
+  String get savedFiltersDeleteTooltip => 'Usuń filtr';
 
   @override
-  String get exploreNearbyEvents => 'Wydarzenia w pobliżu';
+  String get savedFiltersLoadTooltip => 'Użyj filtru';
 
   @override
-  String exploreNearbyWithFilter(String filter) {
-    return '$filter w pobliżu';
+  String get savedFilterNotificationsLabel => 'Powiadomienia';
+
+  @override
+  String get savedFilterNotificationsTooltip =>
+      'Włącz powiadomienia dla tego filtru';
+
+  @override
+  String get savedFiltersLocationCurrent => 'Bieżąca lokalizacja';
+
+  @override
+  String get savedFiltersLocationSaved => 'Zapisana lokalizacja';
+
+  @override
+  String get savedFiltersUseCurrentLocation => 'Użyj bieżącej lokalizacji';
+
+  @override
+  String get savedFiltersUseSavedLocation => 'Użyj zapisanej lokalizacji';
+
+  @override
+  String get savedFiltersSaveConfirmation => 'Filtr zapisany';
+
+  @override
+  String get savedFiltersDeleteConfirmation => 'Filtr usunięty';
+
+  @override
+  String get savedFiltersLoadConfirmation => 'Filtr zastosowany';
+
+  @override
+  String get savedFiltersCreateButton => 'Zapisz bieżące filtry';
+
+  @override
+  String get savedFiltersCancel => 'Anuluj';
+
+  @override
+  String get savedFiltersLocationLabel => 'Lokalizacja';
+
+  @override
+  String get appTitle => 'Locario';
+
+  @override
+  String get localeEnglish => 'Angielski';
+
+  @override
+  String get localePolish => 'Polski';
+
+  @override
+  String get featureComingSoon => 'Ta sekcja jest jeszcze w przygotowaniu.';
+
+  @override
+  String get networkError => 'Błąd sieci. Sprawdź swoje połączenie.';
+
+  @override
+  String get networkErrorRetry => 'Ponów';
+
+  @override
+  String shareEventMessage(String title, String url) {
+    return 'Sprawdź to wydarzenie w Locario: $title\n\n$url';
   }
 
   @override
-  String get exploreLoadingTitle => 'Ładowanie wydarzeń';
+  String get tabExplore => 'Odkrywaj';
 
   @override
-  String get exploreLoadingSubtitle =>
-      'Pobieramy najnowsze wydarzenia z backendu.';
+  String get tabInbox => 'Skrzynka';
 
   @override
-  String get exploreErrorTitle => 'Wydarzenia są niedostępne';
+  String get tabHub => 'Hub';
 
   @override
-  String get exploreErrorSubtitle => 'Nie udało się teraz pobrać wydarzeń.';
+  String get tabProfile => 'Profil';
 
   @override
-  String get exploreEmptyTitle => 'Brak wydarzeń';
+  String get headerMap => 'Mapa';
 
   @override
-  String get exploreEmptySubtitle =>
-      'Spróbuj zmienić obszar albo wróć później.';
-
-  @override
-  String get exploreRetryButton => 'Spróbuj ponownie';
-
-  @override
-  String resultsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count wyniku',
-      many: '$count wyników',
-      few: '$count wyniki',
-      one: '1 wynik',
-      zero: '0 wyników',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get sortTooltip => 'Sortowanie';
-
-  @override
-  String get sortDistance => 'Odległość';
-
-  @override
-  String get sortSoonest => 'Najbliższy termin';
-
-  @override
-  String get sortTrending => 'Popularność';
-
-  @override
-  String get distanceFilterTooltip => 'Zasięg listy';
-
-  @override
-  String get distanceFilterAny => 'Wszędzie';
-
-  @override
-  String distanceFilterWithinKm(int km) {
-    return 'Do $km km';
-  }
-
-  @override
-  String get filterAll => 'Wszystkie';
-
-  @override
-  String get filterMusic => 'Muzyka';
-
-  @override
-  String get filterArt => 'Sztuka';
-
-  @override
-  String get filterWorkshops => 'Warsztaty';
-
-  @override
-  String get filterFood => 'Jedzenie';
-
-  @override
-  String get filterAdvancedFilters => 'Filtry zaawansowane';
-
-  @override
-  String get filterAdvancedDistance => 'Zasięg wyszukiwania';
-
-  @override
-  String get filterAdvancedDateRange => 'Data wydarzenia';
-
-  @override
-  String get filterAdvancedAge => 'Wiek (lata)';
-
-  @override
-  String get filterAdvancedType => 'Typ wydarzenia';
-
-  @override
-  String get filterAdvancedSource => 'Źródło wydarzenia';
-
-  @override
-  String get filterAdvancedApply => 'Pokaż wyniki';
-
-  @override
-  String get filterAdvancedClear => 'Wyczyść';
-
-  @override
-  String get exploreSearchThisArea => 'Przeszukaj ten obszar';
-
-  @override
-  String get filterAdvancedDateFrom => 'Od';
-
-  @override
-  String get filterAdvancedDateTo => 'Do';
-
-  @override
-  String get filterAdvancedDateAny => 'Dowolna data';
-
-  @override
-  String get filterAdvancedDateToday => 'Dziś';
-
-  @override
-  String get filterAdvancedDateTomorrow => 'Jutro';
-
-  @override
-  String get filterAdvancedDateCustomRange => 'Zakres dat';
-
-  @override
-  String get filterAdvancedDateOther => 'Inna data';
-
-  @override
-  String get filterAdvancedDateSelection => 'Wybrana data';
-
-  @override
-  String get filterAdvancedAgeFrom => 'Min';
-
-  @override
-  String get filterAdvancedAgeTo => 'Max';
-
-  @override
-  String get filterAdvancedAgeSelection => 'Wiek uczestnika';
-
-  @override
-  String get filterAdvancedAgeCustomRange => 'Przedział wieku';
-
-  @override
-  String get filterAdvancedAgeOther => 'Inny wiek';
-
-  @override
-  String filterAdvancedAgeRangeSummary(int from, int to) {
-    return '$from–$to lat';
-  }
-
-  @override
-  String get areaMyLocation => 'Moja lokalizacja';
-
-  @override
-  String get areaMyLocationDescription =>
-      'Domyślnie wydarzenia najbliżej Ciebie';
-
-  @override
-  String get areaTypedAddressDescription => 'Adres wpisany ręcznie';
-
-  @override
-  String get areaPinnedOnMap => 'Punkt na mapie';
-
-  @override
-  String get areaPickerTitle => 'Wybierz obszar';
-
-  @override
-  String get areaPickerSubtitle =>
-      'Możesz wpisać adres, wskazać punkt na mapie albo wrócić do bieżącej lokalizacji.';
-
-  @override
-  String get areaUseCurrentLocation => 'Moja lokalizacja';
-
-  @override
-  String get areaUseCurrentLocationSubtitle =>
-      'Użyj Twojej aktualnej pozycji jako punktu odniesienia';
-
-  @override
-  String get areaEnterAddress => 'Wpisz adres';
-
-  @override
-  String get areaEnterAddressSubtitle =>
-      'Podaj ulicę, dzielnicę albo konkretne miejsce';
-
-  @override
-  String get areaPickOnMap => 'Wskaż na mapie';
-
-  @override
-  String get areaPickOnMapTitle => 'Wskaż punkt na mapie';
-
-  @override
-  String get areaPickOnMapSubtitle =>
-      'Przesuń mapę tak, aby wybrany punkt był pod znacznikiem na środku.';
-
-  @override
-  String get areaPickOnMapConfirm => 'Użyj tego punktu';
-
-  @override
-  String get areaAddressDialogTitle => 'Wpisz adres';
-
-  @override
-  String get areaAddressDialogHint => 'Np. Stary Rynek 12, Poznań';
-
-  @override
-  String get areaAddressNotFound => 'Nie udało się znaleźć tego adresu.';
-
-  @override
-  String get areaAddressLookupFailed =>
-      'Nie udało się wyszukać adresu. Spróbuj ponownie.';
-
-  @override
-  String get areaDialogCancel => 'Anuluj';
-
-  @override
-  String get areaDialogConfirm => 'Gotowe';
-
-  @override
-  String areaPinnedCoordinates(String lat, String lon) {
-    return '$lat, $lon';
-  }
-
-  @override
-  String get areaWarsawCenter => 'Centrum Warszawy';
-
-  @override
-  String get areaWarsawCenterDescription => 'Adres lub pin ustawiony ręcznie';
-
-  @override
-  String get areaPowisle => 'Powiśle';
-
-  @override
-  String get areaPowisleDescription =>
-      'Okolice bulwarów i mostu Poniatowskiego';
-
-  @override
-  String get areaMokotow => 'Mokotów';
-
-  @override
-  String get areaMokotowDescription => 'Rejon Pole Mokotowskie i okolice';
-
-  @override
-  String get eventJazzTitle => 'Jazz w Ogrodzie Botanicznym';
-
-  @override
-  String get eventSketchingTitle => 'Noc szkicowania nad Wisłą';
-
-  @override
-  String get eventRunClubTitle => 'Poranny run club i coffee stop';
-
-  @override
-  String get eventStreetFoodTitle => 'Street food i vinyl market';
-
-  @override
-  String get eventDetailsScreenTitle => 'Szczegóły';
-
-  @override
-  String get eventDetailsImagePlaceholder => 'Tymczasowy placeholder zdjęcia';
-
-  @override
-  String get eventDetailsTitleLabel => 'Tytuł wydarzenia';
-
-  @override
-  String get eventDetailsLocationLabel => 'Lokalizacja';
-
-  @override
-  String get eventDetailsDateLabel => 'Data';
-
-  @override
-  String get eventDetailsTimeLabel => 'Godzina';
-
-  @override
-  String get eventDetailsPriceLabel => 'Cena';
-
-  @override
-  String get eventDetailsSeatsLabel => 'Liczba miejsc';
-
-  @override
-  String get eventDetailsAboutLabel => 'O wydarzeniu';
-
-  @override
-  String get eventDetailsOrganizerLabel => 'Organizator';
-
-  @override
-  String get eventDetailsChatLabel => 'Czat uczestników';
-
-  @override
-  String get eventDetailsBuyTicketButton => 'Kup bilet';
-
-  @override
-  String get eventDetailsJoinButton => 'Zapisz się';
-
-  @override
-  String get eventDetailsUnknownEventTitle => 'Wydarzenie';
-
-  @override
-  String get eventDetailsUnknownLocation => 'Lokalizacja nieznana';
-
-  @override
-  String get eventDetailsFallbackDescription =>
-      'To tymczasowy opis wydarzenia. W kolejnych krokach podepniemy pełne dane z formularza tworzenia wydarzenia i backendu.';
-
-  @override
-  String get eventDetailsLoadingTitle => 'Ładowanie wydarzenia';
-
-  @override
-  String get eventDetailsLoadingSubtitle =>
-      'Pobieramy szczegóły wydarzenia z backendu.';
-
-  @override
-  String get eventDetailsErrorTitle => 'Wydarzenie jest niedostępne';
-
-  @override
-  String get eventDetailsErrorSubtitle =>
-      'Nie udało się teraz wczytać tego wydarzenia.';
-
-  @override
-  String get eventDetailsJazzDescription =>
-      'Wieczorny koncert jazzowy pod otwartym niebem. Zabierz znajomych, koc i dobry humor.';
-
-  @override
-  String get eventDetailsSketchingDescription =>
-      'Spotkanie dla osób lubiących szkicowanie i ilustracje miejskie. Materiały we własnym zakresie.';
-
-  @override
-  String get eventDetailsRunClubDescription =>
-      'Lekki poranny bieg, potem wspólna kawa i networking. Tempo konwersacyjne, każdy mile widziany.';
-
-  @override
-  String get eventDetailsStreetFoodDescription =>
-      'Street food, selekcja płyt winylowych i mini sety DJ-skie. Wydarzenie całodzienne.';
-
-  @override
-  String get eventDetailsTicketLabel => 'Bilety';
-
-  @override
-  String get eventDetailsSlotsLabel => 'Limit miejsc';
-
-  @override
-  String eventDetailsSlotsValue(int count) {
-    return '$count wolnych miejsc';
-  }
-
-  @override
-  String get eventDetailsShowOnMapButton => 'Pokaż na mapie';
-
-  @override
-  String get eventDetailsOpenMapError =>
-      'Nie udało się teraz otworzyć aplikacji map.';
-
-  @override
-  String get eventToday2030 => 'Dziś, 20:30';
-
-  @override
-  String get eventToday1900 => 'Dziś, 19:00';
-
-  @override
-  String get eventTomorrow0800 => 'Jutro, 08:00';
-
-  @override
-  String get eventTomorrow1200 => 'Jutro, 12:00';
-
-  @override
-  String get venueBotanicalGarden => 'Ogród Botaniczny';
-
-  @override
-  String get venueVistulaBoulevards => 'Bulwary Wiślane';
-
-  @override
-  String get venuePoleMokotowskie => 'Pole Mokotowskie';
-
-  @override
-  String get venueHalaKoszyki => 'Hala Koszyki';
-
-  @override
-  String distanceMeters(int count) {
-    return '$count m';
-  }
-
-  @override
-  String distanceKilometers(String count) {
-    return '$count km';
-  }
+  String get headerList => 'Lista';
 
   @override
   String get mapReturnToLocation => 'Wróć do mojej lokalizacji';
@@ -869,48 +1066,5 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String mapEventOpenSoon(String title) {
     return 'Ekran wydarzenia „$title” dodamy później.';
-  }
-
-  @override
-  String get authLoginSuccess => 'Zalogowano pomyślnie.';
-
-  @override
-  String get authLoginErrorInvalidCredentials => 'Błędny e-mail lub hasło.';
-
-  @override
-  String get eventSaveSuccess => 'Wydarzenie zapisano na Twojej liście.';
-
-  @override
-  String get eventRemoveSuccess => 'Wydarzenie usunięto z Twojej listy.';
-
-  @override
-  String get eventPublishSuccess => 'Wydarzenie zostało opublikowane.';
-
-  @override
-  String get eventPublishError =>
-      'Nie udało się opublikować wydarzenia. Spróbuj ponownie.';
-
-  @override
-  String get networkError => 'Błąd sieci. Sprawdź swoje połączenie.';
-
-  @override
-  String get networkErrorRetry => 'Ponów';
-
-  @override
-  String get exploreErrorPermissionTitle => 'Wymagany dostęp do lokalizacji';
-
-  @override
-  String get exploreErrorPermissionSubtitle =>
-      'Zezwól na dostęp do lokalizacji, aby zobaczyć wydarzenia w pobliżu.';
-
-  @override
-  String get exploreErrorUnknownTitle => 'Coś poszło nie tak';
-
-  @override
-  String get exploreErrorUnknownSubtitle => 'Wystąpił nieoczekiwany błąd.';
-
-  @override
-  String shareEventMessage(String title, String url) {
-    return 'Sprawdź to wydarzenie w Locario: $title\n\n$url';
   }
 }

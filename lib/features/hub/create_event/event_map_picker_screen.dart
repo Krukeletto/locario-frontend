@@ -33,7 +33,7 @@ class _EventMapPickerScreenState extends State<EventMapPickerScreen> {
     super.initState();
     _controller = ExploreMapViewModel(
       locationService: widget.locationService,
-      fallbackCenter: widget.initialCenter,
+      fallbackCenter: widget.initialCenter ?? const LatLng(0, 0),
     );
     if (widget.initialCenter != null) {
       _controller.setPreferredMapCenter(widget.initialCenter);
@@ -57,7 +57,7 @@ class _EventMapPickerScreenState extends State<EventMapPickerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(

@@ -95,6 +95,73 @@ class GoogleOAuthRequest {
   }
 }
 
+class FavoriteEventSummary {
+  const FavoriteEventSummary({
+    required this.eventId,
+    required this.name,
+    required this.startAt,
+    this.endAt,
+    this.categoryNames = const [],
+  });
+
+  final String eventId;
+  final String name;
+  final DateTime startAt;
+  final DateTime? endAt;
+  final List<String> categoryNames;
+
+  factory FavoriteEventSummary.fromJson(Map<String, dynamic> json) {
+    return FavoriteEventSummary(
+      eventId: json['eventId'] as String,
+      name: json['name'] as String? ?? '',
+      startAt:
+          DateTime.tryParse(json['startAt'] as String? ?? '') ??
+          DateTime.now().toUtc(),
+      endAt: json['endAt'] != null
+          ? DateTime.tryParse(json['endAt'] as String)
+          : null,
+      categoryNames:
+          (json['categoryNames'] as List?)?.cast<String>() ?? const [],
+    );
+  }
+}
+
+class ProfileEventSummary {
+  const ProfileEventSummary({
+    required this.eventId,
+    required this.name,
+    required this.startAt,
+    this.endAt,
+    this.categoryNames = const [],
+    this.registeredAt,
+  });
+
+  final String eventId;
+  final String name;
+  final DateTime startAt;
+  final DateTime? endAt;
+  final List<String> categoryNames;
+  final DateTime? registeredAt;
+
+  factory ProfileEventSummary.fromJson(Map<String, dynamic> json) {
+    return ProfileEventSummary(
+      eventId: json['eventId'] as String,
+      name: json['name'] as String? ?? '',
+      startAt:
+          DateTime.tryParse(json['startAt'] as String? ?? '') ??
+          DateTime.now().toUtc(),
+      endAt: json['endAt'] != null
+          ? DateTime.tryParse(json['endAt'] as String)
+          : null,
+      categoryNames:
+          (json['categoryNames'] as List?)?.cast<String>() ?? const [],
+      registeredAt: json['registeredAt'] != null
+          ? DateTime.tryParse(json['registeredAt'] as String)
+          : null,
+    );
+  }
+}
+
 class UserProfile {
   const UserProfile({
     required this.id,
@@ -108,6 +175,7 @@ class UserProfile {
     required this.facebookUrl,
     required this.createdAt,
     required this.eventRegistrations,
+    this.favorites = const [],
   });
 
   final String id;
@@ -120,10 +188,12 @@ class UserProfile {
   final String? instagramUrl;
   final String? facebookUrl;
   final DateTime createdAt;
-  final List<dynamic> eventRegistrations;
+  final List<ProfileEventSummary> eventRegistrations;
+  final List<FavoriteEventSummary> favorites;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     final registrations = json['eventRegistrations'];
+    final rawFavorites = json['favorites'];
     return UserProfile(
       id: json['id'] as String,
       username: json['username'] as String,
@@ -138,7 +208,22 @@ class UserProfile {
           DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
       eventRegistrations: registrations is List
-          ? List<dynamic>.from(registrations)
+          ? registrations
+                .map(
+                  (item) => ProfileEventSummary.fromJson(
+                    Map<String, dynamic>.from(item as Map),
+                  ),
+                )
+                .toList()
+          : const [],
+      favorites: rawFavorites is List
+          ? rawFavorites
+                .map(
+                  (item) => FavoriteEventSummary.fromJson(
+                    Map<String, dynamic>.from(item as Map),
+                  ),
+                )
+                .toList()
           : const [],
     );
   }

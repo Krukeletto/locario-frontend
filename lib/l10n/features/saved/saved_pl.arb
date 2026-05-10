@@ -19,8 +19,37 @@
   "savedAgeGroupAny": "Dowolny wiek",
   "savedAgeGroup12Plus": "12+",
   "savedAgeGroup18Plus": "18+",
+  "savedShowPastEvents": "Pokaż archiwalne",
   "savedEmptyTitle": "Brak zapisanych wydarzeń",
   "savedEmptySubtitle": "Zapisuj wydarzenia z ekranu Odkrywaj, żeby mieć je tutaj.",
   "savedEmptyFilteredTitle": "Żadne wydarzenia nie pasują do filtrów",
-  "savedEmptyFilteredSubtitle": "Wyczyść filtry albo spróbuj innej kombinacji."
+  "savedEmptyFilteredSubtitle": "Wyczyść filtry albo spróbuj innej kombinacji.",
+
+  "savedEventsTab": "Wydarzenia",
+  "savedFiltersTab": "Filtry",
+
+  "savedFiltersEmptyTitle": "Brak zapisanych filtrów",
+  "savedFiltersEmptySubtitle": "Tutaj pojawią się zapisane przez Ciebie presety filtrów.",
+
+  "savedFiltersSaveDialogTitle": "Zapisz filtr",
+  "savedFiltersSaveAction": "Zapisz",
+  "savedFiltersNameHint": "Nazwa filtru",
+  "savedFiltersDeleteTooltip": "Usuń filtr",
+  "savedFiltersLoadTooltip": "Użyj filtru",
+
+  "savedFilterNotificationsLabel": "Powiadomienia",
+  "savedFilterNotificationsTooltip": "Włącz powiadomienia dla tego filtru",
+
+  "savedFiltersLocationCurrent": "Bieżąca lokalizacja",
+  "savedFiltersLocationSaved": "Zapisana lokalizacja",
+  "savedFiltersUseCurrentLocation": "Użyj bieżącej lokalizacji",
+  "savedFiltersUseSavedLocation": "Użyj zapisanej lokalizacji",
+
+  "savedFiltersSaveConfirmation": "Filtr zapisany",
+  "savedFiltersDeleteConfirmation": "Filtr usunięty",
+  "savedFiltersLoadConfirmation": "Filtr zastosowany",
+
+  "savedFiltersCreateButton": "Zapisz bieżące filtry",
+  "savedFiltersCancel": "Anuluj",
+  "savedFiltersLocationLabel": "Lokalizacja"
 }

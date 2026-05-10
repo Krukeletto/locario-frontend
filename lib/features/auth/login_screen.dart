@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
     scopes: ['email', 'profile'],
   );
 
-  AppLocalizations get _l10n => AppLocalizations.of(context)!;
+  AppLocalizations get _l10n => AppLocalizations.of(context);
 
   String? get _returnLocation {
     final returnLocation = widget.returnLocation?.trim();
@@ -297,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final isSystemDark = theme.brightness == Brightness.dark;
 
     final pageBackground = isSystemDark

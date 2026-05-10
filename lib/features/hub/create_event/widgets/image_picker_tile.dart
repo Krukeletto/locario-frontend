@@ -25,7 +25,7 @@ class CreateEventImagePickerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final primaryImage = selectedImages.firstOrNull;
     final showImage = primaryImage != null;
     final labelText = selectedImages.isEmpty

@@ -32,7 +32,7 @@
       }
     }
   },
-  "mapEventOpenSoon": "Ekran wydarzenia „{title}" dodamy później.",
+  "mapEventOpenSoon": "Ekran wydarzenia „{title}” dodamy później.",
   "@mapEventOpenSoon": {
     "placeholders": {
       "title": {

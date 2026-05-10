@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
+import 'package:locario/shared/notifications/notification_scope.dart';
+import 'package:locario/shared/notifications/notification_type.dart';
 
 import '../../app/locale/locale_scope.dart';
 import '../../app/theme/theme_scope.dart';
@@ -11,9 +13,10 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final localeController = LocaleScope.of(context);
     final themeController = ThemeScope.of(context);
+    final notificationController = NotificationScope.of(context);
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -101,9 +104,142 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
           ),
+          const SizedBox(height: 14),
+          _SettingsSection(
+            title: l10n.notificationSettingsTitle,
+            subtitle: l10n.notificationSettingsSubtitle,
+            child: Column(
+              children: [
+                for (final type in NotificationType.values)
+                  _NotificationToggle(
+                    type: type,
+                    enabled: notificationController.isEnabled(type),
+                    onChanged: (value) {
+                      notificationController.setEnabled(type, value);
+                    },
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _SettingsSection(
+            title: 'Debug',
+            subtitle: 'Tap to send a test notification after 3 seconds',
+            child: FilledButton.icon(
+              onPressed: () {
+                final scheduled = notificationController.sendTestNotification();
+                final messenger = ScaffoldMessenger.of(context);
+                if (scheduled) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: const Text('Notification in 3s...'),
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: const Text('Type is disabled in settings'),
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.notifications_active_rounded),
+              label: const Text('Send test notification (3s)'),
+            ),
+          ),
         ],
       ),
     );
+  }
+}
+
+class _NotificationToggle extends StatelessWidget {
+  const _NotificationToggle({
+    required this.type,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final NotificationType type;
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: enabled
+                  ? scheme.primary.withValues(alpha: 0.12)
+                  : scheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              type.icon,
+              color: enabled
+                  ? scheme.primary
+                  : scheme.onSurface.withValues(alpha: 0.38),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _notificationTypeName(l10n, type),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                Text(
+                  _notificationTypeDesc(l10n, type),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.56),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Switch.adaptive(value: enabled, onChanged: onChanged),
+        ],
+      ),
+    );
+  }
+
+  String _notificationTypeName(AppLocalizations l10n, NotificationType type) {
+    return switch (type) {
+      NotificationType.upcomingEvent => l10n.notificationTypeUpcomingEvent,
+      NotificationType.expiredEvent => l10n.notificationTypeExpiredEvent,
+      NotificationType.eventPublished => l10n.notificationTypeEventPublished,
+      NotificationType.systemMessage => l10n.notificationTypeSystemMessage,
+    };
+  }
+
+  String _notificationTypeDesc(AppLocalizations l10n, NotificationType type) {
+    return switch (type) {
+      NotificationType.upcomingEvent => l10n.notificationTypeUpcomingEventDesc,
+      NotificationType.expiredEvent => l10n.notificationTypeExpiredEventDesc,
+      NotificationType.eventPublished =>
+        l10n.notificationTypeEventPublishedDesc,
+      NotificationType.systemMessage => l10n.notificationTypeSystemMessageDesc,
+    };
   }
 }
 

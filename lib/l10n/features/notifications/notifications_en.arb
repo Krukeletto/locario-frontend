@@ -1,0 +1,61 @@
+{
+  "@inboxEmpty": {
+    "description": "Text shown when the inbox has no notifications."
+  },
+  "inboxEmpty": "No notifications yet",
+
+  "@inboxMarkAllRead": {
+    "description": "Button text to mark all notifications as read."
+  },
+  "inboxMarkAllRead": "Mark all as read",
+
+  "@notificationSettingsTitle": {
+    "description": "Title for notification preferences section in settings."
+  },
+  "notificationSettingsTitle": "Push Notifications",
+
+  "@notificationSettingsSubtitle": {
+    "description": "Subtitle for notification preferences section in settings."
+  },
+  "notificationSettingsSubtitle": "Choose which notifications you want to receive",
+
+  "@notificationTypeUpcomingEvent": {
+    "description": "Label for upcoming event notifications."
+  },
+  "notificationTypeUpcomingEvent": "Upcoming events",
+
+  "@notificationTypeUpcomingEventDesc": {
+    "description": "Description for upcoming event notifications."
+  },
+  "notificationTypeUpcomingEventDesc": "Reminders before saved events start",
+
+  "@notificationTypeExpiredEvent": {
+    "description": "Label for expired event notifications."
+  },
+  "notificationTypeExpiredEvent": "Expired events",
+
+  "@notificationTypeExpiredEventDesc": {
+    "description": "Description for expired event notifications."
+  },
+  "notificationTypeExpiredEventDesc": "When a saved event has passed",
+
+  "@notificationTypeEventPublished": {
+    "description": "Label for new event published notifications."
+  },
+  "notificationTypeEventPublished": "New events",
+
+  "@notificationTypeEventPublishedDesc": {
+    "description": "Description for new event published notifications."
+  },
+  "notificationTypeEventPublishedDesc": "When new events are published nearby",
+
+  "@notificationTypeSystemMessage": {
+    "description": "Label for system message notifications."
+  },
+  "notificationTypeSystemMessage": "System messages",
+
+  "@notificationTypeSystemMessageDesc": {
+    "description": "Description for system message notifications."
+  },
+  "notificationTypeSystemMessageDesc": "Important updates from the app"
+}

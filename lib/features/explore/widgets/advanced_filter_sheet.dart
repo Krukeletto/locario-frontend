@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../saved/saved_filters_scope.dart';
 import '../explore_area_controller.dart';
 import '../models.dart';
 import 'area_picker.dart';
@@ -87,6 +89,135 @@ class _ExploreAdvancedFilterSheetState
     Navigator.of(context).pop(ExploreAdvancedFilterResult(filters: _filters));
   }
 
+  Future<void> _saveFilter() async {
+    final l10n = AppLocalizations.of(context);
+    final savedFiltersController = SavedFiltersScope.maybeOf(context);
+    if (savedFiltersController == null) return;
+
+    final nameController = TextEditingController();
+    var notificationsEnabled = false;
+    var useCurrentLocation = true;
+    LatLng? savedLocation;
+
+    final areaMode = widget.areaController.selectionMode;
+    if (areaMode != ExploreAreaSelectionMode.currentLocation) {
+      savedLocation = widget.areaController.referenceLocation(
+        currentLocation: null,
+        fallbackCenter: const LatLng(0, 0),
+      );
+      useCurrentLocation = false;
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(l10n.savedFiltersSaveDialogTitle),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        hintText: l10n.savedFiltersNameHint,
+                        border: const OutlineInputBorder(),
+                      ),
+                      autofocus: true,
+                    ),
+                    if (savedLocation != null) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.savedFiltersLocationLabel,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      SegmentedButton<bool>(
+                        segments: [
+                          ButtonSegment(
+                            value: true,
+                            label: Text(l10n.savedFiltersUseCurrentLocation),
+                            icon: const Icon(
+                              Icons.my_location_rounded,
+                              size: 16,
+                            ),
+                          ),
+                          ButtonSegment(
+                            value: false,
+                            label: Text(l10n.savedFiltersUseSavedLocation),
+                            icon: const Icon(
+                              Icons.location_on_rounded,
+                              size: 16,
+                            ),
+                          ),
+                        ],
+                        selected: {useCurrentLocation},
+                        onSelectionChanged: (selected) {
+                          setDialogState(() {
+                            useCurrentLocation = selected.first;
+                          });
+                        },
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Text(l10n.savedFilterNotificationsLabel),
+                        const Spacer(),
+                        Switch(
+                          value: notificationsEnabled,
+                          onChanged: (value) {
+                            setDialogState(() {
+                              notificationsEnabled = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text(l10n.savedFiltersCancel),
+                ),
+                FilledButton(
+                  onPressed: nameController.text.trim().isEmpty
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(true),
+                  child: Text(l10n.savedFiltersSaveAction),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result != true || !context.mounted) return;
+    if (nameController.text.trim().isEmpty) return;
+
+    await savedFiltersController.saveFilter(
+      name: nameController.text.trim(),
+      filters: _filters,
+      location: useCurrentLocation ? null : savedLocation,
+      useCurrentLocation: useCurrentLocation,
+      notificationsEnabled: notificationsEnabled,
+    );
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.savedFiltersSaveConfirmation),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   void _onPickOnMap() {
     Navigator.of(context).pop(
       ExploreAdvancedFilterResult(filters: _filters, shouldPickOnMap: true),
@@ -94,7 +225,7 @@ class _ExploreAdvancedFilterSheetState
   }
 
   Future<void> _handleAreaPressed() async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final action = await showModalBottomSheet<ExploreAreaSelectionAction>(
       context: context,
       showDragHandle: true,
@@ -124,7 +255,7 @@ class _ExploreAdvancedFilterSheetState
   }
 
   Future<void> _handleAddressSelection() async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final address = await showDialog<String>(
       context: context,
       builder: (context) => const ExploreAddressInputDialog(),
@@ -238,7 +369,7 @@ class _ExploreAdvancedFilterSheetState
 
         return StatefulBuilder(
           builder: (context, setModalState) {
-            final l10n = AppLocalizations.of(context)!;
+            final l10n = AppLocalizations.of(context);
             return Padding(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
               child: Column(
@@ -364,7 +495,7 @@ class _ExploreAdvancedFilterSheetState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final distanceIndex = ExploreDistanceFilter.values.indexOf(
       _filters.distanceFilter,
     );
@@ -533,25 +664,62 @@ class _ExploreAdvancedFilterSheetState
                           ? () => _setAgeGroup(null, null)
                           : null,
                     ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          l10n.savedShowPastEvents,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Switch(
+                          value: _filters.showPastEvents,
+                          onChanged: (value) {
+                            setState(() {
+                              _filters = _filters.copyWith(
+                                showPastEvents: value,
+                              );
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
-              FilledButton(
-                onPressed: _apply,
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton.icon(
+                      onPressed: _saveFilter,
+                      icon: const Icon(Icons.bookmark_add_outlined, size: 18),
+                      label: Text(l10n.savedFiltersSaveAction),
+                    ),
                   ),
-                ),
-                child: Text(
-                  l10n.filterAdvancedApply,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 2,
+                    child: FilledButton(
+                      onPressed: _apply,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        l10n.filterAdvancedApply,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),

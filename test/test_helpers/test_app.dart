@@ -14,7 +14,7 @@ Widget buildLocalizedTestApp({
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     home: home,
     builder: (context, child) {
-      final l10n = AppLocalizations.of(context)!;
+      final l10n = AppLocalizations.of(context);
       L10nService.init(l10n);
       return child!;
     },

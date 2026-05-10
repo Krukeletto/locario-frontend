@@ -26,6 +26,18 @@ void main() {
                   isPrimary: true,
                 ),
                 HubActionItem(
+                  id: 'inbox',
+                  icon: 'inbox',
+                  routePath: '/hub/inbox',
+                  isEnabled: false,
+                ),
+                HubActionItem(
+                  id: 'messages',
+                  icon: 'mail',
+                  routePath: '/hub/messages',
+                  isEnabled: false,
+                ),
+                HubActionItem(
                   id: 'community',
                   icon: 'groups',
                   routePath: '/hub/community',
@@ -57,6 +69,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(selectedCount, 0);
+    expect(find.text('Messages'), findsOneWidget);
     expect(find.text('This section is still being built.'), findsOneWidget);
   });
 }

@@ -15,7 +15,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Odkrywaj'), findsOneWidget);
-    expect(find.text('Zapisane'), findsOneWidget);
     expect(find.text('Hub'), findsOneWidget);
     expect(find.text('Profil'), findsOneWidget);
   });

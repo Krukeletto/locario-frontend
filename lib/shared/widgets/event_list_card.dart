@@ -34,7 +34,7 @@ class EventListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final showDistanceLine = showDistance && referenceLocation != null;
     final trailingIcon = isActionActive
         ? activeActionIcon ?? actionIcon
@@ -137,6 +137,28 @@ class EventListCard extends StatelessWidget {
                         color: colorScheme.onSurface.withValues(alpha: 0.66),
                       ),
                     ),
+                    if (event.slotLimit != null && event.slotLimit! > 0) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.people_outline_rounded,
+                            size: 12,
+                            color: colorScheme.onSurface.withValues(alpha: 0.4),
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            l10n.eventCardSpots(event.slotLimit!),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),

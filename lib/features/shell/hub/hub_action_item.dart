@@ -22,6 +22,8 @@ class HubActionItem {
     switch (id) {
       case 'create-event':
         return l10n.hubCreateEventTitle;
+      case 'messages':
+        return l10n.hubMessagesTitle;
       case 'community':
         return l10n.hubCommunityTitle;
       case 'friends':
@@ -35,6 +37,8 @@ class HubActionItem {
     switch (id) {
       case 'create-event':
         return l10n.hubCreateEventSubtitle;
+      case 'messages':
+        return l10n.hubMessagesSubtitle;
       case 'community':
         return l10n.hubCommunitySubtitle;
       case 'friends':
@@ -48,6 +52,10 @@ class HubActionItem {
     switch (icon) {
       case 'add_box':
         return Icons.add_box_outlined;
+      case 'inbox':
+        return Icons.inbox_outlined;
+      case 'mail':
+        return Icons.mail_outline;
       case 'groups':
         return Icons.groups_2_outlined;
       case 'person_add':
