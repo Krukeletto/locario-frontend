@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locario/app/router.dart';
+import 'package:locario/features/auth/login_screen.dart';
 import 'package:locario/features/saved/saved_screen.dart';
 import 'package:locario/features/saved/saved_events_controller.dart';
 import 'package:locario/features/saved/saved_events_repository.dart';
@@ -66,6 +67,59 @@ void main() {
       expect(router.routerDelegate.currentConfiguration.uri.path, '/saved');
       expect(find.byType(SavedScreen), findsOneWidget);
     });
+
+    testWidgets(
+      'redirects protected create-event route to login with last safe location',
+      (tester) async {
+        final sessionController = await _createSessionController();
+        final router = createAppRouter(sessionController);
+
+        await tester.pumpWidget(
+          AuthScope(
+            controller: sessionController,
+            child: SavedEventsScope(
+              controller: SavedEventsController(
+                repository: _MemorySavedEventsRepository(),
+              ),
+              child: MaterialApp.router(
+                locale: const Locale('en'),
+                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                routerConfig: router,
+              ),
+            ),
+          ),
+        );
+
+        router.go('/saved');
+        await tester.pumpAndSettle();
+
+        router.go('/hub/create-event');
+        await tester.pumpAndSettle();
+
+        expect(
+          router.routerDelegate.currentConfiguration.uri.path,
+          '/auth/login',
+        );
+        expect(
+          router
+              .routerDelegate
+              .currentConfiguration
+              .uri
+              .queryParameters['target'],
+          '/hub/create-event',
+        );
+        expect(
+          router
+              .routerDelegate
+              .currentConfiguration
+              .uri
+              .queryParameters['from'],
+          '/saved',
+        );
+        expect(find.byType(LoginScreen), findsOneWidget);
+      },
+    );
   });
 }
 

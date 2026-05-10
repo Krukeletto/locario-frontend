@@ -90,6 +90,7 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
 
   void _handleHubItemSelected(HubActionItem item) {
     _closeHub();
+
     context.push(item.routePath);
   }
 
