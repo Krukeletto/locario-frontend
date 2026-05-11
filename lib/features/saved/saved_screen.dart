@@ -160,70 +160,77 @@ class _SavedScreenState extends State<SavedScreen>
       length: 2,
       child: Scaffold(
         backgroundColor: scheme.surface,
-        body: SafeArea(
-          top: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.savedTitle,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: scheme.primary,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.savedSubtitle,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.72),
-                      ),
-                    ),
-                  ],
+        appBar: AppBar(
+          backgroundColor: scheme.surface,
+          surfaceTintColor: Colors.transparent,
+          scrolledUnderElevation: 0,
+          titleSpacing: 8,
+          leadingWidth: 64,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 16, top: 6, bottom: 6),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerLow,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: scheme.outline.withValues(alpha: 0.18),
                 ),
               ),
-              const SizedBox(height: 8),
-              TabBar(
-                tabs: [
-                  Tab(text: l10n.savedEventsTab),
-                  Tab(text: l10n.savedFiltersTab),
-                ],
-                labelColor: scheme.primary,
-                unselectedLabelColor: scheme.onSurfaceVariant,
-                indicatorColor: scheme.primary,
-              ),
-              const SizedBox(height: 4),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    _SavedEventsTab(
-                      query: _query,
-                      filters: _filters,
-                      sort: effectiveSort,
-                      referenceLocation: _referenceLocation,
-                      eventsController: eventsController,
-                      availableCategories: availableCategories,
-                      onFiltersPressed: () => _openFilters(
-                        availableCategories: availableCategories,
-                        availableTags: _availableTags(eventsController.records),
-                      ),
-                      onResetFilters: _resetFilters,
-                      onSortChanged: _setSort,
-                      hasActiveFilters: _filters.hasActiveFilters,
-                    ),
-                    _SavedFiltersTab(
-                      savedFiltersController: savedFiltersController,
-                    ),
-                  ],
+              child: IconButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: scheme.primary,
+                  size: 18,
                 ),
               ),
-            ],
+            ),
           ),
+          title: Text(
+            l10n.savedTitle,
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: scheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(48),
+            child: Column(
+              children: [
+                const SizedBox(height: 8),
+                TabBar(
+                  tabs: [
+                    Tab(text: l10n.savedEventsTab),
+                    Tab(text: l10n.savedFiltersTab),
+                  ],
+                  labelColor: scheme.primary,
+                  unselectedLabelColor: scheme.onSurfaceVariant,
+                  indicatorColor: scheme.primary,
+                ),
+                const SizedBox(height: 4),
+              ],
+            ),
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _SavedEventsTab(
+              query: _query,
+              filters: _filters,
+              sort: effectiveSort,
+              referenceLocation: _referenceLocation,
+              eventsController: eventsController,
+              availableCategories: availableCategories,
+              onFiltersPressed: () => _openFilters(
+                availableCategories: availableCategories,
+                availableTags: _availableTags(eventsController.records),
+              ),
+              onResetFilters: _resetFilters,
+              onSortChanged: _setSort,
+              hasActiveFilters: _filters.hasActiveFilters,
+            ),
+            _SavedFiltersTab(savedFiltersController: savedFiltersController),
+          ],
         ),
       ),
     );
