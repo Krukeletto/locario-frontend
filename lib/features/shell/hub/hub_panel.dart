@@ -186,7 +186,7 @@ class _PrimaryActionCard extends StatelessWidget {
           border: Border.all(color: scheme.primary.withValues(alpha: 0.9)),
           boxShadow: [
             BoxShadow(
-              color: scheme.primary.withValues(alpha: 0.18),
+              color: Theme.of(context).shadowColor,
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -199,10 +199,10 @@ class _PrimaryActionCard extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.16),
+                color: scheme.onPrimary.withValues(alpha: 0.16),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: Icon(item.iconData, color: Colors.white, size: 28),
+              child: Icon(item.iconData, color: scheme.onPrimary, size: 28),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -215,7 +215,7 @@ class _PrimaryActionCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
+                      color: scheme.onPrimary,
                       fontWeight: FontWeight.w800,
                       height: 1.0,
                     ),
@@ -224,7 +224,7 @@ class _PrimaryActionCard extends StatelessWidget {
                   Text(
                     item.subtitle(l10n).toUpperCase(),
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.95),
+                      color: scheme.onPrimary.withValues(alpha: 0.95),
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
                     ),
@@ -233,9 +233,9 @@ class _PrimaryActionCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(
+            Icon(
               Icons.arrow_forward_rounded,
-              color: Colors.white,
+              color: scheme.onPrimary,
               size: 24,
             ),
           ],
@@ -260,6 +260,7 @@ class _SecondaryActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final scheme = Theme.of(context).colorScheme;
     final accent = item.accent ?? scheme.secondary;
     final isAccent = item.accent != null;
@@ -292,13 +293,7 @@ class _SecondaryActionTile extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
-                alpha: isEnabled
-                    ? Theme.of(context).brightness == Brightness.dark
-                          ? 0.18
-                          : 0.03
-                    : 0.0,
-              ),
+              color: isEnabled ? theme.shadowColor : Colors.transparent,
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),

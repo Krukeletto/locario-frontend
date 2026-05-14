@@ -117,9 +117,7 @@ class _ProfileActionCard extends StatelessWidget {
           border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
-                alpha: theme.brightness == Brightness.dark ? 0.22 : 0.04,
-              ),
+              color: theme.shadowColor,
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),

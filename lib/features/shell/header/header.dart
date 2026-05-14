@@ -30,11 +30,7 @@ class ShellHeader extends StatelessWidget {
         color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: Theme.of(context).brightness == Brightness.dark
-                  ? 0.18
-                  : 0.04,
-            ),
+            color: Theme.of(context).shadowColor,
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -114,11 +110,7 @@ class _ViewToggle extends StatelessWidget {
         border: Border.all(color: colorScheme.outline.withValues(alpha: 0.16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: Theme.of(context).brightness == Brightness.dark
-                  ? 0.2
-                  : 0.05,
-            ),
+            color: Theme.of(context).shadowColor,
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),

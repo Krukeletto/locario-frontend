@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:locario/app/theme/app_theme_colors.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
 import '../create_event_state.dart';
@@ -25,6 +26,9 @@ class CreateEventImagePickerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final themeColors =
+        theme.extension<LocarioThemeColors>() ??
+        const LocarioThemeColors(onScrim: Colors.white);
     final l10n = AppLocalizations.of(context);
     final primaryImage = selectedImages.firstOrNull;
     final showImage = primaryImage != null;
@@ -62,7 +66,7 @@ class CreateEventImagePickerTile extends StatelessWidget {
                   )
                 : null,
             child: Container(
-              color: showImage ? Colors.black.withValues(alpha: 0.3) : null,
+              color: showImage ? scheme.scrim.withValues(alpha: 0.3) : null,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -71,21 +75,21 @@ class CreateEventImagePickerTile extends StatelessWidget {
                         ? Icons.photo_library_rounded
                         : Icons.add_a_photo_rounded,
                     size: 42,
-                    color: showImage ? Colors.white : scheme.primary,
+                    color: showImage ? themeColors.onScrim : scheme.primary,
                   ),
                   const SizedBox(height: 12),
                   Text(
                     labelText,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: showImage ? Colors.white : null,
+                      color: showImage ? themeColors.onScrim : null,
                     ),
                   ),
                   Text(
                     subtitleText,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: showImage
-                          ? Colors.white.withValues(alpha: 0.8)
+                          ? themeColors.onScrim.withValues(alpha: 0.8)
                           : scheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),

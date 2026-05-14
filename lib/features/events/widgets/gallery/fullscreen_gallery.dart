@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:locario/app/theme/app_theme_colors.dart';
 
 import '../../../explore/models.dart';
 import 'event_image_placeholder.dart';
@@ -37,8 +38,14 @@ class _FullscreenGalleryState extends State<FullscreenGallery> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final themeColors =
+        theme.extension<LocarioThemeColors>() ??
+        const LocarioThemeColors(onScrim: Colors.white);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: scheme.scrim,
       body: Stack(
         children: [
           PageView.builder(
@@ -66,10 +73,10 @@ class _FullscreenGalleryState extends State<FullscreenGallery> {
             top: MediaQuery.paddingOf(context).top + 8,
             left: 16,
             child: CircleAvatar(
-              backgroundColor: Colors.black45,
+              backgroundColor: scheme.scrim.withValues(alpha: 0.45),
               child: IconButton(
                 onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close_rounded, color: Colors.white),
+                icon: Icon(Icons.close_rounded, color: themeColors.onScrim),
               ),
             ),
           ),
@@ -89,8 +96,8 @@ class _FullscreenGalleryState extends State<FullscreenGallery> {
                     height: 6,
                     decoration: BoxDecoration(
                       color: _currentPage == index
-                          ? Colors.white
-                          : Colors.white38,
+                          ? themeColors.onScrim
+                          : themeColors.onScrim.withValues(alpha: 0.38),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),

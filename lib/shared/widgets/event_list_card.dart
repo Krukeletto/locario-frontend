@@ -58,11 +58,7 @@ class EventListCard extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(
-                  alpha: Theme.of(context).brightness == Brightness.dark
-                      ? 0.22
-                      : 0.05,
-                ),
+                color: Theme.of(context).shadowColor,
                 blurRadius: 16,
                 offset: const Offset(0, 8),
               ),

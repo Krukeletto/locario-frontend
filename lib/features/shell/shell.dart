@@ -119,6 +119,9 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
         animation: Listenable.merge([_hubController, _headerController]),
         builder: (context, child) {
           final showHubLayer = _hubOpen || _hubController.value > 0;
+          final backdropBaseColor = theme.brightness == Brightness.dark
+              ? theme.colorScheme.scrim
+              : theme.colorScheme.primary;
 
           return ShellHeaderScope(
             controller: _headerController,
@@ -155,18 +158,13 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
                                 sigmaY: 4 * _hubController.value,
                               ),
                               child: Container(
-                                color:
-                                    (theme.brightness == Brightness.dark
-                                            ? Colors.black
-                                            : theme.colorScheme.primary)
-                                        .withValues(
-                                          alpha:
-                                              (theme.brightness ==
-                                                      Brightness.dark
-                                                  ? 0.34
-                                                  : 0.12) *
-                                              _hubController.value,
-                                        ),
+                                color: backdropBaseColor.withValues(
+                                  alpha:
+                                      (theme.brightness == Brightness.dark
+                                          ? 0.34
+                                          : 0.12) *
+                                      _hubController.value,
+                                ),
                               ),
                             ),
                           ),

@@ -248,7 +248,7 @@ class ExploreMapAreaPickerOverlay extends StatelessWidget {
                 border: Border.all(color: scheme.onPrimary, width: 3),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.22),
+                    color: Theme.of(context).shadowColor,
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                   ),

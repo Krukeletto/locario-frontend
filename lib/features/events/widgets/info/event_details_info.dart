@@ -58,9 +58,7 @@ class EventDetailsInfo extends StatelessWidget {
           border: Border.all(color: scheme.outline.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
-                alpha: theme.brightness == Brightness.dark ? 0.2 : 0.05,
-              ),
+              color: theme.shadowColor,
               blurRadius: 18,
               offset: const Offset(0, 8),
             ),
