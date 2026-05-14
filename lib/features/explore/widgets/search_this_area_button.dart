@@ -23,7 +23,7 @@ class SearchThisAreaButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
+                color: Theme.of(context).shadowColor,
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),

@@ -7,7 +7,7 @@ import 'package:locario/features/saved/saved_events_repository.dart';
 void main() {
   group('SavedEventQuery', () {
     test('filters by category, age and tags', () {
-      final query = SavedEventQuery();
+      const query = SavedEventQuery();
       final records = [
         _record(
           '1',
@@ -42,7 +42,7 @@ void main() {
     });
 
     test('sorts by distance when reference location is available', () {
-      final query = SavedEventQuery();
+      const query = SavedEventQuery();
       final records = [
         _record(
           '1',
@@ -70,7 +70,7 @@ void main() {
     });
 
     test('falls back to recent when distance has no reference location', () {
-      final query = SavedEventQuery();
+      const query = SavedEventQuery();
       final records = [
         _record('1', title: 'Older', savedAt: DateTime.utc(2026, 5, 1, 12)),
         _record('2', title: 'Newer', savedAt: DateTime.utc(2026, 5, 1, 13)),

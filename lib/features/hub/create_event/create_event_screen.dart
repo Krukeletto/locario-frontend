@@ -233,6 +233,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     } else if (mounted &&
         result != null &&
         result.status != CreateEventLocationLookupStatus.success) {
+      _controller.clearLocation();
       FeedbackService.showError(FeedbackMessage.networkError);
     }
   }
@@ -330,12 +331,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   ? null
                   : () => _controller.submit(),
               child: state.status == CreateEventFormStatus.submitting
-                  ? const SizedBox(
+                  ? SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: scheme.onPrimary,
                       ),
                     )
                   : Text(l10n.hubCreateEventSubmitButton),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_theme_colors.dart';
+
 ThemeData buildLightAppTheme() {
   const primary = Color(0xFF2E7D32);
   const secondary = Color(0xFF607F5B);
@@ -17,7 +19,7 @@ ThemeData buildLightAppTheme() {
   const outlineVariant = Color(0xFFC5CBC1);
   const onSurface = Color(0xFF1A1C19);
 
-  final colorScheme = const ColorScheme.light(
+  const colorScheme = ColorScheme.light(
     primary: primary,
     onPrimary: Colors.white,
     primaryContainer: Color(0xFFCEECCB),
@@ -41,6 +43,7 @@ ThemeData buildLightAppTheme() {
     onSurface: onSurface,
     outline: outline,
     outlineVariant: outlineVariant,
+    scrim: Color(0xFF000000),
   );
 
   return _buildTheme(colorScheme, surface, onSurface, Brightness.light);
@@ -63,7 +66,7 @@ ThemeData buildDarkAppTheme() {
   const outlineVariant = Color(0xFF2A322A);
   const onSurface = Color(0xFFE7ECE4);
 
-  final colorScheme = const ColorScheme.dark(
+  const colorScheme = ColorScheme.dark(
     primary: primary,
     onPrimary: Color(0xFF0F2A11),
     primaryContainer: Color(0xFF19361D),
@@ -87,6 +90,7 @@ ThemeData buildDarkAppTheme() {
     onSurface: onSurface,
     outline: outline,
     outlineVariant: outlineVariant,
+    scrim: Color(0xFF000000),
   );
 
   return _buildTheme(colorScheme, surface, onSurface, Brightness.dark);
@@ -107,7 +111,7 @@ ThemeData _buildTheme(
     scaffoldBackgroundColor: scaffoldBackgroundColor,
     canvasColor: colorScheme.surfaceContainerHigh,
     dividerColor: colorScheme.outlineVariant,
-    shadowColor: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+    shadowColor: colorScheme.scrim.withValues(alpha: isDark ? 0.3 : 0.08),
     appBarTheme: AppBarTheme(
       backgroundColor: scaffoldBackgroundColor,
       foregroundColor: colorScheme.onSurface,
@@ -153,5 +157,6 @@ ThemeData _buildTheme(
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
     ),
+    extensions: const [LocarioThemeColors(onScrim: Colors.white)],
   );
 }

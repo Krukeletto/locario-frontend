@@ -47,10 +47,10 @@ void main() {
 final _event = ExploreEvent(
   id: '11111111-1111-1111-1111-111111111111',
   title: 'Jazz Evening',
-  categories: [Category(id: 'music', name: 'Music', slug: 'music')],
+  categories: [const Category(id: 'music', name: 'Music', slug: 'music')],
   startsAt: DateTime.utc(2026, 4, 12, 19),
   venue: 'Piotrkowska 10, Lodz',
-  location: LatLng(51.7592, 19.4550),
+  location: const LatLng(51.7592, 19.4550),
   description: 'Live music and open-air atmosphere.',
   address: 'Piotrkowska 10, Lodz',
 );

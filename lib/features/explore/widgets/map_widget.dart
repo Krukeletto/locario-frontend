@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
+import 'package:locario/app/theme/app_theme_colors.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:maplibre/maplibre.dart';
 import 'package:html/dom.dart' as dom;
@@ -440,6 +441,9 @@ class _MapWidgetState extends State<MapWidget> {
   void _updateUserLocationVisibility() {
     final currentLocation = widget.controller.currentLocation;
     if (currentLocation == null) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _isUserLocationVisible = false;
       });
@@ -652,6 +656,7 @@ class _MapWidgetState extends State<MapWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final brightness = Theme.of(context).brightness;
     final l10n = AppLocalizations.of(context);
@@ -698,7 +703,7 @@ class _MapWidgetState extends State<MapWidget> {
                 ),
                 if (isStyleLoading)
                   Container(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: colorScheme.scrim.withValues(alpha: 0.3),
                     child: Center(
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -745,7 +750,7 @@ class _MapWidgetState extends State<MapWidget> {
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.18),
+                              color: theme.shadowColor,
                               blurRadius: 16,
                               offset: const Offset(0, 8),
                             ),
@@ -798,6 +803,8 @@ class _StartupLoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return ColoredBox(
       color: colorScheme.surfaceContainerLowest,
       child: Center(
@@ -814,7 +821,7 @@ class _StartupLoadingView extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.26),
+                  color: theme.shadowColor,
                   blurRadius: 28,
                   offset: const Offset(0, 14),
                 ),
@@ -1007,6 +1014,8 @@ class _CurrentLocationMarker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       key: const Key('current-location-marker'),
       width: 24,
@@ -1017,7 +1026,7 @@ class _CurrentLocationMarker extends StatelessWidget {
         border: Border.all(color: colorScheme.onPrimary, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: theme.shadowColor,
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -1044,6 +1053,7 @@ class _MapMessageBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
 
@@ -1053,9 +1063,7 @@ class _MapMessageBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4),
-        ],
+        boxShadow: [BoxShadow(color: theme.shadowColor, blurRadius: 4)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1123,7 +1131,8 @@ class _StaticMapMessageBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Container(
       key: const Key('map-message-banner'),
@@ -1131,9 +1140,7 @@ class _StaticMapMessageBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4),
-        ],
+        boxShadow: [BoxShadow(color: theme.shadowColor, blurRadius: 4)],
       ),
       child: Row(
         children: [
@@ -1162,6 +1169,11 @@ class _EventMarkerBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final themeColors =
+        theme.extension<LocarioThemeColors>() ??
+        const LocarioThemeColors(onScrim: Colors.white);
+
     return Material(
       color: Colors.transparent,
       child: Center(
@@ -1173,13 +1185,13 @@ class _EventMarkerBadge extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.16),
+                color: theme.shadowColor,
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Icon(icon, color: Colors.white, size: 22),
+          child: Icon(icon, color: themeColors.onScrim, size: 22),
         ),
       ),
     );

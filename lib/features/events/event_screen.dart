@@ -81,7 +81,7 @@ class _EventScreenState extends State<EventScreen> {
         _isLoading = false;
       });
 
-      _fetchSlots(eventId);
+      await _fetchSlots(eventId);
     } on EventRepositoryException catch (error) {
       if (!mounted) return;
 
@@ -123,6 +123,11 @@ class _EventScreenState extends State<EventScreen> {
     final outcome = await controller.toggleSaved(event);
     if (!mounted) return;
 
+    if (outcome == SavedToggleOutcome.failed) {
+      FeedbackService.showError(FeedbackMessage.networkError);
+      return;
+    }
+
     if (outcome == SavedToggleOutcome.saved && !wasSaved) {
       FeedbackService.showSuccess(FeedbackMessage.eventSaveSuccess);
       return;
@@ -138,7 +143,7 @@ class _EventScreenState extends State<EventScreen> {
     final auth = AuthScope.maybeOf(context);
     if (auth == null || !auth.isAuthenticated) {
       if (!mounted) return;
-      context.push('/auth/login');
+      await context.push('/auth/login');
       return;
     }
 
@@ -169,7 +174,7 @@ class _EventScreenState extends State<EventScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Failed to leave event'),
           behavior: SnackBarBehavior.floating,
         ),

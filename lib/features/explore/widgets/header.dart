@@ -48,11 +48,7 @@ class ExploreHeader extends StatelessWidget implements PreferredSizeWidget {
         color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: Theme.of(context).brightness == Brightness.dark
-                  ? 0.18
-                  : 0.04,
-            ),
+            color: Theme.of(context).shadowColor,
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -258,7 +254,7 @@ class _SearchField extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: Theme.of(context).shadowColor,
                     blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),

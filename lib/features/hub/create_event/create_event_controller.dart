@@ -56,6 +56,16 @@ class CreateEventController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearLocation() {
+    final l10n = L10nService.l10n;
+    _selectedLocation = null;
+    _state = _state.copyWith(
+      locationLabel: '',
+      locationError: () => l10n.hubCreateEventValidationLocationRequired,
+    );
+    notifyListeners();
+  }
+
   void updateDate(DateTime? date) {
     final l10n = L10nService.l10n;
     _state = _state.copyWith(

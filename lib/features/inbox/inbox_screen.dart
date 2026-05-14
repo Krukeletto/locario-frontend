@@ -235,8 +235,8 @@ class _InboxScreenState extends State<InboxScreen> {
           ),
         ],
         if (showLoader)
-          SliverToBoxAdapter(
-            child: const Padding(
+          const SliverToBoxAdapter(
+            child: Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
               child: Center(child: CircularProgressIndicator()),
             ),

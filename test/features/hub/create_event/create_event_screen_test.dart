@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:locario/features/explore/models.dart';
+import 'package:locario/features/hub/create_event/create_event_location_controller.dart';
 import 'package:locario/features/hub/create_event/create_event_screen.dart';
 import 'package:locario/shared/events/category_controller.dart';
 import 'package:locario/shared/events/category_scope.dart';
@@ -86,6 +87,7 @@ Future<void> _pumpCreateEventScreen(
   WidgetTester tester, {
   FakeEventRepository? repository,
   FakeLocationService? locationService,
+  CreateEventGeocoder? geocoder,
   Future<List<CreateEventPickedFile>> Function()? pickImageFiles,
   bool canSubmit = true,
 }) async {
@@ -112,6 +114,7 @@ Future<void> _pumpCreateEventScreen(
         child: CreateEventScreen(
           eventRepository: repository ?? FakeEventRepository(),
           locationService: locationService ?? FakeLocationService(),
+          geocoder: geocoder,
           pickImageFiles: pickImageFiles,
           canSubmit: canSubmit,
         ),
@@ -183,6 +186,60 @@ void main() {
       expect(find.textContaining('51.7592'), findsOneWidget);
       expect(find.textContaining('19.4550'), findsOneWidget);
     });
+
+    testWidgets(
+      'clears location after failed address lookup and blocks stale submit',
+      (tester) async {
+        final repository = FakeEventRepository();
+        await _pumpCreateEventScreen(
+          tester,
+          repository: repository,
+          locationService: FakeLocationService(
+            currentLocation: const LatLng(51.7592, 19.4550),
+          ),
+          geocoder: (address) async => throw Exception('boom'),
+        );
+
+        await tester.enterText(
+          find.byType(TextFormField).at(0),
+          'Wieczór planszówek',
+        );
+        await tester.enterText(
+          find.byType(TextFormField).at(1),
+          'Spotykamy się na wspólne granie i integrację.',
+        );
+
+        await _pickDate(tester);
+        await _pickTime(tester);
+        await tester.tap(find.text('Muzyka'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const Key('create-event-location-button')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Moja lokalizacja').first);
+        await tester.pumpAndSettle();
+        expect(find.textContaining('51.7592'), findsOneWidget);
+
+        await tester.tap(find.byKey(const Key('create-event-location-button')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Wpisz adres').first);
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byType(TextField).last,
+          'Nieprawidłowy adres',
+        );
+        await tester.tap(find.text('Gotowe').first);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Gdzie odbędzie się wydarzenie?'), findsOneWidget);
+        expect(find.textContaining('51.7592'), findsNothing);
+
+        await tester.tap(find.text('Stwórz wydarzenie').first);
+        await tester.pump();
+
+        expect(repository.lastCreateInput, isNull);
+      },
+    );
 
     testWidgets(
       'shows loading state while current location is being resolved',

@@ -3,6 +3,12 @@ import 'package:latlong2/latlong.dart';
 import 'package:locario/features/explore/models.dart';
 import 'package:locario/features/saved/saved_events_controller.dart';
 import 'package:locario/features/saved/saved_events_repository.dart';
+import 'package:locario/shared/auth/auth_api.dart';
+import 'package:locario/shared/auth/auth_models.dart';
+import 'package:locario/shared/auth/auth_repository.dart';
+import 'package:locario/shared/auth/auth_storage.dart';
+import 'package:locario/shared/auth/favorites_api.dart';
+import 'package:locario/shared/auth/session_controller.dart';
 
 void main() {
   group('SavedEventsController', () {
@@ -47,7 +53,79 @@ void main() {
       expect(controller.records, isEmpty);
       expect(repository.records, isEmpty);
     });
+
+    test('keeps saved event when remote removal fails', () async {
+      final repository = _MemorySavedEventsRepository();
+      final sessionController = _AuthenticatedSessionController();
+      await sessionController.load();
+
+      final controller = SavedEventsController(
+        repository: repository,
+        sessionController: sessionController,
+        favoritesApi: _FailingFavoritesApi(),
+      );
+
+      final event = _event('1', 'First');
+      await controller.saveEvent(event, syncState: SavedEventSyncState.synced);
+
+      final outcome = await controller.toggleSaved(event);
+
+      expect(outcome, SavedToggleOutcome.failed);
+      expect(controller.isSaved('1'), isTrue);
+      expect(repository.records, hasLength(1));
+    });
   });
+}
+
+class _AuthenticatedSessionController extends SessionController {
+  _AuthenticatedSessionController()
+    : super(authRepository: _AuthenticatedAuthRepository());
+}
+
+class _AuthenticatedAuthRepository extends AuthRepository {
+  _AuthenticatedAuthRepository()
+    : super(api: AuthApi(), storage: const AuthStorage());
+
+  @override
+  Future<AuthTokens?> readTokens() async {
+    return AuthTokens(
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      tokenType: 'Bearer',
+      expiresAt: DateTime.now().toUtc().add(const Duration(hours: 1)),
+    );
+  }
+
+  @override
+  Future<UserProfile> fetchProfile() async {
+    return UserProfile(
+      id: 'user-1',
+      username: 'tester',
+      email: 'tester@example.com',
+      hasPassword: true,
+      avatarUrl: null,
+      bio: null,
+      websiteUrl: null,
+      instagramUrl: null,
+      facebookUrl: null,
+      createdAt: DateTime.now().toUtc(),
+      eventRegistrations: const [],
+      favorites: const [],
+    );
+  }
+}
+
+class _FailingFavoritesApi extends FavoritesApi {
+  _FailingFavoritesApi() : super();
+
+  @override
+  Future<void> removeFavorite(
+    String eventId,
+    String accessToken, {
+    String tokenType = 'Bearer',
+  }) async {
+    throw const FavoritesApiException('boom');
+  }
 }
 
 class _MemorySavedEventsRepository implements SavedEventsRepository {

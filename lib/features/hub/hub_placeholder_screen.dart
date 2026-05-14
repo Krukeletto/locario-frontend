@@ -11,9 +11,10 @@ class HubPlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final backgroundColor = Color.alphaBlend(
-      Colors.black.withValues(alpha: 0.18),
-      Theme.of(context).colorScheme.primary,
+      scheme.scrim.withValues(alpha: 0.18),
+      scheme.primary,
     );
     final l10n = AppLocalizations.of(context);
 

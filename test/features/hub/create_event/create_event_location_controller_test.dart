@@ -36,6 +36,42 @@ void main() {
       expect(controller.selection!.label, 'Piotrkowska 10, Lodz');
     });
 
+    testWidgets('selectAddress clears stale selection when geocoding fails', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildLocalizedTestApp(home: const SizedBox.shrink()),
+      );
+      await tester.pump();
+
+      var shouldFail = false;
+      final controller = CreateEventLocationController(
+        locationService: FakeLocationService(),
+        geocoder: (_) async {
+          if (shouldFail) {
+            throw Exception('boom');
+          }
+
+          return [
+            Location(
+              latitude: 51.7592,
+              longitude: 19.4550,
+              timestamp: DateTime(2026),
+            ),
+          ];
+        },
+      );
+
+      final firstResult = await controller.selectAddress('Piotrkowska 10');
+      expect(firstResult.status, CreateEventLocationLookupStatus.success);
+      expect(controller.selection, isNotNull);
+
+      shouldFail = true;
+      final secondResult = await controller.selectAddress('Bad address');
+      expect(secondResult.status, CreateEventLocationLookupStatus.error);
+      expect(controller.selection, isNull);
+    });
+
     testWidgets('selectPinnedLocation stores pinned point label', (
       tester,
     ) async {

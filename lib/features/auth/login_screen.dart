@@ -300,15 +300,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final l10n = AppLocalizations.of(context);
     final isSystemDark = theme.brightness == Brightness.dark;
 
-    final pageBackground = isSystemDark
-        ? const Color(0xFF0F1512)
-        : scheme.surface;
-    final subtitleColor = isSystemDark
-        ? Colors.white.withValues(alpha: 0.9)
-        : scheme.onSurface.withValues(alpha: 1);
-    final footerTextColor = isSystemDark
-        ? Colors.white.withValues(alpha: 0.86)
-        : scheme.onSurface;
+    final pageBackground = scheme.surface;
+    final subtitleColor = scheme.onSurface.withValues(alpha: 0.9);
+    final footerTextColor = scheme.onSurface.withValues(alpha: 0.86);
 
     final subtitleText = l10n.authSubtitle;
 
@@ -323,16 +317,19 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: pageBackground,
         body: Container(
           decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.topLeft,
-              radius: 0.92,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              stops: const [0.0, 0.42, 0.78, 1.0],
               colors: [
-                isSystemDark
-                    ? const Color.fromARGB(74, 69, 180, 95)
-                    : const Color.fromARGB(60, 5, 239, 20),
-                isSystemDark
-                    ? const Color.fromARGB(0, 69, 180, 95)
-                    : const Color.fromARGB(0, 24, 201, 36),
+                scheme.primaryContainer.withValues(
+                  alpha: isSystemDark ? 0.18 : 0.34,
+                ),
+                scheme.surface,
+                scheme.surface.withValues(alpha: isSystemDark ? 0.98 : 1.0),
+                scheme.tertiaryContainer.withValues(
+                  alpha: isSystemDark ? 0.08 : 0.16,
+                ),
               ],
             ),
           ),
@@ -352,10 +349,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: const EdgeInsets.only(top: 0, bottom: 6),
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: scheme.surfaceContainerLow,
+                              color: scheme.primaryContainer.withValues(
+                                alpha: isSystemDark ? 0.36 : 0.72,
+                              ),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: scheme.outline.withValues(alpha: 0.18),
+                                color: scheme.primary.withValues(alpha: 0.2),
                               ),
                             ),
                             child: IconButton(
@@ -511,18 +510,25 @@ class _AuthCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
       decoration: BoxDecoration(
-        color: isSystemDark ? scheme.surfaceContainerHigh : Colors.white,
+        color: isSystemDark
+            ? scheme.surfaceContainerHigh
+            : scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: isSystemDark
-              ? Colors.white.withValues(alpha: 0.16)
-              : scheme.outline.withValues(alpha: 0.28),
+          color: scheme.outlineVariant.withValues(
+            alpha: isSystemDark ? 0.55 : 0.7,
+          ),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isSystemDark ? 0.28 : 0.05),
-            blurRadius: 16,
+            color: theme.shadowColor,
+            blurRadius: 18,
             offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: scheme.primary.withValues(alpha: isSystemDark ? 0.12 : 0.08),
+            blurRadius: 30,
+            offset: const Offset(0, 16),
           ),
         ],
       ),
@@ -533,7 +539,7 @@ class _AuthCard extends StatelessWidget {
             child: Text(
               titleText,
               style: theme.textTheme.headlineSmall?.copyWith(
-                color: isSystemDark ? Colors.white : Colors.black87,
+                color: scheme.onSurface,
                 fontWeight: FontWeight.w700,
                 fontSize: 34,
               ),
@@ -545,16 +551,16 @@ class _AuthCard extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: onGooglePressed,
               style: OutlinedButton.styleFrom(
-                foregroundColor: isSystemDark ? Colors.white : scheme.onSurface,
-                side: BorderSide(
-                  color: isSystemDark
-                      ? Colors.white.withValues(alpha: 0.25)
-                      : scheme.outline.withValues(alpha: 0.45),
-                ),
+                foregroundColor: const Color(0xFF1F1F1F),
+                backgroundColor: Colors.white,
+                side: BorderSide(color: scheme.outline.withValues(alpha: 0.9)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
               ),
               icon: const GoogleLogoIcon(),
               label: Text(googleButtonText),
@@ -564,11 +570,7 @@ class _AuthCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Divider(
-                  color: isSystemDark
-                      ? Colors.white.withValues(alpha: 0.24)
-                      : scheme.outline.withValues(alpha: 0.35),
-                ),
+                child: Divider(color: scheme.onSurface.withValues(alpha: 0.24)),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -576,19 +578,13 @@ class _AuthCard extends StatelessWidget {
                   dividerText,
                   style: theme.textTheme.labelSmall?.copyWith(
                     letterSpacing: 1.2,
-                    color: isSystemDark
-                        ? Colors.white.withValues(alpha: 0.76)
-                        : scheme.onSurface.withValues(alpha: 0.6),
+                    color: scheme.onSurface.withValues(alpha: 0.76),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
               Expanded(
-                child: Divider(
-                  color: isSystemDark
-                      ? Colors.white.withValues(alpha: 0.24)
-                      : scheme.outline.withValues(alpha: 0.35),
-                ),
+                child: Divider(color: scheme.onSurface.withValues(alpha: 0.24)),
               ),
             ],
           ),
@@ -620,7 +616,7 @@ class _AuthCard extends StatelessWidget {
             child: FilledButton(
               onPressed: onSubmit,
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: scheme.primary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -630,7 +626,7 @@ class _AuthCard extends StatelessWidget {
                 submitText,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontSize: 20,
-                  color: Colors.white,
+                  color: scheme.onPrimary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -641,9 +637,7 @@ class _AuthCard extends StatelessWidget {
             child: Text(
               switchPromptText,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: isSystemDark
-                    ? Colors.white.withValues(alpha: 0.76)
-                    : scheme.onSurface.withValues(alpha: 0.7),
+                color: scheme.onSurface.withValues(alpha: 0.76),
               ),
             ),
           ),
@@ -654,7 +648,7 @@ class _AuthCard extends StatelessWidget {
                 switchActionText,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF2E7D32),
+                  color: scheme.primary,
                 ),
               ),
             ),
@@ -698,9 +692,7 @@ class _AuthInputField extends StatelessWidget {
           label,
           style: theme.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
-            color: isSystemDark
-                ? const Color(0xFFA5D6A7)
-                : const Color(0xFF1B5E20),
+            color: scheme.primary,
             letterSpacing: 0.3,
           ),
         ),
@@ -710,22 +702,18 @@ class _AuthInputField extends StatelessWidget {
           onChanged: onChanged,
           keyboardType: keyboardType,
           obscureText: obscureText,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: isSystemDark ? Colors.white : Colors.black87,
-          ),
-          cursorColor: isSystemDark
-              ? const Color(0xFF81C784)
-              : const Color(0xFF2E7D32),
+          style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurface),
+          cursorColor: scheme.primary,
           decoration: InputDecoration(
             hintText: hintText,
             errorText: errorText,
             hintStyle: theme.textTheme.bodyMedium?.copyWith(
-              color: isSystemDark ? Colors.white70 : Colors.black54,
+              color: scheme.onSurface.withValues(alpha: 0.6),
             ),
             filled: true,
             fillColor: isSystemDark
-                ? scheme.primary.withValues(alpha: 0.14)
-                : const Color(0xFFF1F3F4),
+                ? scheme.surfaceContainerHighest.withValues(alpha: 0.7)
+                : scheme.surfaceContainerHighest,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 14,
@@ -740,12 +728,7 @@ class _AuthInputField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: isSystemDark
-                    ? const Color(0xFF81C784)
-                    : const Color(0xFF2E7D32),
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: scheme.primary, width: 1.5),
             ),
           ),
         ),

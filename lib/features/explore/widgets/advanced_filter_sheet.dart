@@ -108,114 +108,119 @@ class _ExploreAdvancedFilterSheetState
       useCurrentLocation = false;
     }
 
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(l10n.savedFiltersSaveDialogTitle),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: nameController,
-                      decoration: InputDecoration(
-                        hintText: l10n.savedFiltersNameHint,
-                        border: const OutlineInputBorder(),
+    try {
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) {
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              return AlertDialog(
+                title: Text(l10n.savedFiltersSaveDialogTitle),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: nameController,
+                        onChanged: (_) => setDialogState(() {}),
+                        decoration: InputDecoration(
+                          hintText: l10n.savedFiltersNameHint,
+                          border: const OutlineInputBorder(),
+                        ),
+                        autofocus: true,
                       ),
-                      autofocus: true,
-                    ),
-                    if (savedLocation != null) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.savedFiltersLocationLabel,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      const SizedBox(height: 8),
-                      SegmentedButton<bool>(
-                        segments: [
-                          ButtonSegment(
-                            value: true,
-                            label: Text(l10n.savedFiltersUseCurrentLocation),
-                            icon: const Icon(
-                              Icons.my_location_rounded,
-                              size: 16,
+                      if (savedLocation != null) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.savedFiltersLocationLabel,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 8),
+                        SegmentedButton<bool>(
+                          segments: [
+                            ButtonSegment(
+                              value: true,
+                              label: Text(l10n.savedFiltersUseCurrentLocation),
+                              icon: const Icon(
+                                Icons.my_location_rounded,
+                                size: 16,
+                              ),
                             ),
-                          ),
-                          ButtonSegment(
-                            value: false,
-                            label: Text(l10n.savedFiltersUseSavedLocation),
-                            icon: const Icon(
-                              Icons.location_on_rounded,
-                              size: 16,
+                            ButtonSegment(
+                              value: false,
+                              label: Text(l10n.savedFiltersUseSavedLocation),
+                              icon: const Icon(
+                                Icons.location_on_rounded,
+                                size: 16,
+                              ),
                             ),
-                          ),
-                        ],
-                        selected: {useCurrentLocation},
-                        onSelectionChanged: (selected) {
-                          setDialogState(() {
-                            useCurrentLocation = selected.first;
-                          });
-                        },
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Text(l10n.savedFilterNotificationsLabel),
-                        const Spacer(),
-                        Switch(
-                          value: notificationsEnabled,
-                          onChanged: (value) {
+                          ],
+                          selected: {useCurrentLocation},
+                          onSelectionChanged: (selected) {
                             setDialogState(() {
-                              notificationsEnabled = value;
+                              useCurrentLocation = selected.first;
                             });
                           },
                         ),
                       ],
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Text(l10n.savedFilterNotificationsLabel),
+                          const Spacer(),
+                          Switch(
+                            value: notificationsEnabled,
+                            onChanged: (value) {
+                              setDialogState(() {
+                                notificationsEnabled = value;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: Text(l10n.savedFiltersCancel),
-                ),
-                FilledButton(
-                  onPressed: nameController.text.trim().isEmpty
-                      ? null
-                      : () => Navigator.of(dialogContext).pop(true),
-                  child: Text(l10n.savedFiltersSaveAction),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    child: Text(l10n.savedFiltersCancel),
+                  ),
+                  FilledButton(
+                    onPressed: nameController.text.trim().isEmpty
+                        ? null
+                        : () => Navigator.of(dialogContext).pop(true),
+                    child: Text(l10n.savedFiltersSaveAction),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
 
-    if (result != true || !context.mounted) return;
-    if (nameController.text.trim().isEmpty) return;
+      if (result != true || !context.mounted) return;
+      if (nameController.text.trim().isEmpty) return;
 
-    await savedFiltersController.saveFilter(
-      name: nameController.text.trim(),
-      filters: _filters,
-      location: useCurrentLocation ? null : savedLocation,
-      useCurrentLocation: useCurrentLocation,
-      notificationsEnabled: notificationsEnabled,
-    );
+      await savedFiltersController.saveFilter(
+        name: nameController.text.trim(),
+        filters: _filters,
+        location: useCurrentLocation ? null : savedLocation,
+        useCurrentLocation: useCurrentLocation,
+        notificationsEnabled: notificationsEnabled,
+      );
 
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.savedFiltersSaveConfirmation),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.savedFiltersSaveConfirmation),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      nameController.dispose();
+    }
   }
 
   void _onPickOnMap() {

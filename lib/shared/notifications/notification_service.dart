@@ -63,7 +63,7 @@ class NotificationService {
 
     final messaging = FirebaseMessaging.instance;
 
-    messaging.getToken().then((token) {
+    await messaging.getToken().then((token) {
       _controller!.setFcmToken(token);
     });
     messaging.onTokenRefresh.listen((token) {

@@ -67,10 +67,10 @@ class MapStyleCoordinator {
       );
 
       await style.addLayer(
-        SymbolStyleLayer(
+        const SymbolStyleLayer(
           id: eventsLayerId,
           sourceId: eventsSourceId,
-          layout: const {
+          layout: {
             'icon-image': ['get', 'iconImage'],
             'icon-size': 1.5,
             'icon-anchor': 'center',

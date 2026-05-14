@@ -8,7 +8,7 @@ import '../../shared/auth/session_controller.dart';
 import '../../shared/events/event_repository.dart';
 import 'saved_events_repository.dart';
 
-enum SavedToggleOutcome { saved, removed }
+enum SavedToggleOutcome { saved, removed, failed }
 
 class SavedEventsController extends ChangeNotifier {
   SavedEventsController({
@@ -162,13 +162,12 @@ class SavedEventsController extends ChangeNotifier {
     }
 
     if (_isAuthenticated && !_isSyncing) {
-      syncWithRemote();
+      await syncWithRemote();
     }
   }
 
   Future<SavedToggleOutcome> toggleSaved(ExploreEvent event) async {
     if (isSaved(event.id)) {
-      await removeEvent(event.id);
       if (_isAuthenticated) {
         try {
           await _favoritesApi!.removeFavorite(
@@ -178,7 +177,29 @@ class SavedEventsController extends ChangeNotifier {
           );
         } catch (e) {
           debugPrint('Failed to remove remote favorite: $e');
+          _error = e.toString();
+          notifyListeners();
+          return SavedToggleOutcome.failed;
         }
+      }
+
+      try {
+        await removeEvent(event.id);
+      } catch (error) {
+        if (_isAuthenticated) {
+          try {
+            await _favoritesApi!.addFavorite(
+              event.id,
+              _accessToken,
+              tokenType: _tokenType,
+            );
+          } catch (e) {
+            debugPrint('Failed to restore remote favorite: $e');
+          }
+        }
+        _error = error.toString();
+        notifyListeners();
+        return SavedToggleOutcome.failed;
       }
       return SavedToggleOutcome.removed;
     }
@@ -226,6 +247,7 @@ class SavedEventsController extends ChangeNotifier {
 
     try {
       await _repository.upsertSavedEvent(record);
+      _error = null;
     } catch (error) {
       debugPrint('Saved events write failed: $error');
       _error = error.toString();
@@ -240,6 +262,7 @@ class SavedEventsController extends ChangeNotifier {
 
     try {
       await _repository.removeSavedEvent(eventId);
+      _error = null;
     } catch (error) {
       debugPrint('Saved events delete failed: $error');
       _error = error.toString();

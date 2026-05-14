@@ -66,7 +66,6 @@ class FeedbackService {
     _lastMessage = message;
     _lastMessageTime = now;
 
-    // Use L10nService instead of BuildContext
     final l10n = L10nService.l10n;
     final text = _getMessageText(l10n, message);
 
@@ -77,10 +76,11 @@ class FeedbackService {
       messenger.removeCurrentSnackBar();
     }
 
+    final theme = Theme.of(messenger.context);
     messenger.showSnackBar(
       SnackBar(
         content: Text(text),
-        backgroundColor: _getBackgroundColor(style),
+        backgroundColor: _getBackgroundColor(theme.colorScheme, style),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -110,11 +110,14 @@ class FeedbackService {
     };
   }
 
-  static Color _getBackgroundColor(FeedbackStyle style) {
+  static Color _getBackgroundColor(
+    ColorScheme colorScheme,
+    FeedbackStyle style,
+  ) {
     return switch (style) {
-      FeedbackStyle.success => const Color(0xFF2E7D32), // Green 700
-      FeedbackStyle.error => const Color(0xFFC62828), // Red 800
-      FeedbackStyle.info => const Color(0xFF1565C0), // Blue 800
+      FeedbackStyle.success => colorScheme.primary,
+      FeedbackStyle.error => colorScheme.error,
+      FeedbackStyle.info => colorScheme.tertiary,
     };
   }
 }
