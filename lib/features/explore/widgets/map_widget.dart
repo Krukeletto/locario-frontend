@@ -440,6 +440,9 @@ class _MapWidgetState extends State<MapWidget> {
   void _updateUserLocationVisibility() {
     final currentLocation = widget.controller.currentLocation;
     if (currentLocation == null) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _isUserLocationVisible = false;
       });

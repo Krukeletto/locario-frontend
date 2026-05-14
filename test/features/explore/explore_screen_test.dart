@@ -58,6 +58,7 @@ void main() {
       eventRefreshSignal.add(null);
       await tester.pumpAndSettle();
       expect(find.text('Second'), findsOneWidget);
+      await eventRefreshSignal.close();
     });
 
     testWidgets('keeps map visible when there are no events', (tester) async {

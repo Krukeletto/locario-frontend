@@ -235,7 +235,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         savedFiltersController.filtersWithNotificationsEnabled;
     if (enabledFilters.isEmpty) return;
 
-    final query = const ExploreEventQuery();
+    const query = ExploreEventQuery();
     final newMatchingIds = <String>{};
 
     for (final filter in enabledFilters) {
@@ -672,15 +672,15 @@ class _LoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
+    return const Positioned(
       top: 0,
       left: 0,
       right: 0,
       child: Padding(
-        padding: const EdgeInsets.only(top: 112), // Below header
+        padding: EdgeInsets.only(top: 112), // Below header
         child: Material(
           color: Colors.transparent,
-          child: const SizedBox(height: 3, child: LinearProgressIndicator()),
+          child: SizedBox(height: 3, child: LinearProgressIndicator()),
         ),
       ),
     );

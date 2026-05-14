@@ -131,18 +131,18 @@ class SettingsScreen extends StatelessWidget {
                 final messenger = ScaffoldMessenger.of(context);
                 if (scheduled) {
                   messenger.showSnackBar(
-                    SnackBar(
-                      content: const Text('Notification in 3s...'),
+                    const SnackBar(
+                      content: Text('Notification in 3s...'),
                       behavior: SnackBarBehavior.floating,
-                      duration: const Duration(seconds: 2),
+                      duration: Duration(seconds: 2),
                     ),
                   );
                 } else {
                   messenger.showSnackBar(
-                    SnackBar(
-                      content: const Text('Type is disabled in settings'),
+                    const SnackBar(
+                      content: Text('Type is disabled in settings'),
                       behavior: SnackBarBehavior.floating,
-                      duration: const Duration(seconds: 2),
+                      duration: Duration(seconds: 2),
                     ),
                   );
                 }

@@ -180,7 +180,7 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
                             builder: (context) {
                               final panelProgress = Curves.easeOutCubic
                                   .transform(
-                                    Interval(
+                                    const Interval(
                                       0.18,
                                       1,
                                     ).transform(_hubController.value),

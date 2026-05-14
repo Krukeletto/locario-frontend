@@ -178,7 +178,7 @@ class NotificationController extends ChangeNotifier {
     for (final event in events) {
       if (excludeEventIds?.contains(event.id) == true) continue;
 
-      final type = NotificationType.upcomingEvent;
+      const type = NotificationType.upcomingEvent;
       if (!isEnabled(type)) continue;
 
       NotificationService.scheduleEventReminder(
@@ -193,7 +193,7 @@ class NotificationController extends ChangeNotifier {
     List<({String id, String title, DateTime startsAt})> events,
   ) {
     for (final event in events) {
-      final type = NotificationType.upcomingEvent;
+      const type = NotificationType.upcomingEvent;
       if (!isEnabled(type)) continue;
 
       NotificationService.scheduleEventReminder(

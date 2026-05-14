@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
+import 'package:locario/shared/services/feedback_service.dart';
 
 import '../../shared/events/category_scope.dart';
 import '../../shared/location/location_service.dart';
@@ -606,6 +607,11 @@ Future<void> _toggleSaved({
   final wasSaved = controller.isSaved(event.id);
   final outcome = await controller.toggleSaved(event);
   if (!context.mounted) {
+    return;
+  }
+
+  if (outcome == SavedToggleOutcome.failed) {
+    FeedbackService.showError(FeedbackMessage.networkError);
     return;
   }
 

@@ -233,6 +233,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     } else if (mounted &&
         result != null &&
         result.status != CreateEventLocationLookupStatus.success) {
+      _controller.clearLocation();
       FeedbackService.showError(FeedbackMessage.networkError);
     }
   }

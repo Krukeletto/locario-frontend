@@ -17,7 +17,7 @@ ThemeData buildLightAppTheme() {
   const outlineVariant = Color(0xFFC5CBC1);
   const onSurface = Color(0xFF1A1C19);
 
-  final colorScheme = const ColorScheme.light(
+  const colorScheme = ColorScheme.light(
     primary: primary,
     onPrimary: Colors.white,
     primaryContainer: Color(0xFFCEECCB),
@@ -63,7 +63,7 @@ ThemeData buildDarkAppTheme() {
   const outlineVariant = Color(0xFF2A322A);
   const onSurface = Color(0xFFE7ECE4);
 
-  final colorScheme = const ColorScheme.dark(
+  const colorScheme = ColorScheme.dark(
     primary: primary,
     onPrimary: Color(0xFF0F2A11),
     primaryContainer: Color(0xFF19361D),

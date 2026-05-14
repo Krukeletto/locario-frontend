@@ -114,6 +114,11 @@ Future<void> _toggleSaved({
     return;
   }
 
+  if (outcome == SavedToggleOutcome.failed) {
+    FeedbackService.showError(FeedbackMessage.networkError);
+    return;
+  }
+
   if (outcome == SavedToggleOutcome.saved && !wasSaved) {
     FeedbackService.showSuccess(FeedbackMessage.eventSaveSuccess);
     return;

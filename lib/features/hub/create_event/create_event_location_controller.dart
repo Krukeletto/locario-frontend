@@ -62,6 +62,7 @@ class CreateEventLocationController extends ChangeNotifier {
   Future<CreateEventLocationLookupResult> useCurrentLocation() async {
     final l10n = L10nService.l10n;
     _isResolvingSelection = true;
+    _selection = null;
     notifyListeners();
 
     try {
@@ -93,6 +94,7 @@ class CreateEventLocationController extends ChangeNotifier {
 
   Future<CreateEventLocationLookupResult> selectAddress(String address) async {
     final l10n = L10nService.l10n;
+    _selection = null;
     try {
       final locations = await _geocoder(address);
       if (locations.isEmpty) {

@@ -191,7 +191,7 @@ class _LocarioAppState extends State<LocarioApp> {
                           routerConfig: _router,
                           locale: _localeController.locale,
                           supportedLocales: AppLocalizations.supportedLocales,
-                          localizationsDelegates: [
+                          localizationsDelegates: const [
                             AppLocalizations.delegate,
                             GlobalMaterialLocalizations.delegate,
                             GlobalWidgetsLocalizations.delegate,

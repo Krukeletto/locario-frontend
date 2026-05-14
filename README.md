@@ -1,17 +1,48 @@
-# locario
+# Locario
 
-A new Flutter project.
+Locario to mobilna aplikacja Flutter do odkrywania wydarzeń w okolicy, z funkcją mapy, zapisywania wydarzeń i powiadomień.
 
-## Getting Started
+Projekt jest realizowany w ramach **Projektu Kompetencyjnego na Politechnice Łódzkiej**. Repozytorium zawiera aktywnie rozwijaną wersję aplikacji, dlatego część funkcji może być jeszcze dopracowywana.
 
-This project is a starting point for a Flutter application.
+## O projekcie
 
-A few resources to get you started if this is your first Flutter project:
+- Odkrywanie wydarzeń na mapie i w widoku listy.
+- Filtrowanie i wyszukiwanie wydarzeń.
+- Zapisane wydarzenia i zapisane filtry.
+- Logowanie użytkownika i integracja z Firebase.
+- Tworzenie wydarzeń z wyborem lokalizacji i zdjęć.
+- Powiadomienia push oraz lokalne.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Stack technologiczny
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Flutter 3.41.5
+- Dart 3.11+
+- Firebase Auth
+- Firebase Messaging
+- go_router
+- MapLibre
+- geolocator
+- geocoding
+- SharedPreferences
+
+## Struktura projektu
+
+- `lib/app/` - konfiguracja aplikacji, routing, theme
+- `lib/features/` - moduły funkcjonalne aplikacji
+- `lib/shared/` - elementy wspólne, serwisy i kontrolery
+- `lib/l10n/` - lokalizacje i tłumaczenia
+- `test/` - testy widgetowe i jednostkowe
+
+## Uruchomienie lokalne
+
+```bash
+flutter pub get
+flutter analyze
+flutter test --no-pub
+```
+
+Jeśli zmieniasz pliki lokalizacji:
+
+```bash
+dart run tool/generate_l10n.dart
+```
