@@ -112,6 +112,24 @@ class SessionController extends ChangeNotifier {
     }
   }
 
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    if (_isBusy) {
+      return;
+    }
+    _setBusy(true);
+    try {
+      await _changePasswordWithRefresh(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+    } finally {
+      _setBusy(false);
+    }
+  }
+
   Future<void> refreshProfile() async {
     if (!isAuthenticated) {
       return;
@@ -185,6 +203,36 @@ class SessionController extends ChangeNotifier {
       rethrow;
     } catch (error) {
       debugPrint('Auth: profile fetch failed (unknown): $error');
+      rethrow;
+    }
+  }
+
+  Future<void> _changePasswordWithRefresh({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _authRepository.changePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+    } on AuthApiException catch (error) {
+      if (error.statusCode != 401) {
+        rethrow;
+      }
+      final refreshed = await _tryRefreshTokens();
+      if (refreshed == null) {
+        rethrow;
+      }
+      await _authRepository.changePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+    } on AuthRepositoryException catch (error) {
+      debugPrint('Auth: change password failed (repo): ${error.message}');
+      rethrow;
+    } catch (error) {
+      debugPrint('Auth: change password failed (unknown): $error');
       rethrow;
     }
   }

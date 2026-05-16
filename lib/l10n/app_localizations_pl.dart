@@ -836,6 +836,40 @@ class AppLocalizationsPl extends AppLocalizations {
   String get themeModeDark => 'Ciemny';
 
   @override
+  String get settingsAccountSectionTitle => 'Hasło';
+
+  @override
+  String get settingsAccountSectionSubtitle => 'Zmień hasło do konta';
+
+  @override
+  String get settingsAccountChangePassword => 'Zmień hasło';
+
+  @override
+  String get settingsChangePasswordDialogTitle => 'Zmień hasło';
+
+  @override
+  String get settingsChangePasswordCurrentLabel => 'Obecne hasło';
+
+  @override
+  String get settingsChangePasswordNewLabel => 'Nowe hasło';
+
+  @override
+  String get settingsChangePasswordCancel => 'Anuluj';
+
+  @override
+  String get settingsChangePasswordSubmit => 'Zmień hasło';
+
+  @override
+  String get settingsChangePasswordSuccess => 'Hasło zostało zmienione.';
+
+  @override
+  String get settingsChangePasswordInvalidOld =>
+      'Obecne hasło jest nieprawidłowe.';
+
+  @override
+  String get settingsChangePasswordFailed => 'Nie udało się zmienić hasła.';
+
+  @override
   String get savedTitle => 'Zapisane';
 
   @override

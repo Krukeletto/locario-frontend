@@ -1574,6 +1574,72 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get themeModeDark;
 
+  /// No description provided for @settingsAccountSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get settingsAccountSectionTitle;
+
+  /// No description provided for @settingsAccountSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your password'**
+  String get settingsAccountSectionSubtitle;
+
+  /// No description provided for @settingsAccountChangePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get settingsAccountChangePassword;
+
+  /// No description provided for @settingsChangePasswordDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get settingsChangePasswordDialogTitle;
+
+  /// No description provided for @settingsChangePasswordCurrentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get settingsChangePasswordCurrentLabel;
+
+  /// No description provided for @settingsChangePasswordNewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get settingsChangePasswordNewLabel;
+
+  /// No description provided for @settingsChangePasswordCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get settingsChangePasswordCancel;
+
+  /// No description provided for @settingsChangePasswordSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Update password'**
+  String get settingsChangePasswordSubmit;
+
+  /// No description provided for @settingsChangePasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated.'**
+  String get settingsChangePasswordSuccess;
+
+  /// No description provided for @settingsChangePasswordInvalidOld.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is incorrect.'**
+  String get settingsChangePasswordInvalidOld;
+
+  /// No description provided for @settingsChangePasswordFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update password.'**
+  String get settingsChangePasswordFailed;
+
   /// No description provided for @savedTitle.
   ///
   /// In en, this message translates to:

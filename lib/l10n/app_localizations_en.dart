@@ -828,6 +828,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeModeDark => 'Dark';
 
   @override
+  String get settingsAccountSectionTitle => 'Password';
+
+  @override
+  String get settingsAccountSectionSubtitle => 'Update your password';
+
+  @override
+  String get settingsAccountChangePassword => 'Change password';
+
+  @override
+  String get settingsChangePasswordDialogTitle => 'Change password';
+
+  @override
+  String get settingsChangePasswordCurrentLabel => 'Current password';
+
+  @override
+  String get settingsChangePasswordNewLabel => 'New password';
+
+  @override
+  String get settingsChangePasswordCancel => 'Cancel';
+
+  @override
+  String get settingsChangePasswordSubmit => 'Update password';
+
+  @override
+  String get settingsChangePasswordSuccess => 'Password updated.';
+
+  @override
+  String get settingsChangePasswordInvalidOld =>
+      'Current password is incorrect.';
+
+  @override
+  String get settingsChangePasswordFailed => 'Could not update password.';
+
+  @override
   String get savedTitle => 'Saved';
 
   @override

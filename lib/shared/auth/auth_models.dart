@@ -85,6 +85,20 @@ class RefreshTokenRequest {
   }
 }
 
+class ChangePasswordRequest {
+  const ChangePasswordRequest({
+    required this.oldPassword,
+    required this.newPassword,
+  });
+
+  final String oldPassword;
+  final String newPassword;
+
+  Map<String, String> toJson() {
+    return {'oldPassword': oldPassword, 'newPassword': newPassword};
+  }
+}
+
 class GoogleOAuthRequest {
   const GoogleOAuthRequest({required this.idToken});
 

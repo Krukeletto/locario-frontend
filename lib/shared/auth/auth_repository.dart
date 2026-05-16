@@ -84,6 +84,23 @@ class AuthRepository {
     );
   }
 
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    final tokens = await _storage.readTokens();
+    if (tokens == null) {
+      throw const AuthRepositoryException('Missing tokens');
+    }
+
+    await _api.changePassword(
+      accessToken: tokens.accessToken,
+      tokenType: tokens.tokenType,
+      oldPassword: oldPassword,
+      newPassword: newPassword,
+    );
+  }
+
   Future<void> logout() async {
     final tokens = await _storage.readTokens();
     if (tokens != null) {

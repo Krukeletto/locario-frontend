@@ -17,5 +17,16 @@
   "themeSectionSubtitle": "Choose whether the app should follow the system or stay fixed",
   "themeModeSystem": "System",
   "themeModeLight": "Light",
-  "themeModeDark": "Dark"
+  "themeModeDark": "Dark",
+  "settingsAccountSectionTitle": "Password",
+  "settingsAccountSectionSubtitle": "Update your password",
+  "settingsAccountChangePassword": "Change password",
+  "settingsChangePasswordDialogTitle": "Change password",
+  "settingsChangePasswordCurrentLabel": "Current password",
+  "settingsChangePasswordNewLabel": "New password",
+  "settingsChangePasswordCancel": "Cancel",
+  "settingsChangePasswordSubmit": "Update password",
+  "settingsChangePasswordSuccess": "Password updated.",
+  "settingsChangePasswordInvalidOld": "Current password is incorrect.",
+  "settingsChangePasswordFailed": "Could not update password."
 }

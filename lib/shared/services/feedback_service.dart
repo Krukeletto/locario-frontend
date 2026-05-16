@@ -6,6 +6,9 @@ enum FeedbackMessage {
   loginSuccess,
   logoutSuccess,
   loginInvalidCredentials,
+  changePasswordSuccess,
+  changePasswordInvalidOld,
+  changePasswordFailed,
   networkError,
   featureComingSoon,
   eventCreated,
@@ -96,6 +99,11 @@ class FeedbackService {
       FeedbackMessage.logoutSuccess => l10n.authLogoutSuccess,
       FeedbackMessage.loginInvalidCredentials =>
         l10n.authLoginErrorInvalidCredentials,
+      FeedbackMessage.changePasswordSuccess =>
+        l10n.settingsChangePasswordSuccess,
+      FeedbackMessage.changePasswordInvalidOld =>
+        l10n.settingsChangePasswordInvalidOld,
+      FeedbackMessage.changePasswordFailed => l10n.settingsChangePasswordFailed,
       FeedbackMessage.networkError => l10n.networkError,
       FeedbackMessage.featureComingSoon => l10n.featureComingSoon,
       FeedbackMessage.eventCreated => l10n.hubCreateEventCreatedSuccess,
