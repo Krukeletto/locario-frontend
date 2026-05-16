@@ -792,6 +792,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileInboxSubtitle => 'Open your notifications';
 
   @override
+  String get profileBioPlaceholder => 'No bio yet.';
+
+  @override
+  String get profileLinksLabel => 'Links';
+
+  @override
+  String get profileLinksPlaceholder => 'No links yet.';
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override

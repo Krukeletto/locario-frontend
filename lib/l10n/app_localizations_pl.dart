@@ -800,6 +800,15 @@ class AppLocalizationsPl extends AppLocalizations {
   String get profileInboxSubtitle => 'Otwórz powiadomienia';
 
   @override
+  String get profileBioPlaceholder => 'Brak opisu.';
+
+  @override
+  String get profileLinksLabel => 'Linki';
+
+  @override
+  String get profileLinksPlaceholder => 'Brak linków.';
+
+  @override
   String get settingsTitle => 'Ustawienia';
 
   @override

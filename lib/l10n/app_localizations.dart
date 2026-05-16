@@ -1508,6 +1508,24 @@ abstract class AppLocalizations {
   /// **'Open your notifications'**
   String get profileInboxSubtitle;
 
+  /// No description provided for @profileBioPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'No bio yet.'**
+  String get profileBioPlaceholder;
+
+  /// No description provided for @profileLinksLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Links'**
+  String get profileLinksLabel;
+
+  /// No description provided for @profileLinksPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'No links yet.'**
+  String get profileLinksPlaceholder;
+
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:
