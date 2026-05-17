@@ -99,6 +99,38 @@ class ChangePasswordRequest {
   }
 }
 
+class UpdateProfileRequest {
+  const UpdateProfileRequest({
+    required this.username,
+    required this.email,
+    required this.avatarUrl,
+    required this.bio,
+    required this.websiteUrl,
+    required this.instagramUrl,
+    required this.facebookUrl,
+  });
+
+  final String username;
+  final String email;
+  final String avatarUrl;
+  final String bio;
+  final String websiteUrl;
+  final String instagramUrl;
+  final String facebookUrl;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'username': username,
+      'email': email,
+      'avatarUrl': avatarUrl,
+      'bio': bio,
+      'websiteUrl': websiteUrl,
+      'instagramUrl': instagramUrl,
+      'facebookUrl': facebookUrl,
+    };
+  }
+}
+
 class GoogleOAuthRequest {
   const GoogleOAuthRequest({required this.idToken});
 

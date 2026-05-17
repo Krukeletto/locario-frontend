@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../shared/auth/auth_models.dart';
 import '../../shared/auth/auth_scope.dart';
@@ -107,7 +108,7 @@ class _ProfileHeaderCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final bio = profile.bio?.trim() ?? '';
     final role = profile.role?.trim() ?? '';
-    final links = _buildLinks(profile);
+    final links = _buildLinks(profile, scheme);
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -169,7 +170,7 @@ class _ProfileHeaderCard extends StatelessWidget {
               Text(
                 bio.isEmpty ? l10n.profileBioPlaceholder : bio,
                 textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
+                style: theme.textTheme.bodyLarge?.copyWith(
                   color: scheme.onSurface.withValues(alpha: 0.72),
                 ),
               ),
@@ -230,25 +231,41 @@ class _ProfileHeaderCard extends StatelessWidget {
     );
   }
 
-  List<_ProfileLinkData> _buildLinks(UserProfile profile) {
+  List<_ProfileLinkData> _buildLinks(UserProfile profile, ColorScheme scheme) {
     final links = <_ProfileLinkData>[];
 
     final website = profile.websiteUrl?.trim() ?? '';
     if (website.isNotEmpty) {
-      links.add(_ProfileLinkData(icon: Icons.language_rounded, label: website));
+      links.add(
+        _ProfileLinkData(
+          icon: Icon(Icons.language_rounded, color: scheme.primary, size: 18),
+          label: website,
+        ),
+      );
     }
 
     final instagram = profile.instagramUrl?.trim() ?? '';
     if (instagram.isNotEmpty) {
       links.add(
-        _ProfileLinkData(icon: Icons.camera_alt_rounded, label: instagram),
+        _ProfileLinkData(
+          icon: SvgPicture.asset(
+            'assets/instagram_profile/instagram.svg',
+            width: 18,
+            height: 18,
+            colorFilter: ColorFilter.mode(scheme.primary, BlendMode.srcIn),
+          ),
+          label: instagram,
+        ),
       );
     }
 
     final facebook = profile.facebookUrl?.trim() ?? '';
     if (facebook.isNotEmpty) {
       links.add(
-        _ProfileLinkData(icon: Icons.facebook_rounded, label: facebook),
+        _ProfileLinkData(
+          icon: Icon(Icons.facebook_rounded, color: scheme.primary, size: 18),
+          label: facebook,
+        ),
       );
     }
 
@@ -259,7 +276,7 @@ class _ProfileHeaderCard extends StatelessWidget {
 class _ProfileLinkData {
   const _ProfileLinkData({required this.icon, required this.label});
 
-  final IconData icon;
+  final Widget icon;
   final String label;
 }
 
@@ -283,7 +300,7 @@ class _ProfileLinkRow extends StatelessWidget {
             color: scheme.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(link.icon, color: scheme.primary, size: 18),
+          child: Center(child: link.icon),
         ),
         const SizedBox(width: 10),
         Flexible(

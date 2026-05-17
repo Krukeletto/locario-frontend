@@ -148,6 +148,35 @@ class AuthApi {
     return UserProfile.fromJson(decoded);
   }
 
+  Future<UserProfile> updateProfile({
+    required String accessToken,
+    required UpdateProfileRequest request,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.patch(
+      _uri('/api/profile'),
+      headers: {..._jsonHeaders, 'Authorization': '$tokenType $accessToken'},
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (response.statusCode != 200) {
+      debugPrint(
+        'Auth: update profile failed (${response.statusCode}) ${response.body}',
+      );
+      throw AuthApiException(
+        'Update profile failed',
+        statusCode: response.statusCode,
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw const AuthApiException('Unexpected profile payload');
+    }
+
+    return UserProfile.fromJson(decoded);
+  }
+
   Future<void> changePassword({
     required String accessToken,
     required String oldPassword,

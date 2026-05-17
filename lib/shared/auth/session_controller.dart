@@ -130,6 +130,20 @@ class SessionController extends ChangeNotifier {
     }
   }
 
+  Future<void> updateProfile({required UpdateProfileRequest request}) async {
+    if (_isBusy) {
+      return;
+    }
+    _setBusy(true);
+    try {
+      _profile = await _updateProfileWithRefresh(request: request);
+      _status = SessionStatus.authenticated;
+      notifyListeners();
+    } finally {
+      _setBusy(false);
+    }
+  }
+
   Future<void> refreshProfile() async {
     if (!isAuthenticated) {
       return;
@@ -203,6 +217,29 @@ class SessionController extends ChangeNotifier {
       rethrow;
     } catch (error) {
       debugPrint('Auth: profile fetch failed (unknown): $error');
+      rethrow;
+    }
+  }
+
+  Future<UserProfile> _updateProfileWithRefresh({
+    required UpdateProfileRequest request,
+  }) async {
+    try {
+      return await _authRepository.updateProfile(request);
+    } on AuthApiException catch (error) {
+      if (error.statusCode != 401) {
+        rethrow;
+      }
+      final refreshed = await _tryRefreshTokens();
+      if (refreshed == null) {
+        rethrow;
+      }
+      return _authRepository.updateProfile(request);
+    } on AuthRepositoryException catch (error) {
+      debugPrint('Auth: update profile failed (repo): ${error.message}');
+      rethrow;
+    } catch (error) {
+      debugPrint('Auth: update profile failed (unknown): $error');
       rethrow;
     }
   }

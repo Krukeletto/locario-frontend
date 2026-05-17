@@ -1,10 +1,113 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../shared/auth/auth_api.dart';
+import '../../shared/auth/auth_models.dart';
 import '../../shared/auth/auth_scope.dart';
+import '../../shared/services/feedback_service.dart';
 
-class EditProfileScreen extends StatelessWidget {
+class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
+
+  @override
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
+}
+
+class _EditProfileScreenState extends State<EditProfileScreen> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _bioController = TextEditingController();
+  final TextEditingController _websiteController = TextEditingController();
+  final TextEditingController _instagramController = TextEditingController();
+  final TextEditingController _facebookController = TextEditingController();
+
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _bioController.dispose();
+    _websiteController.dispose();
+    _instagramController.dispose();
+    _facebookController.dispose();
+    super.dispose();
+  }
+
+  String _resolveValue(String value, String fallback) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? fallback : trimmed;
+  }
+
+  Future<void> _handleSubmit(BuildContext context) async {
+    if (_isSubmitting) {
+      return;
+    }
+
+    final sessionController = AuthScope.of(context);
+    final profile = sessionController.profile;
+    if (profile == null || sessionController.isBusy) {
+      return;
+    }
+
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final request = UpdateProfileRequest(
+        username: _resolveValue(_usernameController.text, profile.username),
+        email: profile.email,
+        avatarUrl: profile.avatarUrl ?? '',
+        bio: _resolveValue(_bioController.text, profile.bio ?? ''),
+        websiteUrl: _resolveValue(
+          _websiteController.text,
+          profile.websiteUrl ?? '',
+        ),
+        instagramUrl: _resolveValue(
+          _instagramController.text,
+          profile.instagramUrl ?? '',
+        ),
+        facebookUrl: _resolveValue(
+          _facebookController.text,
+          profile.facebookUrl ?? '',
+        ),
+      );
+
+      await sessionController.updateProfile(request: request);
+      if (!mounted) {
+        return;
+      }
+      FeedbackService.showSuccess(FeedbackMessage.profileUpdateSuccess);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showUpdateProfileError(error);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  void _showUpdateProfileError(Object error) {
+    if (error is SocketException) {
+      FeedbackService.showError(FeedbackMessage.networkError);
+      return;
+    }
+
+    if (error is AuthApiException) {
+      FeedbackService.showError(FeedbackMessage.profileUpdateFailed);
+      return;
+    }
+
+    FeedbackService.showError(FeedbackMessage.profileUpdateFailed);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,6 +116,8 @@ class EditProfileScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final sessionController = AuthScope.of(context);
     final profile = sessionController.profile;
+    final canSubmit =
+        !_isSubmitting && !sessionController.isBusy && profile != null;
     final fallbackHintStyle = theme.textTheme.bodyMedium?.copyWith(
       color: scheme.onSurface.withValues(alpha: 0.7),
     );
@@ -129,6 +234,7 @@ class EditProfileScreen extends StatelessWidget {
           fieldLabel(l10n.editProfileUsernameLabel),
           const SizedBox(height: 6),
           TextFormField(
+            controller: _usernameController,
             decoration: buildFieldDecoration(
               hintText: placeholderOrValue(
                 profile?.username,
@@ -142,6 +248,7 @@ class EditProfileScreen extends StatelessWidget {
           fieldLabel(l10n.editProfileBioLabel),
           const SizedBox(height: 6),
           TextFormField(
+            controller: _bioController,
             decoration: buildFieldDecoration(
               hintText: placeholderOrValue(
                 profile?.bio,
@@ -157,6 +264,7 @@ class EditProfileScreen extends StatelessWidget {
           fieldLabel(l10n.editProfileWebsiteLabel),
           const SizedBox(height: 6),
           TextFormField(
+            controller: _websiteController,
             decoration: buildFieldDecoration(
               hintText: placeholderOrValue(
                 profile?.websiteUrl,
@@ -171,6 +279,7 @@ class EditProfileScreen extends StatelessWidget {
           fieldLabel(l10n.editProfileInstagramLabel),
           const SizedBox(height: 6),
           TextFormField(
+            controller: _instagramController,
             decoration: buildFieldDecoration(
               hintText: placeholderOrValue(
                 profile?.instagramUrl,
@@ -185,6 +294,7 @@ class EditProfileScreen extends StatelessWidget {
           fieldLabel(l10n.editProfileFacebookLabel),
           const SizedBox(height: 6),
           TextFormField(
+            controller: _facebookController,
             decoration: buildFieldDecoration(
               hintText: placeholderOrValue(
                 profile?.facebookUrl,
@@ -194,6 +304,17 @@ class EditProfileScreen extends StatelessWidget {
             ),
             keyboardType: TextInputType.url,
             textInputAction: TextInputAction.done,
+          ),
+          const SizedBox(height: 20),
+          FilledButton(
+            onPressed: canSubmit ? () => _handleSubmit(context) : null,
+            child: _isSubmitting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(l10n.editProfileSaveButton),
           ),
         ],
       ),

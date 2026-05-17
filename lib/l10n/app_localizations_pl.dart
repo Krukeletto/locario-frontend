@@ -845,6 +845,15 @@ class AppLocalizationsPl extends AppLocalizations {
   String get editProfileFacebookPlaceholder => 'Dodaj link do Facebooka';
 
   @override
+  String get editProfileSaveButton => 'Zapisz zmiany';
+
+  @override
+  String get profileUpdateSuccess => 'Profil zaktualizowany.';
+
+  @override
+  String get profileUpdateFailed => 'Nie udało się zaktualizować profilu.';
+
+  @override
   String get settingsTitle => 'Ustawienia';
 
   @override

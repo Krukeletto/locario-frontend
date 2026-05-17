@@ -1598,6 +1598,24 @@ abstract class AppLocalizations {
   /// **'Add a Facebook link'**
   String get editProfileFacebookPlaceholder;
 
+  /// No description provided for @editProfileSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get editProfileSaveButton;
+
+  /// No description provided for @profileUpdateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated.'**
+  String get profileUpdateSuccess;
+
+  /// No description provided for @profileUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update profile.'**
+  String get profileUpdateFailed;
+
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:
