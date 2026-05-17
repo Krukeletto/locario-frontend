@@ -8,6 +8,7 @@ import '../features/hub/create_event/create_event_screen.dart';
 import '../features/explore/explore_screen.dart';
 import '../features/hub/hub_placeholder_screen.dart';
 import '../features/inbox/inbox_screen.dart';
+import '../features/profile/edit_profile_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/profile/settings_screen.dart';
 import '../features/saved/saved_screen.dart';
@@ -234,6 +235,17 @@ GoRouter createAppRouter(SessionController sessionController) {
                         state.uri.path,
                       ),
                       child: const SettingsScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'edit',
+                    pageBuilder: (context, state) => _trackedNoTransitionPage(
+                      controller: navigationHistory,
+                      location: state.uri.toString(),
+                      rememberAsSafe: _shouldRememberAsSafeLocation(
+                        state.uri.path,
+                      ),
+                      child: const EditProfileScreen(),
                     ),
                   ),
                 ],

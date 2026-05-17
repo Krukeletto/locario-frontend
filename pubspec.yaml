@@ -90,6 +90,7 @@ flutter:
   assets:
     - assets/map_styles/openstreetmap_custom.json
     - assets/google_signin/google_g.svg
+    - assets/instagram_profile/instagram.svg
 
 flutter_launcher_icons:
   android: true

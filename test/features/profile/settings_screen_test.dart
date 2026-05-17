@@ -5,6 +5,11 @@ import 'package:locario/app/locale/locale_scope.dart';
 import 'package:locario/app/theme/theme_controller.dart';
 import 'package:locario/app/theme/theme_scope.dart';
 import 'package:locario/features/profile/settings_screen.dart';
+import 'package:locario/shared/auth/auth_api.dart';
+import 'package:locario/shared/auth/auth_repository.dart';
+import 'package:locario/shared/auth/session_controller.dart';
+import 'package:locario/shared/auth/auth_scope.dart';
+import 'package:locario/shared/auth/auth_models.dart';
 import 'package:locario/shared/notifications/notification_controller.dart';
 import 'package:locario/shared/notifications/notification_scope.dart';
 import 'package:locario/shared/notifications/shared_prefs_notification_history_repository.dart';
@@ -13,6 +18,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../test_helpers/fake_app_settings_store.dart';
 import '../../test_helpers/test_app.dart';
+
+// Minimal in-memory token storage for tests
+class _MemoryAuthStorage implements AuthTokenStorage {
+  AuthTokens? stored;
+
+  @override
+  Future<void> saveTokens(AuthTokens tokens) async => stored = tokens;
+
+  @override
+  Future<AuthTokens?> readTokens() async => stored;
+
+  @override
+  Future<void> clear() async => stored = null;
+}
 
 void main() {
   group('SettingsScreen', () {
@@ -32,6 +51,15 @@ void main() {
         preferencesStore: const SharedPrefsNotificationPreferencesStore(),
       );
 
+      // Provide an unauthenticated SessionController via AuthScope
+      final sessionController = SessionController(
+        authRepository: AuthRepository(
+          api: AuthApi(),
+          storage: _MemoryAuthStorage(),
+        ),
+      );
+      await sessionController.load();
+
       await tester.pumpWidget(
         NotificationScope(
           controller: notificationController,
@@ -39,9 +67,12 @@ void main() {
             controller: localeController,
             child: ThemeScope(
               controller: themeController,
-              child: buildLocalizedTestApp(
-                locale: const Locale('pl'),
-                home: const SettingsScreen(),
+              child: AuthScope(
+                controller: sessionController,
+                child: buildLocalizedTestApp(
+                  locale: const Locale('pl'),
+                  home: const SettingsScreen(),
+                ),
               ),
             ),
           ),
@@ -72,6 +103,14 @@ void main() {
         preferencesStore: const SharedPrefsNotificationPreferencesStore(),
       );
 
+      final sessionController = SessionController(
+        authRepository: AuthRepository(
+          api: AuthApi(),
+          storage: _MemoryAuthStorage(),
+        ),
+      );
+      await sessionController.load();
+
       await tester.pumpWidget(
         NotificationScope(
           controller: notificationController,
@@ -79,9 +118,12 @@ void main() {
             controller: localeController,
             child: ThemeScope(
               controller: themeController,
-              child: buildLocalizedTestApp(
-                locale: const Locale('pl'),
-                home: const SettingsScreen(),
+              child: AuthScope(
+                controller: sessionController,
+                child: buildLocalizedTestApp(
+                  locale: const Locale('pl'),
+                  home: const SettingsScreen(),
+                ),
               ),
             ),
           ),

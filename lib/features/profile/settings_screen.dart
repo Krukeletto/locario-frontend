@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:locario/shared/notifications/notification_scope.dart';
@@ -5,6 +7,9 @@ import 'package:locario/shared/notifications/notification_type.dart';
 
 import '../../app/locale/locale_scope.dart';
 import '../../app/theme/theme_scope.dart';
+import '../../shared/auth/auth_api.dart';
+import '../../shared/auth/auth_scope.dart';
+import '../../shared/services/feedback_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -17,6 +22,10 @@ class SettingsScreen extends StatelessWidget {
     final localeController = LocaleScope.of(context);
     final themeController = ThemeScope.of(context);
     final notificationController = NotificationScope.of(context);
+    final sessionController = AuthScope.of(context);
+    final isAuthenticated = sessionController.isAuthenticated;
+    final hasPassword = sessionController.profile?.hasPassword ?? false;
+    final canChangePassword = isAuthenticated && hasPassword;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -105,6 +114,18 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
+          if (canChangePassword) ...[
+            _SettingsSection(
+              title: l10n.settingsAccountSectionTitle,
+              subtitle: l10n.settingsAccountSectionSubtitle,
+              child: FilledButton.icon(
+                onPressed: () => _showChangePasswordDialog(context),
+                icon: const Icon(Icons.lock_reset_rounded),
+                label: Text(l10n.settingsAccountChangePassword),
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
           _SettingsSection(
             title: l10n.notificationSettingsTitle,
             subtitle: l10n.notificationSettingsSubtitle,
@@ -153,6 +174,261 @@ class SettingsScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context) {
+    final sessionController = AuthScope.of(context);
+    if (sessionController.isBusy) {
+      return;
+    }
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => const _ChangePasswordDialog(),
+    );
+  }
+}
+
+class _ChangePasswordDialog extends StatefulWidget {
+  const _ChangePasswordDialog();
+
+  @override
+  State<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
+  final TextEditingController _oldPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+
+  bool _hasSubmitted = false;
+  bool _isSubmitting = false;
+  bool _obscureOldPassword = true;
+  bool _obscureNewPassword = true;
+  String? _oldPasswordError;
+  String? _newPasswordError;
+
+  @override
+  void dispose() {
+    _oldPasswordController.dispose();
+    _newPasswordController.dispose();
+    super.dispose();
+  }
+
+  String? _validateOldPassword(AppLocalizations l10n, String value) {
+    if (value.isEmpty) {
+      return l10n.authValidationPasswordRequired;
+    }
+    return null;
+  }
+
+  String? _validateNewPassword(AppLocalizations l10n, String value) {
+    if (value.isEmpty) {
+      return l10n.authValidationPasswordRequired;
+    }
+    if (value.length < 8) {
+      return l10n.authValidationPasswordMin8;
+    }
+    return null;
+  }
+
+  void _handleOldPasswordChanged(AppLocalizations l10n, String value) {
+    if (!_hasSubmitted) {
+      return;
+    }
+
+    setState(() {
+      _oldPasswordError = _validateOldPassword(l10n, value);
+    });
+  }
+
+  void _handleNewPasswordChanged(AppLocalizations l10n, String value) {
+    if (!_hasSubmitted) {
+      return;
+    }
+
+    setState(() {
+      _newPasswordError = _validateNewPassword(l10n, value);
+    });
+  }
+
+  Future<void> _handleSubmit(AppLocalizations l10n) async {
+    if (_isSubmitting) {
+      return;
+    }
+
+    if (!_hasSubmitted) {
+      setState(() {
+        _hasSubmitted = true;
+      });
+    }
+
+    final oldPasswordError = _validateOldPassword(
+      l10n,
+      _oldPasswordController.text,
+    );
+    final newPasswordError = _validateNewPassword(
+      l10n,
+      _newPasswordController.text,
+    );
+
+    setState(() {
+      _oldPasswordError = oldPasswordError;
+      _newPasswordError = newPasswordError;
+    });
+
+    if (oldPasswordError != null || newPasswordError != null) {
+      return;
+    }
+
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    final sessionController = AuthScope.of(context);
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      await sessionController.changePassword(
+        oldPassword: _oldPasswordController.text,
+        newPassword: _newPasswordController.text,
+      );
+      if (!mounted) {
+        return;
+      }
+      FeedbackService.showSuccess(FeedbackMessage.changePasswordSuccess);
+      Navigator.of(context).pop();
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showChangePasswordError(error);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  void _showChangePasswordError(Object error) {
+    if (error is AuthApiException) {
+      if (error.statusCode == 400 || error.statusCode == 401) {
+        FeedbackService.showError(FeedbackMessage.changePasswordInvalidOld);
+      } else {
+        FeedbackService.showError(FeedbackMessage.changePasswordFailed);
+      }
+      return;
+    }
+
+    if (error is SocketException) {
+      FeedbackService.showError(FeedbackMessage.networkError);
+      return;
+    }
+
+    FeedbackService.showError(FeedbackMessage.changePasswordFailed);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final sessionController = AuthScope.of(context);
+    final canSubmit = !_isSubmitting && !sessionController.isBusy;
+
+    return AlertDialog(
+      title: Text(l10n.settingsChangePasswordDialogTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _oldPasswordController,
+              obscureText: _obscureOldPassword,
+              textInputAction: TextInputAction.next,
+              autocorrect: false,
+              enableSuggestions: false,
+              decoration: InputDecoration(
+                labelText: l10n.settingsChangePasswordCurrentLabel,
+                hintText: l10n.authPasswordHint,
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                errorText: _oldPasswordError,
+                filled: true,
+                fillColor: scheme.surfaceContainerLow,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureOldPassword
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureOldPassword = !_obscureOldPassword;
+                    });
+                  },
+                ),
+              ),
+              onChanged: (value) => _handleOldPasswordChanged(l10n, value),
+              onSubmitted: (_) => FocusScope.of(context).nextFocus(),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _newPasswordController,
+              obscureText: _obscureNewPassword,
+              textInputAction: TextInputAction.done,
+              autocorrect: false,
+              enableSuggestions: false,
+              decoration: InputDecoration(
+                labelText: l10n.settingsChangePasswordNewLabel,
+                hintText: l10n.authPasswordHint,
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                errorText: _newPasswordError,
+                filled: true,
+                fillColor: scheme.surfaceContainerLow,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureNewPassword
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureNewPassword = !_obscureNewPassword;
+                    });
+                  },
+                ),
+              ),
+              onChanged: (value) => _handleNewPasswordChanged(l10n, value),
+              onSubmitted: (_) => _handleSubmit(l10n),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+          child: Text(l10n.settingsChangePasswordCancel),
+        ),
+        FilledButton(
+          onPressed: canSubmit ? () => _handleSubmit(l10n) : null,
+          child: _isSubmitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(l10n.settingsChangePasswordSubmit),
+        ),
+      ],
     );
   }
 }

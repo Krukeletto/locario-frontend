@@ -85,6 +85,52 @@ class RefreshTokenRequest {
   }
 }
 
+class ChangePasswordRequest {
+  const ChangePasswordRequest({
+    required this.oldPassword,
+    required this.newPassword,
+  });
+
+  final String oldPassword;
+  final String newPassword;
+
+  Map<String, String> toJson() {
+    return {'oldPassword': oldPassword, 'newPassword': newPassword};
+  }
+}
+
+class UpdateProfileRequest {
+  const UpdateProfileRequest({
+    required this.username,
+    required this.email,
+    required this.avatarUrl,
+    required this.bio,
+    required this.websiteUrl,
+    required this.instagramUrl,
+    required this.facebookUrl,
+  });
+
+  final String username;
+  final String email;
+  final String avatarUrl;
+  final String bio;
+  final String websiteUrl;
+  final String instagramUrl;
+  final String facebookUrl;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'username': username,
+      'email': email,
+      'avatarUrl': avatarUrl,
+      'bio': bio,
+      'websiteUrl': websiteUrl,
+      'instagramUrl': instagramUrl,
+      'facebookUrl': facebookUrl,
+    };
+  }
+}
+
 class GoogleOAuthRequest {
   const GoogleOAuthRequest({required this.idToken});
 
@@ -175,6 +221,7 @@ class UserProfile {
     required this.facebookUrl,
     required this.createdAt,
     required this.eventRegistrations,
+    this.role,
     this.favorites = const [],
   });
 
@@ -182,6 +229,7 @@ class UserProfile {
   final String username;
   final String email;
   final bool hasPassword;
+  final String? role;
   final String? avatarUrl;
   final String? bio;
   final String? websiteUrl;
@@ -199,6 +247,7 @@ class UserProfile {
       username: json['username'] as String,
       email: json['email'] as String,
       hasPassword: json['hasPassword'] as bool? ?? false,
+      role: json['role'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
       bio: json['bio'] as String?,
       websiteUrl: json['websiteUrl'] as String?,

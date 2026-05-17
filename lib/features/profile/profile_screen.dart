@@ -1,7 +1,14 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../shared/auth/auth_models.dart';
 import '../../shared/auth/auth_scope.dart';
 import '../../shared/services/feedback_service.dart';
 
@@ -15,6 +22,8 @@ class ProfileScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final sessionController = AuthScope.of(context);
     final isAuthenticated = sessionController.isAuthenticated;
+    final profile = sessionController.profile;
+    final hasProfile = isAuthenticated && profile != null;
     final authTitle = isAuthenticated
         ? l10n.profileAuthLogoutTitle
         : l10n.profileAuthLoginTitle;
@@ -42,6 +51,10 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+          if (hasProfile) ...[
+            _ProfileHeaderCard(profile: profile),
+            const SizedBox(height: 24),
+          ],
           _ProfileActionCard(
             icon: isAuthenticated ? Icons.logout_rounded : Icons.login_rounded,
             title: authTitle,
@@ -85,6 +98,299 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _ProfileHeaderCard extends StatelessWidget {
+  const _ProfileHeaderCard({required this.profile});
+
+  final UserProfile profile;
+
+  static const double _avatarSize = 96;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final bio = profile.bio?.trim() ?? '';
+    final role = profile.role?.trim() ?? '';
+    final links = _buildLinks(profile, scheme);
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
+        boxShadow: [
+          BoxShadow(
+            color: theme.shadowColor,
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _buildAvatar(scheme),
+              const SizedBox(height: 12),
+              Text(
+                profile.username,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: scheme.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (role.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  role,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.64),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Text(
+                bio.isEmpty ? l10n.profileBioPlaceholder : bio,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: scheme.onSurface.withValues(alpha: 0.72),
+                ),
+              ),
+              if (links.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                Text(
+                  l10n.profileLinksLabel,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Column(
+                  children: [
+                    for (final link in links)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 320),
+                            child: _ProfileLinkRow(link: link),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Tooltip(
+              message: 'Edytuj profil',
+              child: Material(
+                color: scheme.primary.withValues(alpha: 0.12),
+                shape: const StadiumBorder(),
+                child: InkWell(
+                  onTap: () => context.push('/profile/edit'),
+                  customBorder: const StadiumBorder(),
+                  child: SizedBox(
+                    height: 32,
+                    width: 44,
+                    child: Icon(
+                      Icons.edit_rounded,
+                      color: scheme.primary,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<_ProfileLinkData> _buildLinks(UserProfile profile, ColorScheme scheme) {
+    final links = <_ProfileLinkData>[];
+
+    final website = profile.websiteUrl?.trim() ?? '';
+    if (website.isNotEmpty) {
+      links.add(
+        _ProfileLinkData(
+          icon: Icon(Icons.language_rounded, color: scheme.primary, size: 18),
+          label: website,
+        ),
+      );
+    }
+
+    final instagram = profile.instagramUrl?.trim() ?? '';
+    if (instagram.isNotEmpty) {
+      links.add(
+        _ProfileLinkData(
+          icon: SvgPicture.asset(
+            'assets/instagram_profile/instagram.svg',
+            width: 18,
+            height: 18,
+            colorFilter: ColorFilter.mode(scheme.primary, BlendMode.srcIn),
+          ),
+          label: instagram,
+        ),
+      );
+    }
+
+    final facebook = profile.facebookUrl?.trim() ?? '';
+    if (facebook.isNotEmpty) {
+      links.add(
+        _ProfileLinkData(
+          icon: Icon(Icons.facebook_rounded, color: scheme.primary, size: 18),
+          label: facebook,
+        ),
+      );
+    }
+
+    return links;
+  }
+
+  Widget _buildAvatar(ColorScheme scheme) {
+    final avatarUrl = profile.avatarUrl?.trim() ?? '';
+    if (avatarUrl.isNotEmpty) {
+      final dataBytes = avatarUrl.startsWith('data:')
+          ? _decodeDataImage(avatarUrl)
+          : null;
+      if (dataBytes != null) {
+        return _buildMemoryAvatar(dataBytes);
+      }
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: avatarUrl,
+          width: _avatarSize,
+          height: _avatarSize,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => _buildAvatarFallback(scheme),
+          errorWidget: (context, url, error) => _buildAvatarFallback(scheme),
+        ),
+      );
+    }
+
+    return _buildAvatarFallback(scheme);
+  }
+
+  Uint8List? _decodeDataImage(String dataUri) {
+    final commaIndex = dataUri.indexOf(',');
+    if (commaIndex == -1) {
+      return null;
+    }
+    try {
+      return base64Decode(dataUri.substring(commaIndex + 1));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Widget _buildMemoryAvatar(Uint8List bytes) {
+    return ClipOval(
+      child: Image.memory(
+        bytes,
+        width: _avatarSize,
+        height: _avatarSize,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  Widget _buildAvatarFallback(ColorScheme scheme) {
+    return Container(
+      width: _avatarSize,
+      height: _avatarSize,
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(Icons.person_rounded, color: scheme.primary, size: 48),
+    );
+  }
+}
+
+class _ProfileLinkData {
+  const _ProfileLinkData({required this.icon, required this.label});
+
+  final Widget icon;
+  final String label;
+}
+
+class _ProfileLinkRow extends StatelessWidget {
+  const _ProfileLinkRow({required this.link});
+
+  final _ProfileLinkData link;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: scheme.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Center(child: link.icon),
+        ),
+        const SizedBox(width: 10),
+        Flexible(
+          child: InkWell(
+            onTap: () async {
+              final url = _normalizeUrl(link.label);
+              try {
+                await launchUrlString(
+                  url,
+                  mode: LaunchMode.externalApplication,
+                );
+              } catch (_) {
+                // ignore
+              }
+            },
+            child: Text(
+              link.label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.primary,
+                decoration: TextDecoration.none,
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _normalizeUrl(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    return 'https://$trimmed';
   }
 }
 

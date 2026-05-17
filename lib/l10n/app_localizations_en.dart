@@ -792,6 +792,71 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileInboxSubtitle => 'Open your notifications';
 
   @override
+  String get profileBioPlaceholder => 'No bio yet.';
+
+  @override
+  String get profileLinksLabel => 'Links';
+
+  @override
+  String get profileLinksPlaceholder => 'No links yet.';
+
+  @override
+  String get editProfileTitle => 'Edit profile';
+
+  @override
+  String get editProfileChangePhoto => 'Change photo';
+
+  @override
+  String get editProfileUsernameLabel => 'Username';
+
+  @override
+  String get editProfileBioLabel => 'Bio';
+
+  @override
+  String get editProfileWebsiteLabel => 'Website link';
+
+  @override
+  String get editProfileInstagramLabel => 'Instagram link';
+
+  @override
+  String get editProfileFacebookLabel => 'Facebook link';
+
+  @override
+  String get editProfileUsernamePlaceholder => 'Add a username';
+
+  @override
+  String get editProfileBioPlaceholder => 'Add a bio';
+
+  @override
+  String get editProfileWebsitePlaceholder => 'Add a website link';
+
+  @override
+  String get editProfileInstagramPlaceholder => 'Add an Instagram link';
+
+  @override
+  String get editProfileFacebookPlaceholder => 'Add a Facebook link';
+
+  @override
+  String get editProfileLinkHttpsError => 'Link must start with https://';
+
+  @override
+  String get editProfileInstagramDomainError =>
+      'Instagram link must contain instagram';
+
+  @override
+  String get editProfileFacebookDomainError =>
+      'Facebook link must contain facebook';
+
+  @override
+  String get editProfileSaveButton => 'Save changes';
+
+  @override
+  String get profileUpdateSuccess => 'Profile updated.';
+
+  @override
+  String get profileUpdateFailed => 'Could not update profile.';
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override
@@ -826,6 +891,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Dark';
+
+  @override
+  String get settingsAccountSectionTitle => 'Password';
+
+  @override
+  String get settingsAccountSectionSubtitle => 'Update your password';
+
+  @override
+  String get settingsAccountChangePassword => 'Change password';
+
+  @override
+  String get settingsChangePasswordDialogTitle => 'Change password';
+
+  @override
+  String get settingsChangePasswordCurrentLabel => 'Current password';
+
+  @override
+  String get settingsChangePasswordNewLabel => 'New password';
+
+  @override
+  String get settingsChangePasswordCancel => 'Cancel';
+
+  @override
+  String get settingsChangePasswordSubmit => 'Update password';
+
+  @override
+  String get settingsChangePasswordSuccess => 'Password updated.';
+
+  @override
+  String get settingsChangePasswordInvalidOld =>
+      'Current password is incorrect.';
+
+  @override
+  String get settingsChangePasswordFailed => 'Could not update password.';
 
   @override
   String get savedTitle => 'Saved';
