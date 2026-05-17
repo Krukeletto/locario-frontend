@@ -448,6 +448,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SizedBox(height: 6),
           TextFormField(
             controller: _websiteController,
+            key: const Key('edit-profile-website'),
             decoration: buildFieldDecoration(
               hintText: placeholderOrValue(
                 profile?.websiteUrl,
@@ -471,6 +472,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SizedBox(height: 6),
           TextFormField(
             controller: _instagramController,
+            key: const Key('edit-profile-instagram'),
             decoration: buildFieldDecoration(
               hintText: placeholderOrValue(
                 profile?.instagramUrl,
@@ -494,6 +496,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SizedBox(height: 6),
           TextFormField(
             controller: _facebookController,
+            key: const Key('edit-profile-facebook'),
             decoration: buildFieldDecoration(
               hintText: placeholderOrValue(
                 profile?.facebookUrl,
