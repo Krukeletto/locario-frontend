@@ -123,69 +123,60 @@ class _ProfileHeaderCard extends StatelessWidget {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: scheme.primary.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.person_rounded,
-                  color: scheme.primary,
-                  size: 32,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  profile.username,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: scheme.primary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
+          Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              color: scheme.primary.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.person_rounded, color: scheme.primary, size: 48),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            profile.username,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: scheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             bio.isEmpty ? l10n.profileBioPlaceholder : bio,
+            textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.72),
             ),
           ),
-          const SizedBox(height: 14),
-          Text(
-            l10n.profileLinksLabel,
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: scheme.primary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          if (links.isEmpty)
+          if (links.isNotEmpty) ...[
+            const SizedBox(height: 14),
             Text(
-              l10n.profileLinksPlaceholder,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.56),
+              l10n.profileLinksLabel,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: scheme.primary,
+                fontWeight: FontWeight.w700,
               ),
-            )
-          else
+            ),
+            const SizedBox(height: 8),
             Column(
               children: [
                 for (final link in links)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: _ProfileLinkRow(link: link),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 320),
+                        child: _ProfileLinkRow(link: link),
+                      ),
+                    ),
                   ),
               ],
             ),
+          ],
         ],
       ),
     );
@@ -235,6 +226,7 @@ class _ProfileLinkRow extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
           width: 32,
@@ -246,12 +238,13 @@ class _ProfileLinkRow extends StatelessWidget {
           child: Icon(link.icon, color: scheme.primary, size: 18),
         ),
         const SizedBox(width: 10),
-        Expanded(
+        Flexible(
           child: Text(
             link.label,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.8),
             ),
+            textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
           ),
         ),
