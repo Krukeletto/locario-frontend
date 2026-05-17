@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
@@ -46,6 +48,8 @@ class NotificationController extends ChangeNotifier {
   Map<NotificationType, bool> _preferences = {};
   bool isEnabled(NotificationType type) =>
       _preferences[type] ?? _defaultEnabled(type);
+
+  Set<String> _scheduledJoinReminderIds = {};
 
   // ---------------------------------------------------------------------------
   // Pagination
@@ -192,15 +196,23 @@ class NotificationController extends ChangeNotifier {
   void scheduleRemindersForJoinedEvents(
     List<({String id, String title, DateTime startsAt})> events,
   ) {
-    for (final event in events) {
-      const type = NotificationType.upcomingEvent;
-      if (!isEnabled(type)) continue;
+    final currentIds = events.map((event) => event.id).toSet();
+    final removedJoinIds = _scheduledJoinReminderIds.difference(currentIds);
 
-      NotificationService.scheduleEventReminder(
-        eventId: event.id,
-        title: event.title,
-        startsAt: event.startsAt,
-      );
+    for (final eventId in removedJoinIds) {
+      unawaited(NotificationService.cancelEventReminder(eventId));
+    }
+
+    _scheduledJoinReminderIds = currentIds;
+
+    for (final event in events) {
+      if (isEnabled(NotificationType.upcomingEvent)) {
+        NotificationService.scheduleEventReminder(
+          eventId: event.id,
+          title: event.title,
+          startsAt: event.startsAt,
+        );
+      }
     }
   }
 

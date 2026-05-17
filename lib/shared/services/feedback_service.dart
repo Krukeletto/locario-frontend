@@ -16,6 +16,8 @@ enum FeedbackMessage {
   eventJoinError,
   eventPublishSuccess,
   eventPublishError,
+  eventReviewSuccess,
+  eventReviewError,
   unknownError,
 }
 
@@ -106,6 +108,8 @@ class FeedbackService {
       FeedbackMessage.eventJoinError => l10n.eventJoinError,
       FeedbackMessage.eventPublishSuccess => l10n.eventPublishSuccess,
       FeedbackMessage.eventPublishError => l10n.eventPublishError,
+      FeedbackMessage.eventReviewSuccess => l10n.eventReviewSuccess,
+      FeedbackMessage.eventReviewError => l10n.eventReviewError,
       FeedbackMessage.unknownError => l10n.exploreErrorUnknownTitle,
     };
   }

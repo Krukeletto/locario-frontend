@@ -220,6 +220,8 @@ class ExploreEvent {
     this.slotLimit,
     this.ticketUrl,
     this.organizers = const [],
+    this.organizerId,
+    this.organizerUsername,
     this.createdAt,
     this.updatedAt,
     this.trendingScore = 0,
@@ -246,6 +248,8 @@ class ExploreEvent {
   final int? slotLimit;
   final String? ticketUrl;
   final List<String> organizers;
+  final String? organizerId;
+  final String? organizerUsername;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -291,6 +295,8 @@ class ExploreEvent {
       slotLimit: json['slotLimit'] as int?,
       ticketUrl: _normalizedString(json['ticketUrl']),
       organizers: _organizersFromJson(json['organizers']),
+      organizerId: _primaryOrganizerIdFromJson(json['organizers']),
+      organizerUsername: _primaryOrganizerUsernameFromJson(json['organizers']),
       createdAt: _parseDateTime(json['createdAt']),
       updatedAt: _parseDateTime(json['updatedAt']),
     );
@@ -320,6 +326,11 @@ class ExploreEvent {
       if (slotLimit != null) 'slotLimit': slotLimit,
       if (ticketUrl != null) 'ticketUrl': ticketUrl,
       'organizers': organizers,
+      if (organizerId != null || organizerUsername != null)
+        'organizer': {
+          if (organizerId != null) 'userId': organizerId,
+          if (organizerUsername != null) 'username': organizerUsername,
+        },
       if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
       if (updatedAt != null) 'updatedAt': updatedAt!.toUtc().toIso8601String(),
       'tags': tags,
@@ -414,6 +425,9 @@ class ExploreEvent {
     final minutes = date.minute.toString().padLeft(2, '0');
     return '$day.$month, $hours:$minutes';
   }
+
+  bool get hasEnded =>
+      !((endsAt ?? startsAt).toLocal().isAfter(DateTime.now().toLocal()));
 }
 
 Map<String, dynamic>? _asMap(dynamic value) {
@@ -508,6 +522,24 @@ List<String> _organizersFromJson(dynamic value) {
       })
       .where((value) => value.isNotEmpty)
       .toList(growable: false);
+}
+
+String? _primaryOrganizerIdFromJson(dynamic value) {
+  if (value is! List || value.isEmpty) {
+    return null;
+  }
+
+  final first = _asMap(value.first);
+  return first == null ? null : _normalizedString(first['userId']);
+}
+
+String? _primaryOrganizerUsernameFromJson(dynamic value) {
+  if (value is! List || value.isEmpty) {
+    return null;
+  }
+
+  final first = _asMap(value.first);
+  return first == null ? null : _normalizedString(first['username']);
 }
 
 String _formatCoordinates(LatLng location) {

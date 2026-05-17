@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:locario/features/explore/models.dart';
 import 'package:locario/features/events/event_screen.dart';
 import 'package:locario/features/saved/saved_events_controller.dart';
@@ -25,7 +26,9 @@ void main() {
             controller: controller,
             child: EventScreen(
               eventId: '11111111-1111-1111-1111-111111111111',
-              eventRepository: FakeEventRepository(),
+              eventRepository: FakeEventRepository(
+                eventDetails: _futureEvent(),
+              ),
             ),
           ),
         ),
@@ -107,4 +110,16 @@ class _MemorySavedEventsRepository implements SavedEventsRepository {
 
   @override
   Future<void> clear() async {}
+}
+
+ExploreEvent _futureEvent() {
+  return ExploreEvent(
+    id: '11111111-1111-1111-1111-111111111111',
+    title: 'Jazz Evening',
+    startsAt: DateTime.utc(2026, 6, 12, 19),
+    venue: 'Piotrkowska 10, Lodz',
+    location: const LatLng(51.7592, 19.4550),
+    description: 'Live music and open-air atmosphere.',
+    address: 'Piotrkowska 10, Lodz',
+  );
 }

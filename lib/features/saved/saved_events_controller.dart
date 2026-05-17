@@ -69,11 +69,16 @@ class SavedEventsController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await _removeEndedSavedEvents(syncRemote: true);
+
       final session = _sessionController!;
       final api = _favoritesApi!;
 
-      // Push local-only records to backend
       for (final record in _records) {
+        if (_isEventFinished(record.event)) {
+          continue;
+        }
+
         if (record.syncState == SavedEventSyncState.localOnly ||
             record.syncState == SavedEventSyncState.pendingSync) {
           try {
@@ -100,8 +105,19 @@ class SavedEventsController extends ChangeNotifier {
 
       final newRecords = <SavedEventRecord>[];
       for (final fav in remoteFavorites) {
+        if (_isFavoriteFinished(fav)) {
+          await _removeRemoteFavorite(fav.eventId);
+          continue;
+        }
+
         if (!existingIds.contains(fav.eventId)) {
-          newRecords.add(await _fetchFullRecord(fav));
+          final record = await _fetchFullRecord(fav);
+          if (_isEventFinished(record.event)) {
+            await _removeRemoteFavorite(fav.eventId);
+            continue;
+          }
+
+          newRecords.add(record);
         }
       }
 
@@ -163,6 +179,8 @@ class SavedEventsController extends ChangeNotifier {
 
     if (_isAuthenticated && !_isSyncing) {
       await syncWithRemote();
+    } else {
+      await _removeEndedSavedEvents(syncRemote: false);
     }
   }
 
@@ -302,6 +320,65 @@ class SavedEventsController extends ChangeNotifier {
     }
 
     return _summaryToRecord(summary);
+  }
+
+  Future<void> _removeEndedSavedEvents({required bool syncRemote}) async {
+    final endedRecords = _records
+        .where((record) => _isEventFinished(record.event))
+        .toList(growable: false);
+    if (endedRecords.isEmpty) {
+      return;
+    }
+
+    final removableIds = <String>{};
+    for (final record in endedRecords) {
+      if (syncRemote && record.syncState != SavedEventSyncState.localOnly) {
+        if (await _removeRemoteFavorite(record.remoteId ?? record.event.id)) {
+          removableIds.add(record.event.id);
+        }
+        continue;
+      }
+
+      removableIds.add(record.event.id);
+    }
+
+    if (removableIds.isEmpty) {
+      return;
+    }
+
+    await replaceAll(
+      _records
+          .where((record) => !removableIds.contains(record.event.id))
+          .toList(growable: false),
+    );
+  }
+
+  Future<bool> _removeRemoteFavorite(String eventId) async {
+    if (!_isAuthenticated) {
+      return false;
+    }
+
+    try {
+      await _favoritesApi!.removeFavorite(
+        eventId,
+        _accessToken,
+        tokenType: _tokenType,
+      );
+      return true;
+    } catch (e) {
+      debugPrint('Failed to remove expired favorite: $e');
+      return false;
+    }
+  }
+
+  bool _isEventFinished(ExploreEvent event) {
+    final end = event.endsAt ?? event.startsAt;
+    return !end.toLocal().isAfter(DateTime.now().toLocal());
+  }
+
+  bool _isFavoriteFinished(FavoriteEventSummary favorite) {
+    final end = favorite.endAt ?? favorite.startAt;
+    return !end.toLocal().isAfter(DateTime.now().toLocal());
   }
 
   SavedEventRecord _summaryToRecord(FavoriteEventSummary summary) {

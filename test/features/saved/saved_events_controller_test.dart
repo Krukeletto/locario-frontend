@@ -74,6 +74,32 @@ void main() {
       expect(controller.isSaved('1'), isTrue);
       expect(repository.records, hasLength(1));
     });
+
+    test('removes ended saved events and syncs remote cleanup', () async {
+      final repository = _MemorySavedEventsRepository();
+      final sessionController = _AuthenticatedSessionController();
+      await sessionController.load();
+      final favoritesApi = _TrackingFavoritesApi();
+      final controller = SavedEventsController(
+        repository: repository,
+        sessionController: sessionController,
+        favoritesApi: favoritesApi,
+      );
+
+      await controller.saveEvent(
+        _endedEvent('1', 'Expired'),
+        savedAt: DateTime.utc(2026, 5, 1, 12),
+        syncState: SavedEventSyncState.synced,
+        remoteId: '1',
+      );
+
+      await controller.load();
+
+      expect(controller.records, isEmpty);
+      expect(repository.records, isEmpty);
+      expect(favoritesApi.removedEventIds, ['1']);
+      expect(favoritesApi.addedEventIds, isEmpty);
+    });
   });
 }
 
@@ -128,6 +154,31 @@ class _FailingFavoritesApi extends FavoritesApi {
   }
 }
 
+class _TrackingFavoritesApi extends FavoritesApi {
+  _TrackingFavoritesApi() : super();
+
+  final List<String> addedEventIds = [];
+  final List<String> removedEventIds = [];
+
+  @override
+  Future<void> addFavorite(
+    String eventId,
+    String accessToken, {
+    String tokenType = 'Bearer',
+  }) async {
+    addedEventIds.add(eventId);
+  }
+
+  @override
+  Future<void> removeFavorite(
+    String eventId,
+    String accessToken, {
+    String tokenType = 'Bearer',
+  }) async {
+    removedEventIds.add(eventId);
+  }
+}
+
 class _MemorySavedEventsRepository implements SavedEventsRepository {
   final List<SavedEventRecord> records = [];
 
@@ -164,6 +215,19 @@ ExploreEvent _event(String id, String title) {
     id: id,
     title: title,
     startsAt: DateTime.utc(2026, 5, 1, 18),
+    venue: 'Venue',
+    location: const LatLng(51.7592, 19.4550),
+    categories: const [Category(id: 'music', name: 'Music', slug: 'music')],
+    tags: const ['concert'],
+  );
+}
+
+ExploreEvent _endedEvent(String id, String title) {
+  return ExploreEvent(
+    id: id,
+    title: title,
+    startsAt: DateTime.utc(2026, 5, 1, 18),
+    endsAt: DateTime.utc(2026, 5, 1, 20),
     venue: 'Venue',
     location: const LatLng(51.7592, 19.4550),
     categories: const [Category(id: 'music', name: 'Music', slug: 'music')],

@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
   "savedTitle": "Saved",
-  "savedSubtitle": "Places, events and lists you want to revisit",
+  "savedSubtitle": "Places, events and lists.",
   "savedSaveAction": "Save event",
   "savedRemoveAction": "Remove saved",
   "savedSaveActionTooltip": "Save event",

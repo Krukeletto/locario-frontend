@@ -5,6 +5,8 @@ import 'package:locario/l10n/app_localizations.dart';
 import '../../shared/auth/auth_scope.dart';
 import '../../shared/events/event_repository.dart';
 import '../../shared/events/event_slots_response.dart';
+import '../../shared/reviews/review_models.dart';
+import '../../shared/reviews/review_repository.dart';
 import '../../shared/services/feedback_service.dart';
 import '../../shared/services/map_launch_service.dart';
 import '../../shared/services/share_service.dart';
@@ -30,12 +32,14 @@ class EventScreen extends StatefulWidget {
 
 class _EventScreenState extends State<EventScreen> {
   late final EventRepository _eventRepository;
+  late final ReviewRepository _reviewRepository;
   AppLocalizations? _l10n;
   bool _hasRequestedInitialLoad = false;
 
   bool _isLoading = true;
   String? _error;
   ExploreEvent? _event;
+  AverageRating? _organizerAverageRating;
   EventSlotsResponse? _slots;
   bool _isJoinLoading = false;
 
@@ -43,6 +47,7 @@ class _EventScreenState extends State<EventScreen> {
   void initState() {
     super.initState();
     _eventRepository = widget._eventRepository ?? HttpEventRepository();
+    _reviewRepository = HttpReviewRepository();
   }
 
   @override
@@ -74,14 +79,20 @@ class _EventScreenState extends State<EventScreen> {
 
     try {
       final event = await _eventRepository.fetchEvent(eventId);
+      final results = await Future.wait([
+        _fetchSlots(eventId),
+        _fetchOrganizerRating(event),
+      ]);
+      final slots = results[0] as EventSlotsResponse?;
+      final organizerRating = results[1] as AverageRating?;
       if (!mounted) return;
 
       setState(() {
         _event = event;
+        _slots = slots;
+        _organizerAverageRating = organizerRating;
         _isLoading = false;
       });
-
-      await _fetchSlots(eventId);
     } on EventRepositoryException catch (error) {
       if (!mounted) return;
 
@@ -99,15 +110,32 @@ class _EventScreenState extends State<EventScreen> {
     }
   }
 
-  Future<void> _fetchSlots(String eventId) async {
+  Future<EventSlotsResponse?> _fetchSlots(String eventId) async {
     final controller = JoinedEventsScope.maybeOf(context);
-    if (controller == null) return;
+    if (controller == null) return null;
 
     try {
-      final slots = await controller.fetchSlots(eventId);
-      if (!mounted) return;
-      setState(() => _slots = slots);
+      return await controller.fetchSlots(eventId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<AverageRating?> _fetchOrganizerRating(ExploreEvent event) async {
+    final organizerId = event.organizerId;
+    if (organizerId == null || organizerId.isEmpty) {
+      return null;
+    }
+
+    try {
+      final auth = AuthScope.maybeOf(context);
+      return await _reviewRepository.fetchOrganizerAverageRating(
+        organizerId,
+        accessToken: auth?.tokens?.accessToken,
+        tokenType: auth?.tokens?.tokenType ?? 'Bearer',
+      );
     } catch (_) {}
+    return null;
   }
 
   void _shareEvent(ExploreEvent event) {
@@ -197,6 +225,11 @@ class _EventScreenState extends State<EventScreen> {
     );
   }
 
+  Future<void> _openReviewScreen(ExploreEvent event) async {
+    if (!mounted) return;
+    await context.push('/events/${event.id}/review');
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -269,6 +302,32 @@ class _EventScreenState extends State<EventScreen> {
         ],
       ),
       body: _buildBody(context, l10n, savedController, joinedController),
+      floatingActionButton: _buildReviewAction(context, l10n),
+    );
+  }
+
+  Widget? _buildReviewAction(BuildContext context, AppLocalizations l10n) {
+    final event = _event;
+    if (event == null || !event.hasEnded) {
+      return null;
+    }
+
+    final auth = AuthScope.maybeOf(context);
+    final joinedController = JoinedEventsScope.maybeOf(context);
+    final canReview =
+        auth?.isAuthenticated == true &&
+        joinedController?.isJoined(event.id) == true &&
+        event.organizerId != null &&
+        event.organizerId!.isNotEmpty;
+
+    if (!canReview) {
+      return null;
+    }
+
+    return FloatingActionButton.extended(
+      onPressed: () => _openReviewScreen(event),
+      icon: const Icon(Icons.rate_review_outlined),
+      label: Text(l10n.eventDetailsReviewButton),
     );
   }
 
@@ -316,6 +375,7 @@ class _EventScreenState extends State<EventScreen> {
               onSavePressed: () => _toggleSaved(event),
               isSaved: savedController?.isSaved(event.id) ?? false,
               isJoined: isJoined,
+              organizerRating: _organizerAverageRating,
               onJoinPressed: isJoined ? null : () => _joinEvent(event),
               onLeavePressed: isJoined ? () => _leaveEvent(event) : null,
               slots: _slots,

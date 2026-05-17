@@ -125,6 +125,10 @@ class _LocarioAppState extends State<LocarioApp> {
           .map((r) => (id: r.eventId, title: r.name, startsAt: r.startAt))
           .toList();
       _notificationController.scheduleRemindersForJoinedEvents(registrations);
+    } else {
+      _notificationController.scheduleRemindersForJoinedEvents(
+        <({String id, String title, DateTime startsAt})>[],
+      );
     }
 
     final savedEvents = _savedEventsController.events;
