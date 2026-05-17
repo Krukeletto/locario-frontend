@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -101,6 +105,8 @@ class _ProfileHeaderCard extends StatelessWidget {
 
   final UserProfile profile;
 
+  static const double _avatarSize = 96;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -131,19 +137,7 @@ class _ProfileHeaderCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  color: scheme.primary.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.person_rounded,
-                  color: scheme.primary,
-                  size: 48,
-                ),
-              ),
+              _buildAvatar(scheme),
               const SizedBox(height: 12),
               Text(
                 profile.username,
@@ -270,6 +264,65 @@ class _ProfileHeaderCard extends StatelessWidget {
     }
 
     return links;
+  }
+
+  Widget _buildAvatar(ColorScheme scheme) {
+    final avatarUrl = profile.avatarUrl?.trim() ?? '';
+    if (avatarUrl.isNotEmpty) {
+      final dataBytes = avatarUrl.startsWith('data:')
+          ? _decodeDataImage(avatarUrl)
+          : null;
+      if (dataBytes != null) {
+        return _buildMemoryAvatar(dataBytes);
+      }
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: avatarUrl,
+          width: _avatarSize,
+          height: _avatarSize,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => _buildAvatarFallback(scheme),
+          errorWidget: (context, url, error) => _buildAvatarFallback(scheme),
+        ),
+      );
+    }
+
+    return _buildAvatarFallback(scheme);
+  }
+
+  Uint8List? _decodeDataImage(String dataUri) {
+    final commaIndex = dataUri.indexOf(',');
+    if (commaIndex == -1) {
+      return null;
+    }
+    try {
+      return base64Decode(dataUri.substring(commaIndex + 1));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Widget _buildMemoryAvatar(Uint8List bytes) {
+    return ClipOval(
+      child: Image.memory(
+        bytes,
+        width: _avatarSize,
+        height: _avatarSize,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  Widget _buildAvatarFallback(ColorScheme scheme) {
+    return Container(
+      width: _avatarSize,
+      height: _avatarSize,
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(Icons.person_rounded, color: scheme.primary, size: 48),
+    );
   }
 }
 

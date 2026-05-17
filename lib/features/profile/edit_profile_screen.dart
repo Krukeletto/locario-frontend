@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
@@ -16,11 +20,16 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  static const double _avatarSize = 96;
+
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _websiteController = TextEditingController();
   final TextEditingController _instagramController = TextEditingController();
   final TextEditingController _facebookController = TextEditingController();
+
+  Uint8List? _avatarBytes;
+  String? _avatarFileName;
 
   bool _isSubmitting = false;
 
@@ -37,6 +46,56 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String _resolveValue(String value, String fallback) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? fallback : trimmed;
+  }
+
+  String _resolveImageMimeType(String? fileName) {
+    final extension = fileName?.split('.').last.toLowerCase();
+    return switch (extension) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      'gif' => 'image/gif',
+      'jpg' || 'jpeg' => 'image/jpeg',
+      _ => 'image/jpeg',
+    };
+  }
+
+  String _buildAvatarDataUri(Uint8List bytes, String? fileName) {
+    final mimeType = _resolveImageMimeType(fileName);
+    return 'data:$mimeType;base64,${base64Encode(bytes)}';
+  }
+
+  Uint8List? _decodeDataImage(String dataUri) {
+    final commaIndex = dataUri.indexOf(',');
+    if (commaIndex == -1) {
+      return null;
+    }
+    try {
+      return base64Decode(dataUri.substring(commaIndex + 1));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _pickAvatar() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+    if (!mounted || result == null || result.files.isEmpty) {
+      return;
+    }
+
+    final file = result.files.first;
+    final bytes = file.bytes;
+    if (bytes == null || bytes.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _avatarBytes = bytes;
+      _avatarFileName = file.name;
+    });
   }
 
   Future<void> _handleSubmit(BuildContext context) async {
@@ -57,10 +116,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
 
     try {
+      final avatarUrl = _avatarBytes != null
+          ? _buildAvatarDataUri(_avatarBytes!, _avatarFileName)
+          : (profile.avatarUrl ?? '');
       final request = UpdateProfileRequest(
         username: _resolveValue(_usernameController.text, profile.username),
         email: profile.email,
-        avatarUrl: profile.avatarUrl ?? '',
+        avatarUrl: avatarUrl,
         bio: _resolveValue(_bioController.text, profile.bio ?? ''),
         websiteUrl: _resolveValue(
           _websiteController.text,
@@ -107,6 +169,69 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     FeedbackService.showError(FeedbackMessage.profileUpdateFailed);
+  }
+
+  Widget _buildAvatarPreview(ColorScheme scheme) {
+    if (_avatarBytes != null) {
+      return _buildMemoryAvatar(_avatarBytes!);
+    }
+
+    final avatarUrl = (AuthScope.of(context).profile?.avatarUrl ?? '').trim();
+    if (avatarUrl.isNotEmpty) {
+      final dataBytes = avatarUrl.startsWith('data:')
+          ? _decodeDataImage(avatarUrl)
+          : null;
+      if (dataBytes != null) {
+        return _buildMemoryAvatar(dataBytes);
+      }
+
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: avatarUrl,
+          width: _avatarSize,
+          height: _avatarSize,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Container(
+            width: _avatarSize,
+            height: _avatarSize,
+            color: scheme.primary.withValues(alpha: 0.12),
+            child: const Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          ),
+          errorWidget: (context, url, error) => _buildAvatarFallback(scheme),
+        ),
+      );
+    }
+
+    return _buildAvatarFallback(scheme);
+  }
+
+  Widget _buildMemoryAvatar(Uint8List bytes) {
+    return ClipOval(
+      child: Image.memory(
+        bytes,
+        width: _avatarSize,
+        height: _avatarSize,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  Widget _buildAvatarFallback(ColorScheme scheme) {
+    return Container(
+      width: _avatarSize,
+      height: _avatarSize,
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(Icons.person_rounded, color: scheme.primary, size: 48),
+    );
   }
 
   @override
@@ -207,27 +332,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
         children: [
           Center(
-            child: Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: scheme.primary.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.person_rounded,
-                color: scheme.primary,
-                size: 48,
-              ),
+            child: InkWell(
+              onTap: _pickAvatar,
+              borderRadius: BorderRadius.circular(_avatarSize / 2),
+              child: _buildAvatarPreview(scheme),
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            l10n.editProfileChangePhoto,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: scheme.primary,
-              fontWeight: FontWeight.w700,
+          InkWell(
+            onTap: _pickAvatar,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Text(
+                l10n.editProfileChangePhoto,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: scheme.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 18),
