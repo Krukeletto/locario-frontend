@@ -54,8 +54,9 @@ class _FakeAuthApi extends AuthApi {
     required UpdateProfileRequest request,
     String tokenType = 'Bearer',
   }) {
-    if (onUpdateProfile != null)
+    if (onUpdateProfile != null) {
       return onUpdateProfile!(accessToken, request, tokenType);
+    }
     throw StateError('updateProfile not configured');
   }
 }
@@ -91,7 +92,7 @@ Future<SessionController> _createSessionController({
 
 void main() {
   testWidgets('shows validation errors for links', (tester) async {
-    final api = _FakeAuthApi(onFetchProfile: (_, __) async => _sampleProfile());
+    final api = _FakeAuthApi(onFetchProfile: (_, _) async => _sampleProfile());
 
     final tokens = AuthTokens(
       accessToken: 'access',

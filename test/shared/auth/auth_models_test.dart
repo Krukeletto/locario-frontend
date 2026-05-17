@@ -3,7 +3,7 @@ import 'package:locario/shared/auth/auth_models.dart';
 
 void main() {
   test('UpdateProfileRequest.toJson', () {
-    final req = UpdateProfileRequest(
+    const req = UpdateProfileRequest(
       username: 'u',
       email: 'e@x.com',
       avatarUrl: 'data:...jpg',
