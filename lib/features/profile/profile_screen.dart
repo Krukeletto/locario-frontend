@@ -362,7 +362,10 @@ class _ProfileLinkRow extends StatelessWidget {
             onTap: () async {
               final url = _normalizeUrl(link.label);
               try {
-                await launchUrlString(url, mode: LaunchMode.externalApplication);
+                await launchUrlString(
+                  url,
+                  mode: LaunchMode.externalApplication,
+                );
               } catch (_) {
                 // ignore
               }
