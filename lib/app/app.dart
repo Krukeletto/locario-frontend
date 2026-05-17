@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -60,6 +62,7 @@ class _LocarioAppState extends State<LocarioApp> {
   late final SessionController _sessionController;
   late final GoRouter _router;
   late final NotificationController _notificationController;
+  late final Future<void> _notificationResetFuture;
 
   @override
   void initState() {
@@ -93,6 +96,7 @@ class _LocarioAppState extends State<LocarioApp> {
       historyRepository: const SharedPrefsNotificationHistoryRepository(),
       preferencesStore: const SharedPrefsNotificationPreferencesStore(),
     );
+    _notificationResetFuture = NotificationService.cancelAllEventReminders();
 
     _localeController.load();
     _themeController.load();
@@ -110,13 +114,19 @@ class _LocarioAppState extends State<LocarioApp> {
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _syncReminders();
       _savedEventsController.addListener(_syncReminders);
       _joinedEventsController.addListener(_syncReminders);
+      _syncReminders();
     });
   }
 
   void _syncReminders() {
+    unawaited(_syncRemindersAsync());
+  }
+
+  Future<void> _syncRemindersAsync() async {
+    await _notificationResetFuture;
+
     final joinedIds = _joinedEventsController.joinedEventIds;
 
     final profile = _sessionController.profile;

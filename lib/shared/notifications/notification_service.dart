@@ -133,51 +133,57 @@ class NotificationService {
     required String title,
     required DateTime startsAt,
   }) async {
-    final fireAt = startsAt.subtract(const Duration(days: 1));
-    if (fireAt.isBefore(DateTime.now())) return;
+    try {
+      final fireAt = startsAt.subtract(const Duration(days: 1));
+      if (fireAt.isBefore(DateTime.now())) return;
 
-    final hour = startsAt.hour.toString().padLeft(2, '0');
-    final minute = startsAt.minute.toString().padLeft(2, '0');
-    final body = '$title starts tomorrow at $hour:$minute';
+      final hour = startsAt.hour.toString().padLeft(2, '0');
+      final minute = startsAt.minute.toString().padLeft(2, '0');
+      final body = '$title starts tomorrow at $hour:$minute';
 
-    final tzScheduled = tz.TZDateTime.from(fireAt, tz.local);
-    final payload = jsonEncode({
-      'screen': '/events/$eventId',
-      'event_id': eventId,
-    });
+      final tzScheduled = tz.TZDateTime.from(fireAt, tz.local);
+      final payload = jsonEncode({
+        'screen': '/events/$eventId',
+        'event_id': eventId,
+      });
 
-    await _localNotifications.zonedSchedule(
-      _reminderNotificationId(eventId),
-      'Event reminder',
-      body,
-      tzScheduled,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'high_importance_channel',
-          'High Importance Notifications',
-          channelDescription:
-              'This channel is used for important notifications.',
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: 'ic_notification',
+      await _localNotifications.zonedSchedule(
+        _reminderNotificationId(eventId),
+        'Event reminder',
+        body,
+        tzScheduled,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'high_importance_channel',
+            'High Importance Notifications',
+            channelDescription:
+                'This channel is used for important notifications.',
+            importance: Importance.high,
+            priority: Priority.high,
+            icon: 'ic_notification',
+          ),
+          iOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
         ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      payload: payload,
-    );
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: payload,
+      );
+    } catch (_) {}
   }
 
   static Future<void> cancelEventReminder(String eventId) async {
-    await _localNotifications.cancel(_reminderNotificationId(eventId));
+    try {
+      await _localNotifications.cancel(_reminderNotificationId(eventId));
+    } catch (_) {}
   }
 
   static Future<void> cancelAllEventReminders() async {
-    await _localNotifications.cancelAll();
+    try {
+      await _localNotifications.cancelAll();
+    } catch (_) {}
   }
 
   // ---------------------------------------------------------------------------
@@ -188,28 +194,30 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
-    await _localNotifications.show(
-      DateTime.now().millisecondsSinceEpoch & 0x7FFFFFFF,
-      title,
-      body,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'high_importance_channel',
-          'High Importance Notifications',
-          channelDescription:
-              'This channel is used for important notifications.',
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: 'ic_notification',
+    try {
+      await _localNotifications.show(
+        DateTime.now().millisecondsSinceEpoch & 0x7FFFFFFF,
+        title,
+        body,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'high_importance_channel',
+            'High Importance Notifications',
+            channelDescription:
+                'This channel is used for important notifications.',
+            importance: Importance.high,
+            priority: Priority.high,
+            icon: 'ic_notification',
+          ),
+          iOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
         ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      ),
-      payload: '{"screen":"/explore"}',
-    );
+        payload: '{"screen":"/explore"}',
+      );
+    } catch (_) {}
   }
 
   // ---------------------------------------------------------------------------

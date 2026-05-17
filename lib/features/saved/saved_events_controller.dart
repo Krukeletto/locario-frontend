@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:latlong2/latlong.dart';
 
@@ -6,6 +8,7 @@ import '../../shared/auth/auth_models.dart';
 import '../../shared/auth/favorites_api.dart';
 import '../../shared/auth/session_controller.dart';
 import '../../shared/events/event_repository.dart';
+import '../../shared/notifications/notification_service.dart';
 import 'saved_events_repository.dart';
 
 enum SavedToggleOutcome { saved, removed, failed }
@@ -280,6 +283,7 @@ class SavedEventsController extends ChangeNotifier {
 
     try {
       await _repository.removeSavedEvent(eventId);
+      unawaited(NotificationService.cancelEventReminder(eventId));
       _error = null;
     } catch (error) {
       debugPrint('Saved events delete failed: $error');
@@ -290,15 +294,26 @@ class SavedEventsController extends ChangeNotifier {
   }
 
   Future<void> replaceAll(List<SavedEventRecord> records) async {
+    final removedIds = _records
+        .map((record) => record.event.id)
+        .toSet()
+        .difference(records.map((record) => record.event.id).toSet());
     _records = [...records]..sort(_compareBySavedAtDescending);
     notifyListeners();
     await _repository.replaceSavedEvents(_records);
+    for (final eventId in removedIds) {
+      unawaited(NotificationService.cancelEventReminder(eventId));
+    }
   }
 
   Future<void> clear() async {
+    final removedIds = _records.map((record) => record.event.id).toList();
     _records = const [];
     notifyListeners();
     await _repository.clear();
+    for (final eventId in removedIds) {
+      unawaited(NotificationService.cancelEventReminder(eventId));
+    }
   }
 
   Future<SavedEventRecord> _fetchFullRecord(
