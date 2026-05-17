@@ -809,6 +809,42 @@ class AppLocalizationsPl extends AppLocalizations {
   String get profileLinksPlaceholder => 'Brak linków.';
 
   @override
+  String get editProfileTitle => 'Edytuj profil';
+
+  @override
+  String get editProfileChangePhoto => 'Zmień zdjęcie';
+
+  @override
+  String get editProfileUsernameLabel => 'Nazwa użytkownika';
+
+  @override
+  String get editProfileBioLabel => 'Biografia';
+
+  @override
+  String get editProfileWebsiteLabel => 'Link do strony';
+
+  @override
+  String get editProfileInstagramLabel => 'Link do Instagrama';
+
+  @override
+  String get editProfileFacebookLabel => 'Link do Facebooka';
+
+  @override
+  String get editProfileUsernamePlaceholder => 'Dodaj nazwę użytkownika';
+
+  @override
+  String get editProfileBioPlaceholder => 'Dodaj bio';
+
+  @override
+  String get editProfileWebsitePlaceholder => 'Dodaj link do strony';
+
+  @override
+  String get editProfileInstagramPlaceholder => 'Dodaj link do Instagrama';
+
+  @override
+  String get editProfileFacebookPlaceholder => 'Dodaj link do Facebooka';
+
+  @override
   String get settingsTitle => 'Ustawienia';
 
   @override

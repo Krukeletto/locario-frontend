@@ -1526,6 +1526,78 @@ abstract class AppLocalizations {
   /// **'No links yet.'**
   String get profileLinksPlaceholder;
 
+  /// No description provided for @editProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get editProfileTitle;
+
+  /// No description provided for @editProfileChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get editProfileChangePhoto;
+
+  /// No description provided for @editProfileUsernameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get editProfileUsernameLabel;
+
+  /// No description provided for @editProfileBioLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get editProfileBioLabel;
+
+  /// No description provided for @editProfileWebsiteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Website link'**
+  String get editProfileWebsiteLabel;
+
+  /// No description provided for @editProfileInstagramLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Instagram link'**
+  String get editProfileInstagramLabel;
+
+  /// No description provided for @editProfileFacebookLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook link'**
+  String get editProfileFacebookLabel;
+
+  /// No description provided for @editProfileUsernamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a username'**
+  String get editProfileUsernamePlaceholder;
+
+  /// No description provided for @editProfileBioPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a bio'**
+  String get editProfileBioPlaceholder;
+
+  /// No description provided for @editProfileWebsitePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a website link'**
+  String get editProfileWebsitePlaceholder;
+
+  /// No description provided for @editProfileInstagramPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an Instagram link'**
+  String get editProfileInstagramPlaceholder;
+
+  /// No description provided for @editProfileFacebookPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a Facebook link'**
+  String get editProfileFacebookPlaceholder;
+
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:

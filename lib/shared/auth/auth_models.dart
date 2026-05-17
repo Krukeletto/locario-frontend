@@ -189,6 +189,7 @@ class UserProfile {
     required this.facebookUrl,
     required this.createdAt,
     required this.eventRegistrations,
+    this.role,
     this.favorites = const [],
   });
 
@@ -196,6 +197,7 @@ class UserProfile {
   final String username;
   final String email;
   final bool hasPassword;
+  final String? role;
   final String? avatarUrl;
   final String? bio;
   final String? websiteUrl;
@@ -213,6 +215,7 @@ class UserProfile {
       username: json['username'] as String,
       email: json['email'] as String,
       hasPassword: json['hasPassword'] as bool? ?? false,
+      role: json['role'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
       bio: json['bio'] as String?,
       websiteUrl: json['websiteUrl'] as String?,

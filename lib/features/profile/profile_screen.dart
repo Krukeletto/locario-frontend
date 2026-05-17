@@ -106,6 +106,7 @@ class _ProfileHeaderCard extends StatelessWidget {
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
     final bio = profile.bio?.trim() ?? '';
+    final role = profile.role?.trim() ?? '';
     final links = _buildLinks(profile);
 
     return Container(
@@ -122,61 +123,108 @@ class _ProfileHeaderCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Stack(
+        alignment: Alignment.topCenter,
         children: [
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              color: scheme.primary.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.person_rounded, color: scheme.primary, size: 48),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            profile.username,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: scheme.primary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            bio.isEmpty ? l10n.profileBioPlaceholder : bio,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.72),
-            ),
-          ),
-          if (links.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Text(
-              l10n.profileLinksLabel,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: scheme.primary,
-                fontWeight: FontWeight.w700,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  color: scheme.primary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.person_rounded,
+                  color: scheme.primary,
+                  size: 48,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Column(
-              children: [
-                for (final link in links)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 320),
-                        child: _ProfileLinkRow(link: link),
+              const SizedBox(height: 12),
+              Text(
+                profile.username,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: scheme.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (role.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  role,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.64),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Text(
+                bio.isEmpty ? l10n.profileBioPlaceholder : bio,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurface.withValues(alpha: 0.72),
+                ),
+              ),
+              if (links.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                Text(
+                  l10n.profileLinksLabel,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Column(
+                  children: [
+                    for (final link in links)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 320),
+                            child: _ProfileLinkRow(link: link),
+                          ),
+                        ),
                       ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Tooltip(
+              message: 'Edytuj profil',
+              child: Material(
+                color: scheme.primary.withValues(alpha: 0.12),
+                shape: const StadiumBorder(),
+                child: InkWell(
+                  onTap: () => context.push('/profile/edit'),
+                  customBorder: const StadiumBorder(),
+                  child: SizedBox(
+                    height: 32,
+                    width: 44,
+                    child: Icon(
+                      Icons.edit_rounded,
+                      color: scheme.primary,
+                      size: 16,
                     ),
                   ),
-              ],
+                ),
+              ),
             ),
-          ],
+          ),
         ],
       ),
     );

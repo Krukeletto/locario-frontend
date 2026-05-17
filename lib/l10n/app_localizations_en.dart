@@ -801,6 +801,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileLinksPlaceholder => 'No links yet.';
 
   @override
+  String get editProfileTitle => 'Edit profile';
+
+  @override
+  String get editProfileChangePhoto => 'Change photo';
+
+  @override
+  String get editProfileUsernameLabel => 'Username';
+
+  @override
+  String get editProfileBioLabel => 'Bio';
+
+  @override
+  String get editProfileWebsiteLabel => 'Website link';
+
+  @override
+  String get editProfileInstagramLabel => 'Instagram link';
+
+  @override
+  String get editProfileFacebookLabel => 'Facebook link';
+
+  @override
+  String get editProfileUsernamePlaceholder => 'Add a username';
+
+  @override
+  String get editProfileBioPlaceholder => 'Add a bio';
+
+  @override
+  String get editProfileWebsitePlaceholder => 'Add a website link';
+
+  @override
+  String get editProfileInstagramPlaceholder => 'Add an Instagram link';
+
+  @override
+  String get editProfileFacebookPlaceholder => 'Add a Facebook link';
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override
