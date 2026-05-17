@@ -1598,6 +1598,24 @@ abstract class AppLocalizations {
   /// **'Add a Facebook link'**
   String get editProfileFacebookPlaceholder;
 
+  /// No description provided for @editProfileLinkHttpsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Link must start with https://'**
+  String get editProfileLinkHttpsError;
+
+  /// No description provided for @editProfileInstagramDomainError.
+  ///
+  /// In en, this message translates to:
+  /// **'Instagram link must contain instagram'**
+  String get editProfileInstagramDomainError;
+
+  /// No description provided for @editProfileFacebookDomainError.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook link must contain facebook'**
+  String get editProfileFacebookDomainError;
+
   /// No description provided for @editProfileSaveButton.
   ///
   /// In en, this message translates to:

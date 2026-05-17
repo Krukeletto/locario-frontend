@@ -845,6 +845,17 @@ class AppLocalizationsPl extends AppLocalizations {
   String get editProfileFacebookPlaceholder => 'Dodaj link do Facebooka';
 
   @override
+  String get editProfileLinkHttpsError => 'Link musi zaczynać się od https://';
+
+  @override
+  String get editProfileInstagramDomainError =>
+      'Link do Instagrama musi zawierać instagram';
+
+  @override
+  String get editProfileFacebookDomainError =>
+      'Link do Facebooka musi zawierać facebook';
+
+  @override
   String get editProfileSaveButton => 'Zapisz zmiany';
 
   @override

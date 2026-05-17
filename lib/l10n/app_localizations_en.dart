@@ -837,6 +837,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editProfileFacebookPlaceholder => 'Add a Facebook link';
 
   @override
+  String get editProfileLinkHttpsError => 'Link must start with https://';
+
+  @override
+  String get editProfileInstagramDomainError =>
+      'Instagram link must contain instagram';
+
+  @override
+  String get editProfileFacebookDomainError =>
+      'Facebook link must contain facebook';
+
+  @override
   String get editProfileSaveButton => 'Save changes';
 
   @override

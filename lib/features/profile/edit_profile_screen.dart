@@ -31,6 +31,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Uint8List? _avatarBytes;
   String? _avatarFileName;
 
+  String? _websiteError;
+  String? _instagramError;
+  String? _facebookError;
+
   bool _isSubmitting = false;
 
   @override
@@ -46,6 +50,29 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String _resolveValue(String value, String fallback) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? fallback : trimmed;
+  }
+
+  String? _validateUrl(
+    String value, {
+    required String httpsError,
+    String? domain,
+    String? domainError,
+  }) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+
+    final lower = trimmed.toLowerCase();
+    if (!lower.startsWith('https://')) {
+      return httpsError;
+    }
+
+    if (domain != null && domainError != null && !lower.contains(domain)) {
+      return domainError;
+    }
+
+    return null;
   }
 
   String _resolveImageMimeType(String? fileName) {
@@ -103,9 +130,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
+    final l10n = AppLocalizations.of(context);
     final sessionController = AuthScope.of(context);
     final profile = sessionController.profile;
     if (profile == null || sessionController.isBusy) {
+      return;
+    }
+
+    final websiteError = _validateUrl(
+      _websiteController.text,
+      httpsError: l10n.editProfileLinkHttpsError,
+    );
+    final instagramError = _validateUrl(
+      _instagramController.text,
+      httpsError: l10n.editProfileLinkHttpsError,
+      domain: 'instagram',
+      domainError: l10n.editProfileInstagramDomainError,
+    );
+    final facebookError = _validateUrl(
+      _facebookController.text,
+      httpsError: l10n.editProfileLinkHttpsError,
+      domain: 'facebook',
+      domainError: l10n.editProfileFacebookDomainError,
+    );
+
+    setState(() {
+      _websiteError = websiteError;
+      _instagramError = instagramError;
+      _facebookError = facebookError;
+    });
+
+    if (websiteError != null ||
+        instagramError != null ||
+        facebookError != null) {
       return;
     }
 
@@ -263,6 +320,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     InputDecoration buildFieldDecoration({
       required String hintText,
       TextStyle? hintStyle,
+      String? errorText,
     }) {
       final isDark = theme.brightness == Brightness.dark;
       final fillColor = isDark
@@ -271,6 +329,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return InputDecoration(
         hintText: hintText,
         hintStyle: hintStyle,
+        errorText: errorText,
         filled: true,
         fillColor: fillColor,
         border: OutlineInputBorder(
@@ -395,9 +454,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 l10n.editProfileWebsitePlaceholder,
               ),
               hintStyle: hintStyleFor(profile?.websiteUrl),
+              errorText: _websiteError,
             ),
             keyboardType: TextInputType.url,
             textInputAction: TextInputAction.next,
+            onChanged: (_) {
+              if (_websiteError != null) {
+                setState(() {
+                  _websiteError = null;
+                });
+              }
+            },
           ),
           const SizedBox(height: 12),
           fieldLabel(l10n.editProfileInstagramLabel),
@@ -410,9 +477,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 l10n.editProfileInstagramPlaceholder,
               ),
               hintStyle: hintStyleFor(profile?.instagramUrl),
+              errorText: _instagramError,
             ),
             keyboardType: TextInputType.url,
             textInputAction: TextInputAction.next,
+            onChanged: (_) {
+              if (_instagramError != null) {
+                setState(() {
+                  _instagramError = null;
+                });
+              }
+            },
           ),
           const SizedBox(height: 12),
           fieldLabel(l10n.editProfileFacebookLabel),
@@ -425,9 +500,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 l10n.editProfileFacebookPlaceholder,
               ),
               hintStyle: hintStyleFor(profile?.facebookUrl),
+              errorText: _facebookError,
             ),
             keyboardType: TextInputType.url,
             textInputAction: TextInputAction.done,
+            onChanged: (_) {
+              if (_facebookError != null) {
+                setState(() {
+                  _facebookError = null;
+                });
+              }
+            },
           ),
           const SizedBox(height: 20),
           FilledButton(
