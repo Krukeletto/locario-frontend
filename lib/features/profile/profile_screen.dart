@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../shared/auth/auth_models.dart';
 import '../../shared/auth/auth_scope.dart';
@@ -357,17 +358,36 @@ class _ProfileLinkRow extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Flexible(
-          child: Text(
-            link.label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.8),
+          child: InkWell(
+            onTap: () async {
+              final url = _normalizeUrl(link.label);
+              try {
+                await launchUrlString(url, mode: LaunchMode.externalApplication);
+              } catch (_) {
+                // ignore
+              }
+            },
+            child: Text(
+              link.label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.primary,
+                decoration: TextDecoration.none,
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
     );
+  }
+
+  String _normalizeUrl(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    return 'https://$trimmed';
   }
 }
 
