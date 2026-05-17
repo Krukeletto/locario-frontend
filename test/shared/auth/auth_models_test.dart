@@ -37,18 +37,10 @@ void main() {
       'facebookUrl': 'https://facebook',
       'createdAt': now,
       'eventRegistrations': [
-        {
-          'eventId': 'e1',
-          'name': 'Event',
-          'startAt': now,
-        }
+        {'eventId': 'e1', 'name': 'Event', 'startAt': now},
       ],
       'favorites': [
-        {
-          'eventId': 'f1',
-          'name': 'Fav',
-          'startAt': now,
-        }
+        {'eventId': 'f1', 'name': 'Fav', 'startAt': now},
       ],
     };
 
