@@ -9,12 +9,13 @@ Future<Map<String, dynamic>> _mergeLocaleArbs({
   required Directory featureDir,
   required String locale,
 }) async {
-  final files = featureDir
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((file) => file.path.endsWith('_$locale.arb'))
-      .toList()
-    ..sort((a, b) => a.path.compareTo(b.path));
+  final files =
+      featureDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((file) => file.path.endsWith('_$locale.arb'))
+          .toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
 
   if (files.isEmpty) {
     throw StateError("No ARB files found for locale '$locale'.");

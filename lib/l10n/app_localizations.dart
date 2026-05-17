@@ -1748,6 +1748,132 @@ abstract class AppLocalizations {
   /// **'Open your notifications'**
   String get profileInboxSubtitle;
 
+  /// No description provided for @profileBioPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'No bio yet.'**
+  String get profileBioPlaceholder;
+
+  /// No description provided for @profileLinksLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Links'**
+  String get profileLinksLabel;
+
+  /// No description provided for @profileLinksPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'No links yet.'**
+  String get profileLinksPlaceholder;
+
+  /// No description provided for @editProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get editProfileTitle;
+
+  /// No description provided for @editProfileChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get editProfileChangePhoto;
+
+  /// No description provided for @editProfileUsernameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get editProfileUsernameLabel;
+
+  /// No description provided for @editProfileBioLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get editProfileBioLabel;
+
+  /// No description provided for @editProfileWebsiteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Website link'**
+  String get editProfileWebsiteLabel;
+
+  /// No description provided for @editProfileInstagramLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Instagram link'**
+  String get editProfileInstagramLabel;
+
+  /// No description provided for @editProfileFacebookLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook link'**
+  String get editProfileFacebookLabel;
+
+  /// No description provided for @editProfileUsernamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a username'**
+  String get editProfileUsernamePlaceholder;
+
+  /// No description provided for @editProfileBioPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a bio'**
+  String get editProfileBioPlaceholder;
+
+  /// No description provided for @editProfileWebsitePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a website link'**
+  String get editProfileWebsitePlaceholder;
+
+  /// No description provided for @editProfileInstagramPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an Instagram link'**
+  String get editProfileInstagramPlaceholder;
+
+  /// No description provided for @editProfileFacebookPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a Facebook link'**
+  String get editProfileFacebookPlaceholder;
+
+  /// No description provided for @editProfileLinkHttpsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Link must start with https://'**
+  String get editProfileLinkHttpsError;
+
+  /// No description provided for @editProfileInstagramDomainError.
+  ///
+  /// In en, this message translates to:
+  /// **'Instagram link must contain instagram'**
+  String get editProfileInstagramDomainError;
+
+  /// No description provided for @editProfileFacebookDomainError.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook link must contain facebook'**
+  String get editProfileFacebookDomainError;
+
+  /// No description provided for @editProfileSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get editProfileSaveButton;
+
+  /// No description provided for @profileUpdateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated.'**
+  String get profileUpdateSuccess;
+
+  /// No description provided for @profileUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update profile.'**
+  String get profileUpdateFailed;
+
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:
@@ -1813,6 +1939,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeModeDark;
+
+  /// No description provided for @settingsAccountSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get settingsAccountSectionTitle;
+
+  /// No description provided for @settingsAccountSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your password'**
+  String get settingsAccountSectionSubtitle;
+
+  /// No description provided for @settingsAccountChangePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get settingsAccountChangePassword;
+
+  /// No description provided for @settingsChangePasswordDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get settingsChangePasswordDialogTitle;
+
+  /// No description provided for @settingsChangePasswordCurrentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get settingsChangePasswordCurrentLabel;
+
+  /// No description provided for @settingsChangePasswordNewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get settingsChangePasswordNewLabel;
+
+  /// No description provided for @settingsChangePasswordCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get settingsChangePasswordCancel;
+
+  /// No description provided for @settingsChangePasswordSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Update password'**
+  String get settingsChangePasswordSubmit;
+
+  /// No description provided for @settingsChangePasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated.'**
+  String get settingsChangePasswordSuccess;
+
+  /// No description provided for @settingsChangePasswordInvalidOld.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is incorrect.'**
+  String get settingsChangePasswordInvalidOld;
+
+  /// No description provided for @settingsChangePasswordFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update password.'**
+  String get settingsChangePasswordFailed;
 
   /// No description provided for @savedTitle.
   ///

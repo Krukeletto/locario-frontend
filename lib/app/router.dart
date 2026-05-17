@@ -8,8 +8,9 @@ import '../features/hub/create_event/create_event_screen.dart';
 import '../features/explore/explore_screen.dart';
 import '../features/hub/hub_placeholder_screen.dart';
 import '../features/inbox/inbox_screen.dart';
-import '../features/profile/organizer_reviews_screen.dart';
+import '../features/profile/edit_profile_screen.dart';
 import '../features/profile/event_history_screen.dart';
+import '../features/profile/organizer_reviews_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/profile/settings_screen.dart';
 import '../features/reviews/event_review_screen.dart';
@@ -17,6 +18,7 @@ import '../features/saved/saved_screen.dart';
 import '../features/shell/shell.dart';
 import '../features/shell/hub/hub_action_item.dart';
 import 'navigation_history.dart';
+import '../shared/auth/auth_models.dart';
 import '../shared/auth/session_controller.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -92,6 +94,7 @@ bool _requiresAuth(String location) {
       location.startsWith('/hub/messages') ||
       location.startsWith('/hub/friends') ||
       location.startsWith('/inbox') ||
+      location.startsWith('/profile/edit') ||
       location.startsWith('/profile/reviews') ||
       location.startsWith('/profile/history') ||
       location.startsWith('/events/') && location.contains('/review');
@@ -169,6 +172,12 @@ GoRouter createAppRouter(SessionController sessionController) {
         );
       }
 
+      if (isAuthed &&
+          location.startsWith('/profile/reviews') &&
+          sessionController.profile?.hasOrganizerReviewAccess != true) {
+        return '/profile';
+      }
+
       return null;
     },
     routes: [
@@ -240,6 +249,17 @@ GoRouter createAppRouter(SessionController sessionController) {
                         state.uri.path,
                       ),
                       child: const SettingsScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'edit',
+                    pageBuilder: (context, state) => _trackedNoTransitionPage(
+                      controller: navigationHistory,
+                      location: state.uri.toString(),
+                      rememberAsSafe: _shouldRememberAsSafeLocation(
+                        state.uri.path,
+                      ),
+                      child: const EditProfileScreen(),
                     ),
                   ),
                   GoRoute(

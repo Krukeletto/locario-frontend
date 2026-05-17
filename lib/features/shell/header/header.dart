@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
+import 'package:locario/shared/notifications/notification_scope.dart';
 
-import '../../explore/models.dart';
+import 'package:locario/features/explore/models.dart';
 
 class ShellHeader extends StatelessWidget {
   static const _headerContentHeight = 48.0;
   static const _viewToggleWidth = 196.0;
   static const _viewToggleGap = 12.0;
+  static const _actionButtonSize = 40.0;
+  static const _actionButtonGap = 12.0;
+  static const _actionGroupWidth = _actionButtonSize * 2 + _actionButtonGap;
 
   const ShellHeader({
     super.key,
@@ -23,6 +28,12 @@ class ShellHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
+    final notificationController = NotificationScope.maybeOf(context);
+    final hasUnreadNotifications =
+        (notificationController?.unreadCount ?? 0) > 0;
+    final inboxIcon = hasUnreadNotifications
+        ? Icons.notifications_active_rounded
+        : Icons.notifications_none_rounded;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -44,7 +55,9 @@ class ShellHeader extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.only(
                   left: 14,
-                  right: showViewToggle ? _viewToggleWidth + _viewToggleGap : 0,
+                  right: showViewToggle
+                      ? _viewToggleWidth + _viewToggleGap
+                      : _actionGroupWidth + _actionButtonGap,
                 ),
                 child: Align(
                   alignment: Alignment.centerLeft,
@@ -76,7 +89,70 @@ class ShellHeader extends StatelessWidget {
                   ],
                 ),
               ),
+            if (!showViewToggle)
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _HeaderActionButton(
+                        tooltip: l10n.tabInbox,
+                        icon: inboxIcon,
+                        onTap: () => context.push('/inbox'),
+                        colorScheme: colorScheme,
+                      ),
+                      const SizedBox(width: _actionButtonGap),
+                      _HeaderActionButton(
+                        tooltip: l10n.settingsTitle,
+                        icon: Icons.settings_rounded,
+                        onTap: () => context.push('/profile/settings'),
+                        colorScheme: colorScheme,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderActionButton extends StatelessWidget {
+  const _HeaderActionButton({
+    required this.tooltip,
+    required this.icon,
+    required this.onTap,
+    required this.colorScheme,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback onTap;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: colorScheme.surfaceContainerLow.withValues(
+          alpha: Theme.of(context).brightness == Brightness.dark ? 0.96 : 0.92,
+        ),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: ShellHeader._actionButtonSize,
+            height: ShellHeader._actionButtonSize,
+            child: Icon(icon, size: 20, color: colorScheme.secondary),
+          ),
         ),
       ),
     );

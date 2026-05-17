@@ -235,13 +235,6 @@ class _HistoryEventCard extends StatelessWidget {
               color: scheme.surfaceContainerLow,
               borderRadius: BorderRadius.circular(28),
               border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.shadowColor,
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
-              ],
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,

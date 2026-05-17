@@ -148,6 +148,63 @@ class AuthApi {
     return UserProfile.fromJson(decoded);
   }
 
+  Future<UserProfile> updateProfile({
+    required String accessToken,
+    required UpdateProfileRequest request,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.patch(
+      _uri('/api/profile'),
+      headers: {..._jsonHeaders, 'Authorization': '$tokenType $accessToken'},
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (response.statusCode != 200) {
+      debugPrint(
+        'Auth: update profile failed (${response.statusCode}) ${response.body}',
+      );
+      throw AuthApiException(
+        'Update profile failed',
+        statusCode: response.statusCode,
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw const AuthApiException('Unexpected profile payload');
+    }
+
+    return UserProfile.fromJson(decoded);
+  }
+
+  Future<void> changePassword({
+    required String accessToken,
+    required String oldPassword,
+    required String newPassword,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.put(
+      _uri('/api/profile/change-password'),
+      headers: {..._jsonHeaders, 'Authorization': '$tokenType $accessToken'},
+      body: jsonEncode(
+        ChangePasswordRequest(
+          oldPassword: oldPassword,
+          newPassword: newPassword,
+        ).toJson(),
+      ),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      debugPrint(
+        'Auth: change password failed (${response.statusCode}) ${response.body}',
+      );
+      throw AuthApiException(
+        'Change password failed',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
   AuthResponse _decodeAuthResponse(String body) {
     final decoded = jsonDecode(body);
     if (decoded is! Map<String, dynamic>) {

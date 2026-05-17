@@ -34,6 +34,9 @@
   "profileEventHistoryPastSectionTitle": "Przeszłe",
   "profileEventHistoryOpenEvent": "Otwórz wydarzenie",
   "profileInboxSubtitle": "Otwórz powiadomienia",
+  "profileBioPlaceholder": "Brak opisu.",
+  "profileLinksLabel": "Linki",
+  "profileLinksPlaceholder": "Brak linków.",
   "settingsTitle": "Ustawienia",
   "settingsSubtitle": "Język, preferencje i podstawy aplikacji",
   "settingsScreenTitle": "Ustawienia",
@@ -44,5 +47,16 @@
   "themeSectionSubtitle": "Wybierz, czy aplikacja ma podążać za systemem czy trzymać stały motyw",
   "themeModeSystem": "System",
   "themeModeLight": "Jasny",
-  "themeModeDark": "Ciemny"
+  "themeModeDark": "Ciemny",
+  "settingsAccountSectionTitle": "Hasło",
+  "settingsAccountSectionSubtitle": "Zmień hasło do konta",
+  "settingsAccountChangePassword": "Zmień hasło",
+  "settingsChangePasswordDialogTitle": "Zmień hasło",
+  "settingsChangePasswordCurrentLabel": "Obecne hasło",
+  "settingsChangePasswordNewLabel": "Nowe hasło",
+  "settingsChangePasswordCancel": "Anuluj",
+  "settingsChangePasswordSubmit": "Zmień hasło",
+  "settingsChangePasswordSuccess": "Hasło zostało zmienione.",
+  "settingsChangePasswordInvalidOld": "Obecne hasło jest nieprawidłowe.",
+  "settingsChangePasswordFailed": "Nie udało się zmienić hasła."
 }
