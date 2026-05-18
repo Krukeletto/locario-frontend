@@ -332,6 +332,24 @@ abstract class AppLocalizations {
   /// **'Date'**
   String get eventDetailsDateLabel;
 
+  /// No description provided for @eventDetailsEndDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get eventDetailsEndDateLabel;
+
+  /// No description provided for @eventDetailsStartTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get eventDetailsStartTimeLabel;
+
+  /// No description provided for @eventDetailsEndTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get eventDetailsEndTimeLabel;
+
   /// No description provided for @eventDetailsTimeLabel.
   ///
   /// In en, this message translates to:
@@ -368,6 +386,24 @@ abstract class AppLocalizations {
   /// **'Participants chat'**
   String get eventDetailsChatLabel;
 
+  /// No description provided for @eventOrganizerRatingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer rating'**
+  String get eventOrganizerRatingLabel;
+
+  /// No description provided for @eventOrganizerRatingValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{average}/5 · {count,plural, one{1 review} other{{count} reviews}}'**
+  String eventOrganizerRatingValue(String average, int count);
+
+  /// No description provided for @eventOrganizerRatingEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No organizer reviews yet'**
+  String get eventOrganizerRatingEmpty;
+
   /// No description provided for @eventDetailsBuyTicketButton.
   ///
   /// In en, this message translates to:
@@ -385,6 +421,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Leave event'**
   String get eventDetailsLeaveButton;
+
+  /// No description provided for @eventDetailsReviewButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a review'**
+  String get eventDetailsReviewButton;
 
   /// No description provided for @eventJoinSuccess.
   ///
@@ -451,6 +493,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We could not load this event right now.'**
   String get eventDetailsErrorSubtitle;
+
+  /// No description provided for @eventReviewScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a review'**
+  String get eventReviewScreenTitle;
+
+  /// No description provided for @eventReviewLoadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading review'**
+  String get eventReviewLoadingTitle;
+
+  /// No description provided for @eventReviewLoadingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We are preparing the review form and event details.'**
+  String get eventReviewLoadingSubtitle;
+
+  /// No description provided for @eventReviewErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review unavailable'**
+  String get eventReviewErrorTitle;
+
+  /// No description provided for @eventReviewErrorSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load the review screen right now.'**
+  String get eventReviewErrorSubtitle;
+
+  /// No description provided for @eventReviewFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your opinion'**
+  String get eventReviewFormTitle;
+
+  /// No description provided for @eventReviewFormSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a rating and add an optional comment.'**
+  String get eventReviewFormSubtitle;
+
+  /// No description provided for @eventReviewLockedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You can review this event after it ends and only if you joined it.'**
+  String get eventReviewLockedSubtitle;
+
+  /// No description provided for @eventReviewCommentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get eventReviewCommentLabel;
+
+  /// No description provided for @eventReviewCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What stood out?'**
+  String get eventReviewCommentHint;
+
+  /// No description provided for @eventReviewSubmitButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Send review'**
+  String get eventReviewSubmitButton;
+
+  /// No description provided for @eventReviewSubmittedButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Review sent'**
+  String get eventReviewSubmittedButton;
+
+  /// No description provided for @eventReviewSubmittedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your review has been saved.'**
+  String get eventReviewSubmittedLabel;
+
+  /// No description provided for @eventReviewEligibilityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only joined participants can review after the event ends.'**
+  String get eventReviewEligibilityHint;
+
+  /// No description provided for @eventReviewSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Review sent successfully.'**
+  String get eventReviewSuccess;
+
+  /// No description provided for @eventReviewError.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not send your review.'**
+  String get eventReviewError;
 
   /// No description provided for @eventDetailsJazzDescription.
   ///
@@ -1475,7 +1613,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileDescription.
   ///
   /// In en, this message translates to:
-  /// **'Account, preferences and your saved places in one calmer section.'**
+  /// **'Account, preferences and saved places.'**
   String get profileDescription;
 
   /// No description provided for @profileAuthLoginTitle.
@@ -1501,6 +1639,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'End the current session'**
   String get profileAuthLogoutSubtitle;
+
+  /// No description provided for @profileOrganizerRatingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer ratings'**
+  String get profileOrganizerRatingsTitle;
+
+  /// No description provided for @profileOrganizerRatingsLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading your ratings'**
+  String get profileOrganizerRatingsLoading;
+
+  /// No description provided for @profileOrganizerRatingsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet'**
+  String get profileOrganizerRatingsEmpty;
+
+  /// No description provided for @profileOrganizerRatingsValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{average}/5 · {count,plural, one{1 review} other{{count} reviews}}'**
+  String profileOrganizerRatingsValue(String average, int count);
+
+  /// No description provided for @profileOrganizerReviewsScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer reviews'**
+  String get profileOrganizerReviewsScreenTitle;
+
+  /// No description provided for @profileOrganizerReviewsLoadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading reviews'**
+  String get profileOrganizerReviewsLoadingTitle;
+
+  /// No description provided for @profileOrganizerReviewsLoadingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We are gathering reviews from your events.'**
+  String get profileOrganizerReviewsLoadingSubtitle;
+
+  /// No description provided for @profileOrganizerReviewsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet'**
+  String get profileOrganizerReviewsEmptyTitle;
+
+  /// No description provided for @profileOrganizerReviewsEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews from events you organize will appear here.'**
+  String get profileOrganizerReviewsEmptySubtitle;
+
+  /// No description provided for @profileOrganizerReviewsSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your organizer score'**
+  String get profileOrganizerReviewsSummaryTitle;
+
+  /// No description provided for @profileEventHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Event archive'**
+  String get profileEventHistoryTitle;
+
+  /// No description provided for @profileEventHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your event history.'**
+  String get profileEventHistorySubtitle;
+
+  /// No description provided for @profileEventHistoryEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No joined events yet'**
+  String get profileEventHistoryEmptyTitle;
+
+  /// No description provided for @profileEventHistoryEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined events will appear here after you register.'**
+  String get profileEventHistoryEmptySubtitle;
+
+  /// No description provided for @profileEventHistoryCurrentSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get profileEventHistoryCurrentSectionTitle;
+
+  /// No description provided for @profileEventHistoryPastSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Past'**
+  String get profileEventHistoryPastSectionTitle;
+
+  /// No description provided for @profileEventHistoryOpenEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Open event'**
+  String get profileEventHistoryOpenEvent;
 
   /// No description provided for @profileInboxSubtitle.
   ///
@@ -1775,7 +2015,7 @@ abstract class AppLocalizations {
   /// No description provided for @savedSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Places, events and lists you want to revisit'**
+  /// **'Places, events and lists.'**
   String get savedSubtitle;
 
   /// No description provided for @savedSaveAction.

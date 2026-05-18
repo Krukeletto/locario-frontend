@@ -106,7 +106,6 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final activeTab = switch (widget.navigationShell.currentIndex) {
       0 => ShellTab.explore,
       1 => ShellTab.profile,
@@ -119,9 +118,6 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
         animation: Listenable.merge([_hubController, _headerController]),
         builder: (context, child) {
           final showHubLayer = _hubOpen || _hubController.value > 0;
-          final backdropBaseColor = theme.brightness == Brightness.dark
-              ? theme.colorScheme.scrim
-              : theme.colorScheme.primary;
 
           return ShellHeaderScope(
             controller: _headerController,
@@ -157,15 +153,7 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
                                 sigmaX: 4 * _hubController.value,
                                 sigmaY: 4 * _hubController.value,
                               ),
-                              child: Container(
-                                color: backdropBaseColor.withValues(
-                                  alpha:
-                                      (theme.brightness == Brightness.dark
-                                          ? 0.34
-                                          : 0.12) *
-                                      _hubController.value,
-                                ),
-                              ),
+                              child: Container(color: Colors.transparent),
                             ),
                           ),
                         ),

@@ -277,3 +277,12 @@ class UserProfile {
     );
   }
 }
+
+extension UserProfileRoleX on UserProfile {
+  String get normalizedRole => role?.trim().toLowerCase() ?? '';
+
+  bool get hasOrganizerReviewAccess {
+    final value = normalizedRole;
+    return value.contains('admin') || value.contains('organizer');
+  }
+}

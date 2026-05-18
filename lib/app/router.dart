@@ -9,12 +9,16 @@ import '../features/explore/explore_screen.dart';
 import '../features/hub/hub_placeholder_screen.dart';
 import '../features/inbox/inbox_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
+import '../features/profile/event_history_screen.dart';
+import '../features/profile/organizer_reviews_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/profile/settings_screen.dart';
+import '../features/reviews/event_review_screen.dart';
 import '../features/saved/saved_screen.dart';
 import '../features/shell/shell.dart';
 import '../features/shell/hub/hub_action_item.dart';
 import 'navigation_history.dart';
+import '../shared/auth/auth_models.dart';
 import '../shared/auth/session_controller.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -89,7 +93,11 @@ bool _requiresAuth(String location) {
   return location.startsWith('/hub/create-event') ||
       location.startsWith('/hub/messages') ||
       location.startsWith('/hub/friends') ||
-      location.startsWith('/inbox');
+      location.startsWith('/inbox') ||
+      location.startsWith('/profile/edit') ||
+      location.startsWith('/profile/reviews') ||
+      location.startsWith('/profile/history') ||
+      location.startsWith('/events/') && location.contains('/review');
 }
 
 bool _shouldRememberAsSafeLocation(String location) {
@@ -162,6 +170,12 @@ GoRouter createAppRouter(SessionController sessionController) {
           returnLocation: navigationHistory.lastSafeLocation,
           targetLocation: state.uri.path,
         );
+      }
+
+      if (isAuthed &&
+          location.startsWith('/profile/reviews') &&
+          sessionController.profile?.hasOrganizerReviewAccess != true) {
+        return '/profile';
       }
 
       return null;
@@ -248,6 +262,28 @@ GoRouter createAppRouter(SessionController sessionController) {
                       child: const EditProfileScreen(),
                     ),
                   ),
+                  GoRoute(
+                    path: 'reviews',
+                    pageBuilder: (context, state) => _trackedNoTransitionPage(
+                      controller: navigationHistory,
+                      location: state.uri.toString(),
+                      rememberAsSafe: _shouldRememberAsSafeLocation(
+                        state.uri.path,
+                      ),
+                      child: const OrganizerReviewsScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'history',
+                    pageBuilder: (context, state) => _trackedNoTransitionPage(
+                      controller: navigationHistory,
+                      location: state.uri.toString(),
+                      rememberAsSafe: _shouldRememberAsSafeLocation(
+                        state.uri.path,
+                      ),
+                      child: const EventHistoryScreen(),
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -290,6 +326,19 @@ GoRouter createAppRouter(SessionController sessionController) {
           rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
           child: EventScreen(eventId: state.pathParameters['eventId']),
         ),
+        routes: [
+          GoRoute(
+            path: 'review',
+            pageBuilder: (context, state) => _trackedNoTransitionPage(
+              controller: navigationHistory,
+              location: state.uri.toString(),
+              rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+              child: EventReviewScreen(
+                eventId: state.pathParameters['eventId'] ?? '',
+              ),
+            ),
+          ),
+        ],
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

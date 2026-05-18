@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import '../../../explore/models.dart';
 import '../../../../shared/events/event_slots_response.dart';
+import '../../../../shared/reviews/review_formatters.dart';
+import '../../../../shared/reviews/review_models.dart';
 import './event_info_card.dart';
 
 class EventDetailsInfo extends StatelessWidget {
@@ -13,6 +15,7 @@ class EventDetailsInfo extends StatelessWidget {
     required this.onSavePressed,
     required this.isSaved,
     required this.isJoined,
+    this.organizerRating,
     this.onJoinPressed,
     this.onLeavePressed,
     this.slots,
@@ -25,6 +28,7 @@ class EventDetailsInfo extends StatelessWidget {
   final VoidCallback onSavePressed;
   final bool isSaved;
   final bool isJoined;
+  final AverageRating? organizerRating;
   final VoidCallback? onJoinPressed;
   final VoidCallback? onLeavePressed;
   final EventSlotsResponse? slots;
@@ -42,11 +46,40 @@ class EventDetailsInfo extends StatelessWidget {
     return '$hour:$minute';
   }
 
+  bool _isSameCalendarDay(DateTime left, DateTime right) {
+    return left.year == right.year &&
+        left.month == right.month &&
+        left.day == right.day;
+  }
+
+  String? _validatedTicketUrl(String? url) {
+    final trimmed = url?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null ||
+        !uri.hasScheme ||
+        !uri.hasAuthority ||
+        uri.host.isEmpty) {
+      return null;
+    }
+
+    if (uri.scheme != 'http' && uri.scheme != 'https') {
+      return null;
+    }
+
+    return trimmed;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
+    final showActionButtons = !event.hasEnded;
+    final ticketUrl = _validatedTicketUrl(event.ticketUrl);
 
     return Transform.translate(
       offset: Offset(0, -overlap),
@@ -77,24 +110,57 @@ class EventDetailsInfo extends StatelessWidget {
               value: event.locationLabel(l10n),
               icon: Icons.place_outlined,
             ),
+            if (organizerRating != null) ...[
+              const SizedBox(height: 12),
+              EventInfoCard(
+                label: l10n.eventOrganizerRatingLabel,
+                value: organizerRating!.hasReviews
+                    ? l10n.eventOrganizerRatingValue(
+                        formatReviewAverage(organizerRating!.averageRating),
+                        organizerRating!.totalReviews,
+                      )
+                    : l10n.eventOrganizerRatingEmpty,
+                icon: Icons.star_rounded,
+              ),
+            ],
+            const SizedBox(height: 12),
+            EventInfoCard(
+              label: l10n.eventDetailsDateLabel,
+              value: _formatDate(event.startsAt.toLocal()),
+              icon: Icons.calendar_month_rounded,
+            ),
+            if (event.endsAt != null &&
+                !_isSameCalendarDay(
+                  event.startsAt.toLocal(),
+                  event.endsAt!.toLocal(),
+                )) ...[
+              const SizedBox(height: 12),
+              EventInfoCard(
+                label: l10n.eventDetailsEndDateLabel,
+                value: _formatDate(event.endsAt!.toLocal()),
+                icon: Icons.calendar_month_rounded,
+              ),
+            ],
             const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
                   child: EventInfoCard(
-                    label: l10n.eventDetailsDateLabel,
-                    value: _formatDate(event.startsAt.toLocal()),
-                    icon: Icons.calendar_month_rounded,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: EventInfoCard(
-                    label: l10n.eventDetailsTimeLabel,
+                    label: l10n.eventDetailsStartTimeLabel,
                     value: _formatTime(event.startsAt.toLocal()),
                     icon: Icons.schedule_rounded,
                   ),
                 ),
+                if (event.endsAt != null) ...[
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: EventInfoCard(
+                      label: l10n.eventDetailsEndTimeLabel,
+                      value: _formatTime(event.endsAt!.toLocal()),
+                      icon: Icons.schedule_rounded,
+                    ),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 12),
@@ -106,11 +172,11 @@ class EventDetailsInfo extends StatelessWidget {
               icon: Icons.info_outline_rounded,
               multiline: true,
             ),
-            if (event.ticketUrl != null && event.ticketUrl!.isNotEmpty) ...[
+            if (ticketUrl != null) ...[
               const SizedBox(height: 12),
               EventInfoCard(
                 label: l10n.eventDetailsTicketLabel,
-                value: event.ticketUrl!,
+                value: ticketUrl,
                 icon: Icons.confirmation_number_outlined,
               ),
             ],
@@ -190,70 +256,74 @@ class EventDetailsInfo extends StatelessWidget {
               icon: const Icon(Icons.map_outlined, size: 20),
               label: Text(l10n.eventDetailsShowOnMapButton),
             ),
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: onSavePressed,
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48),
-                textStyle: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              icon: Icon(
-                isSaved ? Icons.bookmark_rounded : Icons.bookmark_add_outlined,
-                size: 20,
-              ),
-              label: Text(
-                isSaved ? l10n.savedRemoveAction : l10n.savedSaveAction,
-              ),
-            ),
-            if (isJoined) ...[
+            if (showActionButtons) ...[
               const SizedBox(height: 10),
-              FilledButton.tonalIcon(
-                onPressed: isJoinLoading ? null : onLeavePressed,
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
-                  backgroundColor: scheme.errorContainer,
-                  foregroundColor: scheme.onErrorContainer,
-                  textStyle: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                icon: isJoinLoading
-                    ? SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: scheme.onErrorContainer,
-                        ),
-                      )
-                    : const Icon(Icons.exit_to_app_rounded, size: 20),
-                label: Text(l10n.eventDetailsLeaveButton),
-              ),
-            ] else ...[
-              const SizedBox(height: 10),
-              FilledButton(
-                onPressed: isJoinLoading || onJoinPressed == null
-                    ? null
-                    : onJoinPressed,
-                style: FilledButton.styleFrom(
+              OutlinedButton.icon(
+                onPressed: onSavePressed,
+                style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
                   textStyle: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                child: isJoinLoading
-                    ? SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: theme.colorScheme.onPrimary,
-                        ),
-                      )
-                    : Text(l10n.eventDetailsJoinButton),
+                icon: Icon(
+                  isSaved
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_add_outlined,
+                  size: 20,
+                ),
+                label: Text(
+                  isSaved ? l10n.savedRemoveAction : l10n.savedSaveAction,
+                ),
               ),
+              if (isJoined) ...[
+                const SizedBox(height: 10),
+                FilledButton.tonalIcon(
+                  onPressed: isJoinLoading ? null : onLeavePressed,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                    backgroundColor: scheme.errorContainer,
+                    foregroundColor: scheme.onErrorContainer,
+                    textStyle: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  icon: isJoinLoading
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: scheme.onErrorContainer,
+                          ),
+                        )
+                      : const Icon(Icons.exit_to_app_rounded, size: 20),
+                  label: Text(l10n.eventDetailsLeaveButton),
+                ),
+              ] else ...[
+                const SizedBox(height: 10),
+                FilledButton(
+                  onPressed: isJoinLoading || onJoinPressed == null
+                      ? null
+                      : onJoinPressed,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                    textStyle: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  child: isJoinLoading
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: theme.colorScheme.onPrimary,
+                          ),
+                        )
+                      : Text(l10n.eventDetailsJoinButton),
+                ),
+              ],
             ],
           ],
         ),

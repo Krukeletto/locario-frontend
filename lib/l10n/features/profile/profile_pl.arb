@@ -1,11 +1,38 @@
 {
   "@@locale": "pl",
   "profileTitle": "Profil",
-  "profileDescription": "Konto, preferencje i zapisane miejsca w jednej spokojniejszej sekcji.",
+  "profileDescription": "Konto, preferencje i zapisane miejsca.",
   "profileAuthLoginTitle": "Logowanie",
   "profileAuthLoginSubtitle": "Przejdź do ekranu logowania",
   "profileAuthLogoutTitle": "Wyloguj",
   "profileAuthLogoutSubtitle": "Zakończ aktualną sesję",
+  "profileOrganizerRatingsTitle": "Oceny organizatora",
+  "profileOrganizerRatingsLoading": "Ładowanie ocen",
+  "profileOrganizerRatingsEmpty": "Brak opinii",
+  "profileOrganizerRatingsValue": "{average}/5 · {count,plural, one{1 opinia} few{{count} opinie} many{{count} opinii} other{{count} opinii}}",
+  "@profileOrganizerRatingsValue": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOrganizerReviewsScreenTitle": "Opinie organizatora",
+  "profileOrganizerReviewsLoadingTitle": "Ładowanie opinii",
+  "profileOrganizerReviewsLoadingSubtitle": "Zbieramy opinie z Twoich wydarzeń.",
+  "profileOrganizerReviewsEmptyTitle": "Brak opinii",
+  "profileOrganizerReviewsEmptySubtitle": "Tutaj pojawią się opinie z wydarzeń, które organizujesz.",
+  "profileOrganizerReviewsSummaryTitle": "Twój wynik organizatora",
+  "profileEventHistoryTitle": "Archiwum wydarzeń",
+  "profileEventHistorySubtitle": "Historia twoich wydarzeń.",
+  "profileEventHistoryEmptyTitle": "Brak dołączonych wydarzeń",
+  "profileEventHistoryEmptySubtitle": "Tutaj pojawią się wydarzenia po zapisaniu się.",
+  "profileEventHistoryCurrentSectionTitle": "Obecne",
+  "profileEventHistoryPastSectionTitle": "Przeszłe",
+  "profileEventHistoryOpenEvent": "Otwórz wydarzenie",
   "profileInboxSubtitle": "Otwórz powiadomienia",
   "profileBioPlaceholder": "Brak opisu.",
   "profileLinksLabel": "Linki",

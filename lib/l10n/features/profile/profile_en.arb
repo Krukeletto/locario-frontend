@@ -1,11 +1,38 @@
 {
   "@@locale": "en",
   "profileTitle": "Profile",
-  "profileDescription": "Account, preferences and your saved places in one calmer section.",
+  "profileDescription": "Account, preferences and saved places.",
   "profileAuthLoginTitle": "Sign in",
   "profileAuthLoginSubtitle": "Go to the login screen",
   "profileAuthLogoutTitle": "Sign out",
   "profileAuthLogoutSubtitle": "End the current session",
+  "profileOrganizerRatingsTitle": "Organizer ratings",
+  "profileOrganizerRatingsLoading": "Loading your ratings",
+  "profileOrganizerRatingsEmpty": "No reviews yet",
+  "profileOrganizerRatingsValue": "{average}/5 · {count,plural, one{1 review} other{{count} reviews}}",
+  "@profileOrganizerRatingsValue": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileOrganizerReviewsScreenTitle": "Organizer reviews",
+  "profileOrganizerReviewsLoadingTitle": "Loading reviews",
+  "profileOrganizerReviewsLoadingSubtitle": "We are gathering reviews from your events.",
+  "profileOrganizerReviewsEmptyTitle": "No reviews yet",
+  "profileOrganizerReviewsEmptySubtitle": "Reviews from events you organize will appear here.",
+  "profileOrganizerReviewsSummaryTitle": "Your organizer score",
+  "profileEventHistoryTitle": "Event archive",
+  "profileEventHistorySubtitle": "Your event history.",
+  "profileEventHistoryEmptyTitle": "No joined events yet",
+  "profileEventHistoryEmptySubtitle": "Joined events will appear here after you register.",
+  "profileEventHistoryCurrentSectionTitle": "Current",
+  "profileEventHistoryPastSectionTitle": "Past",
+  "profileEventHistoryOpenEvent": "Open event",
   "profileInboxSubtitle": "Open your notifications",
   "profileBioPlaceholder": "No bio yet.",
   "profileLinksLabel": "Links",

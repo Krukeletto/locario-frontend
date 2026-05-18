@@ -127,6 +127,15 @@ class AppLocalizationsPl extends AppLocalizations {
   String get eventDetailsDateLabel => 'Data';
 
   @override
+  String get eventDetailsEndDateLabel => 'Data końca';
+
+  @override
+  String get eventDetailsStartTimeLabel => 'Start';
+
+  @override
+  String get eventDetailsEndTimeLabel => 'Koniec';
+
+  @override
   String get eventDetailsTimeLabel => 'Godzina';
 
   @override
@@ -145,6 +154,25 @@ class AppLocalizationsPl extends AppLocalizations {
   String get eventDetailsChatLabel => 'Czat uczestników';
 
   @override
+  String get eventOrganizerRatingLabel => 'Ocena organizatora';
+
+  @override
+  String eventOrganizerRatingValue(String average, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count opinii',
+      many: '$count opinii',
+      few: '$count opinie',
+      one: '1 opinia',
+    );
+    return '$average/5 · $_temp0';
+  }
+
+  @override
+  String get eventOrganizerRatingEmpty => 'Brak opinii o organizatorze';
+
+  @override
   String get eventDetailsBuyTicketButton => 'Kup bilet';
 
   @override
@@ -152,6 +180,9 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get eventDetailsLeaveButton => 'Opuść wydarzenie';
+
+  @override
+  String get eventDetailsReviewButton => 'Wystaw opinię';
 
   @override
   String get eventJoinSuccess => 'Zapisano na wydarzenie.';
@@ -189,6 +220,59 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get eventDetailsErrorSubtitle =>
       'Nie udało się teraz wczytać tego wydarzenia.';
+
+  @override
+  String get eventReviewScreenTitle => 'Wystaw opinię';
+
+  @override
+  String get eventReviewLoadingTitle => 'Ładowanie opinii';
+
+  @override
+  String get eventReviewLoadingSubtitle =>
+      'Przygotowujemy formularz opinii i szczegóły wydarzenia.';
+
+  @override
+  String get eventReviewErrorTitle => 'Opinia jest niedostępna';
+
+  @override
+  String get eventReviewErrorSubtitle =>
+      'Nie udało się teraz wczytać ekranu opinii.';
+
+  @override
+  String get eventReviewFormTitle => 'Twoja opinia';
+
+  @override
+  String get eventReviewFormSubtitle =>
+      'Wybierz ocenę i dodaj opcjonalny komentarz.';
+
+  @override
+  String get eventReviewLockedSubtitle =>
+      'Możesz wystawić opinię po zakończeniu wydarzenia i tylko jeśli do niego dołączyłeś/aś.';
+
+  @override
+  String get eventReviewCommentLabel => 'Komentarz';
+
+  @override
+  String get eventReviewCommentHint => 'Co zrobiło wrażenie?';
+
+  @override
+  String get eventReviewSubmitButton => 'Wyślij opinię';
+
+  @override
+  String get eventReviewSubmittedButton => 'Opinia wysłana';
+
+  @override
+  String get eventReviewSubmittedLabel => 'Twoja opinia została zapisana.';
+
+  @override
+  String get eventReviewEligibilityHint =>
+      'Opinię mogą wystawić tylko uczestnicy po zakończeniu wydarzenia.';
+
+  @override
+  String get eventReviewSuccess => 'Opinia została wysłana.';
+
+  @override
+  String get eventReviewError => 'Nie udało się wysłać opinii.';
 
   @override
   String get eventDetailsJazzDescription =>
@@ -781,8 +865,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get profileTitle => 'Profil';
 
   @override
-  String get profileDescription =>
-      'Konto, preferencje i zapisane miejsca w jednej spokojniejszej sekcji.';
+  String get profileDescription => 'Konto, preferencje i zapisane miejsca.';
 
   @override
   String get profileAuthLoginTitle => 'Logowanie';
@@ -795,6 +878,70 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get profileAuthLogoutSubtitle => 'Zakończ aktualną sesję';
+
+  @override
+  String get profileOrganizerRatingsTitle => 'Oceny organizatora';
+
+  @override
+  String get profileOrganizerRatingsLoading => 'Ładowanie ocen';
+
+  @override
+  String get profileOrganizerRatingsEmpty => 'Brak opinii';
+
+  @override
+  String profileOrganizerRatingsValue(String average, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count opinii',
+      many: '$count opinii',
+      few: '$count opinie',
+      one: '1 opinia',
+    );
+    return '$average/5 · $_temp0';
+  }
+
+  @override
+  String get profileOrganizerReviewsScreenTitle => 'Opinie organizatora';
+
+  @override
+  String get profileOrganizerReviewsLoadingTitle => 'Ładowanie opinii';
+
+  @override
+  String get profileOrganizerReviewsLoadingSubtitle =>
+      'Zbieramy opinie z Twoich wydarzeń.';
+
+  @override
+  String get profileOrganizerReviewsEmptyTitle => 'Brak opinii';
+
+  @override
+  String get profileOrganizerReviewsEmptySubtitle =>
+      'Tutaj pojawią się opinie z wydarzeń, które organizujesz.';
+
+  @override
+  String get profileOrganizerReviewsSummaryTitle => 'Twój wynik organizatora';
+
+  @override
+  String get profileEventHistoryTitle => 'Archiwum wydarzeń';
+
+  @override
+  String get profileEventHistorySubtitle => 'Historia twoich wydarzeń.';
+
+  @override
+  String get profileEventHistoryEmptyTitle => 'Brak dołączonych wydarzeń';
+
+  @override
+  String get profileEventHistoryEmptySubtitle =>
+      'Tutaj pojawią się wydarzenia po zapisaniu się.';
+
+  @override
+  String get profileEventHistoryCurrentSectionTitle => 'Obecne';
+
+  @override
+  String get profileEventHistoryPastSectionTitle => 'Przeszłe';
+
+  @override
+  String get profileEventHistoryOpenEvent => 'Otwórz wydarzenie';
 
   @override
   String get profileInboxSubtitle => 'Otwórz powiadomienia';
@@ -938,8 +1085,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get savedTitle => 'Zapisane';
 
   @override
-  String get savedSubtitle =>
-      'Miejsca, wydarzenia i listy, do których chcesz wrócić';
+  String get savedSubtitle => 'Miejsca, eventy i listy.';
 
   @override
   String get savedSaveAction => 'Zapisz wydarzenie';

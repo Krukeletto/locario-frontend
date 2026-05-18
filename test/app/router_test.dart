@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:locario/app/router.dart';
 import 'package:locario/features/auth/login_screen.dart';
+import 'package:locario/features/profile/profile_screen.dart';
 import 'package:locario/features/saved/saved_screen.dart';
 import 'package:locario/features/saved/saved_events_controller.dart';
 import 'package:locario/features/saved/saved_events_repository.dart';
@@ -140,6 +141,45 @@ void main() {
         expect(find.byType(LoginScreen), findsOneWidget);
       },
     );
+
+    testWidgets('redirects non-organizers away from organizer reviews route', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final sessionController = await _createSessionController(
+        authenticated: true,
+        role: 'user',
+      );
+      final router = createAppRouter(sessionController);
+
+      await tester.pumpWidget(
+        AuthScope(
+          controller: sessionController,
+          child: SavedEventsScope(
+            controller: SavedEventsController(
+              repository: _MemorySavedEventsRepository(),
+            ),
+            child: SavedFiltersScope(
+              controller: SavedFiltersController(
+                repository: const SharedPreferencesSavedFiltersRepository(),
+              ),
+              child: MaterialApp.router(
+                locale: const Locale('en'),
+                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                routerConfig: router,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      router.go('/profile/reviews');
+      await tester.pumpAndSettle();
+
+      expect(router.routerDelegate.currentConfiguration.uri.path, '/profile');
+      expect(find.byType(ProfileScreen), findsOneWidget);
+    });
   });
 }
 
@@ -161,7 +201,9 @@ class _MemoryAuthStorage implements AuthTokenStorage {
 }
 
 class _FakeAuthApi extends AuthApi {
-  _FakeAuthApi() : super();
+  _FakeAuthApi({required this.profile}) : super();
+
+  final UserProfile profile;
 
   @override
   Future<AuthResponse> login(LoginRequest request) {
@@ -173,7 +215,7 @@ class _FakeAuthApi extends AuthApi {
     required String accessToken,
     String tokenType = 'Bearer',
   }) {
-    throw StateError('fetchProfile not configured');
+    return Future.value(profile);
   }
 
   @override
@@ -217,11 +259,38 @@ class _MemorySavedEventsRepository implements SavedEventsRepository {
   Future<void> clear() async {}
 }
 
-Future<SessionController> _createSessionController() async {
+Future<SessionController> _createSessionController({
+  bool authenticated = false,
+  String role = 'user',
+}) async {
+  final storage = _MemoryAuthStorage();
+  if (authenticated) {
+    storage.stored = AuthTokens(
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      tokenType: 'Bearer',
+      expiresAt: DateTime.now().add(const Duration(hours: 1)),
+    );
+  }
   final controller = SessionController(
     authRepository: AuthRepository(
-      api: _FakeAuthApi(),
-      storage: _MemoryAuthStorage(),
+      api: _FakeAuthApi(
+        profile: UserProfile(
+          id: 'user-id',
+          username: 'user',
+          email: 'user@example.com',
+          hasPassword: true,
+          avatarUrl: null,
+          bio: null,
+          websiteUrl: null,
+          instagramUrl: null,
+          facebookUrl: null,
+          createdAt: DateTime.utc(2026, 5, 1),
+          eventRegistrations: const [],
+          role: role,
+        ),
+      ),
+      storage: storage,
     ),
   );
 

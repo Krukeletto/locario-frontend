@@ -51,4 +51,42 @@ void main() {
     expect(profile.eventRegistrations.length, 1);
     expect(profile.favorites.length, 1);
   });
+
+  test('UserProfile.hasOrganizerReviewAccess is role-based', () {
+    expect(
+      UserProfile(
+        id: '1',
+        username: 'u',
+        email: 'u@example.com',
+        hasPassword: true,
+        avatarUrl: null,
+        bio: null,
+        websiteUrl: null,
+        instagramUrl: null,
+        facebookUrl: null,
+        createdAt: DateTime.utc(2026, 5, 1),
+        eventRegistrations: const [],
+        role: 'user',
+      ).hasOrganizerReviewAccess,
+      isFalse,
+    );
+
+    expect(
+      UserProfile(
+        id: '2',
+        username: 'u',
+        email: 'u@example.com',
+        hasPassword: true,
+        avatarUrl: null,
+        bio: null,
+        websiteUrl: null,
+        instagramUrl: null,
+        facebookUrl: null,
+        createdAt: DateTime.utc(2026, 5, 1),
+        eventRegistrations: const [],
+        role: 'organizer',
+      ).hasOrganizerReviewAccess,
+      isTrue,
+    );
+  });
 }

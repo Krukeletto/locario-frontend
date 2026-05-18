@@ -129,6 +129,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventDetailsDateLabel => 'Date';
 
   @override
+  String get eventDetailsEndDateLabel => 'End date';
+
+  @override
+  String get eventDetailsStartTimeLabel => 'Start';
+
+  @override
+  String get eventDetailsEndTimeLabel => 'End';
+
+  @override
   String get eventDetailsTimeLabel => 'Time';
 
   @override
@@ -147,6 +156,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventDetailsChatLabel => 'Participants chat';
 
   @override
+  String get eventOrganizerRatingLabel => 'Organizer rating';
+
+  @override
+  String eventOrganizerRatingValue(String average, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reviews',
+      one: '1 review',
+    );
+    return '$average/5 · $_temp0';
+  }
+
+  @override
+  String get eventOrganizerRatingEmpty => 'No organizer reviews yet';
+
+  @override
   String get eventDetailsBuyTicketButton => 'Buy ticket';
 
   @override
@@ -154,6 +180,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get eventDetailsLeaveButton => 'Leave event';
+
+  @override
+  String get eventDetailsReviewButton => 'Write a review';
 
   @override
   String get eventJoinSuccess => 'You\'re registered for this event.';
@@ -190,6 +219,59 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get eventDetailsErrorSubtitle =>
       'We could not load this event right now.';
+
+  @override
+  String get eventReviewScreenTitle => 'Write a review';
+
+  @override
+  String get eventReviewLoadingTitle => 'Loading review';
+
+  @override
+  String get eventReviewLoadingSubtitle =>
+      'We are preparing the review form and event details.';
+
+  @override
+  String get eventReviewErrorTitle => 'Review unavailable';
+
+  @override
+  String get eventReviewErrorSubtitle =>
+      'We could not load the review screen right now.';
+
+  @override
+  String get eventReviewFormTitle => 'Your opinion';
+
+  @override
+  String get eventReviewFormSubtitle =>
+      'Choose a rating and add an optional comment.';
+
+  @override
+  String get eventReviewLockedSubtitle =>
+      'You can review this event after it ends and only if you joined it.';
+
+  @override
+  String get eventReviewCommentLabel => 'Comment';
+
+  @override
+  String get eventReviewCommentHint => 'What stood out?';
+
+  @override
+  String get eventReviewSubmitButton => 'Send review';
+
+  @override
+  String get eventReviewSubmittedButton => 'Review sent';
+
+  @override
+  String get eventReviewSubmittedLabel => 'Your review has been saved.';
+
+  @override
+  String get eventReviewEligibilityHint =>
+      'Only joined participants can review after the event ends.';
+
+  @override
+  String get eventReviewSuccess => 'Review sent successfully.';
+
+  @override
+  String get eventReviewError => 'We could not send your review.';
 
   @override
   String get eventDetailsJazzDescription =>
@@ -773,8 +855,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileTitle => 'Profile';
 
   @override
-  String get profileDescription =>
-      'Account, preferences and your saved places in one calmer section.';
+  String get profileDescription => 'Account, preferences and saved places.';
 
   @override
   String get profileAuthLoginTitle => 'Sign in';
@@ -787,6 +868,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileAuthLogoutSubtitle => 'End the current session';
+
+  @override
+  String get profileOrganizerRatingsTitle => 'Organizer ratings';
+
+  @override
+  String get profileOrganizerRatingsLoading => 'Loading your ratings';
+
+  @override
+  String get profileOrganizerRatingsEmpty => 'No reviews yet';
+
+  @override
+  String profileOrganizerRatingsValue(String average, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reviews',
+      one: '1 review',
+    );
+    return '$average/5 · $_temp0';
+  }
+
+  @override
+  String get profileOrganizerReviewsScreenTitle => 'Organizer reviews';
+
+  @override
+  String get profileOrganizerReviewsLoadingTitle => 'Loading reviews';
+
+  @override
+  String get profileOrganizerReviewsLoadingSubtitle =>
+      'We are gathering reviews from your events.';
+
+  @override
+  String get profileOrganizerReviewsEmptyTitle => 'No reviews yet';
+
+  @override
+  String get profileOrganizerReviewsEmptySubtitle =>
+      'Reviews from events you organize will appear here.';
+
+  @override
+  String get profileOrganizerReviewsSummaryTitle => 'Your organizer score';
+
+  @override
+  String get profileEventHistoryTitle => 'Event archive';
+
+  @override
+  String get profileEventHistorySubtitle => 'Your event history.';
+
+  @override
+  String get profileEventHistoryEmptyTitle => 'No joined events yet';
+
+  @override
+  String get profileEventHistoryEmptySubtitle =>
+      'Joined events will appear here after you register.';
+
+  @override
+  String get profileEventHistoryCurrentSectionTitle => 'Current';
+
+  @override
+  String get profileEventHistoryPastSectionTitle => 'Past';
+
+  @override
+  String get profileEventHistoryOpenEvent => 'Open event';
 
   @override
   String get profileInboxSubtitle => 'Open your notifications';
@@ -930,7 +1073,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get savedTitle => 'Saved';
 
   @override
-  String get savedSubtitle => 'Places, events and lists you want to revisit';
+  String get savedSubtitle => 'Places, events and lists.';
 
   @override
   String get savedSaveAction => 'Save event';

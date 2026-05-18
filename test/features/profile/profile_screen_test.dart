@@ -27,7 +27,9 @@ class _MemoryAuthStorage implements AuthTokenStorage {
 }
 
 class _FakeAuthApi extends AuthApi {
-  _FakeAuthApi() : super();
+  _FakeAuthApi({required this.profile}) : super();
+
+  final UserProfile profile;
 
   @override
   Future<AuthResponse> login(LoginRequest request) {
@@ -39,7 +41,7 @@ class _FakeAuthApi extends AuthApi {
     required String accessToken,
     String tokenType = 'Bearer',
   }) {
-    throw StateError('fetchProfile not configured');
+    return Future.value(profile);
   }
 
   @override
@@ -66,20 +68,50 @@ class _FakeAuthApi extends AuthApi {
   }
 }
 
-Future<SessionController> _createSessionController() async {
+Future<SessionController> _createSessionController({
+  bool authenticated = false,
+  String role = 'user',
+  bool load = true,
+}) async {
+  final storage = _MemoryAuthStorage();
+  if (authenticated) {
+    storage.stored = AuthTokens(
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      tokenType: 'Bearer',
+      expiresAt: DateTime.now().add(const Duration(hours: 1)),
+    );
+  }
   final controller = SessionController(
     authRepository: AuthRepository(
-      api: _FakeAuthApi(),
-      storage: _MemoryAuthStorage(),
+      api: _FakeAuthApi(
+        profile: UserProfile(
+          id: 'user-id',
+          username: 'user',
+          email: 'user@example.com',
+          hasPassword: true,
+          avatarUrl: null,
+          bio: null,
+          websiteUrl: null,
+          instagramUrl: null,
+          facebookUrl: null,
+          createdAt: DateTime.utc(2026, 5, 1),
+          eventRegistrations: const [],
+          role: role,
+        ),
+      ),
+      storage: storage,
     ),
   );
 
-  await controller.load();
+  if (load) {
+    await controller.load();
+  }
   return controller;
 }
 
 void main() {
-  testWidgets('renders inbox card with correct labels', (tester) async {
+  testWidgets('renders guest login card', (tester) async {
     final sessionController = await _createSessionController();
 
     await tester.pumpWidget(
@@ -94,7 +126,57 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Profile'), findsOneWidget);
-    expect(find.text('Inbox'), findsOneWidget);
-    expect(find.text('Open your notifications'), findsOneWidget);
+    expect(find.text('Sign in'), findsOneWidget);
+    expect(find.text('Go to the login screen'), findsOneWidget);
+    expect(find.text('Inbox'), findsNothing);
+  });
+
+  testWidgets('renders logout chip for authenticated users', (tester) async {
+    final sessionController = await _createSessionController(
+      authenticated: true,
+      role: 'organizer',
+    );
+
+    await tester.pumpWidget(
+      AuthScope(
+        controller: sessionController,
+        child: buildLocalizedTestApp(
+          locale: const Locale('en'),
+          home: const ProfileScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(ListView), const Offset(0, -900));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Profile'), findsNothing);
+    expect(find.text('Account, preferences and saved places.'), findsNothing);
+    expect(find.text('Sign out'), findsOneWidget);
+    expect(find.byIcon(Icons.logout_rounded), findsOneWidget);
+    expect(find.text('Sign in'), findsNothing);
+  });
+
+  testWidgets('shows loading state while session is still loading', (
+    tester,
+  ) async {
+    final sessionController = await _createSessionController(load: false);
+
+    await tester.pumpWidget(
+      AuthScope(
+        controller: sessionController,
+        child: buildLocalizedTestApp(
+          locale: const Locale('en'),
+          home: const ProfileScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(ListView), findsNothing);
+    expect(find.text('Profile'), findsNothing);
+    expect(find.text('Sign in'), findsNothing);
   });
 }
