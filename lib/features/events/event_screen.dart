@@ -5,6 +5,7 @@ import 'package:locario/l10n/app_localizations.dart';
 import '../../shared/auth/auth_scope.dart';
 import '../../shared/events/event_repository.dart';
 import '../../shared/events/event_slots_response.dart';
+import '../../shared/services/calendar_service.dart';
 import '../../shared/reviews/review_models.dart';
 import '../../shared/reviews/review_repository.dart';
 import '../../shared/services/feedback_service.dart';
@@ -20,11 +21,17 @@ import 'widgets/gallery/event_details_gallery.dart';
 import 'widgets/info/event_details_info.dart';
 
 class EventScreen extends StatefulWidget {
-  const EventScreen({super.key, this.eventId, EventRepository? eventRepository})
-    : _eventRepository = eventRepository;
+  const EventScreen({
+    super.key,
+    this.eventId,
+    EventRepository? eventRepository,
+    CalendarService? calendarService,
+  }) : _eventRepository = eventRepository,
+       _calendarService = calendarService;
 
   final String? eventId;
   final EventRepository? _eventRepository;
+  final CalendarService? _calendarService;
 
   @override
   State<EventScreen> createState() => _EventScreenState();
@@ -32,6 +39,7 @@ class EventScreen extends StatefulWidget {
 
 class _EventScreenState extends State<EventScreen> {
   late final EventRepository _eventRepository;
+  late final CalendarService _calendarService;
   late final ReviewRepository _reviewRepository;
   AppLocalizations? _l10n;
   bool _hasRequestedInitialLoad = false;
@@ -47,6 +55,7 @@ class _EventScreenState extends State<EventScreen> {
   void initState() {
     super.initState();
     _eventRepository = widget._eventRepository ?? HttpEventRepository();
+    _calendarService = widget._calendarService ?? CalendarService();
     _reviewRepository = HttpReviewRepository();
   }
 
@@ -181,6 +190,7 @@ class _EventScreenState extends State<EventScreen> {
       await joinedController.joinEvent(event);
       if (!mounted) return;
       FeedbackService.showSuccess(FeedbackMessage.eventJoinSuccess);
+      await _promptCalendarAdd(event);
     } catch (e) {
       if (!mounted) return;
       FeedbackService.showError(FeedbackMessage.eventJoinError);
@@ -228,6 +238,50 @@ class _EventScreenState extends State<EventScreen> {
   Future<void> _openReviewScreen(ExploreEvent event) async {
     if (!mounted) return;
     await context.push('/events/${event.id}/review');
+  }
+
+  Future<void> _addEventToCalendar(ExploreEvent event) async {
+    final added = await _calendarService.addEvent(event);
+    if (!mounted) {
+      return;
+    }
+
+    if (added) {
+      FeedbackService.showSuccess(FeedbackMessage.eventAddToCalendarSuccess);
+      return;
+    }
+
+    FeedbackService.showError(FeedbackMessage.eventAddToCalendarError);
+  }
+
+  Future<void> _promptCalendarAdd(ExploreEvent event) async {
+    final l10n = AppLocalizations.of(context);
+    final shouldAdd = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          icon: const Icon(Icons.calendar_month_rounded),
+          title: Text(l10n.eventCalendarPromptTitle),
+          content: Text(l10n.eventCalendarPromptBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.eventCalendarPromptLater),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.eventCalendarPromptAddNow),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldAdd != true || !mounted) {
+      return;
+    }
+
+    await _addEventToCalendar(event);
   }
 
   @override
@@ -378,6 +432,9 @@ class _EventScreenState extends State<EventScreen> {
               organizerRating: _organizerAverageRating,
               onJoinPressed: isJoined ? null : () => _joinEvent(event),
               onLeavePressed: isJoined ? () => _leaveEvent(event) : null,
+              onAddToCalendarPressed: isJoined
+                  ? () => _addEventToCalendar(event)
+                  : null,
               slots: _slots,
               isJoinLoading: _isJoinLoading,
             ),

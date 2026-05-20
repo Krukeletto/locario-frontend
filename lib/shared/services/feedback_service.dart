@@ -19,6 +19,8 @@ enum FeedbackMessage {
   eventJoinSuccess,
   eventLeaveSuccess,
   eventJoinError,
+  eventAddToCalendarSuccess,
+  eventAddToCalendarError,
   eventPublishSuccess,
   eventPublishError,
   eventReviewSuccess,
@@ -118,6 +120,9 @@ class FeedbackService {
       FeedbackMessage.eventJoinSuccess => l10n.eventJoinSuccess,
       FeedbackMessage.eventLeaveSuccess => l10n.eventLeaveSuccess,
       FeedbackMessage.eventJoinError => l10n.eventJoinError,
+      FeedbackMessage.eventAddToCalendarSuccess =>
+        l10n.eventAddToCalendarSuccess,
+      FeedbackMessage.eventAddToCalendarError => l10n.eventAddToCalendarError,
       FeedbackMessage.eventPublishSuccess => l10n.eventPublishSuccess,
       FeedbackMessage.eventPublishError => l10n.eventPublishError,
       FeedbackMessage.eventReviewSuccess => l10n.eventReviewSuccess,

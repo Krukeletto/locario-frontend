@@ -3,12 +3,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:http/http.dart' as http;
+import 'package:locario/features/events/joined_events_controller.dart';
+import 'package:locario/features/events/joined_events_scope.dart';
 import 'package:locario/features/explore/models.dart';
 import 'package:locario/features/events/event_screen.dart';
+import 'package:locario/shared/auth/auth_api.dart';
+import 'package:locario/shared/auth/auth_models.dart';
+import 'package:locario/shared/auth/auth_repository.dart';
+import 'package:locario/shared/auth/auth_scope.dart';
+import 'package:locario/shared/auth/session_controller.dart';
+import 'package:locario/shared/events/event_registration_api.dart';
 import 'package:locario/features/saved/saved_events_controller.dart';
 import 'package:locario/features/saved/saved_events_repository.dart';
 import 'package:locario/features/saved/saved_events_scope.dart';
 import 'package:locario/shared/events/event_repository.dart';
+import 'package:locario/shared/services/calendar_service.dart';
 
 import '../../test_helpers/fake_event_repository.dart';
 import '../../test_helpers/test_app.dart';
@@ -79,6 +89,52 @@ void main() {
 
       expect(find.text('Wydarzenie jest niedostępne'), findsOneWidget);
     });
+
+    testWidgets('prompts to add the event to calendar after join', (
+      tester,
+    ) async {
+      final authController = _AuthenticatedSessionController();
+      final joinedController = _FakeJoinedEventsController(authController);
+      final calendarService = _FakeCalendarService();
+
+      await tester.pumpWidget(
+        buildLocalizedTestApp(
+          home: AuthScope(
+            controller: authController,
+            child: JoinedEventsScope(
+              controller: joinedController,
+              child: EventScreen(
+                eventId: '11111111-1111-1111-1111-111111111111',
+                eventRepository: FakeEventRepository(
+                  eventDetails: _futureEvent(),
+                ),
+                calendarService: calendarService,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('Join'), 300);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Join'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Add to calendar?'), findsOneWidget);
+      expect(
+        find.text(
+          'You can add this event now or later from the event details screen. The calendar will open with the details already filled in.',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Add now'));
+      await tester.pumpAndSettle();
+
+      expect(calendarService.addedEvent?.id, _futureEvent().id);
+    });
   });
 }
 
@@ -110,6 +166,108 @@ class _MemorySavedEventsRepository implements SavedEventsRepository {
 
   @override
   Future<void> clear() async {}
+}
+
+class _AuthenticatedSessionController extends SessionController {
+  _AuthenticatedSessionController()
+    : super(
+        authRepository: AuthRepository(
+          api: AuthApi(client: http.Client(), baseUrl: 'http://localhost'),
+          storage: _NoopAuthTokenStorage(),
+        ),
+      );
+
+  final AuthTokens _tokens = AuthTokens(
+    accessToken: 'access-token',
+    refreshToken: 'refresh-token',
+    tokenType: 'Bearer',
+    expiresAt: DateTime.utc(2030, 1, 1),
+  );
+  final UserProfile _profile = UserProfile(
+    id: 'user-1',
+    username: 'tester',
+    email: 'tester@example.com',
+    hasPassword: true,
+    avatarUrl: null,
+    bio: null,
+    websiteUrl: null,
+    instagramUrl: null,
+    facebookUrl: null,
+    createdAt: DateTime.utc(2026, 1, 1),
+    eventRegistrations: const [],
+  );
+
+  @override
+  bool get isAuthenticated => true;
+
+  @override
+  bool get isLoading => false;
+
+  @override
+  SessionStatus get status => SessionStatus.authenticated;
+
+  @override
+  AuthTokens? get tokens => _tokens;
+
+  @override
+  UserProfile? get profile => _profile;
+
+  @override
+  Future<void> refreshProfile() async {}
+}
+
+class _FakeJoinedEventsController extends JoinedEventsController {
+  _FakeJoinedEventsController(SessionController sessionController)
+    : super(
+        registrationApi: EventRegistrationApi(
+          client: http.Client(),
+          baseUrl: 'http://localhost',
+        ),
+        sessionController: sessionController,
+      );
+
+  final Set<String> _joinedEventIds = {};
+
+  @override
+  Set<String> get joinedEventIds => Set.unmodifiable(_joinedEventIds);
+
+  @override
+  bool isJoined(String eventId) => _joinedEventIds.contains(eventId);
+
+  @override
+  Future<void> joinEvent(ExploreEvent event) async {
+    _joinedEventIds.add(event.id);
+    notifyListeners();
+  }
+
+  @override
+  Future<void> cancelRegistration(String eventId) async {
+    _joinedEventIds.remove(eventId);
+    notifyListeners();
+  }
+}
+
+class _FakeCalendarService extends CalendarService {
+  _FakeCalendarService() : super();
+
+  ExploreEvent? addedEvent;
+
+  @override
+  Future<bool> addEvent(ExploreEvent event) async {
+    addedEvent = event;
+    return true;
+  }
+}
+
+class _NoopAuthTokenStorage implements AuthTokenStorage {
+  @override
+  Future<void> clear() async {}
+
+  @override
+  Future<AuthTokens?> readTokens() async => null;
+
+  @override
+  Future<void> saveTokens(AuthTokens tokens) async {}
 }
 
 ExploreEvent _futureEvent() {
