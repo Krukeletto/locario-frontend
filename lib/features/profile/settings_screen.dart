@@ -28,6 +28,12 @@ class SettingsScreen extends StatelessWidget {
     final isAuthenticated = sessionController.isAuthenticated;
     final hasPassword = sessionController.profile?.hasPassword ?? false;
     final canChangePassword = isAuthenticated && hasPassword;
+    final profile = sessionController.profile;
+    final isOrganizer = profile?.organizer == true;
+    final isVerificationPending =
+        profile?.organizerVerificationStatus == 'pending';
+    final canBecomeOrganizer =
+        isAuthenticated && !isOrganizer && !isVerificationPending;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -181,6 +187,41 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
+          if (canBecomeOrganizer) ...[
+            _SettingsSection(
+              title: l10n.profileBecomeOrganizerTitle,
+              subtitle: l10n.profileBecomeOrganizerSubtitle,
+              child: FilledButton.icon(
+                onPressed: () => _showBecomeOrganizerDialog(context),
+                icon: const Icon(Icons.verified_rounded),
+                label: Text(l10n.profileBecomeOrganizerTitle),
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+          if (isVerificationPending) ...[
+            _SettingsSection(
+              title: l10n.profileOrganizerVerificationPendingTitle,
+              subtitle: l10n.profileOrganizerVerificationPendingSubtitle,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.hourglass_empty_rounded,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    l10n.profileOrganizerVerificationPendingTitle,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
           _SettingsSection(
             title: 'Debug',
             subtitle: 'Tap to send a test notification after 3 seconds',
@@ -224,6 +265,49 @@ class SettingsScreen extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (context) => const _ChangePasswordDialog(),
+    );
+  }
+
+  void _showBecomeOrganizerDialog(BuildContext context) {
+    final sessionController = AuthScope.of(context);
+    if (sessionController.isBusy) {
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context);
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.profileBecomeOrganizerDialogTitle),
+        content: Text(l10n.profileBecomeOrganizerDialogBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.profileBecomeOrganizerDialogCancel),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              try {
+                await sessionController.requestOrganizerVerification();
+                if (!context.mounted) {
+                  return;
+                }
+                FeedbackService.showSuccess(
+                  FeedbackMessage.organizerVerificationSent,
+                );
+              } catch (_) {
+                if (!context.mounted) {
+                  return;
+                }
+                FeedbackService.showError(FeedbackMessage.unknownError);
+              }
+            },
+            child: Text(l10n.profileBecomeOrganizerDialogSubmit),
+          ),
+        ],
+      ),
     );
   }
 }

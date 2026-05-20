@@ -130,6 +130,18 @@ class AuthRepository {
     await _storage.clear();
   }
 
+  Future<UserProfile> submitOrganizerVerification() async {
+    final tokens = await _storage.readTokens();
+    if (tokens == null) {
+      throw const AuthRepositoryException('Missing tokens');
+    }
+
+    return _api.submitOrganizerVerification(
+      accessToken: tokens.accessToken,
+      tokenType: tokens.tokenType,
+    );
+  }
+
   Future<void> clear() => _storage.clear();
 
   AuthTokens _tokensFromResponse(AuthResponse response) {

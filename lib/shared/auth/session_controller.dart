@@ -144,6 +144,19 @@ class SessionController extends ChangeNotifier {
     }
   }
 
+  Future<void> requestOrganizerVerification() async {
+    if (_isBusy || !isAuthenticated) {
+      return;
+    }
+    _setBusy(true);
+    try {
+      _profile = await _authRepository.submitOrganizerVerification();
+      notifyListeners();
+    } finally {
+      _setBusy(false);
+    }
+  }
+
   Future<void> refreshProfile() async {
     if (!isAuthenticated) {
       return;

@@ -2228,6 +2228,114 @@ abstract class AppLocalizations {
   /// **'Facebook link must contain facebook'**
   String get editProfileFacebookDomainError;
 
+  /// No description provided for @profileMyEventsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My events'**
+  String get profileMyEventsTitle;
+
+  /// No description provided for @profileMyEventsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Events you have created and manage.'**
+  String get profileMyEventsSubtitle;
+
+  /// No description provided for @profileOrganizerSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer'**
+  String get profileOrganizerSectionTitle;
+
+  /// No description provided for @profileOrganizerSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools for verified event organizers.'**
+  String get profileOrganizerSectionSubtitle;
+
+  /// No description provided for @profileOrganizerCreateEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Create event'**
+  String get profileOrganizerCreateEvent;
+
+  /// No description provided for @profileOrganizerCreateEventSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize something new.'**
+  String get profileOrganizerCreateEventSubtitle;
+
+  /// No description provided for @profileBecomeOrganizerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Become an organizer'**
+  String get profileBecomeOrganizerTitle;
+
+  /// No description provided for @profileBecomeOrganizerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get verified to create and manage events.'**
+  String get profileBecomeOrganizerSubtitle;
+
+  /// No description provided for @profileBecomeOrganizerDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer verification'**
+  String get profileBecomeOrganizerDialogTitle;
+
+  /// No description provided for @profileBecomeOrganizerDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'After submitting, your request will be reviewed by our team. You will be notified when the decision is made.'**
+  String get profileBecomeOrganizerDialogBody;
+
+  /// No description provided for @profileBecomeOrganizerDialogSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit request'**
+  String get profileBecomeOrganizerDialogSubmit;
+
+  /// No description provided for @profileBecomeOrganizerDialogCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get profileBecomeOrganizerDialogCancel;
+
+  /// No description provided for @profileBecomeOrganizerRequestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification request sent.'**
+  String get profileBecomeOrganizerRequestSent;
+
+  /// No description provided for @profileBecomeOrganizerRequestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send verification request.'**
+  String get profileBecomeOrganizerRequestFailed;
+
+  /// No description provided for @profileOrganizerVerificationPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification pending'**
+  String get profileOrganizerVerificationPendingTitle;
+
+  /// No description provided for @profileOrganizerVerificationPendingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your request is being reviewed by our team.'**
+  String get profileOrganizerVerificationPendingSubtitle;
+
+  /// No description provided for @profileOrganizerVerificationRejectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification rejected'**
+  String get profileOrganizerVerificationRejectedTitle;
+
+  /// No description provided for @profileOrganizerVerificationRejectedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your request was not approved.'**
+  String get profileOrganizerVerificationRejectedSubtitle;
+
   /// No description provided for @savedTitle.
   ///
   /// In en, this message translates to:

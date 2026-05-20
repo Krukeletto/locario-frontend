@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/events/event_screen.dart';
-import '../features/hub/create_event/create_event_screen.dart';
 import '../features/explore/explore_screen.dart';
 import '../features/hub/hub_placeholder_screen.dart';
 import '../features/inbox/inbox_screen.dart';
@@ -69,12 +68,6 @@ String? normalizeIncomingLocation(Uri uri) {
 
 final List<HubActionItem> hubActionItems = [
   const HubActionItem(
-    id: 'create-event',
-    icon: 'add_box',
-    routePath: '/hub/create-event',
-    isPrimary: true,
-  ),
-  const HubActionItem(
     id: 'messages',
     icon: 'mail',
     routePath: '/hub/messages',
@@ -95,8 +88,7 @@ final List<HubActionItem> hubActionItems = [
 ];
 
 bool _requiresAuth(String location) {
-  return location.startsWith('/hub/create-event') ||
-      location.startsWith('/hub/messages') ||
+  return location.startsWith('/hub/messages') ||
       location.startsWith('/hub/friends') ||
       location.startsWith('/inbox') ||
       location.startsWith('/profile/edit') ||
@@ -316,9 +308,7 @@ GoRouter createAppRouter({
           parentNavigatorKey: _rootNavigatorKey,
           path: item.routePath,
           pageBuilder: (context, state) {
-            final child = item.id == 'create-event'
-                ? const CreateEventScreen()
-                : HubPlaceholderScreen(item: item);
+            final child = HubPlaceholderScreen(item: item);
             return _trackedNoTransitionPage(
               controller: navigationHistory,
               location: state.uri.toString(),

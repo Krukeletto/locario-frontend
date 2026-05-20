@@ -1194,6 +1194,67 @@ class AppLocalizationsEn extends AppLocalizations {
       'Facebook link must contain facebook';
 
   @override
+  String get profileMyEventsTitle => 'My events';
+
+  @override
+  String get profileMyEventsSubtitle => 'Events you have created and manage.';
+
+  @override
+  String get profileOrganizerSectionTitle => 'Organizer';
+
+  @override
+  String get profileOrganizerSectionSubtitle =>
+      'Tools for verified event organizers.';
+
+  @override
+  String get profileOrganizerCreateEvent => 'Create event';
+
+  @override
+  String get profileOrganizerCreateEventSubtitle => 'Organize something new.';
+
+  @override
+  String get profileBecomeOrganizerTitle => 'Become an organizer';
+
+  @override
+  String get profileBecomeOrganizerSubtitle =>
+      'Get verified to create and manage events.';
+
+  @override
+  String get profileBecomeOrganizerDialogTitle => 'Organizer verification';
+
+  @override
+  String get profileBecomeOrganizerDialogBody =>
+      'After submitting, your request will be reviewed by our team. You will be notified when the decision is made.';
+
+  @override
+  String get profileBecomeOrganizerDialogSubmit => 'Submit request';
+
+  @override
+  String get profileBecomeOrganizerDialogCancel => 'Cancel';
+
+  @override
+  String get profileBecomeOrganizerRequestSent => 'Verification request sent.';
+
+  @override
+  String get profileBecomeOrganizerRequestFailed =>
+      'Could not send verification request.';
+
+  @override
+  String get profileOrganizerVerificationPendingTitle => 'Verification pending';
+
+  @override
+  String get profileOrganizerVerificationPendingSubtitle =>
+      'Your request is being reviewed by our team.';
+
+  @override
+  String get profileOrganizerVerificationRejectedTitle =>
+      'Verification rejected';
+
+  @override
+  String get profileOrganizerVerificationRejectedSubtitle =>
+      'Your request was not approved.';
+
+  @override
   String get savedTitle => 'Saved';
 
   @override

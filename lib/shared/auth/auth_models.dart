@@ -223,6 +223,10 @@ class UserProfile {
     required this.eventRegistrations,
     this.role,
     this.favorites = const [],
+    this.organizer = false,
+    this.admin = false,
+    this.organizerVerificationStatus,
+    this.organizerVerificationNotes,
   });
 
   final String id;
@@ -238,6 +242,10 @@ class UserProfile {
   final DateTime createdAt;
   final List<ProfileEventSummary> eventRegistrations;
   final List<FavoriteEventSummary> favorites;
+  final bool organizer;
+  final bool admin;
+  final String? organizerVerificationStatus;
+  final String? organizerVerificationNotes;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     final registrations = json['eventRegistrations'];
@@ -274,6 +282,11 @@ class UserProfile {
                 )
                 .toList()
           : const [],
+      organizer: json['organizer'] as bool? ?? false,
+      admin: json['admin'] as bool? ?? false,
+      organizerVerificationStatus:
+          json['organizerVerificationStatus'] as String?,
+      organizerVerificationNotes: json['organizerVerificationNotes'] as String?,
     );
   }
 }

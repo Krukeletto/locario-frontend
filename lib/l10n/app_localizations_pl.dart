@@ -1205,6 +1205,69 @@ class AppLocalizationsPl extends AppLocalizations {
   String get editProfileFacebookDomainError => 'Musi być linkiem do Facebooka';
 
   @override
+  String get profileMyEventsTitle => 'Moje wydarzenia';
+
+  @override
+  String get profileMyEventsSubtitle =>
+      'Wydarzenia, które utworzyłeś i którymi zarządzasz.';
+
+  @override
+  String get profileOrganizerSectionTitle => 'Organizator';
+
+  @override
+  String get profileOrganizerSectionSubtitle =>
+      'Narzędzia dla zweryfikowanych organizatorów.';
+
+  @override
+  String get profileOrganizerCreateEvent => 'Utwórz wydarzenie';
+
+  @override
+  String get profileOrganizerCreateEventSubtitle => 'Zorganizuj coś nowego.';
+
+  @override
+  String get profileBecomeOrganizerTitle => 'Zostań organizatorem';
+
+  @override
+  String get profileBecomeOrganizerSubtitle =>
+      'Przejdź weryfikację, aby tworzyć i zarządzać wydarzeniami.';
+
+  @override
+  String get profileBecomeOrganizerDialogTitle => 'Weryfikacja organizatora';
+
+  @override
+  String get profileBecomeOrganizerDialogBody =>
+      'Po wysłaniu prośba zostanie rozpatrzona przez nasz zespół. Otrzymasz powiadomienie o decyzji.';
+
+  @override
+  String get profileBecomeOrganizerDialogSubmit => 'Wyślij prośbę';
+
+  @override
+  String get profileBecomeOrganizerDialogCancel => 'Anuluj';
+
+  @override
+  String get profileBecomeOrganizerRequestSent =>
+      'Prośba o weryfikację została wysłana.';
+
+  @override
+  String get profileBecomeOrganizerRequestFailed =>
+      'Nie udało się wysłać prośby o weryfikację.';
+
+  @override
+  String get profileOrganizerVerificationPendingTitle => 'Weryfikacja oczekuje';
+
+  @override
+  String get profileOrganizerVerificationPendingSubtitle =>
+      'Twoja prośba jest rozpatrywana przez nasz zespół.';
+
+  @override
+  String get profileOrganizerVerificationRejectedTitle =>
+      'Weryfikacja odrzucona';
+
+  @override
+  String get profileOrganizerVerificationRejectedSubtitle =>
+      'Twoja prośba nie została zatwierdzona.';
+
+  @override
   String get savedTitle => 'Zapisane';
 
   @override
