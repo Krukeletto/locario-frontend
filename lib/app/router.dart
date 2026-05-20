@@ -12,6 +12,11 @@ import '../features/profile/edit_profile_screen.dart';
 import '../features/profile/event_history_screen.dart';
 import '../features/profile/organizer_reviews_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/legals/consents_screen.dart';
+import '../features/legals/help_screen.dart';
+import '../features/legals/legal_acceptance_screen.dart';
+import '../features/legals/legal_controller.dart';
+import '../features/legals/policy_screen.dart';
 import '../features/profile/settings_screen.dart';
 import '../features/reviews/event_review_screen.dart';
 import '../features/saved/saved_screen.dart';
@@ -139,12 +144,15 @@ Page<void> _trackedNoTransitionPage({
   );
 }
 
-GoRouter createAppRouter(SessionController sessionController) {
+GoRouter createAppRouter({
+  required SessionController sessionController,
+  required LegalController legalController,
+}) {
   final navigationHistory = NavigationHistoryController();
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/explore',
-    refreshListenable: sessionController,
+    refreshListenable: Listenable.merge([sessionController, legalController]),
     redirect: (context, state) {
       final normalizedLocation = normalizeIncomingLocation(state.uri);
       if (normalizedLocation != null && normalizedLocation != state.uri.path) {
@@ -176,6 +184,19 @@ GoRouter createAppRouter(SessionController sessionController) {
           location.startsWith('/profile/reviews') &&
           sessionController.profile?.hasOrganizerReviewAccess != true) {
         return '/profile';
+      }
+
+      if (!legalController.isLoading) {
+        if (isAuthed &&
+            legalController.isAcceptanceRequired &&
+            location != '/legal/accept') {
+          return '/legal/accept?from=${Uri.encodeComponent(location)}';
+        }
+        if (isAuthed &&
+            !legalController.isAcceptanceRequired &&
+            location == '/legal/accept') {
+          return state.uri.queryParameters['from'] ?? '/profile';
+        }
       }
 
       return null;
@@ -364,6 +385,56 @@ GoRouter createAppRouter(SessionController sessionController) {
             returnLocation: state.uri.queryParameters['from'],
             targetLocation: state.uri.queryParameters['target'],
           ),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/legal/terms',
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: const PolicyScreen(type: PolicyType.terms),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/legal/privacy',
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: const PolicyScreen(type: PolicyType.privacy),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/legal/help',
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: const HelpScreen(),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/legal/consents',
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: const ConsentsScreen(),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/legal/accept',
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: const LegalAcceptanceScreen(),
         ),
       ),
     ],

@@ -5,6 +5,9 @@ import 'package:locario/app/router.dart';
 import 'package:locario/features/auth/login_screen.dart';
 import 'package:locario/features/auth/register_screen.dart';
 import 'package:locario/features/inbox/inbox_screen.dart';
+import 'package:locario/features/legals/legal_acceptance_store.dart';
+import 'package:locario/features/legals/legal_controller.dart';
+import 'package:locario/features/legals/legal_versions.dart';
 import 'package:locario/features/profile/profile_screen.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:locario/shared/auth/auth_api.dart';
@@ -135,11 +138,40 @@ Future<SessionController> _createSessionController() async {
   return controller;
 }
 
+class _FakeLegalAcceptanceStore implements LegalAcceptanceStore {
+  @override
+  Future<int> getAcceptedTermsVersion(String userId) async =>
+      LegalVersions.termsVersion;
+
+  @override
+  Future<int> getAcceptedPrivacyVersion(String userId) async =>
+      LegalVersions.privacyVersion;
+
+  @override
+  Future<void> acceptTerms(String userId, int version) async {}
+
+  @override
+  Future<void> acceptPrivacy(String userId, int version) async {}
+}
+
+LegalController _createLegalController(SessionController sessionController) {
+  final controller = LegalController(
+    store: _FakeLegalAcceptanceStore(),
+    sessionController: sessionController,
+  );
+  controller.load();
+  return controller;
+}
+
 Future<GoRouter> _pumpRouterApp(
   WidgetTester tester, {
   required SessionController sessionController,
 }) async {
-  final router = createAppRouter(sessionController);
+  final legalController = _createLegalController(sessionController);
+  final router = createAppRouter(
+    sessionController: sessionController,
+    legalController: legalController,
+  );
   SharedPreferences.setMockInitialValues({});
   final notificationController = NotificationController(
     historyRepository: const SharedPrefsNotificationHistoryRepository(),

@@ -394,6 +394,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           theme: theme,
                           scheme: scheme,
                           isSystemDark: isSystemDark,
+                          isSubmitting: _isSubmitting,
                           emailController: _emailController,
                           passwordController: _passwordController,
                           emailError: _emailError,
@@ -425,19 +426,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               _FooterLink(
                                 label: l10n.authFooterTerms,
                                 textColor: footerTextColor,
-                                onTap: () {},
+                                onTap: () => context.push('/legal/terms'),
                               ),
                               const SizedBox(width: 18),
                               _FooterLink(
                                 label: l10n.authFooterPrivacy,
                                 textColor: footerTextColor,
-                                onTap: () {},
+                                onTap: () => context.push('/legal/privacy'),
                               ),
                               const SizedBox(width: 18),
                               _FooterLink(
                                 label: l10n.authFooterHelp,
                                 textColor: footerTextColor,
-                                onTap: () {},
+                                onTap: () => context.push('/legal/help'),
                               ),
                             ],
                           ),
@@ -460,6 +461,7 @@ class _AuthCard extends StatelessWidget {
     required this.theme,
     required this.scheme,
     required this.isSystemDark,
+    required this.isSubmitting,
     required this.emailController,
     required this.passwordController,
     required this.emailError,
@@ -480,6 +482,8 @@ class _AuthCard extends StatelessWidget {
     required this.switchActionText,
     required this.onSwitchActionPressed,
   });
+
+  final bool isSubmitting;
 
   final ThemeData theme;
   final ColorScheme scheme;
@@ -549,7 +553,7 @@ class _AuthCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: onGooglePressed,
+              onPressed: isSubmitting ? null : onGooglePressed,
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF1F1F1F),
                 backgroundColor: Colors.white,
@@ -562,8 +566,19 @@ class _AuthCard extends StatelessWidget {
                   vertical: 12,
                 ),
               ),
-              icon: const GoogleLogoIcon(),
-              label: Text(googleButtonText),
+              icon: isSubmitting
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: scheme.primary,
+                      ),
+                    )
+                  : const GoogleLogoIcon(),
+              label: isSubmitting
+                  ? const SizedBox.shrink()
+                  : Text(googleButtonText),
             ),
           ),
           const SizedBox(height: 14),
@@ -614,7 +629,7 @@ class _AuthCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton(
-              onPressed: onSubmit,
+              onPressed: isSubmitting ? null : onSubmit,
               style: FilledButton.styleFrom(
                 backgroundColor: scheme.primary,
                 shape: RoundedRectangleBorder(
@@ -622,14 +637,23 @@ class _AuthCard extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: Text(
-                submitText,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontSize: 20,
-                  color: scheme.onPrimary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              child: isSubmitting
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      submitText,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontSize: 20,
+                        color: scheme.onPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(height: 40),
@@ -643,12 +667,14 @@ class _AuthCard extends StatelessWidget {
           ),
           Center(
             child: TextButton(
-              onPressed: onSwitchActionPressed,
+              onPressed: isSubmitting ? null : onSwitchActionPressed,
               child: Text(
                 switchActionText,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: scheme.primary,
+                  color: scheme.primary.withValues(
+                    alpha: isSubmitting ? 0.4 : 1.0,
+                  ),
                 ),
               ),
             ),

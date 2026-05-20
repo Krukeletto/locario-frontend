@@ -5,6 +5,8 @@ import 'package:locario/l10n/app_localizations.dart';
 import 'package:locario/shared/notifications/notification_scope.dart';
 import 'package:locario/shared/notifications/notification_type.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../app/locale/locale_scope.dart';
 import '../../app/theme/theme_scope.dart';
 import '../../shared/auth/auth_api.dart';
@@ -140,6 +142,42 @@ class SettingsScreen extends StatelessWidget {
                     },
                   ),
               ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _SettingsSection(
+            title: l10n.settingsLegalSectionTitle,
+            subtitle: l10n.settingsLegalSectionSubtitle,
+            child: Column(
+              children: [
+                _SettingsLinkRow(
+                  icon: Icons.description_rounded,
+                  label: l10n.settingsLegalTerms,
+                  onTap: () => context.push('/legal/terms'),
+                ),
+                const SizedBox(height: 12),
+                _SettingsLinkRow(
+                  icon: Icons.privacy_tip_rounded,
+                  label: l10n.settingsLegalPrivacy,
+                  onTap: () => context.push('/legal/privacy'),
+                ),
+                const SizedBox(height: 12),
+                _SettingsLinkRow(
+                  icon: Icons.help_outline_rounded,
+                  label: l10n.settingsLegalHelp,
+                  onTap: () => context.push('/legal/help'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _SettingsSection(
+            title: l10n.settingsConsentsSectionTitle,
+            subtitle: l10n.settingsConsentsSectionSubtitle,
+            child: _SettingsLinkRow(
+              icon: Icons.shield_outlined,
+              label: l10n.legalConsentsTitle,
+              onTap: () => context.push('/legal/consents'),
             ),
           ),
           const SizedBox(height: 14),
@@ -562,6 +600,61 @@ class _SettingsSection extends StatelessWidget {
           const SizedBox(height: 14),
           child,
         ],
+      ),
+    );
+  }
+}
+
+class _SettingsLinkRow extends StatelessWidget {
+  const _SettingsLinkRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: scheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: scheme.primary, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: scheme.onSurface.withValues(alpha: 0.38),
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }
