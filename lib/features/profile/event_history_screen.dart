@@ -10,7 +10,10 @@ import '../../shared/widgets/state_panel.dart';
 import '../explore/models.dart';
 
 class EventHistoryScreen extends StatelessWidget {
-  const EventHistoryScreen({super.key});
+  const EventHistoryScreen({super.key, EventRepository? eventRepository})
+    : _eventRepository = eventRepository;
+
+  final EventRepository? _eventRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -64,15 +67,19 @@ class EventHistoryScreen extends StatelessWidget {
               title: l10n.profileEventHistoryEmptyTitle,
               subtitle: l10n.profileEventHistoryEmptySubtitle,
             )
-          : _HistoryContent(profile: profile),
+          : _HistoryContent(
+              profile: profile,
+              eventRepository: _eventRepository,
+            ),
     );
   }
 }
 
 class _HistoryContent extends StatefulWidget {
-  const _HistoryContent({required this.profile});
+  const _HistoryContent({required this.profile, this.eventRepository});
 
   final UserProfile profile;
+  final EventRepository? eventRepository;
 
   @override
   State<_HistoryContent> createState() => _HistoryContentState();
@@ -85,7 +92,7 @@ class _HistoryContentState extends State<_HistoryContent> {
   @override
   void initState() {
     super.initState();
-    _eventRepository = HttpEventRepository();
+    _eventRepository = widget.eventRepository ?? HttpEventRepository();
   }
 
   @override
@@ -209,6 +216,7 @@ class _HistoryEventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return FutureBuilder<ExploreEvent?>(
       future: eventFuture,
@@ -236,141 +244,146 @@ class _HistoryEventCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(28),
               border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  clipBehavior: Clip.antiAlias,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: isLoading
-                      ? SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: scheme.primary,
-                          ),
-                        )
-                      : thumbnailUrl == null
-                      ? Icon(icon, color: accentColor, size: 26)
-                      : ColorFiltered(
-                          colorFilter: isPast
-                              ? const ColorFilter.matrix(<double>[
-                                  0.2126,
-                                  0.7152,
-                                  0.0722,
-                                  0,
-                                  0,
-                                  0.2126,
-                                  0.7152,
-                                  0.0722,
-                                  0,
-                                  0,
-                                  0.2126,
-                                  0.7152,
-                                  0.0722,
-                                  0,
-                                  0,
-                                  0,
-                                  0,
-                                  0,
-                                  1,
-                                  0,
-                                ])
-                              : const ColorFilter.mode(
-                                  Colors.transparent,
-                                  BlendMode.srcOver,
-                                ),
-                          child: CachedNetworkImage(
-                            imageUrl: thumbnailUrl,
-                            width: 52,
-                            height: 52,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              width: 52,
-                              height: 52,
-                              color: accentColor.withValues(alpha: 0.1),
-                              child: const Center(
-                                child: SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      clipBehavior: Clip.antiAlias,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: isLoading
+                          ? SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: scheme.primary,
+                              ),
+                            )
+                          : thumbnailUrl == null
+                          ? Icon(icon, color: accentColor, size: 26)
+                          : ColorFiltered(
+                              colorFilter: isPast
+                                  ? const ColorFilter.matrix(<double>[
+                                      0.2126,
+                                      0.7152,
+                                      0.0722,
+                                      0,
+                                      0,
+                                      0.2126,
+                                      0.7152,
+                                      0.0722,
+                                      0,
+                                      0,
+                                      0.2126,
+                                      0.7152,
+                                      0.0722,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      1,
+                                      0,
+                                    ])
+                                  : const ColorFilter.mode(
+                                      Colors.transparent,
+                                      BlendMode.srcOver,
+                                    ),
+                              child: CachedNetworkImage(
+                                imageUrl: thumbnailUrl,
+                                width: 52,
+                                height: 52,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  width: 52,
+                                  height: 52,
+                                  color: accentColor.withValues(alpha: 0.1),
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
                                   ),
                                 ),
+                                errorWidget: (context, url, error) =>
+                                    Icon(icon, color: accentColor, size: 26),
                               ),
                             ),
-                            errorWidget: (context, url, error) =>
-                                Icon(icon, color: accentColor, size: 26),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            summary.name,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: titleColor,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                        ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        summary.name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: titleColor,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        _formatDateLine(summary),
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: bodyColor,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _formatTimeLine(summary),
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: bodyColor,
-                        ),
-                      ),
-                      if (event != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          event.categoryLabel(AppLocalizations.of(context)),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: accentColor,
-                            fontWeight: FontWeight.w700,
+                          const SizedBox(height: 6),
+                          Text(
+                            _formatDateLine(summary),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: bodyColor,
+                            ),
                           ),
-                        ),
-                      ] else if (summary.categoryNames.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          summary.categoryNames.join(' · '),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: bodyColor,
+                          const SizedBox(height: 2),
+                          Text(
+                            _formatTimeLine(summary),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: bodyColor,
+                            ),
                           ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: arrowColor,
-                    size: 16,
-                  ),
+                          if (event != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              event.categoryLabel(l10n),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: accentColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ] else if (summary.categoryNames.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              summary.categoryNames.join(' · '),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: bodyColor,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: arrowColor,
+                        size: 16,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

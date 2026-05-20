@@ -195,14 +195,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _LogoutActionCard(
               title: l10n.profileAuthLogoutTitle,
               subtitle: l10n.profileAuthLogoutSubtitle,
-              onTap: () {
-                if (sessionController.isBusy) {
-                  return;
-                }
-                sessionController.logout().then((_) {
-                  FeedbackService.showSuccess(FeedbackMessage.logoutSuccess);
-                });
-              },
+              isLoggingOut: sessionController.isBusy,
+              onTap: sessionController.isBusy
+                  ? null
+                  : () {
+                      sessionController.logout().then((_) {
+                        FeedbackService.showSuccess(
+                          FeedbackMessage.logoutSuccess,
+                        );
+                      });
+                    },
             ),
           ],
         ],
@@ -215,12 +217,14 @@ class _LogoutActionCard extends StatelessWidget {
   const _LogoutActionCard({
     required this.title,
     required this.subtitle,
+    required this.isLoggingOut,
     required this.onTap,
   });
 
   final String title;
   final String subtitle;
-  final VoidCallback onTap;
+  final bool isLoggingOut;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -247,7 +251,16 @@ class _LogoutActionCard extends StatelessWidget {
                 color: mutedColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: Icon(Icons.logout_rounded, color: mutedColor, size: 26),
+              child: isLoggingOut
+                  ? SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: mutedColor,
+                      ),
+                    )
+                  : Icon(Icons.logout_rounded, color: mutedColor, size: 26),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -279,11 +292,20 @@ class _LogoutActionCard extends StatelessWidget {
                 color: mutedColor.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: mutedColor,
-                size: 16,
-              ),
+              child: isLoggingOut
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: mutedColor,
+                      ),
+                    )
+                  : Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: mutedColor,
+                      size: 16,
+                    ),
             ),
           ],
         ),

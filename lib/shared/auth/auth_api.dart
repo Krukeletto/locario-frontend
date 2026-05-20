@@ -113,7 +113,7 @@ class AuthApi {
       headers: {'Authorization': '$tokenType $accessToken'},
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode != 200 && response.statusCode != 204) {
       debugPrint(
         'Auth: logout failed (${response.statusCode}) ${response.body}',
       );
