@@ -90,6 +90,7 @@ final List<HubActionItem> hubActionItems = [
 bool _requiresAuth(String location) {
   return location.startsWith('/hub/messages') ||
       location.startsWith('/hub/friends') ||
+      location.startsWith('/hub/create-event') ||
       location.startsWith('/inbox') ||
       location.startsWith('/profile/edit') ||
       location.startsWith('/profile/reviews') ||
