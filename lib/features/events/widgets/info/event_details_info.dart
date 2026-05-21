@@ -18,6 +18,7 @@ class EventDetailsInfo extends StatelessWidget {
     this.organizerRating,
     this.onJoinPressed,
     this.onLeavePressed,
+    this.onAddToCalendarPressed,
     this.slots,
     this.isJoinLoading = false,
   });
@@ -31,6 +32,7 @@ class EventDetailsInfo extends StatelessWidget {
   final AverageRating? organizerRating;
   final VoidCallback? onJoinPressed;
   final VoidCallback? onLeavePressed;
+  final VoidCallback? onAddToCalendarPressed;
   final EventSlotsResponse? slots;
   final bool isJoinLoading;
 
@@ -276,6 +278,22 @@ class EventDetailsInfo extends StatelessWidget {
                   isSaved ? l10n.savedRemoveAction : l10n.savedSaveAction,
                 ),
               ),
+              if (isJoined) ...[
+                const SizedBox(height: 10),
+                FilledButton.tonalIcon(
+                  onPressed: isJoinLoading || onAddToCalendarPressed == null
+                      ? null
+                      : onAddToCalendarPressed,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                    textStyle: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  icon: const Icon(Icons.calendar_month_rounded, size: 20),
+                  label: Text(l10n.eventDetailsAddToCalendarButton),
+                ),
+              ],
               if (isJoined) ...[
                 const SizedBox(height: 10),
                 FilledButton.tonalIcon(

@@ -198,6 +198,29 @@ class AppLocalizationsPl extends AppLocalizations {
       'Zaloguj się, aby zapisać się na wydarzenie.';
 
   @override
+  String get eventCalendarPromptTitle => 'Dodać do kalendarza?';
+
+  @override
+  String get eventCalendarPromptBody =>
+      'Możesz dodać to wydarzenie teraz albo później z widoku szczegółów wydarzenia. Kalendarz otworzy się już z wypełnionymi szczegółami.';
+
+  @override
+  String get eventCalendarPromptAddNow => 'Dodaj teraz';
+
+  @override
+  String get eventCalendarPromptLater => 'Później';
+
+  @override
+  String get eventDetailsAddToCalendarButton => 'Dodaj do kalendarza';
+
+  @override
+  String get eventAddToCalendarSuccess => 'Wydarzenie dodano do kalendarza.';
+
+  @override
+  String get eventAddToCalendarError =>
+      'Nie udało się dodać wydarzenia do kalendarza.';
+
+  @override
   String get eventDetailsUnknownEventTitle => 'Wydarzenie';
 
   @override
@@ -821,6 +844,107 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubFriendsSubtitle => 'Twoja sieć';
 
   @override
+  String get legalTermsTitle => 'Regulamin';
+
+  @override
+  String get legalTermsContent =>
+      'Niniejszy Regulamin („Regulamin”) określa zasady korzystania z aplikacji mobilnej Locario i powiązanych usług. Korzystając z Locario, akceptujesz niniejszy Regulamin. Jeśli się nie zgadzasz, nie korzystaj z aplikacji.\n\n1. Rejestracja konta.\nPrzy tworzeniu konta musisz podać prawdziwe dane. Jesteś odpowiedzialny za zachowanie poufności swoich danych logowania.\n\n2. Dozwolony użytek.\nZgadzasz się nie nadużywać aplikacji, w tym podszywać się pod inne osoby, podawać fałszywe informacje o wydarzeniach ani angażować się w działania zakłócające działanie platformy.\n\n3. Treści.\nZachowujesz własność treści, które przesyłasz. Zastrzegamy sobie prawo do usuwania treści naruszających Regulamin.\n\n4. Ograniczenie odpowiedzialności.\nLocario i jej podmioty stowarzyszone nie ponoszą odpowiedzialności za szkody pośrednie wynikające z korzystania z aplikacji.\n\n5. Zmiany.\nMożemy aktualizować Regulamin. Dalsze korzystanie z aplikacji po zmianach oznacza ich akceptację.\n\n6. Kontakt.\nPytania prosimy kierować na adres locario.app@gmail.com.\n\nOstatnia aktualizacja: maj 2026.';
+
+  @override
+  String get legalPrivacyTitle => 'Polityka prywatności';
+
+  @override
+  String get legalPrivacyContent =>
+      'Twoja prywatność jest dla nas ważna. Niniejsza Polityka prywatności wyjaśnia, w jaki sposób zbieramy, wykorzystujemy i chronimy Twoje dane osobowe podczas korzystania z Locario.\n\n1. Jakie dane zbieramy.\nZbieramy dane, które nam podajesz (nazwa użytkownika, e-mail, dane profilowe) oraz dane zbierane automatycznie (informacje o urządzeniu, lokalizacja po włączeniu, analityka użycia).\n\n2. Jak wykorzystujemy dane.\nWykorzystujemy Twoje dane do działania aplikacji, personalizacji treści, wysyłania powiadomień (za Twoją zgodą) i ulepszania naszych usług.\n\n3. Udostępnianie danych.\nNie sprzedajemy Twoich danych. Możemy je udostępniać dostawcom usług pomagającym w obsłudze platformy, na podstawie ścisłych umów o poufności.\n\n4. Twoje prawa.\nMożesz w każdej chwili uzyskać dostęp do swoich danych, poprawić je lub usunąć przez ustawienia profilu lub kontaktując się z nami.\n\n5. Przechowywanie danych.\nPrzechowujemy Twoje dane tak długo, jak Twoje konto jest aktywne. Po usunięciu konta przechowujemy zanonimizowane dane do celów analitycznych.\n\n6. Bezpieczeństwo.\nStosujemy środki bezpieczeństwa zgodne ze standardami branżowymi.\n\n7. Kontakt.\nlocario.app@gmail.com\n\nOstatnia aktualizacja: maj 2026.';
+
+  @override
+  String get legalHelpTitle => 'Pomoc i wsparcie';
+
+  @override
+  String get legalHelpSectionFaq => 'Najczęściej zadawane pytania';
+
+  @override
+  String get legalHelpFaqContent =>
+      'P: Jak utworzyć wydarzenie?\nO: Naciśnij przycisk + z panelu huba i wypełnij formularz tworzenia wydarzenia.\n\nP: Jak zmienić hasło?\nO: Przejdź do Profil → Ustawienia → Hasło i wprowadź obecne oraz nowe hasło.\n\nP: Zapomniałem hasła.\nO: Skorzystaj z opcji „Zapomniałem hasła” na ekranie logowania.\n\nP: Jak zgłosić problem?\nO: Wyślij e-mail na adres locario.app@gmail.com z opisem problemu.';
+
+  @override
+  String get legalHelpSectionContact => 'Skontaktuj się z nami';
+
+  @override
+  String get legalHelpContactContent =>
+      'Potrzebujesz dodatkowej pomocy? Napisz do nas:\n\nE-mail: locario.app@gmail.com\n\nOdpowiadamy w ciągu 24-48 godzin w dni robocze.';
+
+  @override
+  String get legalConsentsTitle => 'Twoje zgody';
+
+  @override
+  String get legalConsentsSectionTitle => 'Zgody prywatności';
+
+  @override
+  String get legalConsentsSectionSubtitle =>
+      'Zarządzaj tym, na co wyrażasz zgodę. Możesz to zmienić w każdej chwili.';
+
+  @override
+  String get consentTypeMarketingEmails => 'E-maile marketingowe';
+
+  @override
+  String get consentTypeMarketingEmailsDesc =>
+      'Otrzymuj oferty promocyjne, sugestie wydarzeń i nowości o Locario';
+
+  @override
+  String get consentTypeDataProcessing => 'Przetwarzanie danych';
+
+  @override
+  String get consentTypeDataProcessingDesc =>
+      'Zezwól nam na analizę Twojego użycia w celu ulepszenia aplikacji';
+
+  @override
+  String get consentTypeLocationData => 'Dane lokalizacyjne';
+
+  @override
+  String get consentTypeLocationDataDesc =>
+      'Udostępnij dokładną lokalizację, aby odkrywać wydarzenia w pobliżu i spersonalizowane rekomendacje';
+
+  @override
+  String get settingsLegalSectionTitle => 'Prawo i polityki';
+
+  @override
+  String get settingsLegalSectionSubtitle =>
+      'Regulamin, polityka prywatności i pomoc';
+
+  @override
+  String get settingsLegalTerms => 'Regulamin';
+
+  @override
+  String get settingsLegalPrivacy => 'Polityka prywatności';
+
+  @override
+  String get settingsLegalHelp => 'Pomoc i wsparcie';
+
+  @override
+  String get settingsConsentsSectionTitle => 'Twoje zgody';
+
+  @override
+  String get settingsConsentsSectionSubtitle =>
+      'Zarządzaj swoimi preferencjami prywatności';
+
+  @override
+  String get legalAcceptanceTitle => 'Aktualizacja regulaminu i polityki';
+
+  @override
+  String get legalAcceptanceSubtitle =>
+      'Zaktualizowaliśmy nasze dokumenty prawne. Przejrzyj zmiany i zaakceptuj je, aby kontynuować korzystanie z Locario.';
+
+  @override
+  String get legalAcceptanceTermsTitle => 'Regulamin';
+
+  @override
+  String get legalAcceptancePrivacyTitle => 'Polityka prywatności';
+
+  @override
+  String get legalAcceptanceButton => 'Akceptuj i kontynuuj';
+
+  @override
   String get inboxEmpty => 'Brak powiadomień';
 
   @override
@@ -956,62 +1080,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get profileLinksPlaceholder => 'Brak linków.';
 
   @override
-  String get editProfileTitle => 'Edytuj profil';
-
-  @override
-  String get editProfileChangePhoto => 'Zmień zdjęcie';
-
-  @override
-  String get editProfileUsernameLabel => 'Nazwa użytkownika';
-
-  @override
-  String get editProfileBioLabel => 'Biografia';
-
-  @override
-  String get editProfileWebsiteLabel => 'Link do strony';
-
-  @override
-  String get editProfileInstagramLabel => 'Link do Instagrama';
-
-  @override
-  String get editProfileFacebookLabel => 'Link do Facebooka';
-
-  @override
-  String get editProfileUsernamePlaceholder => 'Dodaj nazwę użytkownika';
-
-  @override
-  String get editProfileBioPlaceholder => 'Dodaj bio';
-
-  @override
-  String get editProfileWebsitePlaceholder => 'Dodaj link do strony';
-
-  @override
-  String get editProfileInstagramPlaceholder => 'Dodaj link do Instagrama';
-
-  @override
-  String get editProfileFacebookPlaceholder => 'Dodaj link do Facebooka';
-
-  @override
-  String get editProfileLinkHttpsError => 'Link musi zaczynać się od https://';
-
-  @override
-  String get editProfileInstagramDomainError =>
-      'Link do Instagrama musi zawierać instagram';
-
-  @override
-  String get editProfileFacebookDomainError =>
-      'Link do Facebooka musi zawierać facebook';
-
-  @override
-  String get editProfileSaveButton => 'Zapisz zmiany';
-
-  @override
-  String get profileUpdateSuccess => 'Profil zaktualizowany.';
-
-  @override
-  String get profileUpdateFailed => 'Nie udało się zaktualizować profilu.';
-
-  @override
   String get settingsTitle => 'Ustawienia';
 
   @override
@@ -1080,6 +1148,124 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get settingsChangePasswordFailed => 'Nie udało się zmienić hasła.';
+
+  @override
+  String get profileUpdateSuccess => 'Profil zaktualizowany pomyślnie.';
+
+  @override
+  String get profileUpdateFailed => 'Nie udało się zaktualizować profilu.';
+
+  @override
+  String get editProfileTitle => 'Edytuj profil';
+
+  @override
+  String get editProfileChangePhoto => 'Zmień zdjęcie';
+
+  @override
+  String get editProfileUsernameLabel => 'NAZWA UŻYTKOWNIKA';
+
+  @override
+  String get editProfileUsernamePlaceholder => 'Twoja nazwa użytkownika';
+
+  @override
+  String get editProfileBioLabel => 'BIO';
+
+  @override
+  String get editProfileBioPlaceholder => 'Opowiedz o sobie';
+
+  @override
+  String get editProfileWebsiteLabel => 'STRONA WWW';
+
+  @override
+  String get editProfileWebsitePlaceholder => 'https://example.com';
+
+  @override
+  String get editProfileInstagramLabel => 'INSTAGRAM';
+
+  @override
+  String get editProfileInstagramPlaceholder => 'https://instagram.com/...';
+
+  @override
+  String get editProfileFacebookLabel => 'FACEBOOK';
+
+  @override
+  String get editProfileFacebookPlaceholder => 'https://facebook.com/...';
+
+  @override
+  String get editProfileSaveButton => 'Zapisz profil';
+
+  @override
+  String get editProfileLinkHttpsError => 'Musi zaczynać się od https://';
+
+  @override
+  String get editProfileInstagramDomainError =>
+      'Musi być linkiem do Instagrama';
+
+  @override
+  String get editProfileFacebookDomainError => 'Musi być linkiem do Facebooka';
+
+  @override
+  String get profileMyEventsTitle => 'Moje wydarzenia';
+
+  @override
+  String get profileMyEventsSubtitle =>
+      'Wydarzenia, które utworzyłeś i którymi zarządzasz.';
+
+  @override
+  String get profileOrganizerSectionTitle => 'Organizator';
+
+  @override
+  String get profileOrganizerSectionSubtitle =>
+      'Narzędzia dla zweryfikowanych organizatorów.';
+
+  @override
+  String get profileOrganizerCreateEvent => 'Utwórz wydarzenie';
+
+  @override
+  String get profileOrganizerCreateEventSubtitle => 'Zorganizuj coś nowego.';
+
+  @override
+  String get profileBecomeOrganizerTitle => 'Zostań organizatorem';
+
+  @override
+  String get profileBecomeOrganizerSubtitle =>
+      'Przejdź weryfikację, aby tworzyć i zarządzać wydarzeniami.';
+
+  @override
+  String get profileBecomeOrganizerDialogTitle => 'Weryfikacja organizatora';
+
+  @override
+  String get profileBecomeOrganizerDialogBody =>
+      'Po wysłaniu prośba zostanie rozpatrzona przez nasz zespół. Otrzymasz powiadomienie o decyzji.';
+
+  @override
+  String get profileBecomeOrganizerDialogSubmit => 'Wyślij prośbę';
+
+  @override
+  String get profileBecomeOrganizerDialogCancel => 'Anuluj';
+
+  @override
+  String get profileBecomeOrganizerRequestSent =>
+      'Prośba o weryfikację została wysłana.';
+
+  @override
+  String get profileBecomeOrganizerRequestFailed =>
+      'Nie udało się wysłać prośby o weryfikację.';
+
+  @override
+  String get profileOrganizerVerificationPendingTitle => 'Weryfikacja oczekuje';
+
+  @override
+  String get profileOrganizerVerificationPendingSubtitle =>
+      'Twoja prośba jest rozpatrywana przez nasz zespół.';
+
+  @override
+  String get profileOrganizerVerificationRejectedTitle =>
+      'Weryfikacja odrzucona';
+
+  @override
+  String get profileOrganizerVerificationRejectedSubtitle =>
+      'Twoja prośba nie została zatwierdzona.';
 
   @override
   String get savedTitle => 'Zapisane';

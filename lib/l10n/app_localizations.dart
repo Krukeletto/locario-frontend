@@ -452,6 +452,48 @@ abstract class AppLocalizations {
   /// **'Sign in to join this event.'**
   String get eventJoinRequiresLogin;
 
+  /// No description provided for @eventCalendarPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to calendar?'**
+  String get eventCalendarPromptTitle;
+
+  /// No description provided for @eventCalendarPromptBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add this event now or later from the event details screen. The calendar will open with the details already filled in.'**
+  String get eventCalendarPromptBody;
+
+  /// No description provided for @eventCalendarPromptAddNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Add now'**
+  String get eventCalendarPromptAddNow;
+
+  /// No description provided for @eventCalendarPromptLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get eventCalendarPromptLater;
+
+  /// No description provided for @eventDetailsAddToCalendarButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to calendar'**
+  String get eventDetailsAddToCalendarButton;
+
+  /// No description provided for @eventAddToCalendarSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event added to your calendar.'**
+  String get eventAddToCalendarSuccess;
+
+  /// No description provided for @eventAddToCalendarError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add the event to your calendar.'**
+  String get eventAddToCalendarError;
+
   /// No description provided for @eventDetailsUnknownEventTitle.
   ///
   /// In en, this message translates to:
@@ -1532,6 +1574,186 @@ abstract class AppLocalizations {
   /// **'Your network'**
   String get hubFriendsSubtitle;
 
+  /// No description provided for @legalTermsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get legalTermsTitle;
+
+  /// No description provided for @legalTermsContent.
+  ///
+  /// In en, this message translates to:
+  /// **'These Terms of Service (\"Terms\") govern your use of the Locario mobile application and related services. By using Locario, you agree to these Terms. If you do not agree, do not use the app.\n\n1. Account Registration.\nYou must provide accurate information when creating an account. You are responsible for maintaining the confidentiality of your login credentials.\n\n2. Acceptable Use.\nYou agree not to misuse the app, including but not limited to impersonating others, submitting false event information, or engaging in any activity that disrupts the platform.\n\n3. Content.\nYou retain ownership of the content you submit. We reserve the right to remove content that violates these Terms.\n\n4. Limitation of Liability.\nLocario and its affiliates are not liable for indirect damages arising from your use of the app.\n\n5. Changes.\nWe may update these Terms. Continued use after changes constitutes acceptance.\n\n6. Contact.\nFor questions, contact us at locario.app@gmail.com.\n\nLast updated: May 2026.'**
+  String get legalTermsContent;
+
+  /// No description provided for @legalPrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get legalPrivacyTitle;
+
+  /// No description provided for @legalPrivacyContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your privacy matters to us. This Privacy Policy explains how we collect, use, and protect your personal data when you use Locario.\n\n1. Data We Collect.\nWe collect information you provide (username, email, profile data) and automatically collected data (device info, location when enabled, usage analytics).\n\n2. How We Use Data.\nWe use your data to operate the app, personalize content, send notifications (with your consent), and improve our services.\n\n3. Data Sharing.\nWe do not sell your data. We may share it with service providers who help operate our platform, under strict confidentiality agreements.\n\n4. Your Rights.\nYou can access, correct, or delete your data at any time through your profile settings or by contacting us.\n\n5. Data Retention.\nWe retain your data as long as your account is active. After deletion, we keep anonymized data for analytics.\n\n6. Security.\nWe implement industry-standard measures to protect your data.\n\n7. Contact.\nlocario.app@gmail.com\n\nLast updated: May 2026.'**
+  String get legalPrivacyContent;
+
+  /// No description provided for @legalHelpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get legalHelpTitle;
+
+  /// No description provided for @legalHelpSectionFaq.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently Asked Questions'**
+  String get legalHelpSectionFaq;
+
+  /// No description provided for @legalHelpFaqContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Q: How do I create an event?\nA: Tap the + button from the hub panel and follow the event creation form.\n\nQ: How can I change my password?\nA: Go to Profile → Settings → Password and enter your current and new password.\n\nQ: I forgot my password.\nA: Use the \"Forgot password\" option on the login screen.\n\nQ: How do I report an issue?\nA: Send an email to locario.app@gmail.com with details about your problem.'**
+  String get legalHelpFaqContent;
+
+  /// No description provided for @legalHelpSectionContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Us'**
+  String get legalHelpSectionContact;
+
+  /// No description provided for @legalHelpContactContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Need further assistance? Reach out to us:\n\nEmail: locario.app@gmail.com\n\nWe aim to respond within 24-48 hours on business days.'**
+  String get legalHelpContactContent;
+
+  /// No description provided for @legalConsentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Consents'**
+  String get legalConsentsTitle;
+
+  /// No description provided for @legalConsentsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Consents'**
+  String get legalConsentsSectionTitle;
+
+  /// No description provided for @legalConsentsSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage what you agree to share with us. You can change these anytime.'**
+  String get legalConsentsSectionSubtitle;
+
+  /// No description provided for @consentTypeMarketingEmails.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketing emails'**
+  String get consentTypeMarketingEmails;
+
+  /// No description provided for @consentTypeMarketingEmailsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive promotional offers, event suggestions, and news about Locario'**
+  String get consentTypeMarketingEmailsDesc;
+
+  /// No description provided for @consentTypeDataProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Data processing'**
+  String get consentTypeDataProcessing;
+
+  /// No description provided for @consentTypeDataProcessingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow us to analyze your usage to improve the app experience'**
+  String get consentTypeDataProcessingDesc;
+
+  /// No description provided for @consentTypeLocationData.
+  ///
+  /// In en, this message translates to:
+  /// **'Location data'**
+  String get consentTypeLocationData;
+
+  /// No description provided for @consentTypeLocationDataDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Share precise location to discover nearby events and personalized recommendations'**
+  String get consentTypeLocationDataDesc;
+
+  /// No description provided for @settingsLegalSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal & Policies'**
+  String get settingsLegalSectionTitle;
+
+  /// No description provided for @settingsLegalSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of service, privacy, and help resources'**
+  String get settingsLegalSectionSubtitle;
+
+  /// No description provided for @settingsLegalTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get settingsLegalTerms;
+
+  /// No description provided for @settingsLegalPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get settingsLegalPrivacy;
+
+  /// No description provided for @settingsLegalHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get settingsLegalHelp;
+
+  /// No description provided for @settingsConsentsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Consents'**
+  String get settingsConsentsSectionTitle;
+
+  /// No description provided for @settingsConsentsSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your privacy preferences'**
+  String get settingsConsentsSectionSubtitle;
+
+  /// No description provided for @legalAcceptanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated Terms & Privacy'**
+  String get legalAcceptanceTitle;
+
+  /// No description provided for @legalAcceptanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We have updated our legal documents. Please review and accept the changes to continue using Locario.'**
+  String get legalAcceptanceSubtitle;
+
+  /// No description provided for @legalAcceptanceTermsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get legalAcceptanceTermsTitle;
+
+  /// No description provided for @legalAcceptancePrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get legalAcceptancePrivacyTitle;
+
+  /// No description provided for @legalAcceptanceButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept & Continue'**
+  String get legalAcceptanceButton;
+
   /// Text shown when the inbox has no notifications.
   ///
   /// In en, this message translates to:
@@ -1766,114 +1988,6 @@ abstract class AppLocalizations {
   /// **'No links yet.'**
   String get profileLinksPlaceholder;
 
-  /// No description provided for @editProfileTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit profile'**
-  String get editProfileTitle;
-
-  /// No description provided for @editProfileChangePhoto.
-  ///
-  /// In en, this message translates to:
-  /// **'Change photo'**
-  String get editProfileChangePhoto;
-
-  /// No description provided for @editProfileUsernameLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Username'**
-  String get editProfileUsernameLabel;
-
-  /// No description provided for @editProfileBioLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Bio'**
-  String get editProfileBioLabel;
-
-  /// No description provided for @editProfileWebsiteLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Website link'**
-  String get editProfileWebsiteLabel;
-
-  /// No description provided for @editProfileInstagramLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Instagram link'**
-  String get editProfileInstagramLabel;
-
-  /// No description provided for @editProfileFacebookLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Facebook link'**
-  String get editProfileFacebookLabel;
-
-  /// No description provided for @editProfileUsernamePlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Add a username'**
-  String get editProfileUsernamePlaceholder;
-
-  /// No description provided for @editProfileBioPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Add a bio'**
-  String get editProfileBioPlaceholder;
-
-  /// No description provided for @editProfileWebsitePlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Add a website link'**
-  String get editProfileWebsitePlaceholder;
-
-  /// No description provided for @editProfileInstagramPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Add an Instagram link'**
-  String get editProfileInstagramPlaceholder;
-
-  /// No description provided for @editProfileFacebookPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Add a Facebook link'**
-  String get editProfileFacebookPlaceholder;
-
-  /// No description provided for @editProfileLinkHttpsError.
-  ///
-  /// In en, this message translates to:
-  /// **'Link must start with https://'**
-  String get editProfileLinkHttpsError;
-
-  /// No description provided for @editProfileInstagramDomainError.
-  ///
-  /// In en, this message translates to:
-  /// **'Instagram link must contain instagram'**
-  String get editProfileInstagramDomainError;
-
-  /// No description provided for @editProfileFacebookDomainError.
-  ///
-  /// In en, this message translates to:
-  /// **'Facebook link must contain facebook'**
-  String get editProfileFacebookDomainError;
-
-  /// No description provided for @editProfileSaveButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Save changes'**
-  String get editProfileSaveButton;
-
-  /// No description provided for @profileUpdateSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Profile updated.'**
-  String get profileUpdateSuccess;
-
-  /// No description provided for @profileUpdateFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not update profile.'**
-  String get profileUpdateFailed;
-
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:
@@ -2005,6 +2119,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not update password.'**
   String get settingsChangePasswordFailed;
+
+  /// No description provided for @profileUpdateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated.'**
+  String get profileUpdateSuccess;
+
+  /// No description provided for @profileUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update profile.'**
+  String get profileUpdateFailed;
+
+  /// No description provided for @editProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get editProfileTitle;
+
+  /// No description provided for @editProfileChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get editProfileChangePhoto;
+
+  /// No description provided for @editProfileUsernameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'USERNAME'**
+  String get editProfileUsernameLabel;
+
+  /// No description provided for @editProfileUsernamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Your username'**
+  String get editProfileUsernamePlaceholder;
+
+  /// No description provided for @editProfileBioLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'BIO'**
+  String get editProfileBioLabel;
+
+  /// No description provided for @editProfileBioPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about yourself'**
+  String get editProfileBioPlaceholder;
+
+  /// No description provided for @editProfileWebsiteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'WEBSITE'**
+  String get editProfileWebsiteLabel;
+
+  /// No description provided for @editProfileWebsitePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'https://example.com'**
+  String get editProfileWebsitePlaceholder;
+
+  /// No description provided for @editProfileInstagramLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'INSTAGRAM'**
+  String get editProfileInstagramLabel;
+
+  /// No description provided for @editProfileInstagramPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'https://instagram.com/...'**
+  String get editProfileInstagramPlaceholder;
+
+  /// No description provided for @editProfileFacebookLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'FACEBOOK'**
+  String get editProfileFacebookLabel;
+
+  /// No description provided for @editProfileFacebookPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'https://facebook.com/...'**
+  String get editProfileFacebookPlaceholder;
+
+  /// No description provided for @editProfileSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get editProfileSaveButton;
+
+  /// No description provided for @editProfileLinkHttpsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Link must start with https://'**
+  String get editProfileLinkHttpsError;
+
+  /// No description provided for @editProfileInstagramDomainError.
+  ///
+  /// In en, this message translates to:
+  /// **'Instagram link must contain instagram'**
+  String get editProfileInstagramDomainError;
+
+  /// No description provided for @editProfileFacebookDomainError.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook link must contain facebook'**
+  String get editProfileFacebookDomainError;
+
+  /// No description provided for @profileMyEventsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My events'**
+  String get profileMyEventsTitle;
+
+  /// No description provided for @profileMyEventsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Events you have created and manage.'**
+  String get profileMyEventsSubtitle;
+
+  /// No description provided for @profileOrganizerSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer'**
+  String get profileOrganizerSectionTitle;
+
+  /// No description provided for @profileOrganizerSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools for verified event organizers.'**
+  String get profileOrganizerSectionSubtitle;
+
+  /// No description provided for @profileOrganizerCreateEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Create event'**
+  String get profileOrganizerCreateEvent;
+
+  /// No description provided for @profileOrganizerCreateEventSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize something new.'**
+  String get profileOrganizerCreateEventSubtitle;
+
+  /// No description provided for @profileBecomeOrganizerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Become an organizer'**
+  String get profileBecomeOrganizerTitle;
+
+  /// No description provided for @profileBecomeOrganizerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get verified to create and manage events.'**
+  String get profileBecomeOrganizerSubtitle;
+
+  /// No description provided for @profileBecomeOrganizerDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer verification'**
+  String get profileBecomeOrganizerDialogTitle;
+
+  /// No description provided for @profileBecomeOrganizerDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'After submitting, your request will be reviewed by our team. You will be notified when the decision is made.'**
+  String get profileBecomeOrganizerDialogBody;
+
+  /// No description provided for @profileBecomeOrganizerDialogSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit request'**
+  String get profileBecomeOrganizerDialogSubmit;
+
+  /// No description provided for @profileBecomeOrganizerDialogCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get profileBecomeOrganizerDialogCancel;
+
+  /// No description provided for @profileBecomeOrganizerRequestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification request sent.'**
+  String get profileBecomeOrganizerRequestSent;
+
+  /// No description provided for @profileBecomeOrganizerRequestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send verification request.'**
+  String get profileBecomeOrganizerRequestFailed;
+
+  /// No description provided for @profileOrganizerVerificationPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification pending'**
+  String get profileOrganizerVerificationPendingTitle;
+
+  /// No description provided for @profileOrganizerVerificationPendingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your request is being reviewed by our team.'**
+  String get profileOrganizerVerificationPendingSubtitle;
+
+  /// No description provided for @profileOrganizerVerificationRejectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification rejected'**
+  String get profileOrganizerVerificationRejectedTitle;
+
+  /// No description provided for @profileOrganizerVerificationRejectedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your request was not approved.'**
+  String get profileOrganizerVerificationRejectedSubtitle;
 
   /// No description provided for @savedTitle.
   ///

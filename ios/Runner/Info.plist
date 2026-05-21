@@ -71,6 +71,10 @@
 		<string>Locario needs access to your location to show you on the map.</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 		<string>Locario needs access to your location to show you on the map.</string>
+		<key>NSCalendarsUsageDescription</key>
+		<string>Locario needs access to your calendar to add event reminders.</string>
+		<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+		<string>Locario needs access to your calendar to add event reminders.</string>
 		<!-- Deep link: locario://events/<id> -->
 		<key>CFBundleURLTypes</key>
 		<array>

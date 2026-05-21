@@ -113,7 +113,7 @@ class AuthApi {
       headers: {'Authorization': '$tokenType $accessToken'},
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode != 200 && response.statusCode != 204) {
       debugPrint(
         'Auth: logout failed (${response.statusCode}) ${response.body}',
       );
@@ -203,6 +203,33 @@ class AuthApi {
         statusCode: response.statusCode,
       );
     }
+  }
+
+  Future<UserProfile> submitOrganizerVerification({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.post(
+      _uri('/api/profile/organizer-verification'),
+      headers: {'Authorization': '$tokenType $accessToken'},
+    );
+
+    if (response.statusCode != 200) {
+      debugPrint(
+        'Auth: organizer verification failed (${response.statusCode}) ${response.body}',
+      );
+      throw AuthApiException(
+        'Organizer verification failed',
+        statusCode: response.statusCode,
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw const AuthApiException('Unexpected profile payload');
+    }
+
+    return UserProfile.fromJson(decoded);
   }
 
   AuthResponse _decodeAuthResponse(String body) {

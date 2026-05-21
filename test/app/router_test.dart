@@ -3,6 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:locario/app/router.dart';
 import 'package:locario/features/auth/login_screen.dart';
+import 'package:locario/features/legals/legal_acceptance_store.dart';
+import 'package:locario/features/legals/legal_controller.dart';
+import 'package:locario/features/legals/legal_versions.dart';
 import 'package:locario/features/profile/profile_screen.dart';
 import 'package:locario/features/saved/saved_screen.dart';
 import 'package:locario/features/saved/saved_events_controller.dart';
@@ -48,7 +51,11 @@ void main() {
     testWidgets('allows unauthenticated access to saved route', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final sessionController = await _createSessionController();
-      final router = createAppRouter(sessionController);
+      final legalController = _createLegalController(sessionController);
+      final router = createAppRouter(
+        sessionController: sessionController,
+        legalController: legalController,
+      );
 
       await tester.pumpWidget(
         AuthScope(
@@ -87,7 +94,11 @@ void main() {
       (tester) async {
         SharedPreferences.setMockInitialValues({});
         final sessionController = await _createSessionController();
-        final router = createAppRouter(sessionController);
+        final legalController = _createLegalController(sessionController);
+        final router = createAppRouter(
+          sessionController: sessionController,
+          legalController: legalController,
+        );
 
         await tester.pumpWidget(
           AuthScope(
@@ -110,6 +121,13 @@ void main() {
               ),
             ),
           ),
+        );
+
+        router.go('/profile/saved');
+        await tester.pumpAndSettle();
+        expect(
+          router.routerDelegate.currentConfiguration.uri.path,
+          '/profile/saved',
         );
 
         router.go('/profile/saved');
@@ -150,7 +168,11 @@ void main() {
         authenticated: true,
         role: 'user',
       );
-      final router = createAppRouter(sessionController);
+      final legalController = _createLegalController(sessionController);
+      final router = createAppRouter(
+        sessionController: sessionController,
+        legalController: legalController,
+      );
 
       await tester.pumpWidget(
         AuthScope(
@@ -295,5 +317,30 @@ Future<SessionController> _createSessionController({
   );
 
   await controller.load();
+  return controller;
+}
+
+class _FakeLegalAcceptanceStore implements LegalAcceptanceStore {
+  @override
+  Future<int> getAcceptedTermsVersion(String userId) async =>
+      LegalVersions.termsVersion;
+
+  @override
+  Future<int> getAcceptedPrivacyVersion(String userId) async =>
+      LegalVersions.privacyVersion;
+
+  @override
+  Future<void> acceptTerms(String userId, int version) async {}
+
+  @override
+  Future<void> acceptPrivacy(String userId, int version) async {}
+}
+
+LegalController _createLegalController(SessionController sessionController) {
+  final controller = LegalController(
+    store: _FakeLegalAcceptanceStore(),
+    sessionController: sessionController,
+  );
+  controller.load();
   return controller;
 }

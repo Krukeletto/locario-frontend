@@ -5,6 +5,8 @@ import 'package:locario/l10n/app_localizations.dart';
 import 'package:locario/shared/notifications/notification_scope.dart';
 import 'package:locario/shared/notifications/notification_type.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../app/locale/locale_scope.dart';
 import '../../app/theme/theme_scope.dart';
 import '../../shared/auth/auth_api.dart';
@@ -26,6 +28,12 @@ class SettingsScreen extends StatelessWidget {
     final isAuthenticated = sessionController.isAuthenticated;
     final hasPassword = sessionController.profile?.hasPassword ?? false;
     final canChangePassword = isAuthenticated && hasPassword;
+    final profile = sessionController.profile;
+    final isOrganizer = profile?.organizer == true;
+    final isVerificationPending =
+        profile?.organizerVerificationStatus == 'pending';
+    final canBecomeOrganizer =
+        isAuthenticated && !isOrganizer && !isVerificationPending;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -144,6 +152,77 @@ class SettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           _SettingsSection(
+            title: l10n.settingsLegalSectionTitle,
+            subtitle: l10n.settingsLegalSectionSubtitle,
+            child: Column(
+              children: [
+                _SettingsLinkRow(
+                  icon: Icons.description_rounded,
+                  label: l10n.settingsLegalTerms,
+                  onTap: () => context.push('/legal/terms'),
+                ),
+                const SizedBox(height: 12),
+                _SettingsLinkRow(
+                  icon: Icons.privacy_tip_rounded,
+                  label: l10n.settingsLegalPrivacy,
+                  onTap: () => context.push('/legal/privacy'),
+                ),
+                const SizedBox(height: 12),
+                _SettingsLinkRow(
+                  icon: Icons.help_outline_rounded,
+                  label: l10n.settingsLegalHelp,
+                  onTap: () => context.push('/legal/help'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _SettingsSection(
+            title: l10n.settingsConsentsSectionTitle,
+            subtitle: l10n.settingsConsentsSectionSubtitle,
+            child: _SettingsLinkRow(
+              icon: Icons.shield_outlined,
+              label: l10n.legalConsentsTitle,
+              onTap: () => context.push('/legal/consents'),
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (canBecomeOrganizer) ...[
+            _SettingsSection(
+              title: l10n.profileBecomeOrganizerTitle,
+              subtitle: l10n.profileBecomeOrganizerSubtitle,
+              child: FilledButton.icon(
+                onPressed: () => _showBecomeOrganizerDialog(context),
+                icon: const Icon(Icons.verified_rounded),
+                label: Text(l10n.profileBecomeOrganizerTitle),
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+          if (isVerificationPending) ...[
+            _SettingsSection(
+              title: l10n.profileOrganizerVerificationPendingTitle,
+              subtitle: l10n.profileOrganizerVerificationPendingSubtitle,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.hourglass_empty_rounded,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    l10n.profileOrganizerVerificationPendingTitle,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+          _SettingsSection(
             title: 'Debug',
             subtitle: 'Tap to send a test notification after 3 seconds',
             child: FilledButton.icon(
@@ -186,6 +265,49 @@ class SettingsScreen extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (context) => const _ChangePasswordDialog(),
+    );
+  }
+
+  void _showBecomeOrganizerDialog(BuildContext context) {
+    final sessionController = AuthScope.of(context);
+    if (sessionController.isBusy) {
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context);
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.profileBecomeOrganizerDialogTitle),
+        content: Text(l10n.profileBecomeOrganizerDialogBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.profileBecomeOrganizerDialogCancel),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              try {
+                await sessionController.requestOrganizerVerification();
+                if (!context.mounted) {
+                  return;
+                }
+                FeedbackService.showSuccess(
+                  FeedbackMessage.organizerVerificationSent,
+                );
+              } catch (_) {
+                if (!context.mounted) {
+                  return;
+                }
+                FeedbackService.showError(FeedbackMessage.unknownError);
+              }
+            },
+            child: Text(l10n.profileBecomeOrganizerDialogSubmit),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -562,6 +684,61 @@ class _SettingsSection extends StatelessWidget {
           const SizedBox(height: 14),
           child,
         ],
+      ),
+    );
+  }
+}
+
+class _SettingsLinkRow extends StatelessWidget {
+  const _SettingsLinkRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: scheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: scheme.primary, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: scheme.onSurface.withValues(alpha: 0.38),
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }

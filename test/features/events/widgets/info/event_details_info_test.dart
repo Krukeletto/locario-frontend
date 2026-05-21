@@ -46,6 +46,40 @@ void main() {
     expect(joinPressed, isTrue);
   });
 
+  testWidgets('shows add-to-calendar action for joined events', (tester) async {
+    var calendarPressed = false;
+
+    await tester.pumpWidget(
+      buildLocalizedTestApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: EventDetailsInfo(
+              event: _event,
+              overlap: 12,
+              onShowOnMapPressed: () {},
+              onSavePressed: () {},
+              isSaved: false,
+              isJoined: true,
+              onLeavePressed: () {},
+              onAddToCalendarPressed: () {
+                calendarPressed = true;
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final calendarButton = find.widgetWithText(FilledButton, 'Add to calendar');
+    expect(calendarButton, findsOneWidget);
+
+    await tester.ensureVisible(calendarButton);
+    await tester.tap(calendarButton);
+    await tester.pumpAndSettle();
+
+    expect(calendarPressed, isTrue);
+  });
+
   testWidgets('shows separate start and end time labels', (tester) async {
     await tester.pumpWidget(
       buildLocalizedTestApp(

@@ -114,6 +114,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final profile = sessionController.profile;
     final hasProfile = isAuthenticated && profile != null;
     final canSeeOrganizerRatings = profile?.hasOrganizerReviewAccess == true;
+    final isOrganizer = profile?.organizer == true;
 
     if (isLoading) {
       return Scaffold(
@@ -177,6 +178,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 14),
           ],
+          if (isOrganizer) ...[
+            _OrganizerSectionCard(
+              onMyEventsTap: () {},
+              onCreateEventTap: () => context.push('/hub/create-event'),
+            ),
+            const SizedBox(height: 14),
+          ],
           if (canSeeOrganizerRatings) ...[
             _OrganizerRatingsCard(
               future: _ratingsFuture,
@@ -195,14 +203,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _LogoutActionCard(
               title: l10n.profileAuthLogoutTitle,
               subtitle: l10n.profileAuthLogoutSubtitle,
-              onTap: () {
-                if (sessionController.isBusy) {
-                  return;
-                }
-                sessionController.logout().then((_) {
-                  FeedbackService.showSuccess(FeedbackMessage.logoutSuccess);
-                });
-              },
+              isLoggingOut: sessionController.isBusy,
+              onTap: sessionController.isBusy
+                  ? null
+                  : () {
+                      sessionController.logout().then((_) {
+                        FeedbackService.showSuccess(
+                          FeedbackMessage.logoutSuccess,
+                        );
+                      });
+                    },
             ),
           ],
         ],
@@ -215,12 +225,14 @@ class _LogoutActionCard extends StatelessWidget {
   const _LogoutActionCard({
     required this.title,
     required this.subtitle,
+    required this.isLoggingOut,
     required this.onTap,
   });
 
   final String title;
   final String subtitle;
-  final VoidCallback onTap;
+  final bool isLoggingOut;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -247,7 +259,16 @@ class _LogoutActionCard extends StatelessWidget {
                 color: mutedColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: Icon(Icons.logout_rounded, color: mutedColor, size: 26),
+              child: isLoggingOut
+                  ? SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: mutedColor,
+                      ),
+                    )
+                  : Icon(Icons.logout_rounded, color: mutedColor, size: 26),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -279,11 +300,20 @@ class _LogoutActionCard extends StatelessWidget {
                 color: mutedColor.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: mutedColor,
-                size: 16,
-              ),
+              child: isLoggingOut
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: mutedColor,
+                      ),
+                    )
+                  : Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: mutedColor,
+                      size: 16,
+                    ),
             ),
           ],
         ),
@@ -667,6 +697,136 @@ class _OrganizerRatingsCard extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _OrganizerSectionCard extends StatelessWidget {
+  const _OrganizerSectionCard({
+    required this.onMyEventsTap,
+    required this.onCreateEventTap,
+  });
+
+  final VoidCallback onMyEventsTap;
+  final VoidCallback onCreateEventTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: scheme.tertiary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.star_rounded,
+                  color: scheme.tertiary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                l10n.profileOrganizerSectionTitle,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: scheme.tertiary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 46),
+            child: Text(
+              l10n.profileOrganizerSectionSubtitle,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          InkWell(
+            onTap: onMyEventsTap,
+            borderRadius: BorderRadius.circular(18),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.event_rounded, color: scheme.onSurface, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.profileMyEventsTitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: scheme.onSurface.withValues(alpha: 0.38),
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: onCreateEventTap,
+            borderRadius: BorderRadius.circular(18),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: scheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.add_rounded, color: scheme.primary, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.profileOrganizerCreateEvent,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: scheme.primary.withValues(alpha: 0.6),
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
