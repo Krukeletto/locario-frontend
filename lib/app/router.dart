@@ -10,6 +10,7 @@ import '../features/hub/hub_placeholder_screen.dart';
 import '../features/inbox/inbox_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
 import '../features/profile/event_history_screen.dart';
+import '../features/profile/organizer_events_screen.dart';
 import '../features/profile/organizer_reviews_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/legals/consents_screen.dart';
@@ -94,6 +95,7 @@ bool _requiresAuth(String location) {
       location.startsWith('/hub/create-event') ||
       location.startsWith('/inbox') ||
       location.startsWith('/profile/edit') ||
+      location.startsWith('/profile/my-events') ||
       location.startsWith('/profile/reviews') ||
       location.startsWith('/profile/history') ||
       location.startsWith('/events/') && location.contains('/review');
@@ -297,6 +299,17 @@ GoRouter createAppRouter({
                         state.uri.path,
                       ),
                       child: const EventHistoryScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'my-events',
+                    pageBuilder: (context, state) => _trackedNoTransitionPage(
+                      controller: navigationHistory,
+                      location: state.uri.toString(),
+                      rememberAsSafe: _shouldRememberAsSafeLocation(
+                        state.uri.path,
+                      ),
+                      child: const OrganizerEventsScreen(),
                     ),
                   ),
                 ],
