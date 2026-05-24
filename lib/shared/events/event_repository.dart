@@ -77,6 +77,10 @@ abstract class EventRepository {
     double? radiusKm,
     int? limit,
   });
+  Future<List<ExploreEvent>> fetchMyOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
   Future<List<ExploreEvent>> fetchEvents();
   Future<ExploreEvent> fetchEvent(String id);
   Future<ExploreEvent> createEvent(EventRequest request);
@@ -99,13 +103,25 @@ class HttpEventRepository implements EventRepository {
   final http.Client _client;
   final String _baseUrl;
 
+  static const _jsonHeaders = {'Content-Type': 'application/json'};
+
   Uri _uri(String path) => Uri.parse('$_baseUrl$path');
+
+  Map<String, String> _headers({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) {
+    if (accessToken == null || accessToken.isEmpty) {
+      return _jsonHeaders;
+    }
+    return {..._jsonHeaders, 'Authorization': '$tokenType $accessToken'};
+  }
 
   @override
   Future<ExploreEvent> createEvent(EventRequest request) async {
     final response = await _client.post(
       _uri('/api/events'),
-      headers: const {'Content-Type': 'application/json'},
+      headers: _jsonHeaders,
       body: jsonEncode(request.toJson()),
     );
 
@@ -123,7 +139,7 @@ class HttpEventRepository implements EventRepository {
   Future<ExploreEvent> updateEvent(String id, EventRequest request) async {
     final response = await _client.put(
       _uri('/api/events/$id'),
-      headers: const {'Content-Type': 'application/json'},
+      headers: _jsonHeaders,
       body: jsonEncode(request.toJson()),
     );
 
@@ -190,6 +206,47 @@ class HttpEventRepository implements EventRepository {
     }
 
     return _decodeEventsList(response.body);
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchMyOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    var page = 0;
+    final events = <ExploreEvent>[];
+
+    while (true) {
+      final uri = _uri('/api/organizer/events/me').replace(
+        queryParameters: {
+          'page': page.toString(),
+          'size': '50',
+          'sort': 'startAt',
+          'direction': 'desc',
+        },
+      );
+      final response = await _client.get(
+        uri,
+        headers: _headers(accessToken: accessToken, tokenType: tokenType),
+      );
+
+      if (response.statusCode != 200) {
+        throw EventRepositoryException(
+          'Unable to fetch organizer events',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final decoded = jsonDecode(response.body);
+      final pageEvents = _decodePagedEvents(decoded);
+      events.addAll(pageEvents.events);
+      if (pageEvents.isLast) {
+        break;
+      }
+      page++;
+    }
+
+    return events;
   }
 
   @override
@@ -320,4 +377,38 @@ class HttpEventRepository implements EventRepository {
       fallbackVenue: fallbackLocationLabel,
     );
   }
+
+  _PagedEvents _decodePagedEvents(dynamic decoded) {
+    if (decoded is Map<String, dynamic>) {
+      final content = decoded['content'];
+      if (content is List) {
+        return _PagedEvents(
+          events: content
+              .whereType<Map>()
+              .map((item) => _eventFromJson(Map<String, dynamic>.from(item)))
+              .toList(growable: false),
+          isLast: decoded['last'] as bool? ?? true,
+        );
+      }
+    }
+
+    if (decoded is List) {
+      return _PagedEvents(
+        events: decoded
+            .whereType<Map>()
+            .map((item) => _eventFromJson(Map<String, dynamic>.from(item)))
+            .toList(growable: false),
+        isLast: true,
+      );
+    }
+
+    return const _PagedEvents(events: [], isLast: true);
+  }
+}
+
+class _PagedEvents {
+  const _PagedEvents({required this.events, required this.isLast});
+
+  final List<ExploreEvent> events;
+  final bool isLast;
 }
