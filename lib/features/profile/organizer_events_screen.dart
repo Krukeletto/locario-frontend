@@ -362,6 +362,24 @@ class _OrganizerEventCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
+                InkWell(
+                  onTap: () => context.push('/hub/edit-event/${event.id}'),
+                  borderRadius: BorderRadius.circular(17),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.edit_rounded,
+                      color: accentColor,
+                      size: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Container(
                   width: 34,
                   height: 34,

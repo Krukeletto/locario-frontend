@@ -6,6 +6,7 @@ import '../features/auth/register_screen.dart';
 import '../features/events/event_screen.dart';
 import '../features/explore/explore_screen.dart';
 import '../features/hub/create_event/create_event_screen.dart';
+import '../features/hub/edit_event/edit_event_screen.dart';
 import '../features/hub/hub_placeholder_screen.dart';
 import '../features/inbox/inbox_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
@@ -93,6 +94,7 @@ bool _requiresAuth(String location) {
   return location.startsWith('/hub/messages') ||
       location.startsWith('/hub/friends') ||
       location.startsWith('/hub/create-event') ||
+      location.startsWith('/hub/edit-event') ||
       location.startsWith('/inbox') ||
       location.startsWith('/profile/edit') ||
       location.startsWith('/profile/my-events') ||
@@ -327,6 +329,18 @@ GoRouter createAppRouter({
           rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
           child: CreateEventScreen(
             canSubmit: sessionController.profile?.organizer == true,
+          ),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/hub/edit-event/:eventId',
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: EditEventScreen(
+            eventId: state.pathParameters['eventId'] ?? '',
           ),
         ),
       ),
