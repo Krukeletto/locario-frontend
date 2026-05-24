@@ -133,4 +133,22 @@ class CreateEventLocationController extends ChangeNotifier {
     );
     notifyListeners();
   }
+
+  void setSelectionFromCoordinates({
+    required String label,
+    required LatLng coordinates,
+  }) {
+    final l10n = L10nService.l10n;
+    final lat = coordinates.latitude.toStringAsFixed(4);
+    final lon = coordinates.longitude.toStringAsFixed(4);
+    _selection = CreateEventLocationSelection(
+      label: label,
+      description: l10n.areaPinnedCoordinates(lat, lon),
+      coordinates: coordinates,
+      source: CreateEventLocationSource.pinnedOnMap,
+      icon: Icons.place_rounded,
+      address: label,
+    );
+    notifyListeners();
+  }
 }
