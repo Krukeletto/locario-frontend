@@ -5,6 +5,7 @@ import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/events/event_screen.dart';
 import '../features/explore/explore_screen.dart';
+import '../features/hub/create_event/create_event_screen.dart';
 import '../features/hub/hub_placeholder_screen.dart';
 import '../features/inbox/inbox_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
@@ -303,6 +304,18 @@ GoRouter createAppRouter({
             ],
           ),
         ],
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/hub/create-event',
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: CreateEventScreen(
+            canSubmit: sessionController.profile?.organizer == true,
+          ),
+        ),
       ),
       ...hubActionItems.map(
         (item) => GoRoute(
