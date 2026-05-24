@@ -7,21 +7,32 @@ class FakeEventRepository implements EventRepository {
     List<ExploreEvent>? events,
     ExploreEvent? eventDetails,
     List<Category>? categories,
+    List<ExploreEvent>? organizerEvents,
     this.fetchEventsError,
     this.fetchEventError,
     this.createEventError,
+    this.updateEventError,
+    this.fetchOrganizerEventsError,
   }) : events = events ?? _defaultEvents,
+       organizerEvents = organizerEvents ?? events ?? _defaultEvents,
        eventDetails = eventDetails ?? _defaultEvents.first,
        categories = categories ?? _defaultCategories;
 
   final List<ExploreEvent> events;
+  final List<ExploreEvent> organizerEvents;
   final ExploreEvent eventDetails;
   final List<Category> categories;
   final Object? fetchEventsError;
   final Object? fetchEventError;
   final Object? createEventError;
+  final Object? updateEventError;
+  final Object? fetchOrganizerEventsError;
 
   EventRequest? lastCreateInput;
+  EventRequest? lastUpdateInput;
+  String? lastUpdateEventId;
+  String? lastOrganizerAccessToken;
+  String? lastOrganizerTokenType;
   final List<String> uploadedEventIds = [];
   final List<List<int>> uploadedBytes = [];
   final List<String> uploadedFileNames = [];
@@ -40,6 +51,12 @@ class FakeEventRepository implements EventRepository {
 
   @override
   Future<ExploreEvent> updateEvent(String id, EventRequest request) async {
+    if (updateEventError != null) {
+      throw updateEventError!;
+    }
+
+    lastUpdateEventId = id;
+    lastUpdateInput = request;
     return eventDetails;
   }
 
@@ -50,6 +67,20 @@ class FakeEventRepository implements EventRepository {
     }
 
     return eventDetails;
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchMyOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    lastOrganizerAccessToken = accessToken;
+    lastOrganizerTokenType = tokenType;
+    if (fetchOrganizerEventsError != null) {
+      throw fetchOrganizerEventsError!;
+    }
+
+    return organizerEvents;
   }
 
   @override

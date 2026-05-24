@@ -470,6 +470,14 @@ class _EmptyAreaSearchRepository implements EventRepository {
   }
 
   @override
+  Future<List<ExploreEvent>> fetchMyOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    return const [];
+  }
+
+  @override
   Future<List<ExploreEvent>> fetchNearbyEvents({
     required double latitude,
     required double longitude,
@@ -571,6 +579,14 @@ class _SequencedEventRepository implements EventRepository {
   @override
   Future<List<Category>> fetchCategories() {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchMyOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    return const [];
   }
 
   @override
