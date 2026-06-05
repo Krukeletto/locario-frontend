@@ -4,6 +4,11 @@ import 'package:latlong2/latlong.dart';
 import 'package:locario/features/explore/models.dart';
 import 'package:locario/features/hub/create_event/create_event_location_controller.dart';
 import 'package:locario/features/hub/create_event/create_event_screen.dart';
+import 'package:locario/shared/auth/auth_api.dart';
+import 'package:locario/shared/auth/auth_models.dart';
+import 'package:locario/shared/auth/auth_repository.dart';
+import 'package:locario/shared/auth/auth_scope.dart';
+import 'package:locario/shared/auth/session_controller.dart';
 import 'package:locario/shared/events/category_controller.dart';
 import 'package:locario/shared/events/category_scope.dart';
 
@@ -105,23 +110,94 @@ Future<void> _pumpCreateEventScreen(
   );
   final categoryController = CategoryController(eventRepository: fakeRepo);
   await categoryController.loadCategories();
+  final sessionController = await _createSessionController();
 
   await tester.pumpWidget(
     buildLocalizedTestApp(
       locale: const Locale('pl'),
-      home: CategoryScope(
-        controller: categoryController,
-        child: CreateEventScreen(
-          eventRepository: repository ?? FakeEventRepository(),
-          locationService: locationService ?? FakeLocationService(),
-          geocoder: geocoder,
-          pickImageFiles: pickImageFiles,
-          canSubmit: canSubmit,
+      home: AuthScope(
+        controller: sessionController,
+        child: CategoryScope(
+          controller: categoryController,
+          child: CreateEventScreen(
+            eventRepository: repository ?? FakeEventRepository(),
+            locationService: locationService ?? FakeLocationService(),
+            geocoder: geocoder,
+            pickImageFiles: pickImageFiles,
+            canSubmit: canSubmit,
+          ),
         ),
       ),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _MemoryAuthStorage implements AuthTokenStorage {
+  AuthTokens? stored;
+
+  @override
+  Future<void> clear() async {
+    stored = null;
+  }
+
+  @override
+  Future<AuthTokens?> readTokens() async => stored;
+
+  @override
+  Future<void> saveTokens(AuthTokens tokens) async {
+    stored = tokens;
+  }
+}
+
+class _FakeAuthApi extends AuthApi {
+  _FakeAuthApi({required this.profile}) : super();
+
+  final UserProfile profile;
+
+  @override
+  Future<UserProfile> fetchProfile({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
+    return Future.value(profile);
+  }
+}
+
+Future<SessionController> _createSessionController() async {
+  final storage = _MemoryAuthStorage();
+  storage.stored = AuthTokens(
+    accessToken: 'access-token',
+    refreshToken: 'refresh-token',
+    tokenType: 'Bearer',
+    expiresAt: DateTime.now().add(const Duration(hours: 1)),
+  );
+
+  final controller = SessionController(
+    authRepository: AuthRepository(
+      api: _FakeAuthApi(
+        profile: UserProfile(
+          id: 'organizer-id',
+          username: 'organizer',
+          email: 'organizer@example.com',
+          hasPassword: true,
+          avatarUrl: null,
+          bio: null,
+          websiteUrl: null,
+          instagramUrl: null,
+          facebookUrl: null,
+          createdAt: DateTime.utc(2026, 5, 1),
+          eventRegistrations: const [],
+          role: 'organizer',
+          organizer: true,
+        ),
+      ),
+      storage: storage,
+    ),
+  );
+
+  await controller.load();
+  return controller;
 }
 
 void main() {

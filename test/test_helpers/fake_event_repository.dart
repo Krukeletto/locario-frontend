@@ -29,7 +29,11 @@ class FakeEventRepository implements EventRepository {
   String? lastThumbnailMediaId;
 
   @override
-  Future<ExploreEvent> createEvent(EventRequest request) async {
+  Future<ExploreEvent> createEvent(
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     if (createEventError != null) {
       throw createEventError!;
     }
@@ -39,7 +43,12 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<ExploreEvent> updateEvent(String id, EventRequest request) async {
+  Future<ExploreEvent> updateEvent(
+    String id,
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     return eventDetails;
   }
 
@@ -77,11 +86,21 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
+  Future<List<ExploreEvent>> fetchOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    return events;
+  }
+
+  @override
   Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
-    String fileName,
-  ) async {
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     uploadedEventIds.add(eventId);
     uploadedBytes.add(bytes);
     uploadedFileNames.add(fileName);
@@ -94,10 +113,20 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> deleteEventMedia(String eventId, String mediaId) async {}
+  Future<void> deleteEventMedia(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {}
 
   @override
-  Future<void> setEventThumbnail(String eventId, String mediaId) async {
+  Future<void> setEventThumbnail(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     lastThumbnailEventId = eventId;
     lastThumbnailMediaId = mediaId;
   }

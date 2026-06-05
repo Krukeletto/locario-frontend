@@ -436,12 +436,29 @@ class _EmptyAreaSearchRepository implements EventRepository {
   final Completer<void> pendingSecondAreaSearch;
 
   @override
-  Future<ExploreEvent> createEvent(EventRequest request) {
+  Future<ExploreEvent> createEvent(
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  Future<ExploreEvent> updateEvent(String id, EventRequest request) {
+  Future<ExploreEvent> updateEvent(
+    String id,
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
@@ -449,18 +466,30 @@ class _EmptyAreaSearchRepository implements EventRepository {
   Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
-    String fileName,
-  ) {
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  Future<void> deleteEventMedia(String eventId, String mediaId) {
+  Future<void> deleteEventMedia(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  Future<void> setEventThumbnail(String eventId, String mediaId) {
+  Future<void> setEventThumbnail(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
@@ -540,12 +569,29 @@ class _SequencedEventRepository implements EventRepository {
   double? lastNearbyLongitude;
 
   @override
-  Future<ExploreEvent> createEvent(EventRequest request) {
+  Future<ExploreEvent> createEvent(
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  Future<ExploreEvent> updateEvent(String id, EventRequest request) {
+  Future<ExploreEvent> updateEvent(
+    String id,
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
@@ -553,18 +599,30 @@ class _SequencedEventRepository implements EventRepository {
   Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
-    String fileName,
-  ) {
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  Future<void> deleteEventMedia(String eventId, String mediaId) {
+  Future<void> deleteEventMedia(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  Future<void> setEventThumbnail(String eventId, String mediaId) {
+  Future<void> setEventThumbnail(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 

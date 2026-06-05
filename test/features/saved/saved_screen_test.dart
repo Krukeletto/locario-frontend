@@ -137,7 +137,7 @@ ExploreEvent _event(String id, String title) {
   return ExploreEvent(
     id: id,
     title: title,
-    startsAt: DateTime.utc(2026, 6, 1, 18),
+    startsAt: DateTime.now().add(const Duration(days: 30)),
     venue: 'Venue',
     location: const LatLng(51.7592, 19.4550),
     categories: const [Category(id: 'music', name: 'Music', slug: 'music')],

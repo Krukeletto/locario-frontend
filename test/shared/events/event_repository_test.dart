@@ -139,6 +139,7 @@ void main() {
           startAt: DateTime.utc(2026, 4, 12, 19),
           address: 'Piotrkowska 10, Lodz',
         ),
+        accessToken: 'access-token',
       );
 
       expect(body['name'], 'Created event');
@@ -164,6 +165,7 @@ void main() {
         await repository.setEventThumbnail(
           '11111111-1111-1111-1111-111111111111',
           '22222222-2222-2222-2222-222222222222',
+          accessToken: 'access-token',
         );
 
         expect(capturedRequest.method, 'PUT');
