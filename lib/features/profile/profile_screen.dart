@@ -180,7 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
           if (isOrganizer) ...[
             _OrganizerSectionCard(
-              onMyEventsTap: () {},
+              onMyEventsTap: () => context.push('/profile/my-events'),
               onCreateEventTap: () => context.push('/hub/create-event'),
               ratingsFuture: canSeeOrganizerRatings ? _ratingsFuture : null,
               onReviewsTap: canSeeOrganizerRatings
