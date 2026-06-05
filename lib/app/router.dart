@@ -5,6 +5,10 @@ import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/events/event_screen.dart';
 import '../features/explore/explore_screen.dart';
+import '../features/groups/group_details_screen.dart';
+import '../features/groups/group_discover_screen.dart';
+import '../features/groups/group_form_screen.dart';
+import '../features/hub/create_event/create_event_screen.dart';
 import '../features/hub/hub_placeholder_screen.dart';
 import '../features/inbox/inbox_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
@@ -83,7 +87,6 @@ final List<HubActionItem> hubActionItems = [
     id: 'community',
     icon: 'groups',
     routePath: '/hub/community',
-    isEnabled: false,
   ),
 ];
 
@@ -91,6 +94,9 @@ bool _requiresAuth(String location) {
   return location.startsWith('/hub/messages') ||
       location.startsWith('/hub/friends') ||
       location.startsWith('/hub/create-event') ||
+      location.startsWith('/hub/community') ||
+      location == '/groups/create' ||
+      (location.startsWith('/groups/') && location.endsWith('/edit')) ||
       location.startsWith('/inbox') ||
       location.startsWith('/profile/edit') ||
       location.startsWith('/profile/reviews') ||
@@ -177,6 +183,13 @@ GoRouter createAppRouter({
           location.startsWith('/profile/reviews') &&
           sessionController.profile?.hasOrganizerReviewAccess != true) {
         return '/profile';
+      }
+
+      if (isAuthed &&
+          location == '/groups/create' &&
+          sessionController.profile?.organizer != true &&
+          sessionController.profile?.admin != true) {
+        return '/hub/community';
       }
 
       if (!legalController.isLoading) {
@@ -309,7 +322,10 @@ GoRouter createAppRouter({
           parentNavigatorKey: _rootNavigatorKey,
           path: item.routePath,
           pageBuilder: (context, state) {
-            final child = HubPlaceholderScreen(item: item);
+            final child = switch (item.id) {
+              'community' => const GroupDiscoverScreen(),
+              _ => HubPlaceholderScreen(item: item),
+            };
             return _trackedNoTransitionPage(
               controller: navigationHistory,
               location: state.uri.toString(),
@@ -318,6 +334,52 @@ GoRouter createAppRouter({
             );
           },
         ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/hub/create-event',
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: CreateEventScreen(
+            canSubmit: true,
+            initialGroupId: state.uri.queryParameters['groupId'],
+          ),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/groups/create',
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: const GroupFormScreen(),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/groups/:groupId',
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: GroupDetailsScreen(
+            groupId: state.pathParameters['groupId'] ?? '',
+          ),
+        ),
+        routes: [
+          GoRoute(
+            path: 'edit',
+            pageBuilder: (context, state) => _trackedNoTransitionPage(
+              controller: navigationHistory,
+              location: state.uri.toString(),
+              rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+              child: GroupFormScreen(groupId: state.pathParameters['groupId']),
+            ),
+          ),
+        ],
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

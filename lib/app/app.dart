@@ -18,6 +18,7 @@ import '../shared/events/event_repository.dart';
 import '../shared/events/event_registration_api.dart';
 import '../shared/events/category_controller.dart';
 import '../shared/events/category_scope.dart';
+import '../shared/groups/my_groups_cache.dart';
 import '../features/events/joined_events_controller.dart';
 import '../features/events/joined_events_scope.dart';
 import '../features/saved/saved_events_controller.dart';
@@ -116,6 +117,7 @@ class _LocarioAppState extends State<LocarioApp> {
     _savedFiltersController.loadFilters();
     _joinedEventsController.load();
     _sessionController.load();
+    _sessionController.addListener(_onSessionChanged);
     _legalController.load();
     _notificationController.loadHistory();
     _notificationController.loadPreferences();
@@ -164,8 +166,23 @@ class _LocarioAppState extends State<LocarioApp> {
     }
   }
 
+  void _onSessionChanged() {
+    if (_sessionController.isAuthenticated &&
+        _sessionController.tokens != null) {
+      unawaited(
+        MyGroupsCache.prefetch(
+          accessToken: _sessionController.tokens!.accessToken,
+          tokenType: _sessionController.tokens!.tokenType,
+        ),
+      );
+    } else {
+      MyGroupsCache.invalidate();
+    }
+  }
+
   @override
   void dispose() {
+    _sessionController.removeListener(_onSessionChanged);
     _savedEventsController.removeListener(_syncReminders);
     _joinedEventsController.removeListener(_syncReminders);
     _localeController.dispose();
