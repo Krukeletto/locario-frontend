@@ -77,12 +77,7 @@ final List<HubActionItem> hubActionItems = [
     routePath: '/hub/messages',
     isEnabled: false,
   ),
-  const HubActionItem(
-    id: 'friends',
-    icon: 'person_add',
-    routePath: '/hub/friends',
-    isEnabled: false,
-  ),
+  const HubActionItem(id: 'saved', icon: 'bookmark', routePath: '/hub/saved'),
   const HubActionItem(
     id: 'community',
     icon: 'groups',
@@ -92,7 +87,6 @@ final List<HubActionItem> hubActionItems = [
 
 bool _requiresAuth(String location) {
   return location.startsWith('/hub/messages') ||
-      location.startsWith('/hub/friends') ||
       location.startsWith('/hub/create-event') ||
       location.startsWith('/hub/community') ||
       location == '/groups/create' ||
@@ -257,17 +251,6 @@ GoRouter createAppRouter({
                 ),
                 routes: [
                   GoRoute(
-                    path: 'saved',
-                    pageBuilder: (context, state) => _trackedNoTransitionPage(
-                      controller: navigationHistory,
-                      location: state.uri.toString(),
-                      rememberAsSafe: _shouldRememberAsSafeLocation(
-                        state.uri.path,
-                      ),
-                      child: const SavedScreen(),
-                    ),
-                  ),
-                  GoRoute(
                     path: 'settings',
                     pageBuilder: (context, state) => _trackedNoTransitionPage(
                       controller: navigationHistory,
@@ -324,6 +307,7 @@ GoRouter createAppRouter({
           pageBuilder: (context, state) {
             final child = switch (item.id) {
               'community' => const GroupDiscoverScreen(),
+              'saved' => const SavedScreen(),
               _ => HubPlaceholderScreen(item: item),
             };
             return _trackedNoTransitionPage(

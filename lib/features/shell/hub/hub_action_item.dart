@@ -26,8 +26,8 @@ class HubActionItem {
         return l10n.hubMessagesTitle;
       case 'community':
         return l10n.hubCommunityTitle;
-      case 'friends':
-        return l10n.hubFriendsTitle;
+      case 'saved':
+        return l10n.savedTitle;
       default:
         return id;
     }
@@ -41,8 +41,8 @@ class HubActionItem {
         return l10n.hubMessagesSubtitle;
       case 'community':
         return l10n.hubCommunitySubtitle;
-      case 'friends':
-        return l10n.hubFriendsSubtitle;
+      case 'saved':
+        return l10n.savedSubtitle;
       default:
         return id;
     }
@@ -64,6 +64,8 @@ class HubActionItem {
         return Icons.group_outlined;
       case 'auto_awesome':
         return Icons.auto_awesome_outlined;
+      case 'bookmark':
+        return Icons.bookmark_rounded;
       default:
         return Icons.apps_rounded;
     }
