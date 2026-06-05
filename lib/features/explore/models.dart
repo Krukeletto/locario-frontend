@@ -117,6 +117,42 @@ class EventMedia {
   }
 }
 
+class EventGroupSummary {
+  const EventGroupSummary({
+    required this.id,
+    required this.name,
+    this.iconUrl,
+    this.mapPinIconUrl,
+    this.mapPinStyle,
+  });
+
+  final String id;
+  final String name;
+  final String? iconUrl;
+  final String? mapPinIconUrl;
+  final String? mapPinStyle;
+
+  factory EventGroupSummary.fromJson(Map<String, dynamic> json) {
+    return EventGroupSummary(
+      id: json['id'] as String,
+      name: json['name'] as String? ?? '',
+      iconUrl: json['iconUrl'] as String?,
+      mapPinIconUrl: json['mapPinIconUrl'] as String?,
+      mapPinStyle: json['mapPinStyle'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'iconUrl': iconUrl,
+      'mapPinIconUrl': mapPinIconUrl,
+      'mapPinStyle': mapPinStyle,
+    };
+  }
+}
+
 const Map<ExploreCategory, String?> _backendCategoryIds = {
   ExploreCategory.music: null,
   ExploreCategory.art: null,
@@ -224,6 +260,9 @@ class ExploreEvent {
     this.organizerUsername,
     this.createdAt,
     this.updatedAt,
+    this.groupIds = const [],
+    this.groups = const [],
+    this.publicEvent = true,
     this.trendingScore = 0,
   });
 
@@ -252,6 +291,9 @@ class ExploreEvent {
   final String? organizerUsername;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final List<String> groupIds;
+  final List<EventGroupSummary> groups;
+  final bool publicEvent;
 
   factory ExploreEvent.fromJson(
     Map<String, dynamic> json, {
@@ -299,6 +341,9 @@ class ExploreEvent {
       organizerUsername: _primaryOrganizerUsernameFromJson(json['organizers']),
       createdAt: _parseDateTime(json['createdAt']),
       updatedAt: _parseDateTime(json['updatedAt']),
+      groupIds: _stringListFromJson(json['groupIds']),
+      groups: _groupSummariesFromJson(json['groups']),
+      publicEvent: json['publicEvent'] as bool? ?? true,
     );
   }
 
@@ -333,6 +378,10 @@ class ExploreEvent {
         },
       if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
       if (updatedAt != null) 'updatedAt': updatedAt!.toUtc().toIso8601String(),
+      if (groupIds.isNotEmpty) 'groupIds': groupIds,
+      if (groups.isNotEmpty)
+        'groups': groups.map((group) => group.toJson()).toList(),
+      'publicEvent': publicEvent,
       'tags': tags,
     };
   }
@@ -502,6 +551,22 @@ List<String> _tagsFromJson(dynamic value) {
       .toList(growable: false);
 }
 
+List<String> _stringListFromJson(dynamic value) {
+  if (value is! List) {
+    return const [];
+  }
+
+  return value
+      .map((item) {
+        if (item is String) {
+          return item.trim();
+        }
+        return item?.toString().trim() ?? '';
+      })
+      .where((value) => value.isNotEmpty)
+      .toList(growable: false);
+}
+
 List<String> _organizersFromJson(dynamic value) {
   if (value is! List) {
     return const [];
@@ -540,6 +605,18 @@ String? _primaryOrganizerUsernameFromJson(dynamic value) {
 
   final first = _asMap(value.first);
   return first == null ? null : _normalizedString(first['username']);
+}
+
+List<EventGroupSummary> _groupSummariesFromJson(dynamic value) {
+  if (value is! List) {
+    return const [];
+  }
+
+  return value
+      .map(_asMap)
+      .whereType<Map<String, dynamic>>()
+      .map(EventGroupSummary.fromJson)
+      .toList(growable: false);
 }
 
 String _formatCoordinates(LatLng location) {

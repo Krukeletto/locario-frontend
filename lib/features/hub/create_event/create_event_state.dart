@@ -1,4 +1,5 @@
 import '../../explore/models.dart';
+import '../../../shared/groups/group_models.dart';
 
 enum CreateEventFormStatus { idle, submitting, success, error }
 
@@ -23,6 +24,8 @@ class CreateEventState {
     this.timeError,
     this.selectedCategories = const [],
     this.categoriesError,
+    this.selectedGroups = const [],
+    this.groupsError,
     this.eventStatus = EventStatus.draft,
     this.ticketUrl,
     this.ticketUrlError,
@@ -44,6 +47,8 @@ class CreateEventState {
   final String? timeError;
   final List<Category> selectedCategories;
   final String? categoriesError;
+  final List<Group> selectedGroups;
+  final String? groupsError;
   final EventStatus eventStatus;
   final String? ticketUrl;
   final String? ticketUrlError;
@@ -60,6 +65,7 @@ class CreateEventState {
       descriptionError == null &&
       selectedCategories.isNotEmpty &&
       categoriesError == null &&
+      groupsError == null &&
       locationLabel.isNotEmpty &&
       locationError == null &&
       selectedDate != null &&
@@ -80,6 +86,8 @@ class CreateEventState {
     String? Function()? timeError,
     List<Category>? selectedCategories,
     String? Function()? categoriesError,
+    List<Group>? selectedGroups,
+    String? Function()? groupsError,
     EventStatus? eventStatus,
     String? Function()? ticketUrl,
     String? Function()? ticketUrlError,
@@ -107,6 +115,8 @@ class CreateEventState {
       categoriesError: categoriesError != null
           ? categoriesError()
           : this.categoriesError,
+      selectedGroups: selectedGroups ?? this.selectedGroups,
+      groupsError: groupsError != null ? groupsError() : this.groupsError,
       eventStatus: eventStatus ?? this.eventStatus,
       ticketUrl: ticketUrl != null ? ticketUrl() : this.ticketUrl,
       ticketUrlError: ticketUrlError != null

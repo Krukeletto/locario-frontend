@@ -1262,6 +1262,678 @@ abstract class AppLocalizations {
   /// **'Pole Mokotowskie area and nearby'**
   String get areaMokotowDescription;
 
+  /// No description provided for @groupsDiscoverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get groupsDiscoverTitle;
+
+  /// No description provided for @groupsLoadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading groups'**
+  String get groupsLoadingTitle;
+
+  /// No description provided for @groupsLoadingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We are fetching communities for you.'**
+  String get groupsLoadingSubtitle;
+
+  /// No description provided for @groupsErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load groups'**
+  String get groupsErrorTitle;
+
+  /// No description provided for @groupsErrorSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again in a moment.'**
+  String get groupsErrorSubtitle;
+
+  /// No description provided for @groupsCreateCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Create group'**
+  String get groupsCreateCta;
+
+  /// No description provided for @groupsMyGroupsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'My groups'**
+  String get groupsMyGroupsTab;
+
+  /// No description provided for @groupsMyGroupsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My groups'**
+  String get groupsMyGroupsTitle;
+
+  /// No description provided for @groupsMyGroupsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Communities you already belong to.'**
+  String get groupsMyGroupsSubtitle;
+
+  /// No description provided for @groupsMyGroupsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No groups yet'**
+  String get groupsMyGroupsEmptyTitle;
+
+  /// No description provided for @groupsMyGroupsEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join a public group to see it here.'**
+  String get groupsMyGroupsEmptySubtitle;
+
+  /// No description provided for @groupsDiscoverTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover'**
+  String get groupsDiscoverTab;
+
+  /// No description provided for @groupsDiscoverPublicTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Public groups'**
+  String get groupsDiscoverPublicTitle;
+
+  /// No description provided for @groupsDiscoverPublicSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse communities that are open to discovery.'**
+  String get groupsDiscoverPublicSubtitle;
+
+  /// No description provided for @groupsDiscoverEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No groups found'**
+  String get groupsDiscoverEmptyTitle;
+
+  /// No description provided for @groupsDiscoverEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different phrase or category.'**
+  String get groupsDiscoverEmptySubtitle;
+
+  /// No description provided for @groupsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search groups'**
+  String get groupsSearchHint;
+
+  /// No description provided for @groupsCategoryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All categories'**
+  String get groupsCategoryAll;
+
+  /// No description provided for @groupsCategoryUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'No category'**
+  String get groupsCategoryUnknown;
+
+  /// No description provided for @groupsVisibilityPublic.
+  ///
+  /// In en, this message translates to:
+  /// **'Public'**
+  String get groupsVisibilityPublic;
+
+  /// No description provided for @groupsVisibilityPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Private'**
+  String get groupsVisibilityPrivate;
+
+  /// No description provided for @groupsMembersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count,plural, one{1 member} other{{count} members}}'**
+  String groupsMembersCount(int count);
+
+  /// No description provided for @groupsMembershipActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get groupsMembershipActive;
+
+  /// No description provided for @groupsMembershipPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get groupsMembershipPending;
+
+  /// No description provided for @groupsMembershipBanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Banned'**
+  String get groupsMembershipBanned;
+
+  /// No description provided for @groupsCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create group'**
+  String get groupsCreateTitle;
+
+  /// No description provided for @groupsEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit group'**
+  String get groupsEditTitle;
+
+  /// No description provided for @groupsEditForbidden.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have permission to edit this group.'**
+  String get groupsEditForbidden;
+
+  /// No description provided for @groupsFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Group name'**
+  String get groupsFieldName;
+
+  /// No description provided for @groupsFieldDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get groupsFieldDescription;
+
+  /// No description provided for @groupsFieldCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get groupsFieldCategory;
+
+  /// No description provided for @groupsFieldAvatarUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar URL'**
+  String get groupsFieldAvatarUrl;
+
+  /// No description provided for @groupsFieldIconUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon URL'**
+  String get groupsFieldIconUrl;
+
+  /// No description provided for @groupsFieldMapPinIconUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Map pin icon URL'**
+  String get groupsFieldMapPinIconUrl;
+
+  /// No description provided for @groupsFieldMapPinStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Map pin style'**
+  String get groupsFieldMapPinStyle;
+
+  /// No description provided for @groupsCategoryNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No category'**
+  String get groupsCategoryNone;
+
+  /// No description provided for @groupsAdvancedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced settings'**
+  String get groupsAdvancedTitle;
+
+  /// No description provided for @groupsAdvancedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional visual settings from the backend contract.'**
+  String get groupsAdvancedSubtitle;
+
+  /// No description provided for @groupsCreateSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Create group'**
+  String get groupsCreateSubmit;
+
+  /// No description provided for @groupsSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get groupsSaveChanges;
+
+  /// No description provided for @groupsValidationNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a group name.'**
+  String get groupsValidationNameRequired;
+
+  /// No description provided for @groupsValidationNameTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The name can be at most 255 characters.'**
+  String get groupsValidationNameTooLong;
+
+  /// No description provided for @groupsValidationDescriptionTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The description can be at most 5000 characters.'**
+  String get groupsValidationDescriptionTooLong;
+
+  /// No description provided for @groupsValidationMapPinStyleTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The map pin style can be at most 50 characters.'**
+  String get groupsValidationMapPinStyleTooLong;
+
+  /// No description provided for @groupsValidationUrlTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The URL can be at most 2048 characters.'**
+  String get groupsValidationUrlTooLong;
+
+  /// No description provided for @groupsValidationUrlInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid URL.'**
+  String get groupsValidationUrlInvalid;
+
+  /// No description provided for @groupsJoinAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Join group'**
+  String get groupsJoinAction;
+
+  /// No description provided for @groupsLeaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave group'**
+  String get groupsLeaveAction;
+
+  /// No description provided for @groupsPendingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel request'**
+  String get groupsPendingAction;
+
+  /// No description provided for @groupsTabFeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed'**
+  String get groupsTabFeed;
+
+  /// No description provided for @groupsTabMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get groupsTabMembers;
+
+  /// No description provided for @groupsTabEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Events'**
+  String get groupsTabEvents;
+
+  /// No description provided for @groupsTabManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get groupsTabManage;
+
+  /// No description provided for @groupsFeedEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No feed yet'**
+  String get groupsFeedEmptyTitle;
+
+  /// No description provided for @groupsFeedEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts and events linked to this group will appear here.'**
+  String get groupsFeedEmptySubtitle;
+
+  /// No description provided for @groupsFeedPostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get groupsFeedPostLabel;
+
+  /// No description provided for @groupsFeedEventLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Event'**
+  String get groupsFeedEventLabel;
+
+  /// No description provided for @groupsFeedPostFallbackAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown author'**
+  String get groupsFeedPostFallbackAuthor;
+
+  /// No description provided for @groupsFeedEventFallbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Group event'**
+  String get groupsFeedEventFallbackTitle;
+
+  /// No description provided for @groupsPostCreateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Write post'**
+  String get groupsPostCreateAction;
+
+  /// No description provided for @groupsPostCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New post'**
+  String get groupsPostCreateTitle;
+
+  /// No description provided for @groupsPostEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit post'**
+  String get groupsPostEditTitle;
+
+  /// No description provided for @groupsPostHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want to share with the group?'**
+  String get groupsPostHint;
+
+  /// No description provided for @groupsPostPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get groupsPostPublish;
+
+  /// No description provided for @groupsEditAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get groupsEditAction;
+
+  /// No description provided for @groupsDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get groupsDeleteAction;
+
+  /// No description provided for @groupsHideAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get groupsHideAction;
+
+  /// No description provided for @groupsReportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get groupsReportAction;
+
+  /// No description provided for @groupsOpenEventAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open event'**
+  String get groupsOpenEventAction;
+
+  /// No description provided for @groupsJoinRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join requests'**
+  String get groupsJoinRequestsTitle;
+
+  /// No description provided for @groupsApproveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get groupsApproveAction;
+
+  /// No description provided for @groupsRejectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get groupsRejectAction;
+
+  /// No description provided for @groupsMembersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No members'**
+  String get groupsMembersEmptyTitle;
+
+  /// No description provided for @groupsMembersEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Members will appear here after people join.'**
+  String get groupsMembersEmptySubtitle;
+
+  /// No description provided for @groupsMemberOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner'**
+  String get groupsMemberOwner;
+
+  /// No description provided for @groupsMemberAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get groupsMemberAdmin;
+
+  /// No description provided for @groupsMemberRegular.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get groupsMemberRegular;
+
+  /// No description provided for @groupsMakeAdminAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Make admin'**
+  String get groupsMakeAdminAction;
+
+  /// No description provided for @groupsMakeMemberAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Make member'**
+  String get groupsMakeMemberAction;
+
+  /// No description provided for @groupsBanAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Ban'**
+  String get groupsBanAction;
+
+  /// No description provided for @groupsUnbanAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Unban'**
+  String get groupsUnbanAction;
+
+  /// No description provided for @groupsRemoveMemberAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove member'**
+  String get groupsRemoveMemberAction;
+
+  /// No description provided for @groupsTransferOwnershipAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer ownership'**
+  String get groupsTransferOwnershipAction;
+
+  /// No description provided for @groupsCreateEventAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create event for group'**
+  String get groupsCreateEventAction;
+
+  /// No description provided for @groupsLinkExistingEventAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Link existing event'**
+  String get groupsLinkExistingEventAction;
+
+  /// No description provided for @groupsUnlinkEventAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink event'**
+  String get groupsUnlinkEventAction;
+
+  /// No description provided for @groupsEventsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No events yet'**
+  String get groupsEventsEmptyTitle;
+
+  /// No description provided for @groupsEventsEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create or link an event to start the group timeline.'**
+  String get groupsEventsEmptySubtitle;
+
+  /// No description provided for @groupsManageRestrictedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restricted section'**
+  String get groupsManageRestrictedTitle;
+
+  /// No description provided for @groupsManageRestrictedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the owner and group admins can manage reports and members.'**
+  String get groupsManageRestrictedSubtitle;
+
+  /// No description provided for @groupsReportsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No reports'**
+  String get groupsReportsEmptyTitle;
+
+  /// No description provided for @groupsReportsEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New reports will appear here.'**
+  String get groupsReportsEmptySubtitle;
+
+  /// No description provided for @groupsResolveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolve'**
+  String get groupsResolveAction;
+
+  /// No description provided for @groupsReportGroupAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Report group'**
+  String get groupsReportGroupAction;
+
+  /// No description provided for @groupsReportGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report group'**
+  String get groupsReportGroupTitle;
+
+  /// No description provided for @groupsReportPostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report post'**
+  String get groupsReportPostTitle;
+
+  /// No description provided for @groupsReportEventTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report event'**
+  String get groupsReportEventTitle;
+
+  /// No description provided for @groupsReportReasonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get groupsReportReasonLabel;
+
+  /// No description provided for @groupsReportDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get groupsReportDescriptionLabel;
+
+  /// No description provided for @groupsReportSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send report'**
+  String get groupsReportSubmit;
+
+  /// No description provided for @groupsConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get groupsConfirmAction;
+
+  /// No description provided for @groupsDeleteGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete group'**
+  String get groupsDeleteGroupTitle;
+
+  /// No description provided for @groupsDeleteGroupBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The group will be deleted for members and removed from discovery.'**
+  String get groupsDeleteGroupBody;
+
+  /// No description provided for @groupsDeletePostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete post'**
+  String get groupsDeletePostTitle;
+
+  /// No description provided for @groupsDeletePostBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This post will disappear from the group feed.'**
+  String get groupsDeletePostBody;
+
+  /// No description provided for @groupsActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The action could not be completed.'**
+  String get groupsActionFailed;
+
+  /// No description provided for @groupsEventGroupsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked groups'**
+  String get groupsEventGroupsLabel;
+
+  /// No description provided for @groupsEventGroupsOptionalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty to create a public event, or select groups to attach it.'**
+  String get groupsEventGroupsOptionalHint;
+
+  /// No description provided for @groupsEventGroupsRequiredHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one group. As a regular member you can only create group events.'**
+  String get groupsEventGroupsRequiredHint;
+
+  /// No description provided for @groupsEventGroupsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not an active member of any group yet.'**
+  String get groupsEventGroupsEmpty;
+
+  /// No description provided for @groupsEventValidationGroupRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one group for this event.'**
+  String get groupsEventValidationGroupRequired;
+
+  /// No description provided for @groupsEventValidationSlotLimitRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular members must set a positive slot limit.'**
+  String get groupsEventValidationSlotLimitRequired;
+
   /// No description provided for @hubTitle.
   ///
   /// In en, this message translates to:

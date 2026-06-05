@@ -28,6 +28,7 @@ class EventRequest {
     this.slotLimit,
     this.ticketUrl,
     this.categoryIds = const [],
+    this.groupIds = const [],
     this.tags = const [],
     this.status = EventStatus.published,
     this.thumbnailUrl,
@@ -45,6 +46,7 @@ class EventRequest {
   final int? slotLimit;
   final String? ticketUrl;
   final List<String> categoryIds;
+  final List<String> groupIds;
   final List<String> tags;
   final EventStatus status;
   final String? thumbnailUrl;
@@ -63,6 +65,7 @@ class EventRequest {
       if (slotLimit != null) 'slotLimit': slotLimit,
       if (ticketUrl != null) 'ticketUrl': ticketUrl,
       'categoryIds': categoryIds,
+      if (groupIds.isNotEmpty) 'groupIds': groupIds,
       if (tags.isNotEmpty) 'tags': tags,
       'status': status.toJson(),
       if (thumbnailUrl != null) 'thumbnailUrl': thumbnailUrl,
@@ -79,15 +82,40 @@ abstract class EventRepository {
   });
   Future<List<ExploreEvent>> fetchEvents();
   Future<ExploreEvent> fetchEvent(String id);
-  Future<ExploreEvent> createEvent(EventRequest request);
-  Future<ExploreEvent> updateEvent(String id, EventRequest request);
+  Future<List<ExploreEvent>> fetchOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<ExploreEvent> createEvent(
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<ExploreEvent> updateEvent(
+    String id,
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
   Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
-    String fileName,
-  );
-  Future<void> deleteEventMedia(String eventId, String mediaId);
-  Future<void> setEventThumbnail(String eventId, String mediaId);
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<void> deleteEventMedia(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<void> setEventThumbnail(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
   Future<List<Category>> fetchCategories();
 }
 
@@ -101,11 +129,42 @@ class HttpEventRepository implements EventRepository {
 
   Uri _uri(String path) => Uri.parse('$_baseUrl$path');
 
+  Map<String, String> _authorizedHeaders(String accessToken, String tokenType) {
+    return {
+      'Authorization': '$tokenType $accessToken',
+      'Content-Type': 'application/json',
+    };
+  }
+
   @override
-  Future<ExploreEvent> createEvent(EventRequest request) async {
+  Future<List<ExploreEvent>> fetchOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.get(
+      _uri('/api/organizer/events'),
+      headers: {'Authorization': '$tokenType $accessToken'},
+    );
+
+    if (response.statusCode != 200) {
+      throw EventRepositoryException(
+        'Unable to fetch organizer events',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return _decodeEventsList(response.body);
+  }
+
+  @override
+  Future<ExploreEvent> createEvent(
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     final response = await _client.post(
       _uri('/api/events'),
-      headers: const {'Content-Type': 'application/json'},
+      headers: _authorizedHeaders(accessToken, tokenType),
       body: jsonEncode(request.toJson()),
     );
 
@@ -120,10 +179,15 @@ class HttpEventRepository implements EventRepository {
   }
 
   @override
-  Future<ExploreEvent> updateEvent(String id, EventRequest request) async {
+  Future<ExploreEvent> updateEvent(
+    String id,
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     final response = await _client.put(
       _uri('/api/events/$id'),
-      headers: const {'Content-Type': 'application/json'},
+      headers: _authorizedHeaders(accessToken, tokenType),
       body: jsonEncode(request.toJson()),
     );
 
@@ -196,12 +260,15 @@ class HttpEventRepository implements EventRepository {
   Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
-    String fileName,
-  ) async {
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     final request = http.MultipartRequest(
       'POST',
       _uri('/api/events/$eventId/media'),
     );
+    request.headers['Authorization'] = '$tokenType $accessToken';
     request.files.add(
       http.MultipartFile.fromBytes('file', bytes, filename: fileName),
     );
@@ -225,9 +292,15 @@ class HttpEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> deleteEventMedia(String eventId, String mediaId) async {
+  Future<void> deleteEventMedia(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     final response = await _client.delete(
       _uri('/api/events/$eventId/media/$mediaId'),
+      headers: {'Authorization': '$tokenType $accessToken'},
     );
     if (response.statusCode != 204 && response.statusCode != 200) {
       throw EventRepositoryException(
@@ -238,9 +311,15 @@ class HttpEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> setEventThumbnail(String eventId, String mediaId) async {
+  Future<void> setEventThumbnail(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     final response = await _client.put(
       _uri('/api/events/$eventId/media/$mediaId/thumbnail'),
+      headers: {'Authorization': '$tokenType $accessToken'},
     );
     if (response.statusCode != 204 && response.statusCode != 200) {
       throw EventRepositoryException(

@@ -6,7 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart' show LatLng;
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../../shared/auth/auth_scope.dart';
 import '../../../shared/events/event_repository.dart';
+import '../../../shared/groups/group_models.dart';
+import '../../../shared/groups/group_repository.dart';
 import '../../../shared/events/event_refresh_signal.dart';
 import '../../../shared/location/location_service.dart';
 import '../../../shared/services/feedback_service.dart';
@@ -39,18 +42,23 @@ class CreateEventScreen extends StatefulWidget {
     CreateEventGeocoder? geocoder,
     EventRefreshSignal? eventRefreshSignal,
     Future<List<CreateEventPickedFile>> Function()? pickImageFiles,
+    GroupRepository? groupRepository,
+    this.initialGroupId,
     this.canSubmit = false,
   }) : _eventRepository = eventRepository,
        _locationService = locationService,
        _geocoder = geocoder,
        _eventRefreshSignal = eventRefreshSignal,
-       _pickImageFiles = pickImageFiles;
+       _pickImageFiles = pickImageFiles,
+       _groupRepository = groupRepository;
 
   final EventRepository? _eventRepository;
   final LocationService? _locationService;
   final CreateEventGeocoder? _geocoder;
   final EventRefreshSignal? _eventRefreshSignal;
   final Future<List<CreateEventPickedFile>> Function()? _pickImageFiles;
+  final GroupRepository? _groupRepository;
+  final String? initialGroupId;
   final bool canSubmit;
 
   @override
@@ -58,14 +66,19 @@ class CreateEventScreen extends StatefulWidget {
 }
 
 class _CreateEventScreenState extends State<CreateEventScreen> {
-  late final CreateEventController _controller;
+  CreateEventController? _controller;
   late final CreateEventLocationController _locationController;
   late final EventRefreshSignal _eventRefreshSignal;
   late final LocationService _locationService;
+  late final GroupRepository _groupRepository;
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _seatsController = TextEditingController();
+
+  bool _didInitController = false;
+  bool _isLoadingGroups = false;
+  List<Group> _availableGroups = const [];
 
   @override
   void initState() {
@@ -73,22 +86,40 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     _locationService = widget._locationService ?? GeolocatorLocationService();
     _eventRefreshSignal =
         widget._eventRefreshSignal ?? globalEventRefreshSignal;
-    _controller = CreateEventController(
-      eventRepository: widget._eventRepository ?? HttpEventRepository(),
-    );
+    _groupRepository = widget._groupRepository ?? HttpGroupRepository();
     _locationController = CreateEventLocationController(
       locationService: _locationService,
       geocoder: widget._geocoder,
     );
 
-    _controller.addListener(_handleStateChanged);
     _locationController.addListener(() => setState(() {}));
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInitController) {
+      return;
+    }
+    final sessionController = AuthScope.of(context);
+    final profile = sessionController.profile;
+    final canCreatePublicEvents =
+        profile?.organizer == true || profile?.admin == true;
+    final controller = CreateEventController(
+      eventRepository: widget._eventRepository ?? HttpEventRepository(),
+      sessionController: sessionController,
+      canCreatePublicEvents: canCreatePublicEvents,
+    );
+    controller.addListener(_handleStateChanged);
+    _controller = controller;
+    _didInitController = true;
+    _loadAvailableGroups();
+  }
+
+  @override
   void dispose() {
-    _controller.removeListener(_handleStateChanged);
-    _controller.dispose();
+    _controller?.removeListener(_handleStateChanged);
+    _controller?.dispose();
     _locationController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
@@ -97,7 +128,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   void _handleStateChanged() {
-    final state = _controller.state;
+    final controller = _controller;
+    if (controller == null) {
+      return;
+    }
+    final state = controller.state;
     if (state.status == CreateEventFormStatus.success) {
       FeedbackService.showSuccess(FeedbackMessage.eventCreated);
       _eventRefreshSignal.notifyChanged();
@@ -108,11 +143,64 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     setState(() {});
   }
 
+  Future<void> _loadAvailableGroups() async {
+    final sessionController = AuthScope.of(context);
+    final tokens = sessionController.tokens;
+    final controller = _controller;
+    if (tokens == null || controller == null) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingGroups = true;
+    });
+
+    try {
+      final groups = await _groupRepository.fetchMyGroups(
+        accessToken: tokens.accessToken,
+        tokenType: tokens.tokenType,
+      );
+      if (!mounted) {
+        return;
+      }
+      final activeGroups = groups
+          .where(
+            (group) =>
+                group.currentUserMembership == GroupMembershipStatus.active,
+          )
+          .toList(growable: false);
+      _availableGroups = activeGroups;
+      if (widget.initialGroupId != null) {
+        final initial = activeGroups
+            .where((group) => group.id == widget.initialGroupId)
+            .toList();
+        if (initial.isNotEmpty) {
+          controller.setSelectedGroups(initial);
+        }
+      }
+      setState(() {
+        _isLoadingGroups = false;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _availableGroups = const [];
+        _isLoadingGroups = false;
+      });
+    }
+  }
+
   void _clearFocus() {
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
   Future<void> _handleImagePressed() async {
+    final controller = _controller;
+    if (controller == null) {
+      return;
+    }
     _clearFocus();
     final pickedFiles =
         await (widget._pickImageFiles?.call() ?? _pickImageFiles());
@@ -120,7 +208,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       return;
     }
 
-    _controller.addSelectedImages(
+    controller.addSelectedImages(
       pickedFiles
           .map(
             (file) => CreateEventSelectedImage(
@@ -149,26 +237,34 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   Future<void> _pickDate() async {
+    final controller = _controller;
+    if (controller == null) {
+      return;
+    }
     _clearFocus();
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
       firstDate: now,
       lastDate: DateTime(now.year + 2),
-      initialDate: _controller.state.selectedDate ?? now,
+      initialDate: controller.state.selectedDate ?? now,
     );
 
     if (mounted && picked != null) {
-      _controller.updateDate(picked);
+      controller.updateDate(picked);
     }
   }
 
   Future<void> _pickTime() async {
+    final controller = _controller;
+    if (controller == null) {
+      return;
+    }
     _clearFocus();
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(
-        _controller.state.selectedTime ?? DateTime.now(),
+        controller.state.selectedTime ?? DateTime.now(),
       ),
     );
 
@@ -181,11 +277,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         picked.hour,
         picked.minute,
       );
-      _controller.updateTime(time);
+      controller.updateTime(time);
     }
   }
 
   Future<void> _handleLocationPressed() async {
+    final controller = _controller;
+    if (controller == null) {
+      return;
+    }
     _clearFocus();
     final l10n = AppLocalizations.of(context);
     final action = await showModalBottomSheet<ExploreAreaSelectionAction>(
@@ -229,21 +329,29 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     if (mounted && _locationController.selection != null) {
       final selection = _locationController.selection!;
-      _controller.updateLocation(selection.label, selection.coordinates);
+      controller.updateLocation(selection.label, selection.coordinates);
     } else if (mounted &&
         result != null &&
         result.status != CreateEventLocationLookupStatus.success) {
-      _controller.clearLocation();
+      controller.clearLocation();
       FeedbackService.showError(FeedbackMessage.networkError);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+    if (controller == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
-    final state = _controller.state;
+    final state = controller.state;
+    final sessionController = AuthScope.of(context);
+    final profile = sessionController.profile;
+    final canCreatePublicEvents =
+        profile?.organizer == true || profile?.admin == true;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -267,8 +375,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     const SizedBox(height: 12),
                     _SelectedImagesList(
                       images: state.selectedImages,
-                      onRemove: _controller.removeSelectedImageAt,
-                      onReorder: _controller.reorderSelectedImages,
+                      onRemove: controller.removeSelectedImageAt,
+                      onReorder: controller.reorderSelectedImages,
                     ),
                   ],
                   const SizedBox(height: 16),
@@ -277,13 +385,22 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     descriptionController: _descriptionController,
                     titleError: state.titleError,
                     descriptionError: state.descriptionError,
-                    onTitleChanged: _controller.updateTitle,
-                    onDescriptionChanged: _controller.updateDescription,
+                    onTitleChanged: controller.updateTitle,
+                    onDescriptionChanged: controller.updateDescription,
                   ),
                   const SizedBox(height: 16),
                   CreateEventCategoriesSection(
                     state: state,
-                    onCategoryToggled: _controller.toggleCategory,
+                    onCategoryToggled: controller.toggleCategory,
+                  ),
+                  const SizedBox(height: 16),
+                  _CreateEventGroupsSection(
+                    isLoading: _isLoadingGroups,
+                    groups: _availableGroups,
+                    selectedGroups: state.selectedGroups,
+                    groupsError: state.groupsError,
+                    canCreatePublicEvents: canCreatePublicEvents,
+                    onGroupToggled: controller.toggleGroup,
                   ),
                   const SizedBox(height: 16),
                   CreateEventDateTimeSection(
@@ -301,13 +418,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   CreateEventTicketingSection(
                     state: state,
                     seatsController: _seatsController,
-                    onTicketUrlChanged: _controller.updateTicketUrl,
-                    onSlotLimitChanged: _controller.updateSlotLimit,
+                    onTicketUrlChanged: controller.updateTicketUrl,
+                    onSlotLimitChanged: controller.updateSlotLimit,
                   ),
                   const SizedBox(height: 16),
                   CreateEventStatusSection(
                     state: state,
-                    onStatusChanged: _controller.updateStatus,
+                    onStatusChanged: controller.updateStatus,
                   ),
                 ],
               ),
@@ -329,7 +446,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   !widget.canSubmit ||
                       state.status == CreateEventFormStatus.submitting
                   ? null
-                  : () => _controller.submit(),
+                  : () => controller.submit(),
               child: state.status == CreateEventFormStatus.submitting
                   ? SizedBox(
                       height: 20,
@@ -368,6 +485,86 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         onPressed: () => Navigator.of(context).maybePop(),
         icon: const Icon(Icons.close_rounded),
       ),
+    );
+  }
+}
+
+class _CreateEventGroupsSection extends StatelessWidget {
+  const _CreateEventGroupsSection({
+    required this.isLoading,
+    required this.groups,
+    required this.selectedGroups,
+    required this.groupsError,
+    required this.canCreatePublicEvents,
+    required this.onGroupToggled,
+  });
+
+  final bool isLoading;
+  final List<Group> groups;
+  final List<Group> selectedGroups;
+  final String? groupsError;
+  final bool canCreatePublicEvents;
+  final ValueChanged<Group> onGroupToggled;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CreateEventFieldLabel(text: l10n.groupsEventGroupsLabel),
+        const SizedBox(height: 8),
+        Text(
+          canCreatePublicEvents
+              ? l10n.groupsEventGroupsOptionalHint
+              : l10n.groupsEventGroupsRequiredHint,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: scheme.onSurface.withValues(alpha: 0.72),
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (groups.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Text(
+              l10n.groupsEventGroupsEmpty,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurface.withValues(alpha: 0.72),
+              ),
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final group in groups)
+                FilterChip(
+                  key: Key('create-event-group-${group.id}'),
+                  label: Text(group.name),
+                  selected: selectedGroups.any((item) => item.id == group.id),
+                  onSelected: (_) => onGroupToggled(group),
+                ),
+            ],
+          ),
+        if (groupsError != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            groupsError!,
+            style: theme.textTheme.bodySmall?.copyWith(color: scheme.error),
+          ),
+        ],
+      ],
     );
   }
 }
