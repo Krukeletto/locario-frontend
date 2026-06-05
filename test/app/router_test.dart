@@ -82,10 +82,7 @@ void main() {
       router.go('/hub/saved');
       await tester.pumpAndSettle();
 
-      expect(
-        router.routerDelegate.currentConfiguration.uri.path,
-        '/hub/saved',
-      );
+      expect(router.routerDelegate.currentConfiguration.uri.path, '/hub/saved');
       expect(find.byType(SavedScreen), findsOneWidget);
     });
 

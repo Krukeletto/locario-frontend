@@ -1636,7 +1636,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get savedTitle => 'Zapisane';
 
   @override
-  String get savedSubtitle => 'Miejsca, eventy i listy.';
+  String get savedSubtitle => 'Wydarzenia i filtry.';
 
   @override
   String get savedSaveAction => 'Zapisz wydarzenie';

@@ -649,7 +649,7 @@
   "profileOrganizerVerificationRejectedTitle": "Verification rejected",
   "profileOrganizerVerificationRejectedSubtitle": "Your request was not approved.",
   "savedTitle": "Saved",
-  "savedSubtitle": "Places, events and lists.",
+  "savedSubtitle": "Events and filters.",
   "savedSaveAction": "Save event",
   "savedRemoveAction": "Remove saved",
   "savedSaveActionTooltip": "Save event",

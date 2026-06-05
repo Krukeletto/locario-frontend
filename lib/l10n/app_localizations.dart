@@ -3017,7 +3017,7 @@ abstract class AppLocalizations {
   /// No description provided for @savedSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Places, events and lists.'**
+  /// **'Events and filters.'**
   String get savedSubtitle;
 
   /// No description provided for @savedSaveAction.

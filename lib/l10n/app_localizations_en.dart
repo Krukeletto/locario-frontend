@@ -1622,7 +1622,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get savedTitle => 'Saved';
 
   @override
-  String get savedSubtitle => 'Places, events and lists.';
+  String get savedSubtitle => 'Events and filters.';
 
   @override
   String get savedSaveAction => 'Save event';
