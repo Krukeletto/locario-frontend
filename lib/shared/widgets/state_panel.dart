@@ -111,7 +111,7 @@ class StatePanel extends StatelessWidget {
               ),
             ),
             if (custom != null) ...[const SizedBox(height: 16), custom],
-            ?trail,
+            if (trail != null) ...[trail],
           ],
         ),
       ),

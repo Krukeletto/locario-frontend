@@ -88,5 +88,23 @@ void main() {
       ).hasOrganizerReviewAccess,
       isTrue,
     );
+
+    expect(
+      UserProfile(
+        id: '3',
+        username: 'u',
+        email: 'u@example.com',
+        hasPassword: true,
+        avatarUrl: null,
+        bio: null,
+        websiteUrl: null,
+        instagramUrl: null,
+        facebookUrl: null,
+        createdAt: DateTime.utc(2026, 5, 1),
+        eventRegistrations: const [],
+        role: 'admin',
+      ).hasOrganizerReviewAccess,
+      isTrue,
+    );
   });
 }

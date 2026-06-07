@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
@@ -7,6 +8,7 @@ import '../../shared/auth/auth_scope.dart';
 import '../../shared/events/event_repository.dart';
 import '../../shared/groups/group_models.dart';
 import '../../shared/groups/group_repository.dart';
+import '../../shared/widgets/state_panel.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
   const GroupDetailsScreen({
@@ -29,24 +31,39 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   late final GroupRepository _groupRepository;
   late final EventRepository _eventRepository;
   final TextEditingController _postController = TextEditingController();
+  final ScrollController _feedScrollController = ScrollController();
 
   Group? _group;
+  Object? _groupError;
+  bool _groupLoading = true;
   List<GroupMember> _members = const [];
+  bool _membersLoading = true;
+  Object? _membersError;
   List<GroupMember> _joinRequests = const [];
+  bool _joinRequestsLoading = true;
+  Object? _joinRequestsError;
   List<GroupFeedItem> _feed = const [];
+  bool _feedLoading = true;
+  Object? _feedError;
+  bool _feedHasMore = true;
+  bool _isLoadingMoreFeed = false;
+  int _feedPage = 0;
   List<ExploreEvent> _events = const [];
+  bool _eventsLoading = true;
+  Object? _eventsError;
   List<GroupReport> _reports = const [];
+  bool _reportsLoading = true;
+  Object? _reportsError;
 
-  bool _isLoading = true;
   bool _isRefreshing = false;
   bool _isSubmittingPost = false;
-  Object? _error;
 
   @override
   void initState() {
     super.initState();
     _groupRepository = widget._groupRepository ?? HttpGroupRepository();
     _eventRepository = widget._eventRepository ?? HttpEventRepository();
+    _feedScrollController.addListener(_onFeedScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _load();
@@ -56,6 +73,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
 
   @override
   void dispose() {
+    _feedScrollController.removeListener(_onFeedScroll);
+    _feedScrollController.dispose();
     _postController.dispose();
     super.dispose();
   }
@@ -71,9 +90,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
       if (refreshOnly) {
         _isRefreshing = true;
       } else {
-        _isLoading = true;
+        _groupLoading = true;
+        _groupError = null;
       }
-      _error = null;
     });
 
     try {
@@ -88,73 +107,315 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         session.profile?.admin == true,
       );
 
-      final membersFuture = _groupRepository.fetchMembers(
-        widget.groupId,
-        accessToken: tokens?.accessToken,
-        tokenType: tokens?.tokenType ?? 'Bearer',
-      );
-      final feedFuture = _groupRepository.fetchFeed(
-        widget.groupId,
-        accessToken: tokens?.accessToken,
-        tokenType: tokens?.tokenType ?? 'Bearer',
-      );
-      final eventsFuture = _groupRepository.fetchGroupEvents(
-        widget.groupId,
-        accessToken: tokens?.accessToken,
-        tokenType: tokens?.tokenType ?? 'Bearer',
-      );
-      final joinRequestsFuture = canModerate && tokens != null
-          ? _groupRepository.fetchJoinRequests(
-              widget.groupId,
-              accessToken: tokens.accessToken,
-              tokenType: tokens.tokenType,
-            )
-          : Future.value(const <GroupMember>[]);
-      final reportsFuture = canModerate && tokens != null
-          ? _groupRepository.fetchReports(
-              widget.groupId,
-              accessToken: tokens.accessToken,
-              tokenType: tokens.tokenType,
-            )
-          : Future.value(const <GroupReport>[]);
-
-      final results = await Future.wait([
-        membersFuture,
-        feedFuture,
-        eventsFuture,
-        joinRequestsFuture,
-        reportsFuture,
-      ]);
-
       if (!mounted) {
         return;
       }
       setState(() {
         _group = group;
-        _members = results[0] as List<GroupMember>;
-        _feed = results[1] as List<GroupFeedItem>;
-        _events = results[2] as List<ExploreEvent>;
-        _joinRequests = results[3] as List<GroupMember>;
-        _reports = results[4] as List<GroupReport>;
-        _isLoading = false;
+        _groupLoading = false;
+        _groupError = null;
+      });
+      await Future.wait([
+        _loadMembers(refreshOnly: refreshOnly),
+        _loadFeed(refreshOnly: refreshOnly),
+        _loadEvents(refreshOnly: refreshOnly),
+        _loadJoinRequests(refreshOnly: refreshOnly && canModerate),
+        _loadReports(refreshOnly: refreshOnly && canModerate),
+      ]);
+      if (refreshOnly && mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _groupError = error;
+        _groupLoading = false;
         _isRefreshing = false;
+      });
+    }
+  }
+
+  Future<void> _loadMembers({bool refreshOnly = false}) async {
+    final session = AuthScope.of(context);
+    final tokens = session.tokens;
+    final group = _group;
+    if (group == null) {
+      return;
+    }
+
+    if (!refreshOnly) {
+      setState(() {
+        _membersLoading = true;
+        _membersError = null;
+      });
+    }
+
+    try {
+      final members = await _groupRepository.fetchMembers(
+        group.id,
+        accessToken: tokens?.accessToken,
+        tokenType: tokens?.tokenType ?? 'Bearer',
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _members = members;
+        _membersLoading = false;
+        _membersError = null;
       });
     } catch (error) {
       if (!mounted) {
         return;
       }
       setState(() {
-        _error = error;
-        _isLoading = false;
-        _isRefreshing = false;
+        _membersError = error;
+        _membersLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadJoinRequests({bool refreshOnly = false}) async {
+    final session = AuthScope.of(context);
+    final tokens = session.tokens;
+    final group = _group;
+    if (group == null || tokens == null) {
+      return;
+    }
+    final canModerate = _canModerate(
+      group,
+      session.profile?.id,
+      session.profile?.admin == true,
+    );
+    if (!canModerate) {
+      return;
+    }
+
+    if (!refreshOnly) {
+      setState(() {
+        _joinRequestsLoading = true;
+        _joinRequestsError = null;
+      });
+    }
+
+    try {
+      final joinRequests = await _groupRepository.fetchJoinRequests(
+        group.id,
+        accessToken: tokens.accessToken,
+        tokenType: tokens.tokenType,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _joinRequests = joinRequests;
+        _joinRequestsLoading = false;
+        _joinRequestsError = null;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _joinRequestsError = error;
+        _joinRequestsLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadFeed({bool refreshOnly = false}) async {
+    final session = AuthScope.of(context);
+    final tokens = session.tokens;
+    final group = _group;
+    if (group == null) {
+      return;
+    }
+
+    if (!refreshOnly) {
+      setState(() {
+        _feedLoading = true;
+        _feed = const [];
+        _feedPage = 0;
+        _feedHasMore = true;
+        _feedError = null;
+      });
+    }
+
+    try {
+      final feed = await _groupRepository.fetchFeed(
+        group.id,
+        accessToken: tokens?.accessToken,
+        tokenType: tokens?.tokenType ?? 'Bearer',
+        page: 0,
+        size: 20,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _feed = feed;
+        _feedPage = 1;
+        _feedHasMore = feed.length == 20;
+        _feedLoading = false;
+        _feedError = null;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _feedError = error;
+        _feedLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadMoreFeed() async {
+    final session = AuthScope.of(context);
+    final tokens = session.tokens;
+    final group = _group;
+    if (group == null || _isLoadingMoreFeed || !_feedHasMore) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingMoreFeed = true;
+    });
+
+    try {
+      final nextFeed = await _groupRepository.fetchFeed(
+        group.id,
+        accessToken: tokens?.accessToken,
+        tokenType: tokens?.tokenType ?? 'Bearer',
+        page: _feedPage,
+        size: 20,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _feed = [..._feed, ...nextFeed];
+        _feedPage += 1;
+        _feedHasMore = nextFeed.length == 20;
+        _isLoadingMoreFeed = false;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isLoadingMoreFeed = false;
+        _feedError = error;
+      });
+    }
+  }
+
+  Future<void> _loadEvents({bool refreshOnly = false}) async {
+    final session = AuthScope.of(context);
+    final tokens = session.tokens;
+    final group = _group;
+    if (group == null) {
+      return;
+    }
+
+    if (!refreshOnly) {
+      setState(() {
+        _eventsLoading = true;
+        _eventsError = null;
+      });
+    }
+
+    try {
+      final events = await _groupRepository.fetchGroupEvents(
+        group.id,
+        accessToken: tokens?.accessToken,
+        tokenType: tokens?.tokenType ?? 'Bearer',
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _events = events;
+        _eventsLoading = false;
+        _eventsError = null;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _eventsError = error;
+        _eventsLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadReports({bool refreshOnly = false}) async {
+    final session = AuthScope.of(context);
+    final tokens = session.tokens;
+    final group = _group;
+    if (group == null || tokens == null) {
+      return;
+    }
+    final canModerate = _canModerate(
+      group,
+      session.profile?.id,
+      session.profile?.admin == true,
+    );
+    if (!canModerate) {
+      return;
+    }
+
+    if (!refreshOnly) {
+      setState(() {
+        _reportsLoading = true;
+        _reportsError = null;
+      });
+    }
+
+    try {
+      final reports = await _groupRepository.fetchReports(
+        group.id,
+        accessToken: tokens.accessToken,
+        tokenType: tokens.tokenType,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _reports = reports;
+        _reportsLoading = false;
+        _reportsError = null;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _reportsError = error;
+        _reportsLoading = false;
       });
     }
   }
 
   bool _canModerate(Group group, String? userId, bool isGlobalAdmin) {
-    return isGlobalAdmin ||
-        group.ownerUserId == userId ||
+    if (isGlobalAdmin) {
+      return true;
+    }
+    return group.ownerUserId == userId ||
         group.currentUserRole == GroupRole.admin;
+  }
+
+  bool _canDeleteGroup(Group group, String? userId) {
+    return group.ownerUserId == userId;
+  }
+
+  bool _canTransferOwnership(Group group, String? userId) {
+    return group.ownerUserId == userId;
   }
 
   bool _canCreateGroupsEvents(Group group) {
@@ -546,6 +807,18 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     }
   }
 
+  void _onFeedScroll() {
+    if (!_feedScrollController.hasClients ||
+        !_feedHasMore ||
+        _isLoadingMoreFeed) {
+      return;
+    }
+    if (_feedScrollController.position.pixels >=
+        _feedScrollController.position.maxScrollExtent - 200) {
+      _loadMoreFeed();
+    }
+  }
+
   Future<void> _handleUnlinkEvent(ExploreEvent event) async {
     final group = _group;
     final session = AuthScope.of(context);
@@ -711,7 +984,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
 
-    if (_isLoading) {
+    if (_groupLoading) {
       return Scaffold(
         backgroundColor: scheme.surface,
         appBar: AppBar(
@@ -722,7 +995,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
       );
     }
 
-    if (_error != null || _group == null) {
+    if (_groupError != null || _group == null) {
       return Scaffold(
         backgroundColor: scheme.surface,
         appBar: AppBar(
@@ -732,7 +1005,17 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Text(l10n.groupsErrorSubtitle, textAlign: TextAlign.center),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(l10n.groupsErrorSubtitle, textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: () => _load(),
+                  child: Text(l10n.exploreRetryButton),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -747,8 +1030,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
       profile?.id,
       profile?.admin == true,
     );
+    final canDeleteGroup = _canDeleteGroup(group, profile?.id);
+    final canTransferOwnership = _canTransferOwnership(group, profile?.id);
     final canCreateEvents = _canCreateGroupsEvents(group);
-    const canLinkEvents = false;
+    final canLinkEvents = canCreateEvents;
     final tabCount = canModerate ? 4 : 3;
 
     return DefaultTabController(
@@ -809,7 +1094,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                     value: 'edit',
                     child: Text(l10n.groupsEditAction),
                   ),
-                if (canModerate)
+                if (canDeleteGroup)
                   PopupMenuItem<String>(
                     value: 'delete',
                     child: Text(l10n.groupsDeleteAction),
@@ -833,16 +1118,21 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
               onJoinOrLeave: _handleJoinOrLeave,
               canJoinOrLeave: tokens != null && !group.isBanned,
             ),
+            if (_hasVisualMetadata(group)) _GroupVisualsCard(group: group),
             if (_isRefreshing) const LinearProgressIndicator(),
             Expanded(
               child: TabBarView(
                 children: [
                   _FeedTab(
-                    group: group,
                     canPost: group.isMember,
                     currentUserId: profile?.id,
                     isSubmittingPost: _isSubmittingPost,
+                    isLoading: _feedLoading,
+                    error: _feedError,
+                    isLoadingMore: _isLoadingMoreFeed,
+                    scrollController: _feedScrollController,
                     items: _feed,
+                    onRetry: () => _loadFeed(),
                     onCreatePost: () => _handleCreatePost(),
                     onEditPost: (item) => _handleCreatePost(
                       editingPost: GroupPost(
@@ -900,19 +1190,29 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                   ),
                   _MembersTab(
                     members: _members,
+                    isLoadingMembers: _membersLoading,
+                    membersError: _membersError,
                     joinRequests: _joinRequests,
+                    isLoadingJoinRequests: _joinRequestsLoading,
+                    joinRequestsError: _joinRequestsError,
                     canModerate: canModerate,
                     ownerUserId: group.ownerUserId,
                     currentUserId: profile?.id,
+                    onRetryMembers: () => _loadMembers(),
+                    onRetryJoinRequests: () => _loadJoinRequests(),
                     onApproveRequest: _handleApproveRequest,
                     onRejectRequest: _handleRejectRequest,
                     onMemberAction: _handleMemberAction,
+                    canTransferOwnership: canTransferOwnership,
                   ),
                   _EventsTab(
                     events: _events,
+                    isLoading: _eventsLoading,
+                    error: _eventsError,
                     canCreateEvents: canCreateEvents,
                     canLinkEvents: canLinkEvents,
                     canUnlinkEvents: canModerate,
+                    onRetry: () => _loadEvents(),
                     onCreateEvent: _handleCreateEventForGroup,
                     onLinkEvent: _handleLinkExistingEvent,
                     onUnlinkEvent: _handleUnlinkEvent,
@@ -942,7 +1242,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                   ),
                   _ManageTab(
                     canModerate: canModerate,
+                    isLoading: _reportsLoading,
+                    error: _reportsError,
                     reports: _reports,
+                    onRetry: () => _loadReports(),
                     onResolveReport: (report) async {
                       if (tokens == null) {
                         return;
@@ -1081,11 +1384,15 @@ class _HeaderChip extends StatelessWidget {
 
 class _FeedTab extends StatelessWidget {
   const _FeedTab({
-    required this.group,
     required this.canPost,
     required this.currentUserId,
     required this.isSubmittingPost,
+    required this.isLoading,
+    required this.error,
+    required this.isLoadingMore,
+    required this.scrollController,
     required this.items,
+    required this.onRetry,
     required this.onCreatePost,
     required this.onEditPost,
     required this.onDeletePost,
@@ -1095,11 +1402,15 @@ class _FeedTab extends StatelessWidget {
     required this.onReportEvent,
   });
 
-  final Group group;
   final bool canPost;
   final String? currentUserId;
   final bool isSubmittingPost;
+  final bool isLoading;
+  final Object? error;
+  final bool isLoadingMore;
+  final ScrollController scrollController;
   final List<GroupFeedItem> items;
+  final Future<void> Function() onRetry;
   final VoidCallback onCreatePost;
   final ValueChanged<GroupFeedItem> onEditPost;
   final ValueChanged<GroupFeedItem> onDeletePost;
@@ -1112,7 +1423,24 @@ class _FeedTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
+    if (isLoading && items.isEmpty) {
+      return StatePanel.loading(
+        title: l10n.groupsTabFeed,
+        subtitle: l10n.groupsLoadingSubtitle,
+      );
+    }
+
+    if (error != null && items.isEmpty) {
+      return StatePanel.error(
+        title: l10n.groupsTabFeed,
+        subtitle: l10n.groupsErrorSubtitle,
+        retryLabel: l10n.exploreRetryButton,
+        onRetry: onRetry,
+      );
+    }
+
     return ListView(
+      controller: scrollController,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       children: [
         if (canPost) ...[
@@ -1123,6 +1451,16 @@ class _FeedTab extends StatelessWidget {
           ),
           const SizedBox(height: 16),
         ],
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _SectionNotice(
+              title: l10n.groupsTabFeed,
+              subtitle: l10n.groupsActionFailed,
+              actionLabel: l10n.exploreRetryButton,
+              onAction: onRetry,
+            ),
+          ),
         if (items.isEmpty)
           _InfoCard(
             title: l10n.groupsFeedEmptyTitle,
@@ -1143,6 +1481,11 @@ class _FeedTab extends StatelessWidget {
                 onReportEvent: onReportEvent,
               ),
             ),
+          ),
+        if (isLoadingMore)
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Center(child: CircularProgressIndicator()),
           ),
       ],
     );
@@ -1282,6 +1625,10 @@ class _FeedItemCard extends StatelessWidget {
               ),
             ),
           ],
+          if (item.mediaUrls.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _FeedMediaGallery(mediaUrls: item.mediaUrls),
+          ],
           if (item.type == GroupFeedItemType.event && item.eventId != null) ...[
             const SizedBox(height: 16),
             FilledButton.tonal(
@@ -1298,31 +1645,93 @@ class _FeedItemCard extends StatelessWidget {
 class _MembersTab extends StatelessWidget {
   const _MembersTab({
     required this.members,
+    required this.isLoadingMembers,
+    required this.membersError,
     required this.joinRequests,
+    required this.isLoadingJoinRequests,
+    required this.joinRequestsError,
     required this.canModerate,
     required this.ownerUserId,
     required this.currentUserId,
+    required this.onRetryMembers,
+    required this.onRetryJoinRequests,
     required this.onApproveRequest,
     required this.onRejectRequest,
     required this.onMemberAction,
+    required this.canTransferOwnership,
   });
 
   final List<GroupMember> members;
+  final bool isLoadingMembers;
+  final Object? membersError;
   final List<GroupMember> joinRequests;
+  final bool isLoadingJoinRequests;
+  final Object? joinRequestsError;
   final bool canModerate;
   final String? ownerUserId;
   final String? currentUserId;
+  final Future<void> Function() onRetryMembers;
+  final Future<void> Function() onRetryJoinRequests;
   final ValueChanged<GroupMember> onApproveRequest;
   final ValueChanged<GroupMember> onRejectRequest;
   final Future<void> Function(GroupMember member, _MemberAction action)
   onMemberAction;
+  final bool canTransferOwnership;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+
+    final isInitialLoading =
+        (isLoadingMembers && members.isEmpty) ||
+        (canModerate &&
+            isLoadingJoinRequests &&
+            joinRequests.isEmpty &&
+            members.isEmpty);
+    if (isInitialLoading) {
+      return StatePanel.loading(
+        title: l10n.groupsTabMembers,
+        subtitle: l10n.groupsLoadingSubtitle,
+      );
+    }
+
+    if (membersError != null && members.isEmpty) {
+      return StatePanel.error(
+        title: l10n.groupsTabMembers,
+        subtitle: l10n.groupsErrorSubtitle,
+        retryLabel: l10n.exploreRetryButton,
+        onRetry: onRetryMembers,
+      );
+    }
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       children: [
+        if (canModerate && joinRequestsError != null && joinRequests.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _SectionNotice(
+              title: l10n.groupsJoinRequestsTitle,
+              subtitle: l10n.groupsActionFailed,
+              actionLabel: l10n.exploreRetryButton,
+              onAction: onRetryJoinRequests,
+            ),
+          ),
+        if (canModerate && isLoadingJoinRequests && joinRequests.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        if (canModerate && joinRequestsError != null && joinRequests.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: StatePanel.error(
+              title: l10n.groupsJoinRequestsTitle,
+              subtitle: l10n.groupsErrorSubtitle,
+              retryLabel: l10n.exploreRetryButton,
+              onRetry: onRetryJoinRequests,
+            ),
+          ),
         if (canModerate && joinRequests.isNotEmpty) ...[
           Text(
             l10n.groupsJoinRequestsTitle,
@@ -1343,6 +1752,16 @@ class _MembersTab extends StatelessWidget {
           ),
           const SizedBox(height: 16),
         ],
+        if (membersError != null && members.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _SectionNotice(
+              title: l10n.groupsTabMembers,
+              subtitle: l10n.groupsActionFailed,
+              actionLabel: l10n.exploreRetryButton,
+              onAction: onRetryMembers,
+            ),
+          ),
         if (members.isEmpty)
           _InfoCard(
             title: l10n.groupsMembersEmptyTitle,
@@ -1357,6 +1776,7 @@ class _MembersTab extends StatelessWidget {
                 isOwner: ownerUserId == member.userId,
                 isCurrentUser: currentUserId == member.userId,
                 canModerate: canModerate,
+                canTransferOwnership: canTransferOwnership,
                 onActionSelected: (action) => onMemberAction(member, action),
               ),
             ),
@@ -1417,6 +1837,7 @@ class _MemberCard extends StatelessWidget {
     required this.isOwner,
     required this.isCurrentUser,
     required this.canModerate,
+    required this.canTransferOwnership,
     required this.onActionSelected,
   });
 
@@ -1424,6 +1845,7 @@ class _MemberCard extends StatelessWidget {
   final bool isOwner;
   final bool isCurrentUser;
   final bool canModerate;
+  final bool canTransferOwnership;
   final ValueChanged<_MemberAction> onActionSelected;
 
   @override
@@ -1490,10 +1912,11 @@ class _MemberCard extends StatelessWidget {
                     value: _MemberAction.makeMember,
                     child: Text(l10n.groupsMakeMemberAction),
                   ),
-                PopupMenuItem(
-                  value: _MemberAction.transferOwnership,
-                  child: Text(l10n.groupsTransferOwnershipAction),
-                ),
+                if (canTransferOwnership)
+                  PopupMenuItem(
+                    value: _MemberAction.transferOwnership,
+                    child: Text(l10n.groupsTransferOwnershipAction),
+                  ),
                 if (member.status == GroupMembershipStatus.banned)
                   PopupMenuItem(
                     value: _MemberAction.unban,
@@ -1520,9 +1943,12 @@ class _MemberCard extends StatelessWidget {
 class _EventsTab extends StatelessWidget {
   const _EventsTab({
     required this.events,
+    required this.isLoading,
+    required this.error,
     required this.canCreateEvents,
     required this.canLinkEvents,
     required this.canUnlinkEvents,
+    required this.onRetry,
     required this.onCreateEvent,
     required this.onLinkEvent,
     required this.onUnlinkEvent,
@@ -1531,9 +1957,12 @@ class _EventsTab extends StatelessWidget {
   });
 
   final List<ExploreEvent> events;
+  final bool isLoading;
+  final Object? error;
   final bool canCreateEvents;
   final bool canLinkEvents;
   final bool canUnlinkEvents;
+  final Future<void> Function() onRetry;
   final VoidCallback onCreateEvent;
   final VoidCallback onLinkEvent;
   final ValueChanged<ExploreEvent> onUnlinkEvent;
@@ -1543,6 +1972,23 @@ class _EventsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+
+    if (isLoading && events.isEmpty) {
+      return StatePanel.loading(
+        title: l10n.groupsTabEvents,
+        subtitle: l10n.groupsLoadingSubtitle,
+      );
+    }
+
+    if (error != null && events.isEmpty) {
+      return StatePanel.error(
+        title: l10n.groupsTabEvents,
+        subtitle: l10n.groupsErrorSubtitle,
+        retryLabel: l10n.exploreRetryButton,
+        onRetry: onRetry,
+      );
+    }
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       children: [
@@ -1562,6 +2008,16 @@ class _EventsTab extends StatelessWidget {
           ),
           const SizedBox(height: 16),
         ],
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _SectionNotice(
+              title: l10n.groupsTabEvents,
+              subtitle: l10n.groupsActionFailed,
+              actionLabel: l10n.exploreRetryButton,
+              onAction: onRetry,
+            ),
+          ),
         if (events.isEmpty)
           _InfoCard(
             title: l10n.groupsEventsEmptyTitle,
@@ -1671,13 +2127,19 @@ class _EventCard extends StatelessWidget {
 class _ManageTab extends StatelessWidget {
   const _ManageTab({
     required this.canModerate,
+    required this.isLoading,
+    required this.error,
     required this.reports,
+    required this.onRetry,
     required this.onResolveReport,
     required this.onRejectReport,
   });
 
   final bool canModerate;
+  final bool isLoading;
+  final Object? error;
   final List<GroupReport> reports;
+  final Future<void> Function() onRetry;
   final ValueChanged<GroupReport> onResolveReport;
   final ValueChanged<GroupReport> onRejectReport;
 
@@ -1696,9 +2158,35 @@ class _ManageTab extends StatelessWidget {
       );
     }
 
+    if (isLoading && reports.isEmpty) {
+      return StatePanel.loading(
+        title: l10n.groupsTabManage,
+        subtitle: l10n.groupsLoadingSubtitle,
+      );
+    }
+
+    if (error != null && reports.isEmpty) {
+      return StatePanel.error(
+        title: l10n.groupsTabManage,
+        subtitle: l10n.groupsErrorSubtitle,
+        retryLabel: l10n.exploreRetryButton,
+        onRetry: onRetry,
+      );
+    }
+
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _SectionNotice(
+              title: l10n.groupsTabManage,
+              subtitle: l10n.groupsActionFailed,
+              actionLabel: l10n.exploreRetryButton,
+              onAction: onRetry,
+            ),
+          ),
         if (reports.isEmpty)
           _InfoCard(
             title: l10n.groupsReportsEmptyTitle,
@@ -1815,6 +2303,279 @@ class _InfoCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.72),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+bool _hasVisualMetadata(Group group) {
+  return (group.avatarUrl ?? '').isNotEmpty ||
+      (group.iconUrl ?? '').isNotEmpty ||
+      (group.mapPinIconUrl ?? '').isNotEmpty ||
+      (group.mapPinStyle ?? '').isNotEmpty;
+}
+
+class _GroupVisualsCard extends StatelessWidget {
+  const _GroupVisualsCard({required this.group});
+
+  final Group group;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+
+    final fields = <Widget>[
+      if ((group.avatarUrl ?? '').isNotEmpty)
+        _VisualMetadataRow(
+          label: l10n.groupsFieldAvatarUrl,
+          value: group.avatarUrl!,
+          imageUrl: group.avatarUrl,
+          fallbackIcon: Icons.person_rounded,
+        ),
+      if ((group.iconUrl ?? '').isNotEmpty)
+        _VisualMetadataRow(
+          label: l10n.groupsFieldIconUrl,
+          value: group.iconUrl!,
+          imageUrl: group.iconUrl,
+          fallbackIcon: Icons.emoji_events_outlined,
+        ),
+      if ((group.mapPinIconUrl ?? '').isNotEmpty)
+        _VisualMetadataRow(
+          label: l10n.groupsFieldMapPinIconUrl,
+          value: group.mapPinIconUrl!,
+          imageUrl: group.mapPinIconUrl,
+          fallbackIcon: Icons.place_outlined,
+        ),
+      if ((group.mapPinStyle ?? '').isNotEmpty)
+        _VisualMetadataRow(
+          label: l10n.groupsFieldMapPinStyle,
+          value: group.mapPinStyle!,
+          fallbackIcon: Icons.tune_rounded,
+        ),
+    ];
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.groupsAdvancedTitle,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: scheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.groupsAdvancedSubtitle,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurface.withValues(alpha: 0.68),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...fields
+              .expand((field) => [field, const SizedBox(height: 12)])
+              .toList()
+            ..removeLast(),
+        ],
+      ),
+    );
+  }
+}
+
+class _VisualMetadataRow extends StatelessWidget {
+  const _VisualMetadataRow({
+    required this.label,
+    required this.value,
+    required this.fallbackIcon,
+    this.imageUrl,
+  });
+
+  final String label;
+  final String value;
+  final IconData fallbackIcon;
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: imageUrl != null
+              ? CachedNetworkImage(
+                  imageUrl: imageUrl!,
+                  width: 56,
+                  height: 56,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    width: 56,
+                    height: 56,
+                    color: scheme.surfaceContainerHighest,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    width: 56,
+                    height: 56,
+                    color: scheme.surfaceContainerHighest,
+                    child: Icon(fallbackIcon, color: scheme.primary),
+                  ),
+                )
+              : Container(
+                  width: 56,
+                  height: 56,
+                  color: scheme.surfaceContainerHighest,
+                  child: Icon(fallbackIcon, color: scheme.primary),
+                ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurface.withValues(alpha: 0.68),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FeedMediaGallery extends StatelessWidget {
+  const _FeedMediaGallery({required this.mediaUrls});
+
+  final List<String> mediaUrls;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
+        for (final mediaUrl in mediaUrls.take(3))
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: SizedBox(
+                width: double.infinity,
+                height: 180,
+                child: CachedNetworkImage(
+                  imageUrl: mediaUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: scheme.surfaceContainerHighest,
+                    child: Center(
+                      child: CircularProgressIndicator(color: scheme.primary),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: scheme.surfaceContainerHighest,
+                    child: Icon(
+                      Icons.broken_image_outlined,
+                      color: scheme.primary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _SectionNotice extends StatelessWidget {
+  const _SectionNotice({
+    required this.title,
+    required this.subtitle,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  final String title;
+  final String subtitle;
+  final String actionLabel;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded, color: scheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.72),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                FilledButton.tonal(
+                  onPressed: onAction,
+                  child: Text(actionLabel),
+                ),
+              ],
             ),
           ),
         ],
