@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
+import 'package:locario/shared/events/event_detail_scope.dart';
+import 'package:locario/shared/reviews/review_scope.dart';
 
-import '../../shared/auth/auth_scope.dart';
-import '../../shared/events/event_repository.dart';
 import '../../shared/reviews/review_formatters.dart';
 import '../../shared/reviews/review_models.dart';
-import '../../shared/reviews/review_repository.dart';
 import '../../shared/services/feedback_service.dart';
 import '../../shared/widgets/state_panel.dart';
 import '../events/joined_events_scope.dart';
@@ -13,53 +12,21 @@ import '../explore/models.dart';
 import '../events/widgets/info/event_info_card.dart';
 
 class EventReviewScreen extends StatefulWidget {
-  const EventReviewScreen({
-    super.key,
-    required this.eventId,
-    EventRepository? eventRepository,
-    ReviewRepository? reviewRepository,
-  }) : _eventRepository = eventRepository,
-       _reviewRepository = reviewRepository;
+  const EventReviewScreen({super.key, required this.eventId});
 
   final String eventId;
-  final EventRepository? _eventRepository;
-  final ReviewRepository? _reviewRepository;
 
   @override
   State<EventReviewScreen> createState() => _EventReviewScreenState();
 }
 
 class _EventReviewScreenState extends State<EventReviewScreen> {
-  late final EventRepository _eventRepository;
-  late final ReviewRepository _reviewRepository;
   final TextEditingController _commentController = TextEditingController();
 
-  bool _isLoading = true;
   bool _isSubmitting = false;
   bool _hasRequestedLoad = false;
-  String? _error;
-  ExploreEvent? _event;
-  AverageRating? _averageRating;
-  ReviewResponse? _myReview;
   int? _selectedRating;
   bool _hasAppliedReviewValues = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _eventRepository = widget._eventRepository ?? HttpEventRepository();
-    _reviewRepository = widget._reviewRepository ?? HttpReviewRepository();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_hasRequestedLoad) {
-      return;
-    }
-    _hasRequestedLoad = true;
-    _load();
-  }
 
   @override
   void dispose() {
@@ -67,104 +34,60 @@ class _EventReviewScreenState extends State<EventReviewScreen> {
     super.dispose();
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_hasRequestedLoad) return;
+    _hasRequestedLoad = true;
+    EventDetailScope.of(context).loadEvent(widget.eventId);
+    EventDetailScope.of(context).addListener(_onEventDetailChanged);
+  }
 
-    try {
-      final auth = AuthScope.maybeOf(context);
-      final accessToken = auth?.tokens?.accessToken;
-      final tokenType = auth?.tokens?.tokenType ?? 'Bearer';
-      final event = await _eventRepository.fetchEvent(widget.eventId);
-      AverageRating? averageRating;
-      if (event.organizerId != null && event.organizerId!.isNotEmpty) {
-        try {
-          averageRating = await _reviewRepository.fetchOrganizerAverageRating(
-            event.organizerId!,
-            accessToken: accessToken,
-            tokenType: tokenType,
-          );
-        } catch (_) {
-          averageRating = null;
-        }
-      }
-
-      ReviewResponse? myReview;
-      if (accessToken != null && accessToken.isNotEmpty) {
-        try {
-          myReview = await _reviewRepository.fetchMyReviewForEvent(
-            event.id,
-            accessToken: accessToken,
-            tokenType: tokenType,
-          );
-        } catch (_) {
-          myReview = null;
-        }
-      }
-
-      if (!mounted) return;
-
-      setState(() {
-        _event = event;
-        _averageRating = averageRating;
-        _myReview = myReview;
-        _isLoading = false;
-      });
-
-      _applyExistingReview();
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _error = error.toString();
-        _isLoading = false;
-      });
+  void _onEventDetailChanged() {
+    final event = EventDetailScope.of(context).event;
+    if (event == null) return;
+    if (event.organizerId != null && event.organizerId!.isNotEmpty) {
+      ReviewScope.of(context).loadOrganizerRating(event.organizerId!);
     }
+    ReviewScope.of(context).loadMyReviewForEvent(widget.eventId);
+    ReviewScope.of(context).addListener(_onReviewChanged);
+    EventDetailScope.of(context).removeListener(_onEventDetailChanged);
+  }
+
+  void _onReviewChanged() {
+    _applyExistingReview();
   }
 
   void _applyExistingReview() {
-    if (_hasAppliedReviewValues || _myReview == null) {
-      return;
-    }
-
+    if (_hasAppliedReviewValues) return;
+    final userReview = ReviewScope.of(context).userReview;
+    if (userReview == null) return;
     _hasAppliedReviewValues = true;
-    _selectedRating = _myReview!.rating;
-    _commentController.text = _myReview!.comment ?? '';
+    _selectedRating = userReview.rating;
+    _commentController.text = userReview.comment ?? '';
   }
 
   Future<void> _submitReview() async {
-    final event = _event;
-    if (event == null || _selectedRating == null || _isSubmitting) {
-      return;
-    }
-
-    final auth = AuthScope.maybeOf(context);
-    final tokens = auth?.tokens;
-    if (tokens == null) {
-      return;
-    }
+    final eventDetailController = EventDetailScope.of(context);
+    final event = eventDetailController.event;
+    if (event == null || _selectedRating == null || _isSubmitting) return;
 
     final joinedController = JoinedEventsScope.maybeOf(context);
     final isJoined = joinedController?.isJoined(event.id) == true;
-    if (!event.hasEnded || !isJoined) {
-      return;
-    }
+    if (!event.hasEnded || !isJoined) return;
 
     setState(() => _isSubmitting = true);
 
     try {
-      final submitted = await _reviewRepository.submitEventReview(
-        event.id,
+      final reviewController = ReviewScope.of(context);
+      await reviewController.submitReview(
+        widget.eventId,
         ReviewRequest(
           rating: _selectedRating!,
           comment: _commentController.text.trim(),
         ),
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
       );
       if (!mounted) return;
-      setState(() => _myReview = submitted);
       FeedbackService.showSuccess(FeedbackMessage.eventReviewSuccess);
     } catch (_) {
       if (!mounted) return;
@@ -181,8 +104,14 @@ class _EventReviewScreenState extends State<EventReviewScreen> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
+    final eventDetailController = EventDetailScope.of(context);
+    final reviewController = ReviewScope.of(context);
     final joinedController = JoinedEventsScope.maybeOf(context);
-    final event = _event;
+    final event = eventDetailController.event;
+    final isLoading = eventDetailController.isLoading;
+    final error = eventDetailController.error;
+    final userReview = reviewController.userReview;
+    final organizerRating = reviewController.organizerRating;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -218,32 +147,35 @@ class _EventReviewScreenState extends State<EventReviewScreen> {
           ),
         ),
       ),
-      body: _isLoading
+      body: isLoading || event == null
           ? StatePanel.loading(
               title: l10n.eventReviewLoadingTitle,
               subtitle: l10n.eventReviewLoadingSubtitle,
             )
-          : _error != null || event == null
+          : error != null
           ? StatePanel.error(
               title: l10n.eventReviewErrorTitle,
               subtitle: l10n.eventReviewErrorSubtitle,
               retryLabel: l10n.exploreRetryButton,
-              onRetry: _load,
+              onRetry: () => eventDetailController.loadEvent(
+                widget.eventId,
+                forceRefresh: true,
+              ),
             )
           : ListView(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
               children: [
-                _EventHeader(event: event, averageRating: _averageRating),
+                _EventHeader(event: event, averageRating: organizerRating),
                 const SizedBox(height: 14),
                 if (event.organizerId != null && event.organizerId!.isNotEmpty)
-                  _OrganizerRatingCard(averageRating: _averageRating),
+                  _OrganizerRatingCard(averageRating: organizerRating),
                 const SizedBox(height: 14),
                 _ReviewComposerCard(
                   event: event,
                   selectedRating: _selectedRating,
                   commentController: _commentController,
                   isSubmitting: _isSubmitting,
-                  isReviewLocked: _myReview != null,
+                  isReviewLocked: userReview != null,
                   canSubmit:
                       joinedController?.isJoined(event.id) == true &&
                       event.hasEnded,
@@ -251,7 +183,7 @@ class _EventReviewScreenState extends State<EventReviewScreen> {
                     setState(() => _selectedRating = rating);
                   },
                   onSubmit: _submitReview,
-                  submittedReview: _myReview,
+                  submittedReview: userReview,
                 ),
               ],
             ),

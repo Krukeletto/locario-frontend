@@ -22,4 +22,14 @@ class EventSlotsResponse {
       soldOut: json['soldOut'] as bool? ?? false,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'slotLimit': slotLimit,
+      'registeredCount': registeredCount,
+      'availableSlots': availableSlots,
+      'waitlistCount': waitlistCount,
+      'soldOut': soldOut,
+    };
+  }
 }

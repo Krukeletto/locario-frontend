@@ -9,15 +9,11 @@ import '../../shared/auth/auth_models.dart';
 import '../../shared/auth/auth_scope.dart';
 import '../../shared/events/category_scope.dart';
 import '../../shared/groups/group_models.dart';
-import '../../shared/groups/group_repository.dart';
-import '../../shared/groups/my_groups_cache.dart';
+import '../../shared/groups/group_scope.dart';
 import '../../shared/widgets/state_panel.dart';
 
 class GroupDiscoverScreen extends StatefulWidget {
-  const GroupDiscoverScreen({super.key, GroupRepository? repository})
-    : _repository = repository;
-
-  final GroupRepository? _repository;
+  const GroupDiscoverScreen({super.key});
 
   @override
   State<GroupDiscoverScreen> createState() => _GroupDiscoverScreenState();
@@ -25,37 +21,33 @@ class GroupDiscoverScreen extends StatefulWidget {
 
 class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
     with SingleTickerProviderStateMixin {
-  late final GroupRepository _repository;
   late final TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
 
-  List<Group> _discoverGroups = const [];
-  List<Group> _myGroups = const [];
-  bool _isLoadingDiscover = true;
-  bool _isLoadingMyGroups = false;
-  String? _selectedCategoryId;
-  Object? _discoverError;
   Timer? _debounceTimer;
   bool _initialTabSet = false;
 
   @override
   void initState() {
     super.initState();
-    _repository = widget._repository ?? HttpGroupRepository();
-    if (MyGroupsCache.hasValue) {
-      _myGroups = MyGroupsCache.myGroups!;
-      _isLoadingMyGroups = false;
-      _initialTabSet = true;
-    }
-    _tabController = TabController(
-      length: 2,
-      vsync: this,
-      initialIndex: _myGroups.isNotEmpty ? 1 : 0,
-    );
+    _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _load();
+        final controller = GroupScope.of(context);
+        controller.loadDiscoverGroups();
+        controller.loadMyGroups().then((_) {
+          if (mounted && !_initialTabSet) {
+            setState(() {
+              _initialTabSet = true;
+            });
+            if (controller.myGroups.isNotEmpty) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) _tabController.animateTo(1);
+              });
+            }
+          }
+        });
       }
     });
   }
@@ -69,108 +61,26 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
     super.dispose();
   }
 
-  bool get _myGroupsTabDisabled => _initialTabSet && _myGroups.isEmpty;
-
   void _onTabChanged() {
-    if (_myGroupsTabDisabled && _tabController.index == 1) {
+    final controller = GroupScope.of(context);
+    if (_initialTabSet &&
+        controller.myGroups.isEmpty &&
+        _tabController.index == 1) {
       _tabController.index = 0;
-    }
-  }
-
-  Future<void> _load() async {
-    final session = AuthScope.of(context);
-
-    setState(() {
-      _isLoadingDiscover = true;
-      _discoverError = null;
-    });
-
-    final discoverFuture = _repository.fetchDiscoverGroups(
-      query: _searchController.text.trim().isEmpty
-          ? null
-          : _searchController.text.trim(),
-      categoryId: _selectedCategoryId,
-      accessToken: session.tokens?.accessToken,
-      tokenType: session.tokens?.tokenType ?? 'Bearer',
-    );
-
-    if (session.isAuthenticated && session.tokens != null) {
-      setState(() {
-        _isLoadingMyGroups = true;
-      });
-      unawaited(
-        _resolveMyGroups(
-          _repository.fetchMyGroups(
-            accessToken: session.tokens!.accessToken,
-            tokenType: session.tokens!.tokenType,
-          ),
-        ),
-      );
-    } else {
-      setState(() {
-        _myGroups = const [];
-        _isLoadingMyGroups = false;
-      });
-    }
-
-    try {
-      final discover = await discoverFuture;
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _discoverGroups = discover;
-        _isLoadingDiscover = false;
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _discoverError = error;
-        _isLoadingDiscover = false;
-      });
-    }
-
-    if (!_initialTabSet && mounted) {
-      _initialTabSet = true;
-    }
-  }
-
-  Future<void> _resolveMyGroups(Future<List<Group>> future) async {
-    try {
-      final mine = await future;
-      if (!mounted) return;
-      MyGroupsCache.set(mine);
-      setState(() {
-        _myGroups = mine;
-        _isLoadingMyGroups = false;
-      });
-      if (!_initialTabSet) {
-        _initialTabSet = true;
-        if (mine.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _tabController.animateTo(1);
-          });
-        }
-      }
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _isLoadingMyGroups = false;
-      });
     }
   }
 
   void _onSearchChanged(String value) {
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 300), _load);
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        GroupScope.of(context).loadDiscoverGroups(search: value);
+      }
+    });
   }
 
   bool _canCreateGroups(UserProfile? profile) {
-    if (profile == null) {
-      return false;
-    }
+    if (profile == null) return false;
     return profile.organizer || profile.admin;
   }
 
@@ -182,7 +92,9 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
     final session = AuthScope.of(context);
     final profile = session.profile;
     final categories = CategoryScope.maybeOf(context)?.categories ?? const [];
-    final showMyGroupsDisabled = !session.isAuthenticated || _myGroups.isEmpty;
+    final ctrl = GroupScope.of(context);
+    final showMyGroupsDisabled =
+        !session.isAuthenticated || ctrl.myGroups.isEmpty;
     final myGroupsDisabled = showMyGroupsDisabled && _initialTabSet;
 
     return Scaffold(
@@ -204,10 +116,9 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
               child: FilledButton.tonalIcon(
                 onPressed: () async {
                   await context.push('/groups/create');
-                  if (!mounted) {
-                    return;
-                  }
-                  await _load();
+                  if (!mounted) return;
+                  unawaited(ctrl.loadDiscoverGroups());
+                  unawaited(ctrl.loadMyGroups());
                 },
                 icon: const Icon(Icons.add_rounded),
                 label: Text(l10n.groupsCreateCta),
@@ -252,45 +163,47 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
           _DiscoverTab(
             searchController: _searchController,
             categories: categories,
-            selectedCategoryId: _selectedCategoryId,
+            selectedCategoryId: ctrl.discoverCategoryId,
             onCategorySelected: (categoryId) {
-              setState(() {
-                _selectedCategoryId = categoryId;
-              });
-              _load();
+              ctrl.loadDiscoverGroups(categoryId: categoryId);
             },
             onSearchChanged: _onSearchChanged,
-            onSearchSubmitted: _load,
-            isLoading: _isLoadingDiscover,
-            error: _discoverError,
-            groups: _discoverGroups,
+            onSearchSubmitted: () =>
+                ctrl.loadDiscoverGroups(search: _searchController.text.trim()),
+            isLoading: ctrl.isDiscoverLoading,
+            error: ctrl.discoverError,
+            groups: ctrl.discoverGroups,
             l10n: l10n,
             theme: theme,
             scheme: scheme,
-            onRefresh: _load,
+            onRefresh: () async {
+              await ctrl.loadDiscoverGroups(forceRefresh: true);
+              await ctrl.loadMyGroups(forceRefresh: true);
+            },
             onGroupTap: (groupId) async {
               await context.push('/groups/$groupId');
-              if (!mounted) {
-                return;
-              }
-              await _load();
+              if (!mounted) return;
+              unawaited(ctrl.loadDiscoverGroups());
+              unawaited(ctrl.loadMyGroups());
             },
           ),
           _MyGroupsTab(
-            isLoading: _isLoadingMyGroups,
+            isLoading: ctrl.isMyGroupsLoading,
             isAuthenticated: session.isAuthenticated,
-            groups: _myGroups,
+            groups: ctrl.myGroups,
             disabled: myGroupsDisabled,
             l10n: l10n,
             theme: theme,
             scheme: scheme,
-            onRefresh: _load,
+            onRefresh: () async {
+              await ctrl.loadMyGroups(forceRefresh: true);
+              await ctrl.loadDiscoverGroups(forceRefresh: true);
+            },
             onGroupTap: (groupId) async {
               await context.push('/groups/$groupId');
-              if (!mounted) {
-                return;
-              }
-              await _load();
+              if (!mounted) return;
+              unawaited(ctrl.loadDiscoverGroups());
+              unawaited(ctrl.loadMyGroups());
             },
           ),
         ],

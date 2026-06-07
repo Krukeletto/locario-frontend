@@ -2,62 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
-import '../../shared/auth/auth_scope.dart';
-import '../../shared/events/event_repository.dart';
+import '../../shared/events/event_detail_scope.dart';
 import '../../shared/widgets/state_panel.dart';
-import '../explore/models.dart';
 
 class OrganizerEventsScreen extends StatefulWidget {
-  const OrganizerEventsScreen({super.key, EventRepository? eventRepository})
-    : _eventRepository = eventRepository;
-
-  final EventRepository? _eventRepository;
+  const OrganizerEventsScreen({super.key});
 
   @override
   State<OrganizerEventsScreen> createState() => _OrganizerEventsScreenState();
 }
 
 class _OrganizerEventsScreenState extends State<OrganizerEventsScreen> {
-  late final EventRepository _eventRepository;
-  List<ExploreEvent> _events = const [];
-  bool _isLoading = true;
-  Object? _error;
-
   @override
   void initState() {
     super.initState();
-    _eventRepository = widget._eventRepository ?? HttpEventRepository();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
-  }
-
-  Future<void> _load() async {
-    final session = AuthScope.of(context);
-    if (session.tokens == null) {
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _error = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      EventDetailScope.of(context).loadOrganizerEvents();
     });
-
-    try {
-      final events = await _eventRepository.fetchOrganizerEvents(
-        accessToken: session.tokens!.accessToken,
-        tokenType: session.tokens!.tokenType,
-      );
-      if (!mounted) return;
-      setState(() {
-        _events = events;
-        _isLoading = false;
-      });
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _error = error;
-        _isLoading = false;
-      });
-    }
   }
 
   @override
@@ -65,6 +26,9 @@ class _OrganizerEventsScreenState extends State<OrganizerEventsScreen> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
+    final controller = EventDetailScope.of(context);
+    final isLoading = controller.isOrganizerEventsLoading;
+    final events = controller.organizerEvents;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -100,19 +64,12 @@ class _OrganizerEventsScreenState extends State<OrganizerEventsScreen> {
           ),
         ),
       ),
-      body: _isLoading
+      body: isLoading
           ? StatePanel.loading(
               title: l10n.profileMyEventsTitle,
               subtitle: l10n.profileMyEventsSubtitle,
             )
-          : _error != null
-          ? StatePanel.error(
-              title: l10n.profileEventHistoryTitle,
-              subtitle: l10n.groupsErrorSubtitle,
-              retryLabel: l10n.exploreRetryButton,
-              onRetry: _load,
-            )
-          : _events.isEmpty
+          : events.isEmpty
           ? StatePanel.empty(
               title: l10n.profileMyEventsTitle,
               subtitle: l10n.profileMyEventsSubtitle,
@@ -127,9 +84,9 @@ class _OrganizerEventsScreenState extends State<OrganizerEventsScreen> {
             )
           : ListView.builder(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-              itemCount: _events.length,
+              itemCount: events.length,
               itemBuilder: (context, index) {
-                final event = _events[index];
+                final event = events[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(

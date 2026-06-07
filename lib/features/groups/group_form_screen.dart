@@ -7,6 +7,7 @@ import '../../shared/auth/auth_scope.dart';
 import '../../shared/events/category_scope.dart';
 import '../../shared/groups/group_models.dart';
 import '../../shared/groups/group_repository.dart';
+import '../../shared/groups/group_scope.dart';
 import '../../shared/services/feedback_service.dart';
 
 class GroupFormScreen extends StatefulWidget {
@@ -37,7 +38,6 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
   bool _showAdvanced = false;
   bool _isLoading = false;
   bool _isSaving = false;
-  Group? _group;
 
   @override
   void initState() {
@@ -64,41 +64,32 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
   }
 
   Future<void> _load() async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    if (tokens == null || widget.groupId == null) {
-      return;
-    }
+    if (widget.groupId == null) return;
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final group = await _repository.fetchGroup(
-        widget.groupId!,
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
+      final ctrl = GroupScope.of(context);
+      await ctrl.loadGroupDetail(widget.groupId!);
+      final group = ctrl.detailGroup;
+      if (group != null) {
+        _nameController.text = group.name;
+        _descriptionController.text = group.description ?? '';
+        _avatarUrlController.text = group.avatarUrl ?? '';
+        _iconUrlController.text = group.iconUrl ?? '';
+        _mapPinIconUrlController.text = group.mapPinIconUrl ?? '';
+        _mapPinStyleController.text = group.mapPinStyle ?? '';
+        _visibility = group.visibility;
+        _categoryId = group.categoryId;
       }
-      _group = group;
-      _nameController.text = group.name;
-      _descriptionController.text = group.description ?? '';
-      _avatarUrlController.text = group.avatarUrl ?? '';
-      _iconUrlController.text = group.iconUrl ?? '';
-      _mapPinIconUrlController.text = group.mapPinIconUrl ?? '';
-      _mapPinStyleController.text = group.mapPinStyle ?? '';
-      _visibility = group.visibility;
-      _categoryId = group.categoryId;
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
     } catch (_) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -109,10 +100,8 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
   bool _canEditCurrentUser() {
     final session = AuthScope.of(context);
     final profile = session.profile;
-    final group = _group;
-    if (profile == null || group == null) {
-      return !widget.isEditing;
-    }
+    final group = GroupScope.maybeOf(context)?.detailGroup;
+    if (profile == null || group == null) return !widget.isEditing;
     return profile.admin ||
         group.ownerUserId == profile.id ||
         group.currentUserRole == GroupRole.admin;

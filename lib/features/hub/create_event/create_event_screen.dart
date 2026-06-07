@@ -9,7 +9,7 @@ import 'package:locario/l10n/app_localizations.dart';
 import '../../../shared/auth/auth_scope.dart';
 import '../../../shared/events/event_repository.dart';
 import '../../../shared/groups/group_models.dart';
-import '../../../shared/groups/group_repository.dart';
+import '../../../shared/groups/group_scope.dart';
 import '../../../shared/events/event_refresh_signal.dart';
 import '../../../shared/location/location_service.dart';
 import '../../../shared/services/feedback_service.dart';
@@ -42,22 +42,19 @@ class CreateEventScreen extends StatefulWidget {
     CreateEventGeocoder? geocoder,
     EventRefreshSignal? eventRefreshSignal,
     Future<List<CreateEventPickedFile>> Function()? pickImageFiles,
-    GroupRepository? groupRepository,
     this.initialGroupId,
     this.canSubmit = false,
   }) : _eventRepository = eventRepository,
        _locationService = locationService,
        _geocoder = geocoder,
        _eventRefreshSignal = eventRefreshSignal,
-       _pickImageFiles = pickImageFiles,
-       _groupRepository = groupRepository;
+       _pickImageFiles = pickImageFiles;
 
   final EventRepository? _eventRepository;
   final LocationService? _locationService;
   final CreateEventGeocoder? _geocoder;
   final EventRefreshSignal? _eventRefreshSignal;
   final Future<List<CreateEventPickedFile>> Function()? _pickImageFiles;
-  final GroupRepository? _groupRepository;
   final String? initialGroupId;
   final bool canSubmit;
 
@@ -70,15 +67,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   late final CreateEventLocationController _locationController;
   late final EventRefreshSignal _eventRefreshSignal;
   late final LocationService _locationService;
-  late final GroupRepository _groupRepository;
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _seatsController = TextEditingController();
 
   bool _didInitController = false;
-  bool _isLoadingGroups = false;
-  List<Group> _availableGroups = const [];
 
   @override
   void initState() {
@@ -86,7 +80,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     _locationService = widget._locationService ?? GeolocatorLocationService();
     _eventRefreshSignal =
         widget._eventRefreshSignal ?? globalEventRefreshSignal;
-    _groupRepository = widget._groupRepository ?? HttpGroupRepository();
     _locationController = CreateEventLocationController(
       locationService: _locationService,
       geocoder: widget._geocoder,
@@ -113,7 +106,34 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     controller.addListener(_handleStateChanged);
     _controller = controller;
     _didInitController = true;
-    _loadAvailableGroups();
+
+    final groupController = GroupScope.of(context);
+    groupController.loadMyGroups();
+
+    if (widget.initialGroupId != null) {
+      void trySetInitialGroups() {
+        if (!mounted) {
+          groupController.removeListener(trySetInitialGroups);
+          return;
+        }
+        final activeGroups = groupController.myGroups
+            .where(
+              (g) => g.currentUserMembership == GroupMembershipStatus.active,
+            )
+            .toList();
+        final initial = activeGroups
+            .where((g) => g.id == widget.initialGroupId)
+            .toList();
+        if (initial.isNotEmpty) {
+          controller.setSelectedGroups(initial);
+          groupController.removeListener(trySetInitialGroups);
+        } else if (!groupController.isMyGroupsLoading) {
+          groupController.removeListener(trySetInitialGroups);
+        }
+      }
+
+      groupController.addListener(trySetInitialGroups);
+    }
   }
 
   @override
@@ -141,55 +161,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       FeedbackService.showError(FeedbackMessage.unknownError);
     }
     setState(() {});
-  }
-
-  Future<void> _loadAvailableGroups() async {
-    final sessionController = AuthScope.of(context);
-    final tokens = sessionController.tokens;
-    final controller = _controller;
-    if (tokens == null || controller == null) {
-      return;
-    }
-
-    setState(() {
-      _isLoadingGroups = true;
-    });
-
-    try {
-      final groups = await _groupRepository.fetchMyGroups(
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
-      }
-      final activeGroups = groups
-          .where(
-            (group) =>
-                group.currentUserMembership == GroupMembershipStatus.active,
-          )
-          .toList(growable: false);
-      _availableGroups = activeGroups;
-      if (widget.initialGroupId != null) {
-        final initial = activeGroups
-            .where((group) => group.id == widget.initialGroupId)
-            .toList();
-        if (initial.isNotEmpty) {
-          controller.setSelectedGroups(initial);
-        }
-      }
-      setState(() {
-        _isLoadingGroups = false;
-      });
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _availableGroups = const [];
-        _isLoadingGroups = false;
-      });
-    }
   }
 
   void _clearFocus() {
@@ -352,6 +323,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     final profile = sessionController.profile;
     final canCreatePublicEvents =
         profile?.organizer == true || profile?.admin == true;
+    final groupController = GroupScope.of(context);
+    final allGroups = groupController.myGroups;
+    final activeGroups = allGroups
+        .where((g) => g.currentUserMembership == GroupMembershipStatus.active)
+        .toList();
+    final isGroupsLoading = groupController.isMyGroupsLoading;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -395,8 +372,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   ),
                   const SizedBox(height: 16),
                   _CreateEventGroupsSection(
-                    isLoading: _isLoadingGroups,
-                    groups: _availableGroups,
+                    isLoading: isGroupsLoading,
+                    groups: activeGroups,
                     selectedGroups: state.selectedGroups,
                     groupsError: state.groupsError,
                     canCreatePublicEvents: canCreatePublicEvents,

@@ -36,6 +36,10 @@ class AverageRating {
       totalReviews: json['totalReviews'] as int? ?? 0,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {'averageRating': averageRating, 'totalReviews': totalReviews};
+  }
 }
 
 class ReviewResponse {
@@ -69,6 +73,18 @@ class ReviewResponse {
           DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'eventId': eventId,
+      'userId': userId,
+      'username': username,
+      'rating': rating,
+      if (comment != null) 'comment': comment,
+      'createdAt': createdAt.toUtc().toIso8601String(),
+    };
   }
 }
 

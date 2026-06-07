@@ -6,10 +6,13 @@ import 'package:locario/shared/auth/auth_models.dart';
 import 'package:locario/shared/auth/auth_repository.dart';
 import 'package:locario/shared/auth/auth_scope.dart';
 import 'package:locario/shared/auth/session_controller.dart';
+import 'package:locario/shared/cache/cache_service.dart';
 import 'package:locario/shared/events/category_controller.dart';
 import 'package:locario/shared/events/category_scope.dart';
+import 'package:locario/shared/groups/group_controller.dart';
 import 'package:locario/shared/groups/group_models.dart';
 import 'package:locario/shared/groups/group_repository.dart';
+import 'package:locario/shared/groups/group_scope.dart';
 
 import '../../test_helpers/fake_event_repository.dart';
 import '../../test_helpers/test_app.dart';
@@ -24,6 +27,30 @@ void main() {
     await categoryController.loadCategories();
 
     final sessionController = await _createSessionController();
+    final groupController = GroupController(
+      groupRepository: const _FakeGroupRepository(
+        discoverGroups: [
+          Group(
+            id: 'group-1',
+            name: 'Jazz Crew',
+            categoryName: 'Music',
+            memberCount: 12,
+          ),
+        ],
+        myGroups: [
+          Group(
+            id: 'group-2',
+            name: 'Workshop Squad',
+            categoryName: 'Art',
+            memberCount: 4,
+            currentUserMembership: GroupMembershipStatus.active,
+          ),
+        ],
+      ),
+      eventRepository: FakeEventRepository(),
+      cacheService: _StubCacheService(),
+      sessionController: sessionController,
+    );
 
     await tester.pumpWidget(
       buildLocalizedTestApp(
@@ -31,26 +58,9 @@ void main() {
           controller: sessionController,
           child: CategoryScope(
             controller: categoryController,
-            child: const GroupDiscoverScreen(
-              repository: _FakeGroupRepository(
-                discoverGroups: [
-                  Group(
-                    id: 'group-1',
-                    name: 'Jazz Crew',
-                    categoryName: 'Music',
-                    memberCount: 12,
-                  ),
-                ],
-                myGroups: [
-                  Group(
-                    id: 'group-2',
-                    name: 'Workshop Squad',
-                    categoryName: 'Art',
-                    memberCount: 4,
-                    currentUserMembership: GroupMembershipStatus.active,
-                  ),
-                ],
-              ),
+            child: GroupScope(
+              controller: groupController,
+              child: const GroupDiscoverScreen(),
             ),
           ),
         ),
@@ -65,6 +75,39 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Jazz Crew'), findsOneWidget);
   });
+}
+
+class _StubCacheService extends CacheService {
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<int?> getHash(String key) async => null;
+
+  @override
+  Future<List<T>?> getList<T>(
+    String key,
+    T Function(Map<String, dynamic>) fromJson,
+  ) async => null;
+
+  @override
+  Future<void> setList(
+    String key,
+    List<Map<String, dynamic>> data, {
+    int? hash,
+  }) async {}
+
+  @override
+  Future<void> invalidateByPrefix(String prefix) async {}
+
+  @override
+  Future<void> clear() async {}
+
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  int computeHash(Object data) => 0;
 }
 
 class _FakeGroupRepository implements GroupRepository {

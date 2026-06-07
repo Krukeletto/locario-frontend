@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -5,68 +7,32 @@ import 'package:locario/l10n/app_localizations.dart';
 
 import '../../features/explore/models.dart';
 import '../../shared/auth/auth_scope.dart';
-import '../../shared/events/event_repository.dart';
 import '../../shared/groups/group_models.dart';
-import '../../shared/groups/group_repository.dart';
+import '../../shared/groups/group_scope.dart';
 import '../../shared/widgets/state_panel.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
-  const GroupDetailsScreen({
-    super.key,
-    required this.groupId,
-    GroupRepository? groupRepository,
-    EventRepository? eventRepository,
-  }) : _groupRepository = groupRepository,
-       _eventRepository = eventRepository;
+  const GroupDetailsScreen({super.key, required this.groupId});
 
   final String groupId;
-  final GroupRepository? _groupRepository;
-  final EventRepository? _eventRepository;
 
   @override
   State<GroupDetailsScreen> createState() => _GroupDetailsScreenState();
 }
 
 class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
-  late final GroupRepository _groupRepository;
-  late final EventRepository _eventRepository;
   final TextEditingController _postController = TextEditingController();
   final ScrollController _feedScrollController = ScrollController();
 
-  Group? _group;
-  Object? _groupError;
-  bool _groupLoading = true;
-  List<GroupMember> _members = const [];
-  bool _membersLoading = true;
-  Object? _membersError;
-  List<GroupMember> _joinRequests = const [];
-  bool _joinRequestsLoading = true;
-  Object? _joinRequestsError;
-  List<GroupFeedItem> _feed = const [];
-  bool _feedLoading = true;
-  Object? _feedError;
-  bool _feedHasMore = true;
-  bool _isLoadingMoreFeed = false;
-  int _feedPage = 0;
-  List<ExploreEvent> _events = const [];
-  bool _eventsLoading = true;
-  Object? _eventsError;
-  List<GroupReport> _reports = const [];
-  bool _reportsLoading = true;
-  Object? _reportsError;
-
-  bool _isRefreshing = false;
   bool _isSubmittingPost = false;
 
   @override
   void initState() {
     super.initState();
-    _groupRepository = widget._groupRepository ?? HttpGroupRepository();
-    _eventRepository = widget._eventRepository ?? HttpEventRepository();
     _feedScrollController.addListener(_onFeedScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _load();
+        GroupScope.of(context).loadGroupDetail(widget.groupId);
       }
     });
   }
@@ -79,333 +45,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     super.dispose();
   }
 
-  Future<void> _load({bool refreshOnly = false}) async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      if (refreshOnly) {
-        _isRefreshing = true;
-      } else {
-        _groupLoading = true;
-        _groupError = null;
-      }
-    });
-
-    try {
-      final group = await _groupRepository.fetchGroup(
-        widget.groupId,
-        accessToken: tokens?.accessToken,
-        tokenType: tokens?.tokenType ?? 'Bearer',
-      );
-      final canModerate = _canModerate(
-        group,
-        session.profile?.id,
-        session.profile?.admin == true,
-      );
-
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _group = group;
-        _groupLoading = false;
-        _groupError = null;
-      });
-      await Future.wait([
-        _loadMembers(refreshOnly: refreshOnly),
-        _loadFeed(refreshOnly: refreshOnly),
-        _loadEvents(refreshOnly: refreshOnly),
-        _loadJoinRequests(refreshOnly: refreshOnly && canModerate),
-        _loadReports(refreshOnly: refreshOnly && canModerate),
-      ]);
-      if (refreshOnly && mounted) {
-        setState(() {
-          _isRefreshing = false;
-        });
-      }
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _groupError = error;
-        _groupLoading = false;
-        _isRefreshing = false;
-      });
-    }
-  }
-
-  Future<void> _loadMembers({bool refreshOnly = false}) async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final group = _group;
-    if (group == null) {
-      return;
-    }
-
-    if (!refreshOnly) {
-      setState(() {
-        _membersLoading = true;
-        _membersError = null;
-      });
-    }
-
-    try {
-      final members = await _groupRepository.fetchMembers(
-        group.id,
-        accessToken: tokens?.accessToken,
-        tokenType: tokens?.tokenType ?? 'Bearer',
-      );
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _members = members;
-        _membersLoading = false;
-        _membersError = null;
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _membersError = error;
-        _membersLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadJoinRequests({bool refreshOnly = false}) async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final group = _group;
-    if (group == null || tokens == null) {
-      return;
-    }
-    final canModerate = _canModerate(
-      group,
-      session.profile?.id,
-      session.profile?.admin == true,
-    );
-    if (!canModerate) {
-      return;
-    }
-
-    if (!refreshOnly) {
-      setState(() {
-        _joinRequestsLoading = true;
-        _joinRequestsError = null;
-      });
-    }
-
-    try {
-      final joinRequests = await _groupRepository.fetchJoinRequests(
-        group.id,
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _joinRequests = joinRequests;
-        _joinRequestsLoading = false;
-        _joinRequestsError = null;
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _joinRequestsError = error;
-        _joinRequestsLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadFeed({bool refreshOnly = false}) async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final group = _group;
-    if (group == null) {
-      return;
-    }
-
-    if (!refreshOnly) {
-      setState(() {
-        _feedLoading = true;
-        _feed = const [];
-        _feedPage = 0;
-        _feedHasMore = true;
-        _feedError = null;
-      });
-    }
-
-    try {
-      final feed = await _groupRepository.fetchFeed(
-        group.id,
-        accessToken: tokens?.accessToken,
-        tokenType: tokens?.tokenType ?? 'Bearer',
-        page: 0,
-        size: 20,
-      );
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _feed = feed;
-        _feedPage = 1;
-        _feedHasMore = feed.length == 20;
-        _feedLoading = false;
-        _feedError = null;
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _feedError = error;
-        _feedLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadMoreFeed() async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final group = _group;
-    if (group == null || _isLoadingMoreFeed || !_feedHasMore) {
-      return;
-    }
-
-    setState(() {
-      _isLoadingMoreFeed = true;
-    });
-
-    try {
-      final nextFeed = await _groupRepository.fetchFeed(
-        group.id,
-        accessToken: tokens?.accessToken,
-        tokenType: tokens?.tokenType ?? 'Bearer',
-        page: _feedPage,
-        size: 20,
-      );
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _feed = [..._feed, ...nextFeed];
-        _feedPage += 1;
-        _feedHasMore = nextFeed.length == 20;
-        _isLoadingMoreFeed = false;
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isLoadingMoreFeed = false;
-        _feedError = error;
-      });
-    }
-  }
-
-  Future<void> _loadEvents({bool refreshOnly = false}) async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final group = _group;
-    if (group == null) {
-      return;
-    }
-
-    if (!refreshOnly) {
-      setState(() {
-        _eventsLoading = true;
-        _eventsError = null;
-      });
-    }
-
-    try {
-      final events = await _groupRepository.fetchGroupEvents(
-        group.id,
-        accessToken: tokens?.accessToken,
-        tokenType: tokens?.tokenType ?? 'Bearer',
-      );
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _events = events;
-        _eventsLoading = false;
-        _eventsError = null;
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _eventsError = error;
-        _eventsLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadReports({bool refreshOnly = false}) async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final group = _group;
-    if (group == null || tokens == null) {
-      return;
-    }
-    final canModerate = _canModerate(
-      group,
-      session.profile?.id,
-      session.profile?.admin == true,
-    );
-    if (!canModerate) {
-      return;
-    }
-
-    if (!refreshOnly) {
-      setState(() {
-        _reportsLoading = true;
-        _reportsError = null;
-      });
-    }
-
-    try {
-      final reports = await _groupRepository.fetchReports(
-        group.id,
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _reports = reports;
-        _reportsLoading = false;
-        _reportsError = null;
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _reportsError = error;
-        _reportsLoading = false;
-      });
-    }
-  }
-
   bool _canModerate(Group group, String? userId, bool isGlobalAdmin) {
-    if (isGlobalAdmin) {
-      return true;
-    }
+    if (isGlobalAdmin) return true;
     return group.ownerUserId == userId ||
         group.currentUserRole == GroupRole.admin;
   }
@@ -421,9 +62,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   bool _canCreateGroupsEvents(Group group) {
     final session = AuthScope.of(context);
     final profile = session.profile;
-    if (session.tokens == null || profile == null) {
-      return false;
-    }
+    if (session.tokens == null || profile == null) return false;
     return profile.admin ||
         group.ownerUserId == profile.id ||
         group.currentUserRole == GroupRole.admin ||
@@ -431,14 +70,13 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   }
 
   Future<void> _handleJoinOrLeave() async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final group = _group;
+    final ctrl = GroupScope.of(context);
+    final group = ctrl.detailGroup;
     final l10n = AppLocalizations.of(context);
-    if (group == null) {
-      return;
-    }
-    if (tokens == null) {
+    if (group == null) return;
+
+    final session = AuthScope.of(context);
+    if (session.tokens == null) {
       await context.push(
         '/auth/login?from=${Uri.encodeComponent('/groups/${group.id}')}&target=${Uri.encodeComponent('/groups/${group.id}')}',
       );
@@ -447,37 +85,22 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
 
     try {
       if (group.isMember || group.isPending) {
-        await _groupRepository.leaveGroup(
-          group.id,
-          accessToken: tokens.accessToken,
-          tokenType: tokens.tokenType,
-        );
+        await ctrl.leaveGroup(group.id);
       } else {
-        await _groupRepository.joinGroup(
-          group.id,
-          accessToken: tokens.accessToken,
-          tokenType: tokens.tokenType,
-        );
+        await ctrl.joinGroup(group.id);
       }
-      if (!mounted) {
-        return;
-      }
-      await _load(refreshOnly: true);
     } catch (_) {
-      if (!mounted) {
-        return;
-      }
       _showMessage(l10n.groupsActionFailed);
     }
   }
 
   Future<void> _handleCreatePost({GroupPost? editingPost}) async {
+    final ctrl = GroupScope.of(context);
+    final group = ctrl.detailGroup;
+    if (group == null) return;
+
     final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final group = _group;
-    if (tokens == null || group == null) {
-      return;
-    }
+    if (session.tokens == null) return;
 
     final controller = TextEditingController(text: editingPost?.content ?? '');
     final l10n = AppLocalizations.of(context);
@@ -516,9 +139,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     );
     controller.dispose();
 
-    if (content == null || content.isEmpty) {
-      return;
-    }
+    if (content == null || content.isEmpty) return;
 
     setState(() {
       _isSubmittingPost = true;
@@ -526,33 +147,18 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
 
     try {
       if (editingPost == null) {
-        await _groupRepository.createPost(
-          group.id,
-          GroupPostRequest(content: content),
-          accessToken: tokens.accessToken,
-          tokenType: tokens.tokenType,
-        );
+        await ctrl.createPost(group.id, content);
       } else {
-        await _groupRepository.updatePost(
-          group.id,
-          editingPost.id,
-          GroupPostRequest(content: content),
-          accessToken: tokens.accessToken,
-          tokenType: tokens.tokenType,
-        );
+        await ctrl.updatePost(group.id, editingPost.id, content);
       }
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       setState(() {
         _isSubmittingPost = false;
       });
       _postController.clear();
-      await _load(refreshOnly: true);
+      await ctrl.loadGroupFeed(group.id, page: 0);
     } catch (_) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       setState(() {
         _isSubmittingPost = false;
       });
@@ -561,112 +167,54 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   }
 
   Future<void> _handleDeletePost(GroupFeedItem item) async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final group = _group;
+    final ctrl = GroupScope.of(context);
+    final group = ctrl.detailGroup;
     final l10n = AppLocalizations.of(context);
-    if (tokens == null || group == null) {
-      return;
-    }
+    if (group == null) return;
 
     final confirmed = await _confirm(
       title: l10n.groupsDeletePostTitle,
       body: l10n.groupsDeletePostBody,
     );
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
-      await _groupRepository.deletePost(
-        group.id,
-        item.id,
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
-      }
-      await _load(refreshOnly: true);
+      await ctrl.deletePost(group.id, item.id);
     } catch (_) {
-      if (!mounted) {
-        return;
-      }
       _showMessage(l10n.groupsActionFailed);
     }
   }
 
   Future<void> _handleHidePost(GroupFeedItem item) async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final group = _group;
+    final ctrl = GroupScope.of(context);
+    final group = ctrl.detailGroup;
     final l10n = AppLocalizations.of(context);
-    if (tokens == null || group == null) {
-      return;
-    }
+    if (group == null) return;
 
     try {
-      await _groupRepository.hidePost(
-        group.id,
-        item.id,
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
-      }
-      await _load(refreshOnly: true);
+      await ctrl.hidePost(group.id, item.id);
     } catch (_) {
-      if (!mounted) {
-        return;
-      }
       _showMessage(l10n.groupsActionFailed);
     }
   }
 
   Future<void> _handleApproveRequest(GroupMember member) async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
+    final ctrl = GroupScope.of(context);
     final l10n = AppLocalizations.of(context);
-    if (tokens == null) {
-      return;
-    }
 
     try {
-      await _groupRepository.approveJoinRequest(
-        widget.groupId,
-        member.userId,
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
-      }
-      await _load(refreshOnly: true);
+      await ctrl.approveJoinRequest(widget.groupId, member.userId);
     } catch (_) {
       _showMessage(l10n.groupsActionFailed);
     }
   }
 
   Future<void> _handleRejectRequest(GroupMember member) async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
+    final ctrl = GroupScope.of(context);
     final l10n = AppLocalizations.of(context);
-    if (tokens == null) {
-      return;
-    }
 
     try {
-      await _groupRepository.rejectJoinRequest(
-        widget.groupId,
-        member.userId,
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
-      }
-      await _load(refreshOnly: true);
+      await ctrl.rejectJoinRequest(widget.groupId, member.userId);
     } catch (_) {
       _showMessage(l10n.groupsActionFailed);
     }
@@ -676,99 +224,53 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     GroupMember member,
     _MemberAction action,
   ) async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
+    final ctrl = GroupScope.of(context);
     final l10n = AppLocalizations.of(context);
-    if (tokens == null) {
-      return;
-    }
 
     try {
-      if (action == _MemberAction.makeAdmin) {
-        await _groupRepository.changeRole(
-          widget.groupId,
-          member.userId,
-          GroupRole.admin,
-          accessToken: tokens.accessToken,
-          tokenType: tokens.tokenType,
-        );
-      } else if (action == _MemberAction.makeMember) {
-        await _groupRepository.changeRole(
-          widget.groupId,
-          member.userId,
-          GroupRole.member,
-          accessToken: tokens.accessToken,
-          tokenType: tokens.tokenType,
-        );
-      } else if (action == _MemberAction.ban) {
-        await _groupRepository.banMember(
-          widget.groupId,
-          member.userId,
-          accessToken: tokens.accessToken,
-          tokenType: tokens.tokenType,
-        );
-      } else if (action == _MemberAction.unban) {
-        await _groupRepository.unbanMember(
-          widget.groupId,
-          member.userId,
-          accessToken: tokens.accessToken,
-          tokenType: tokens.tokenType,
-        );
-      } else if (action == _MemberAction.remove) {
-        await _groupRepository.removeMember(
-          widget.groupId,
-          member.userId,
-          accessToken: tokens.accessToken,
-          tokenType: tokens.tokenType,
-        );
-      } else if (action == _MemberAction.transferOwnership) {
-        await _groupRepository.transferOwnership(
-          widget.groupId,
-          member.userId,
-          accessToken: tokens.accessToken,
-          tokenType: tokens.tokenType,
-        );
+      switch (action) {
+        case _MemberAction.makeAdmin:
+          await ctrl.changeRole(widget.groupId, member.userId, GroupRole.admin);
+        case _MemberAction.makeMember:
+          await ctrl.changeRole(
+            widget.groupId,
+            member.userId,
+            GroupRole.member,
+          );
+        case _MemberAction.ban:
+          await ctrl.banMember(widget.groupId, member.userId);
+        case _MemberAction.unban:
+          await ctrl.unbanMember(widget.groupId, member.userId);
+        case _MemberAction.remove:
+          await ctrl.removeMember(widget.groupId, member.userId);
+        case _MemberAction.transferOwnership:
+          await ctrl.transferOwnership(widget.groupId, member.userId);
       }
-      if (!mounted) {
-        return;
-      }
-      await _load(refreshOnly: true);
     } catch (_) {
       _showMessage(l10n.groupsActionFailed);
     }
   }
 
   Future<void> _handleCreateEventForGroup() async {
-    final group = _group;
-    if (group == null) {
-      return;
-    }
+    final group = GroupScope.of(context).detailGroup;
+    if (group == null) return;
+
     await context.push(
       '/hub/create-event?groupId=${Uri.encodeQueryComponent(group.id)}',
     );
-    if (!mounted) {
-      return;
-    }
-    await _load(refreshOnly: true);
+    if (!mounted) return;
+    unawaited(GroupScope.of(context).loadGroupEvents(group.id));
   }
 
   Future<void> _handleLinkExistingEvent() async {
-    final group = _group;
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
+    final ctrl = GroupScope.of(context);
+    final group = ctrl.detailGroup;
     final l10n = AppLocalizations.of(context);
-    if (group == null || tokens == null) {
-      return;
-    }
+    if (group == null) return;
 
     try {
-      final events = await _eventRepository.fetchOrganizerEvents(
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
-      }
+      final events = await ctrl.fetchOrganizerEvents();
+      if (!mounted) return;
       final selected = await showModalBottomSheet<ExploreEvent>(
         context: context,
         showDragHandle: true,
@@ -786,61 +288,37 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
           ),
         ),
       );
-      if (selected == null) {
-        return;
-      }
-      await _groupRepository.linkEvent(
-        group.id,
-        selected.id,
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
-      }
-      await _load(refreshOnly: true);
+      if (selected == null) return;
+      await ctrl.linkEvent(group.id, selected.id);
     } catch (_) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
+      _showMessage(l10n.groupsActionFailed);
+    }
+  }
+
+  Future<void> _handleUnlinkEvent(ExploreEvent event) async {
+    final ctrl = GroupScope.of(context);
+    final group = ctrl.detailGroup;
+    final l10n = AppLocalizations.of(context);
+    if (group == null) return;
+
+    try {
+      await ctrl.unlinkEvent(group.id, event.id);
+    } catch (_) {
       _showMessage(l10n.groupsActionFailed);
     }
   }
 
   void _onFeedScroll() {
+    final ctrl = GroupScope.of(context);
     if (!_feedScrollController.hasClients ||
-        !_feedHasMore ||
-        _isLoadingMoreFeed) {
+        !ctrl.hasMoreFeed ||
+        ctrl.isLoadingMoreFeed) {
       return;
     }
     if (_feedScrollController.position.pixels >=
         _feedScrollController.position.maxScrollExtent - 200) {
-      _loadMoreFeed();
-    }
-  }
-
-  Future<void> _handleUnlinkEvent(ExploreEvent event) async {
-    final group = _group;
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final l10n = AppLocalizations.of(context);
-    if (group == null || tokens == null) {
-      return;
-    }
-
-    try {
-      await _groupRepository.unlinkEvent(
-        group.id,
-        event.id,
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
-      }
-      await _load(refreshOnly: true);
-    } catch (_) {
-      _showMessage(l10n.groupsActionFailed);
+      ctrl.loadMoreGroupFeed(widget.groupId);
     }
   }
 
@@ -900,50 +378,31 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     reasonController.dispose();
     descriptionController.dispose();
 
-    if (payload == null || payload.$1.isEmpty) {
-      return;
-    }
+    if (payload == null || payload.$1.isEmpty) return;
 
     try {
       await submit(payload.$1, payload.$2);
-      if (!mounted) {
-        return;
-      }
-      await _load(refreshOnly: true);
     } catch (_) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       _showMessage(l10n.groupsActionFailed);
     }
   }
 
   Future<void> _handleDeleteGroup() async {
-    final session = AuthScope.of(context);
-    final tokens = session.tokens;
-    final group = _group;
+    final ctrl = GroupScope.of(context);
+    final group = ctrl.detailGroup;
     final l10n = AppLocalizations.of(context);
-    if (tokens == null || group == null) {
-      return;
-    }
+    if (group == null) return;
 
     final confirmed = await _confirm(
       title: l10n.groupsDeleteGroupTitle,
       body: l10n.groupsDeleteGroupBody,
     );
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
-      await _groupRepository.deleteGroup(
-        group.id,
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
-      if (!mounted) {
-        return;
-      }
+      await ctrl.deleteGroup(group.id);
+      if (!mounted) return;
       context.go('/hub/community');
     } catch (_) {
       _showMessage(l10n.groupsActionFailed);
@@ -983,8 +442,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
+    final ctrl = GroupScope.of(context);
 
-    if (_groupLoading) {
+    if (ctrl.isDetailLoading) {
       return Scaffold(
         backgroundColor: scheme.surface,
         appBar: AppBar(
@@ -995,7 +455,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
       );
     }
 
-    if (_groupError != null || _group == null) {
+    if (ctrl.detailError != null || ctrl.detailGroup == null) {
       return Scaffold(
         backgroundColor: scheme.surface,
         appBar: AppBar(
@@ -1011,7 +471,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                 Text(l10n.groupsErrorSubtitle, textAlign: TextAlign.center),
                 const SizedBox(height: 16),
                 FilledButton(
-                  onPressed: () => _load(),
+                  onPressed: () => ctrl.loadGroupDetail(widget.groupId),
                   child: Text(l10n.exploreRetryButton),
                 ),
               ],
@@ -1021,7 +481,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
       );
     }
 
-    final group = _group!;
+    final group = ctrl.detailGroup!;
     final session = AuthScope.of(context);
     final tokens = session.tokens;
     final profile = session.profile;
@@ -1054,31 +514,26 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
             PopupMenuButton<String>(
               onSelected: (value) async {
                 if (value == 'report') {
-                  if (tokens == null) {
-                    return;
-                  }
+                  if (tokens == null) return;
                   await _showReportDialog(
                     title: l10n.groupsReportGroupTitle,
-                    submit: (reason, description) =>
-                        _groupRepository.reportGroup(
-                          group.id,
-                          GroupReportRequest(
-                            targetType: 'group',
-                            targetId: group.id,
-                            reason: reason,
-                            description: description,
-                            groupId: group.id,
-                          ),
-                          accessToken: tokens.accessToken,
-                          tokenType: tokens.tokenType,
-                        ),
+                    submit: (reason, description) => ctrl.reportGroup(
+                      group.id,
+                      GroupReportRequest(
+                        targetType: 'group',
+                        targetId: group.id,
+                        reason: reason,
+                        description: description,
+                        groupId: group.id,
+                      ),
+                    ),
                   );
                 } else if (value == 'edit') {
                   await context.push('/groups/${group.id}/edit');
-                  if (!mounted) {
-                    return;
-                  }
-                  await _load(refreshOnly: true);
+                  if (!mounted) return;
+                  unawaited(
+                    ctrl.loadGroupDetail(widget.groupId, refreshOnly: true),
+                  );
                 } else if (value == 'delete') {
                   await _handleDeleteGroup();
                 }
@@ -1119,7 +574,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
               canJoinOrLeave: tokens != null && !group.isBanned,
             ),
             if (_hasVisualMetadata(group)) _GroupVisualsCard(group: group),
-            if (_isRefreshing) const LinearProgressIndicator(),
+            if (ctrl.isDetailRefreshing) const LinearProgressIndicator(),
             Expanded(
               child: TabBarView(
                 children: [
@@ -1127,12 +582,12 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                     canPost: group.isMember,
                     currentUserId: profile?.id,
                     isSubmittingPost: _isSubmittingPost,
-                    isLoading: _feedLoading,
-                    error: _feedError,
-                    isLoadingMore: _isLoadingMoreFeed,
+                    isLoading: false,
+                    error: null,
+                    isLoadingMore: ctrl.isLoadingMoreFeed,
                     scrollController: _feedScrollController,
-                    items: _feed,
-                    onRetry: () => _loadFeed(),
+                    items: ctrl.detailFeed,
+                    onRetry: () => ctrl.loadGroupFeed(widget.groupId, page: 0),
                     onCreatePost: () => _handleCreatePost(),
                     onEditPost: (item) => _handleCreatePost(
                       editingPost: GroupPost(
@@ -1144,138 +599,98 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                     onHidePost: _handleHidePost,
                     onOpenEvent: (eventId) => context.push('/events/$eventId'),
                     onReportPost: (item) async {
-                      if (tokens == null) {
-                        return;
-                      }
+                      if (tokens == null) return;
                       await _showReportDialog(
                         title: l10n.groupsReportPostTitle,
-                        submit: (reason, description) =>
-                            _groupRepository.reportPost(
-                              group.id,
-                              item.id,
-                              GroupReportRequest(
-                                targetType: 'post',
-                                targetId: item.id,
-                                reason: reason,
-                                description: description,
-                                groupId: group.id,
-                              ),
-                              accessToken: tokens.accessToken,
-                              tokenType: tokens.tokenType,
-                            ),
+                        submit: (reason, description) => ctrl.reportPost(
+                          group.id,
+                          item.id,
+                          GroupReportRequest(
+                            targetType: 'post',
+                            targetId: item.id,
+                            reason: reason,
+                            description: description,
+                            groupId: group.id,
+                          ),
+                        ),
                       );
                     },
                     onReportEvent: (item) async {
-                      if (tokens == null || item.eventId == null) {
-                        return;
-                      }
+                      if (tokens == null || item.eventId == null) return;
                       await _showReportDialog(
                         title: l10n.groupsReportEventTitle,
-                        submit: (reason, description) =>
-                            _groupRepository.reportEvent(
-                              group.id,
-                              item.eventId!,
-                              GroupReportRequest(
-                                targetType: 'group_event',
-                                targetId: item.eventId!,
-                                reason: reason,
-                                description: description,
-                                groupId: group.id,
-                              ),
-                              accessToken: tokens.accessToken,
-                              tokenType: tokens.tokenType,
-                            ),
+                        submit: (reason, description) => ctrl.reportEvent(
+                          group.id,
+                          item.eventId!,
+                          GroupReportRequest(
+                            targetType: 'group_event',
+                            targetId: item.eventId!,
+                            reason: reason,
+                            description: description,
+                            groupId: group.id,
+                          ),
+                        ),
                       );
                     },
                   ),
                   _MembersTab(
-                    members: _members,
-                    isLoadingMembers: _membersLoading,
-                    membersError: _membersError,
-                    joinRequests: _joinRequests,
-                    isLoadingJoinRequests: _joinRequestsLoading,
-                    joinRequestsError: _joinRequestsError,
+                    members: ctrl.detailMembers,
+                    isLoadingMembers: false,
+                    membersError: null,
+                    joinRequests: ctrl.detailJoinRequests,
+                    isLoadingJoinRequests: false,
+                    joinRequestsError: null,
                     canModerate: canModerate,
                     ownerUserId: group.ownerUserId,
                     currentUserId: profile?.id,
-                    onRetryMembers: () => _loadMembers(),
-                    onRetryJoinRequests: () => _loadJoinRequests(),
+                    onRetryMembers: () => ctrl.loadGroupMembers(widget.groupId),
+                    onRetryJoinRequests: () =>
+                        ctrl.loadGroupJoinRequests(widget.groupId),
                     onApproveRequest: _handleApproveRequest,
                     onRejectRequest: _handleRejectRequest,
                     onMemberAction: _handleMemberAction,
                     canTransferOwnership: canTransferOwnership,
                   ),
                   _EventsTab(
-                    events: _events,
-                    isLoading: _eventsLoading,
-                    error: _eventsError,
+                    events: ctrl.detailEvents,
+                    isLoading: false,
+                    error: null,
                     canCreateEvents: canCreateEvents,
                     canLinkEvents: canLinkEvents,
                     canUnlinkEvents: canModerate,
-                    onRetry: () => _loadEvents(),
+                    onRetry: () => ctrl.loadGroupEvents(widget.groupId),
                     onCreateEvent: _handleCreateEventForGroup,
                     onLinkEvent: _handleLinkExistingEvent,
                     onUnlinkEvent: _handleUnlinkEvent,
                     onOpenEvent: (event) => context.push('/events/${event.id}'),
                     onReportEvent: (event) async {
-                      if (tokens == null) {
-                        return;
-                      }
+                      if (tokens == null) return;
                       await _showReportDialog(
                         title: l10n.groupsReportEventTitle,
-                        submit: (reason, description) =>
-                            _groupRepository.reportEvent(
-                              group.id,
-                              event.id,
-                              GroupReportRequest(
-                                targetType: 'group_event',
-                                targetId: event.id,
-                                reason: reason,
-                                description: description,
-                                groupId: group.id,
-                              ),
-                              accessToken: tokens.accessToken,
-                              tokenType: tokens.tokenType,
-                            ),
+                        submit: (reason, description) => ctrl.reportEvent(
+                          group.id,
+                          event.id,
+                          GroupReportRequest(
+                            targetType: 'group_event',
+                            targetId: event.id,
+                            reason: reason,
+                            description: description,
+                            groupId: group.id,
+                          ),
+                        ),
                       );
                     },
                   ),
                   _ManageTab(
                     canModerate: canModerate,
-                    isLoading: _reportsLoading,
-                    error: _reportsError,
-                    reports: _reports,
-                    onRetry: () => _loadReports(),
-                    onResolveReport: (report) async {
-                      if (tokens == null) {
-                        return;
-                      }
-                      await _groupRepository.resolveReport(
-                        group.id,
-                        report.id,
-                        accessToken: tokens.accessToken,
-                        tokenType: tokens.tokenType,
-                      );
-                      if (!mounted) {
-                        return;
-                      }
-                      await _load(refreshOnly: true);
-                    },
-                    onRejectReport: (report) async {
-                      if (tokens == null) {
-                        return;
-                      }
-                      await _groupRepository.rejectReport(
-                        group.id,
-                        report.id,
-                        accessToken: tokens.accessToken,
-                        tokenType: tokens.tokenType,
-                      );
-                      if (!mounted) {
-                        return;
-                      }
-                      await _load(refreshOnly: true);
-                    },
+                    isLoading: false,
+                    error: null,
+                    reports: ctrl.detailReports,
+                    onRetry: () => ctrl.loadGroupReports(widget.groupId),
+                    onResolveReport: (report) =>
+                        ctrl.resolveReport(group.id, report.id),
+                    onRejectReport: (report) =>
+                        ctrl.rejectReport(group.id, report.id),
                   ),
                 ],
               ),

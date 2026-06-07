@@ -202,6 +202,30 @@ class Group {
   bool get isPending => currentUserMembership == GroupMembershipStatus.pending;
   bool get isBanned => currentUserMembership == GroupMembershipStatus.banned;
   bool get isAdmin => currentUserRole == GroupRole.admin;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      if (description != null) 'description': description,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (categoryName != null) 'categoryName': categoryName,
+      'visibility': visibility.toJson(),
+      if (avatarUrl != null) 'avatarUrl': avatarUrl,
+      if (iconUrl != null) 'iconUrl': iconUrl,
+      if (mapPinIconUrl != null) 'mapPinIconUrl': mapPinIconUrl,
+      if (mapPinStyle != null) 'mapPinStyle': mapPinStyle,
+      if (ownerUserId != null) 'ownerUserId': ownerUserId,
+      if (createdByUserId != null) 'createdByUserId': createdByUserId,
+      if (status != null) 'status': status,
+      'memberCount': memberCount,
+      if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt!.toUtc().toIso8601String(),
+      if (currentUserMembership != null)
+        'currentUserMembership': currentUserMembership!.toJson(),
+      if (currentUserRole != null) 'currentUserRole': currentUserRole!.toJson(),
+    };
+  }
 }
 
 class GroupMember {
@@ -245,6 +269,23 @@ class GroupMember {
       bannedByUserId: json['bannedByUserId'] as String?,
       banReason: json['banReason'] as String?,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'username': username,
+      if (avatarUrl != null) 'avatarUrl': avatarUrl,
+      if (role != null) 'role': role!.toJson(),
+      if (status != null) 'status': status!.toJson(),
+      if (joinedAt != null) 'joinedAt': joinedAt!.toUtc().toIso8601String(),
+      if (approvedAt != null)
+        'approvedAt': approvedAt!.toUtc().toIso8601String(),
+      if (approvedByUserId != null) 'approvedByUserId': approvedByUserId,
+      if (bannedAt != null) 'bannedAt': bannedAt!.toUtc().toIso8601String(),
+      if (bannedByUserId != null) 'bannedByUserId': bannedByUserId,
+      if (banReason != null) 'banReason': banReason,
+    };
   }
 }
 
@@ -293,6 +334,24 @@ class GroupFeedItem {
       canModerate: json['canModerate'] as bool? ?? false,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type.name,
+      'id': id,
+      if (authorId != null) 'authorId': authorId,
+      if (authorUsername != null) 'authorUsername': authorUsername,
+      if (authorAvatarUrl != null) 'authorAvatarUrl': authorAvatarUrl,
+      if (content != null) 'content': content,
+      'mediaUrls': mediaUrls,
+      if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
+      if (eventId != null) 'eventId': eventId,
+      if (eventName != null) 'eventName': eventName,
+      if (eventStartAt != null)
+        'eventStartAt': eventStartAt!.toUtc().toIso8601String(),
+      'canModerate': canModerate,
+    };
+  }
 }
 
 class GroupPostRequest {
@@ -332,6 +391,18 @@ class GroupPost {
       status: json['status'] as String?,
       createdAt: _parseDate(json['createdAt'] as String?),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      if (groupId != null) 'groupId': groupId,
+      if (authorId != null) 'authorId': authorId,
+      if (authorUsername != null) 'authorUsername': authorUsername,
+      if (content != null) 'content': content,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
+    };
   }
 }
 
