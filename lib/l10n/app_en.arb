@@ -414,6 +414,7 @@
   "groupsDeleteGroupBody": "The group will be deleted for members and removed from discovery.",
   "groupsDeletePostTitle": "Delete post",
   "groupsDeletePostBody": "This post will disappear from the group feed.",
+  "groupsPostDeleteSuccess": "Post deleted.",
   "groupsActionFailed": "The action could not be completed.",
   "groupsEventGroupsLabel": "Linked groups",
   "groupsEventGroupsOptionalHint": "Leave empty to create a public event, or select groups to attach it.",

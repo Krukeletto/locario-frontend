@@ -1922,6 +1922,12 @@ abstract class AppLocalizations {
   /// **'This post will disappear from the group feed.'**
   String get groupsDeletePostBody;
 
+  /// No description provided for @groupsPostDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Post deleted.'**
+  String get groupsPostDeleteSuccess;
+
   /// No description provided for @groupsActionFailed.
   ///
   /// In en, this message translates to:

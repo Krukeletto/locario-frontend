@@ -1016,6 +1016,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get groupsDeletePostBody => 'Ten post zniknie z feedu grupy.';
 
   @override
+  String get groupsPostDeleteSuccess => 'Post został usunięty.';
+
+  @override
   String get groupsActionFailed => 'Nie udało się wykonać tej akcji.';
 
   @override

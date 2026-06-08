@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
@@ -17,6 +19,59 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../test_helpers/fake_event_repository.dart';
 import '../../test_helpers/test_app.dart';
+
+class MemoryAuthStorage implements AuthTokenStorage {
+  AuthTokens? stored;
+
+  @override
+  Future<void> saveTokens(AuthTokens tokens) async {
+    stored = tokens;
+  }
+
+  @override
+  Future<AuthTokens?> readTokens() async => stored;
+
+  @override
+  Future<void> clear() async {
+    stored = null;
+  }
+}
+
+class _FakeAuthApi extends AuthApi {
+  _FakeAuthApi({required this.profile}) : super();
+
+  final UserProfile profile;
+
+  @override
+  Future<AuthResponse> login(LoginRequest request) =>
+      throw StateError('login not configured');
+
+  @override
+  Future<AuthResponse> register(RegisterRequest request) =>
+      throw StateError('register not configured');
+
+  @override
+  Future<AuthResponse> refresh(String refreshToken) =>
+      throw StateError('refresh not configured');
+
+  @override
+  Future<AuthResponse> loginWithGoogle(String idToken) =>
+      throw StateError('loginWithGoogle not configured');
+
+  @override
+  Future<UserProfile> fetchProfile({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    return profile;
+  }
+
+  @override
+  Future<void> logout({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {}
+}
 
 void main() {
   setUp(() {
@@ -58,6 +113,52 @@ void main() {
 
     expect(find.text('No feed yet'), findsOneWidget);
     expect(find.text('Member details'), findsNothing);
+  });
+
+  testWidgets('publishes a post without errors', (tester) async {
+    final sessionController = await _createAuthenticatedSessionController();
+    final groupRepository = _FakeGroupRepository(
+      detailGroup: const Group(
+        id: 'group-1',
+        name: 'Climbing Club',
+        description: 'Member details',
+        categoryName: 'Sport',
+        memberCount: 12,
+        currentUserMembership: GroupMembershipStatus.active,
+      ),
+    );
+    final groupController = GroupController(
+      groupRepository: groupRepository,
+      eventRepository: FakeEventRepository(),
+      cacheService: _StubCacheService(),
+      sessionController: sessionController,
+    );
+
+    await _pumpGroupDetails(
+      tester,
+      group: const Group(
+        id: 'group-1',
+        name: 'Climbing Club',
+        description: 'Member details',
+        categoryName: 'Sport',
+        memberCount: 12,
+        currentUserMembership: GroupMembershipStatus.active,
+      ),
+      sessionController: sessionController,
+      groupController: groupController,
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Write post'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Hello from the wall');
+    await tester.tap(find.text('Publish'));
+    await tester.pumpAndSettle();
+
+    expect(groupRepository.createdPostContents, ['Hello from the wall']);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('shows feed timestamps and event authors', (tester) async {
@@ -109,6 +210,79 @@ void main() {
     expect(find.byIcon(Icons.person_outline_rounded), findsNWidgets(2));
     expect(find.byIcon(Icons.schedule_rounded), findsNWidgets(2));
   });
+
+  testWidgets('removes a post immediately on delete', (tester) async {
+    final sessionController = await _createAuthenticatedSessionController();
+    final deleteCompleter = Completer<void>();
+    final groupRepository = _FakeGroupRepository(
+      detailGroup: const Group(
+        id: 'group-1',
+        name: 'Climbing Club',
+        description: 'Member details',
+        categoryName: 'Sport',
+        memberCount: 12,
+        currentUserMembership: GroupMembershipStatus.active,
+      ),
+      feedItems: [
+        GroupFeedItem(
+          type: GroupFeedItemType.post,
+          id: 'post-1',
+          authorId: 'user-1',
+          authorUsername: 'tester',
+          content: 'Delete me',
+          createdAt: DateTime(2026, 6, 8, 12, 0),
+        ),
+      ],
+      deletePostCompleter: deleteCompleter,
+    );
+    final groupController = GroupController(
+      groupRepository: groupRepository,
+      eventRepository: FakeEventRepository(),
+      cacheService: _StubCacheService(),
+      sessionController: sessionController,
+    );
+
+    await _pumpGroupDetails(
+      tester,
+      group: const Group(
+        id: 'group-1',
+        name: 'Climbing Club',
+        description: 'Member details',
+        categoryName: 'Sport',
+        memberCount: 12,
+        currentUserMembership: GroupMembershipStatus.active,
+      ),
+      sessionController: sessionController,
+      groupController: groupController,
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Delete me'), findsOneWidget);
+
+    await tester.tap(
+      find
+          .descendant(
+            of: find.byType(TabBarView),
+            matching: find.byType(PopupMenuButton<String>),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Confirm'));
+    await tester.pump();
+
+    expect(find.text('Delete me'), findsNothing);
+    expect(find.text('Post deleted.'), findsOneWidget);
+
+    deleteCompleter.complete();
+    await tester.pumpAndSettle();
+
+    expect(groupRepository.deletedPostIds, ['post-1']);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<void> _pumpGroupDetails(
@@ -116,35 +290,76 @@ Future<void> _pumpGroupDetails(
   required Group group,
   List<GroupFeedItem> feedItems = const [],
   List<ExploreEvent> events = const [],
+  SessionController? sessionController,
+  GroupController? groupController,
 }) async {
-  final sessionController = SessionController(
-    authRepository: AuthRepository(
-      api: AuthApi(),
-      storage: _FakeTokenStorage(),
-    ),
-  );
+  final resolvedSessionController =
+      sessionController ??
+      SessionController(
+        authRepository: AuthRepository(
+          api: AuthApi(),
+          storage: _FakeTokenStorage(),
+        ),
+      );
 
-  final groupController = GroupController(
-    groupRepository: _FakeGroupRepository(
-      detailGroup: group,
-      feedItems: feedItems,
-      events: events,
-    ),
-    eventRepository: FakeEventRepository(),
-    cacheService: _StubCacheService(),
-    sessionController: sessionController,
-  );
+  final resolvedGroupController =
+      groupController ??
+      GroupController(
+        groupRepository: _FakeGroupRepository(
+          detailGroup: group,
+          feedItems: feedItems,
+          events: events,
+        ),
+        eventRepository: FakeEventRepository(),
+        cacheService: _StubCacheService(),
+        sessionController: resolvedSessionController,
+      );
 
   await tester.pumpWidget(
     buildLocalizedTestApp(
       home: AuthScope(
-        controller: sessionController,
+        controller: resolvedSessionController,
         child: GroupScope(
-          controller: groupController,
+          controller: resolvedGroupController,
           child: const GroupDetailsScreen(groupId: 'group-1'),
         ),
       ),
     ),
+  );
+}
+
+Future<SessionController> _createAuthenticatedSessionController() async {
+  final storage = MemoryAuthStorage()
+    ..stored = AuthTokens(
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      tokenType: 'Bearer',
+      expiresAt: DateTime.utc(2026, 6, 8, 12),
+    );
+  final controller = SessionController(
+    authRepository: AuthRepository(
+      api: _FakeAuthApi(profile: _profile()),
+      storage: storage,
+      now: () => DateTime.utc(2026, 6, 8, 11),
+    ),
+  );
+  await controller.load();
+  return controller;
+}
+
+UserProfile _profile() {
+  return UserProfile(
+    id: 'user-1',
+    username: 'tester',
+    email: 'tester@example.com',
+    hasPassword: true,
+    avatarUrl: null,
+    bio: null,
+    websiteUrl: null,
+    instagramUrl: null,
+    facebookUrl: null,
+    createdAt: DateTime.utc(2026, 6, 1),
+    eventRegistrations: const [],
   );
 }
 
@@ -202,15 +417,19 @@ class _FakeTokenStorage implements AuthTokenStorage {
 }
 
 class _FakeGroupRepository implements GroupRepository {
-  const _FakeGroupRepository({
+  _FakeGroupRepository({
     required this.detailGroup,
     this.feedItems = const [],
     this.events = const [],
+    this.deletePostCompleter,
   });
 
   final Group detailGroup;
   final List<GroupFeedItem> feedItems;
   final List<ExploreEvent> events;
+  final Completer<void>? deletePostCompleter;
+  final List<String> createdPostContents = [];
+  final List<String> deletedPostIds = [];
 
   @override
   Future<List<Group>> fetchDiscoverGroups({
@@ -363,7 +582,18 @@ class _FakeGroupRepository implements GroupRepository {
     GroupPostRequest request, {
     required String accessToken,
     String tokenType = 'Bearer',
-  }) => throw UnimplementedError();
+  }) async {
+    createdPostContents.add(request.content);
+    return GroupPost(
+      id: 'post-created',
+      groupId: groupId,
+      authorId: 'user-1',
+      authorUsername: 'tester',
+      content: request.content,
+      status: 'published',
+      createdAt: DateTime.utc(2026, 6, 8),
+    );
+  }
 
   @override
   Future<GroupPost> updatePost(
@@ -380,7 +610,12 @@ class _FakeGroupRepository implements GroupRepository {
     String postId, {
     required String accessToken,
     String tokenType = 'Bearer',
-  }) => throw UnimplementedError();
+  }) async {
+    deletedPostIds.add(postId);
+    if (deletePostCompleter != null) {
+      await deletePostCompleter!.future;
+    }
+  }
 
   @override
   Future<GroupPost> hidePost(

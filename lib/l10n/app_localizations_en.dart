@@ -1008,6 +1008,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'This post will disappear from the group feed.';
 
   @override
+  String get groupsPostDeleteSuccess => 'Post deleted.';
+
+  @override
   String get groupsActionFailed => 'The action could not be completed.';
 
   @override

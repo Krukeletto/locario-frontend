@@ -642,26 +642,26 @@ class GroupController extends ChangeNotifier {
 
   Future<void> deletePost(String groupId, String postId) async {
     if (_accessToken == null) return;
-    try {
-      await _groupRepository.deletePost(
-        groupId,
-        postId,
-        accessToken: _accessToken!,
-        tokenType: _tokenType,
-      );
-    } catch (_) {}
+    final removal = _removeFeedPost(postId);
+    if (removal != null) {
+      notifyListeners();
+    }
+
+    unawaited(
+      _deletePostRemotely(groupId: groupId, postId: postId, removal: removal),
+    );
   }
 
   Future<void> hidePost(String groupId, String postId) async {
     if (_accessToken == null) return;
-    try {
-      await _groupRepository.hidePost(
-        groupId,
-        postId,
-        accessToken: _accessToken!,
-        tokenType: _tokenType,
-      );
-    } catch (_) {}
+    final removal = _removeFeedPost(postId);
+    if (removal != null) {
+      notifyListeners();
+    }
+
+    unawaited(
+      _hidePostRemotely(groupId: groupId, postId: postId, removal: removal),
+    );
   }
 
   Future<void> changeRole(String groupId, String userId, GroupRole role) async {
@@ -853,4 +853,70 @@ class GroupController extends ChangeNotifier {
         (group.ownerUserId != null &&
             group.ownerUserId == _sessionController.profile?.id);
   }
+
+  _RemovedFeedPost? _removeFeedPost(String postId) {
+    final index = _detailFeed.indexWhere((item) {
+      return item.type == GroupFeedItemType.post && item.id == postId;
+    });
+    if (index == -1) {
+      return null;
+    }
+
+    final removed = _detailFeed.removeAt(index);
+    return _RemovedFeedPost(item: removed, index: index);
+  }
+
+  void _restoreFeedPost(_RemovedFeedPost removal) {
+    final insertIndex = removal.index.clamp(0, _detailFeed.length).toInt();
+    _detailFeed.insert(insertIndex, removal.item);
+  }
+
+  Future<void> _deletePostRemotely({
+    required String groupId,
+    required String postId,
+    required _RemovedFeedPost? removal,
+  }) async {
+    try {
+      await _groupRepository.deletePost(
+        groupId,
+        postId,
+        accessToken: _accessToken!,
+        tokenType: _tokenType,
+      );
+      await _cache.invalidateByPrefix('group_feed_$groupId');
+    } catch (_) {
+      if (removal != null) {
+        _restoreFeedPost(removal);
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<void> _hidePostRemotely({
+    required String groupId,
+    required String postId,
+    required _RemovedFeedPost? removal,
+  }) async {
+    try {
+      await _groupRepository.hidePost(
+        groupId,
+        postId,
+        accessToken: _accessToken!,
+        tokenType: _tokenType,
+      );
+      await _cache.invalidateByPrefix('group_feed_$groupId');
+    } catch (_) {
+      if (removal != null) {
+        _restoreFeedPost(removal);
+        notifyListeners();
+      }
+    }
+  }
+}
+
+class _RemovedFeedPost {
+  const _RemovedFeedPost({required this.item, required this.index});
+
+  final GroupFeedItem item;
+  final int index;
 }

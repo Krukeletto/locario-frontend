@@ -102,42 +102,21 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     final session = AuthScope.of(context);
     if (session.tokens == null) return;
 
-    final controller = TextEditingController(text: editingPost?.content ?? '');
     final l10n = AppLocalizations.of(context);
     final content = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          editingPost == null
-              ? l10n.groupsPostCreateTitle
-              : l10n.groupsPostEditTitle,
-        ),
-        content: TextField(
-          controller: controller,
-          maxLines: 6,
-          maxLength: 10000,
-          decoration: InputDecoration(
-            hintText: l10n.groupsPostHint,
-            counterText: null,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.profileBecomeOrganizerDialogCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: Text(
-              editingPost == null
-                  ? l10n.groupsPostPublish
-                  : l10n.groupsSaveChanges,
-            ),
-          ),
-        ],
+      builder: (context) => _PostComposerDialog(
+        title: editingPost == null
+            ? l10n.groupsPostCreateTitle
+            : l10n.groupsPostEditTitle,
+        hintText: l10n.groupsPostHint,
+        initialValue: editingPost?.content ?? '',
+        cancelLabel: l10n.profileBecomeOrganizerDialogCancel,
+        confirmLabel: editingPost == null
+            ? l10n.groupsPostPublish
+            : l10n.groupsSaveChanges,
       ),
     );
-    controller.dispose();
 
     if (content == null || content.isEmpty) return;
 
@@ -152,17 +131,17 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         await ctrl.updatePost(group.id, editingPost.id, content);
       }
       if (!mounted) return;
-      setState(() {
-        _isSubmittingPost = false;
-      });
       _postController.clear();
       await ctrl.loadGroupFeed(group.id, page: 0);
     } catch (_) {
       if (!mounted) return;
-      setState(() {
-        _isSubmittingPost = false;
-      });
       _showMessage(l10n.groupsActionFailed);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmittingPost = false;
+        });
+      }
     }
   }
 
@@ -180,6 +159,13 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
 
     try {
       await ctrl.deletePost(group.id, item.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.groupsPostDeleteSuccess),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } catch (_) {
       _showMessage(l10n.groupsActionFailed);
     }
@@ -315,55 +301,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     submit,
   }) async {
     final l10n = AppLocalizations.of(context);
-    final reasonController = TextEditingController();
-    final descriptionController = TextEditingController();
-
     final payload = await showDialog<(String, String?)>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: reasonController,
-                decoration: InputDecoration(
-                  labelText: l10n.groupsReportReasonLabel,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: descriptionController,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  labelText: l10n.groupsReportDescriptionLabel,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.profileBecomeOrganizerDialogCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop((
-                reasonController.text.trim(),
-                descriptionController.text.trim().isEmpty
-                    ? null
-                    : descriptionController.text.trim(),
-              ));
-            },
-            child: Text(l10n.groupsReportSubmit),
-          ),
-        ],
-      ),
+      builder: (context) => _GroupReportDialog(title: title),
     );
-    reasonController.dispose();
-    descriptionController.dispose();
 
     if (payload == null || payload.$1.isEmpty) return;
 
@@ -682,6 +623,141 @@ class _HeaderChip extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
+    );
+  }
+}
+
+class _PostComposerDialog extends StatefulWidget {
+  const _PostComposerDialog({
+    required this.title,
+    required this.hintText,
+    required this.initialValue,
+    required this.cancelLabel,
+    required this.confirmLabel,
+  });
+
+  final String title;
+  final String hintText;
+  final String initialValue;
+  final String cancelLabel;
+  final String confirmLabel;
+
+  @override
+  State<_PostComposerDialog> createState() => _PostComposerDialogState();
+}
+
+class _PostComposerDialogState extends State<_PostComposerDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        maxLines: 6,
+        maxLength: 10000,
+        decoration: InputDecoration(
+          hintText: widget.hintText,
+          counterText: null,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(widget.cancelLabel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          child: Text(widget.confirmLabel),
+        ),
+      ],
+    );
+  }
+}
+
+class _GroupReportDialog extends StatefulWidget {
+  const _GroupReportDialog({required this.title});
+
+  final String title;
+
+  @override
+  State<_GroupReportDialog> createState() => _GroupReportDialogState();
+}
+
+class _GroupReportDialogState extends State<_GroupReportDialog> {
+  late final TextEditingController _reasonController;
+  late final TextEditingController _descriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _reasonController = TextEditingController();
+    _descriptionController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(widget.title),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _reasonController,
+              decoration: InputDecoration(
+                labelText: l10n.groupsReportReasonLabel,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _descriptionController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                labelText: l10n.groupsReportDescriptionLabel,
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.profileBecomeOrganizerDialogCancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            Navigator.of(context).pop((
+              _reasonController.text.trim(),
+              _descriptionController.text.trim().isEmpty
+                  ? null
+                  : _descriptionController.text.trim(),
+            ));
+          },
+          child: Text(l10n.groupsReportSubmit),
+        ),
+      ],
     );
   }
 }

@@ -414,6 +414,7 @@
   "groupsDeleteGroupBody": "Grupa zostanie usunięta dla członków i zniknie z discover.",
   "groupsDeletePostTitle": "Usuń post",
   "groupsDeletePostBody": "Ten post zniknie z feedu grupy.",
+  "groupsPostDeleteSuccess": "Post został usunięty.",
   "groupsActionFailed": "Nie udało się wykonać tej akcji.",
   "groupsEventGroupsLabel": "Powiązane grupy",
   "groupsEventGroupsOptionalHint": "Pozostaw puste, aby utworzyć event publiczny, albo wybierz grupy do przypięcia.",
