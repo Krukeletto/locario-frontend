@@ -155,7 +155,7 @@ class _EventReviewScreenState extends State<EventReviewScreen> {
           : error != null
           ? StatePanel.error(
               title: l10n.eventReviewErrorTitle,
-              subtitle: l10n.eventReviewErrorSubtitle,
+              subtitle: error,
               retryLabel: l10n.exploreRetryButton,
               onRetry: () => eventDetailController.loadEvent(
                 widget.eventId,

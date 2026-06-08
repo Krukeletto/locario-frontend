@@ -185,6 +185,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventDetailsReviewButton => 'Write a review';
 
   @override
+  String get eventEditAction => 'Edit';
+
+  @override
+  String get eventEditScreenTitle => 'Edit event';
+
+  @override
+  String get eventEditSubmitButton => 'Save changes';
+
+  @override
+  String get eventUpdateSuccess => 'Event updated successfully.';
+
+  @override
   String get eventJoinSuccess => 'You\'re registered for this event.';
 
   @override
@@ -829,6 +841,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupsTabManage => 'Manage';
+
+  @override
+  String get groupsTabInfo => 'Info';
 
   @override
   String get groupsFeedEmptyTitle => 'No feed yet';

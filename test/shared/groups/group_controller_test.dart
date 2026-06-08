@@ -1,124 +1,200 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:locario/features/explore/models.dart';
-import 'package:locario/features/groups/group_discover_screen.dart';
 import 'package:locario/shared/auth/auth_api.dart';
 import 'package:locario/shared/auth/auth_models.dart';
 import 'package:locario/shared/auth/auth_repository.dart';
-import 'package:locario/shared/auth/auth_scope.dart';
 import 'package:locario/shared/auth/session_controller.dart';
 import 'package:locario/shared/cache/cache_service.dart';
-import 'package:locario/shared/events/category_controller.dart';
-import 'package:locario/shared/events/category_scope.dart';
 import 'package:locario/shared/groups/group_controller.dart';
 import 'package:locario/shared/groups/group_models.dart';
 import 'package:locario/shared/groups/group_repository.dart';
-import 'package:locario/shared/groups/group_scope.dart';
 
 import '../../test_helpers/fake_event_repository.dart';
-import '../../test_helpers/test_app.dart';
 
 void main() {
-  testWidgets('renders discover and my groups for organizer', (tester) async {
-    final categoryController = CategoryController(
-      eventRepository: FakeEventRepository(
-        categories: const [Category(id: 'music', name: 'Music', slug: 'music')],
-      ),
-    );
-    await categoryController.loadCategories();
-
-    final sessionController = await _createSessionController();
-    final groupController = GroupController(
-      groupRepository: const _FakeGroupRepository(
+  test(
+    'filters discover groups already in my groups and falls back for detail',
+    () async {
+      final sessionController = _TestSessionController(
+        tokens: AuthTokens(
+          accessToken: 'access-token',
+          refreshToken: 'refresh-token',
+          tokenType: 'Bearer',
+          expiresAt: DateTime.utc(2099, 1, 1),
+        ),
+        profile: _profile,
+      );
+      const repository = _FakeGroupRepository(
         discoverGroups: [
           Group(
-            id: 'group-1',
-            name: 'Jazz Crew',
-            categoryName: 'Music',
+            id: 'discover-1',
+            name: 'Open Group',
+            description: 'Visible in discover',
+            visibility: GroupVisibility.public,
             memberCount: 12,
           ),
-        ],
-        myGroups: [
           Group(
-            id: 'group-2',
-            name: 'Workshop Squad',
-            categoryName: 'Art',
+            id: 'my-1',
+            name: 'My Group',
+            description: 'Should be hidden from discover',
+            visibility: GroupVisibility.public,
             memberCount: 4,
             currentUserMembership: GroupMembershipStatus.active,
           ),
         ],
-      ),
-      eventRepository: FakeEventRepository(),
-      cacheService: _StubCacheService(),
-      sessionController: sessionController,
-    );
-
-    await tester.pumpWidget(
-      buildLocalizedTestApp(
-        home: AuthScope(
-          controller: sessionController,
-          child: CategoryScope(
-            controller: categoryController,
-            child: GroupScope(
-              controller: groupController,
-              child: const GroupDiscoverScreen(),
-            ),
+        myGroups: [
+          Group(
+            id: 'my-1',
+            name: 'My Group',
+            description: 'Should be hidden from discover',
+            visibility: GroupVisibility.public,
+            memberCount: 4,
+            currentUserMembership: GroupMembershipStatus.active,
           ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+        ],
+        detailGroups: {
+          'discover-1': Group(
+            id: 'discover-1',
+            name: 'Open Group',
+            description: 'Visible in discover',
+            visibility: GroupVisibility.public,
+            memberCount: 12,
+          ),
+        },
+      );
+      final controller = GroupController(
+        groupRepository: repository,
+        eventRepository: FakeEventRepository(),
+        cacheService: _MemoryCacheService(),
+        sessionController: sessionController,
+      );
 
-    expect(find.text('Create group'), findsOneWidget);
-    expect(find.text('Workshop Squad'), findsOneWidget);
-    expect(find.text('Jazz Crew'), findsNothing);
+      await controller.loadDiscoverGroups();
+      await controller.loadMyGroups();
 
-    await tester.tap(find.text('Discover'));
-    await tester.pumpAndSettle();
-    expect(find.text('Jazz Crew'), findsOneWidget);
-  });
+      expect(controller.discoverGroups, hasLength(1));
+      expect(controller.discoverGroups.single.id, 'discover-1');
+      expect(controller.discoverGroups.single.name, 'Open Group');
+
+      await controller.loadGroupDetail('discover-1');
+
+      expect(controller.detailError, isNull);
+      expect(controller.detailGroup, isNotNull);
+      expect(controller.detailGroup!.id, 'discover-1');
+      expect(controller.detailGroup!.name, 'Open Group');
+    },
+  );
 }
 
-class _StubCacheService extends CacheService {
+final _profile = UserProfile(
+  id: 'user-1',
+  username: 'tester',
+  email: 'tester@example.com',
+  hasPassword: true,
+  avatarUrl: null,
+  bio: null,
+  websiteUrl: null,
+  instagramUrl: null,
+  facebookUrl: null,
+  createdAt: DateTime.utc(2026),
+  eventRegistrations: const [],
+  organizer: false,
+  admin: false,
+);
+
+class _TestSessionController extends SessionController {
+  _TestSessionController({required this.tokens, required this.profile})
+    : super(
+        authRepository: AuthRepository(
+          api: AuthApi(client: http.Client(), baseUrl: 'http://localhost'),
+          storage: _MemoryAuthStorage(),
+        ),
+      );
+
+  @override
+  final AuthTokens? tokens;
+
+  @override
+  final UserProfile? profile;
+
+  @override
+  bool get isAuthenticated => tokens != null;
+
+  @override
+  bool get isLoading => false;
+}
+
+class _MemoryAuthStorage implements AuthTokenStorage {
+  AuthTokens? _tokens;
+
+  @override
+  Future<void> clear() async {
+    _tokens = null;
+  }
+
+  @override
+  Future<AuthTokens?> readTokens() async => _tokens;
+
+  @override
+  Future<void> saveTokens(AuthTokens tokens) async {
+    _tokens = tokens;
+  }
+}
+
+class _MemoryCacheService extends CacheService {
+  final Map<String, String> _raw = {};
+  final Map<String, int> _hashes = {};
+
   @override
   Future<void> init() async {}
 
   @override
-  Future<int?> getHash(String key) async => null;
+  Future<String?> getRaw(String key) async => _raw[key];
 
   @override
-  Future<List<T>?> getList<T>(
-    String key,
-    T Function(Map<String, dynamic>) fromJson,
-  ) async => null;
+  Future<void> setRaw(String key, String data, {int? hash}) async {
+    _raw[key] = data;
+    _hashes[key] = hash ?? data.hashCode;
+  }
 
   @override
-  Future<void> setList(
-    String key,
-    List<Map<String, dynamic>> data, {
-    int? hash,
-  }) async {}
+  Future<void> invalidate(String key) async {
+    _raw.remove(key);
+    _hashes.remove(key);
+  }
 
   @override
-  Future<void> invalidateByPrefix(String prefix) async {}
+  Future<void> invalidateByPrefix(String prefix) async {
+    final keys = _raw.keys.where((key) => key.startsWith(prefix)).toList();
+    for (final key in keys) {
+      await invalidate(key);
+    }
+  }
 
   @override
-  Future<void> clear() async {}
+  Future<void> clear() async {
+    _raw.clear();
+    _hashes.clear();
+  }
 
   @override
   Future<void> dispose() async {}
 
   @override
-  int computeHash(Object data) => 0;
+  Future<int?> getHash(String key) async => _hashes[key];
 }
 
 class _FakeGroupRepository implements GroupRepository {
   const _FakeGroupRepository({
     this.discoverGroups = const [],
     this.myGroups = const [],
+    this.detailGroups = const {},
   });
 
   final List<Group> discoverGroups;
   final List<Group> myGroups;
+  final Map<String, Group> detailGroups;
 
   @override
   Future<List<Group>> fetchDiscoverGroups({
@@ -141,7 +217,22 @@ class _FakeGroupRepository implements GroupRepository {
     String groupId, {
     String? accessToken,
     String tokenType = 'Bearer',
-  }) => throw UnimplementedError();
+  }) async {
+    final group = detailGroups[groupId];
+    if (group == null) {
+      throw const GroupRepositoryException(
+        'Unable to fetch group',
+        statusCode: 404,
+      );
+    }
+    if (accessToken != null) {
+      throw const GroupRepositoryException(
+        'Unable to fetch group',
+        statusCode: 403,
+      );
+    }
+    return group;
+  }
 
   @override
   Future<Group> createGroup(
@@ -192,7 +283,7 @@ class _FakeGroupRepository implements GroupRepository {
     String groupId, {
     String? accessToken,
     String tokenType = 'Bearer',
-  }) => throw UnimplementedError();
+  }) => throw const GroupRepositoryException('Unable to fetch members');
 
   @override
   Future<List<GroupMember>> fetchJoinRequests(
@@ -258,7 +349,7 @@ class _FakeGroupRepository implements GroupRepository {
     String tokenType = 'Bearer',
     int page = 0,
     int size = 20,
-  }) => throw UnimplementedError();
+  }) => throw const GroupRepositoryException('Unable to fetch feed');
 
   @override
   Future<GroupPost> createPost(
@@ -298,7 +389,7 @@ class _FakeGroupRepository implements GroupRepository {
     String groupId, {
     String? accessToken,
     String tokenType = 'Bearer',
-  }) => throw UnimplementedError();
+  }) => throw const GroupRepositoryException('Unable to fetch events');
 
   @override
   Future<void> linkEvent(
@@ -364,71 +455,4 @@ class _FakeGroupRepository implements GroupRepository {
     required String accessToken,
     String tokenType = 'Bearer',
   }) => throw UnimplementedError();
-}
-
-class _MemoryAuthStorage implements AuthTokenStorage {
-  AuthTokens? stored;
-
-  @override
-  Future<void> clear() async {
-    stored = null;
-  }
-
-  @override
-  Future<AuthTokens?> readTokens() async => stored;
-
-  @override
-  Future<void> saveTokens(AuthTokens tokens) async {
-    stored = tokens;
-  }
-}
-
-class _FakeAuthApi extends AuthApi {
-  _FakeAuthApi({required this.profile}) : super();
-
-  final UserProfile profile;
-
-  @override
-  Future<UserProfile> fetchProfile({
-    required String accessToken,
-    String tokenType = 'Bearer',
-  }) {
-    return Future.value(profile);
-  }
-}
-
-Future<SessionController> _createSessionController() async {
-  final storage = _MemoryAuthStorage();
-  storage.stored = AuthTokens(
-    accessToken: 'access-token',
-    refreshToken: 'refresh-token',
-    tokenType: 'Bearer',
-    expiresAt: DateTime.now().add(const Duration(hours: 1)),
-  );
-
-  final controller = SessionController(
-    authRepository: AuthRepository(
-      api: _FakeAuthApi(
-        profile: UserProfile(
-          id: 'organizer-id',
-          username: 'organizer',
-          email: 'organizer@example.com',
-          hasPassword: true,
-          avatarUrl: null,
-          bio: null,
-          websiteUrl: null,
-          instagramUrl: null,
-          facebookUrl: null,
-          createdAt: DateTime.utc(2026, 5, 1),
-          eventRegistrations: const [],
-          role: 'organizer',
-          organizer: true,
-        ),
-      ),
-      storage: storage,
-    ),
-  );
-
-  await controller.load();
-  return controller;
 }

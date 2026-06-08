@@ -504,6 +504,8 @@ class _EmptyAreaSearchRepository implements EventRepository {
     required double longitude,
     double? radiusKm,
     int? limit,
+    String? accessToken,
+    String tokenType = 'Bearer',
   }) async {
     if ((latitude - 52.0).abs() < 0.001) {
       await pendingSecondAreaSearch.future;
@@ -525,7 +527,10 @@ class _EmptyAreaSearchRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchEvents() async {
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     return fetchNearbyEvents(latitude: 51.0, longitude: 19.0);
   }
 }
@@ -637,6 +642,8 @@ class _SequencedEventRepository implements EventRepository {
     required double longitude,
     double? radiusKm,
     int? limit,
+    String? accessToken,
+    String tokenType = 'Bearer',
   }) async {
     lastNearbyLatitude = latitude;
     lastNearbyLongitude = longitude;
@@ -653,7 +660,10 @@ class _SequencedEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchEvents() async {
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     return fetchNearbyEvents(latitude: 0, longitude: 0);
   }
 }

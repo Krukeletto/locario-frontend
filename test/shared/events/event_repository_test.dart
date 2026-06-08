@@ -205,5 +205,38 @@ void main() {
 
       expect(event.organizers, ['alice']);
     });
+
+    test('fetchOrganizerEvents uses organizer me endpoint', () async {
+      late http.Request capturedRequest;
+      final repository = HttpEventRepository(
+        client: MockClient((request) async {
+          capturedRequest = request;
+          return http.Response(
+            jsonEncode([
+              {
+                'id': '11111111-1111-1111-1111-111111111111',
+                'name': 'Created event',
+                'latitude': 51.7592,
+                'longitude': 19.4550,
+                'startAt': '2026-04-12T19:00:00Z',
+              },
+            ]),
+            200,
+          );
+        }),
+        baseUrl: 'http://example.com',
+      );
+
+      final events = await repository.fetchOrganizerEvents(
+        accessToken: 'access-token',
+      );
+
+      expect(events, hasLength(1));
+      expect(capturedRequest.url.path, '/api/organizer/events/me');
+      expect(capturedRequest.url.queryParameters['page'], '0');
+      expect(capturedRequest.url.queryParameters['size'], '50');
+      expect(capturedRequest.url.queryParameters['sort'], 'startAt');
+      expect(capturedRequest.url.queryParameters['direction'], 'desc');
+    });
   });
 }

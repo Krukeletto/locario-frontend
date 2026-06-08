@@ -27,6 +27,8 @@ class FakeEventRepository implements EventRepository {
   final List<String> uploadedFileNames = [];
   String? lastThumbnailEventId;
   String? lastThumbnailMediaId;
+  String? lastUpdateEventId;
+  EventRequest? lastUpdateInput;
 
   @override
   Future<ExploreEvent> createEvent(
@@ -49,6 +51,8 @@ class FakeEventRepository implements EventRepository {
     required String accessToken,
     String tokenType = 'Bearer',
   }) async {
+    lastUpdateEventId = id;
+    lastUpdateInput = request;
     return eventDetails;
   }
 
@@ -62,7 +66,10 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchEvents() async {
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     if (fetchEventsError != null) {
       throw fetchEventsError!;
     }
@@ -76,6 +83,8 @@ class FakeEventRepository implements EventRepository {
     required double longitude,
     double? radiusKm,
     int? limit,
+    String? accessToken,
+    String tokenType = 'Bearer',
   }) async {
     return events;
   }

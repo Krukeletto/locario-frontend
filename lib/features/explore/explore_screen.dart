@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../shared/auth/auth_scope.dart';
+import '../../shared/cache/cache_scope.dart';
 import '../../shared/events/event_repository.dart';
 import '../../shared/location/location_service.dart';
 import '../../shared/map/style_repository.dart';
@@ -104,12 +106,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _mapViewModel.addListener(_handleMapViewModelChanged);
 
     _refreshSubscription = widget.eventRefreshSignal?.listen((_) {
-      _exploreController.loadEvents(forceRefresh: true);
+      _loadEvents(forceRefresh: true);
     });
 
     _autoRefreshTimer = Timer.periodic(widget.autoRefreshInterval, (_) {
       if (mounted) {
-        _exploreController.loadEvents();
+        _loadEvents();
       }
     });
 
@@ -264,10 +266,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     if (unseenIds.isEmpty) return;
 
     _notifiedEventIds.addAll(unseenIds);
-
-    debugPrint(
-      'Filter notifications: ${unseenIds.length} new events match saved filters.',
-    );
   }
 
   void _consumePendingFilter(BuildContext context) {
@@ -391,6 +389,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
     }
   }
 
+  void _loadEvents({bool forceRefresh = false}) {
+    final auth = AuthScope.maybeOf(context);
+    final cache = CacheScope.maybeOf(context);
+    _exploreController.loadEvents(
+      forceRefresh: forceRefresh,
+      accessToken: auth?.tokens?.accessToken,
+      tokenType: auth?.tokens?.tokenType ?? 'Bearer',
+      cache: cache,
+    );
+  }
+
   void _handleEventTap(ExploreEvent event) {
     context.push('/events/${event.id}');
   }
@@ -480,7 +489,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         title: _errorTitle(type, l10n),
         subtitle: _errorSubtitle(type, l10n, details),
         retryLabel: l10n.exploreRetryButton,
-        onRetry: () => _exploreController.loadEvents(forceRefresh: true),
+        onRetry: () => _loadEvents(forceRefresh: true),
       ),
       ExploreEmpty() => _buildMainUI(const [], effectiveView),
       ExploreData(events: var events) => _buildMainUI(events, effectiveView),
@@ -539,7 +548,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             _pendingMapSearchRadiusMeters;
                         _syncControllerParams();
                         _markCurrentAreaAsSearched(force: true);
-                        _exploreController.loadEvents(forceRefresh: true);
+                        _loadEvents(forceRefresh: true);
                       },
                     ),
                   ),
@@ -659,11 +668,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
     AppLocalizations l10n,
     String? details,
   ) {
-    return switch (type) {
+    final generic = switch (type) {
       ExploreErrorType.network => l10n.exploreErrorSubtitle,
       ExploreErrorType.permission => l10n.exploreErrorPermissionSubtitle,
-      ExploreErrorType.unknown => details ?? l10n.exploreErrorUnknownSubtitle,
+      ExploreErrorType.unknown => l10n.exploreErrorUnknownSubtitle,
     };
+    return details ?? generic;
   }
 }
 

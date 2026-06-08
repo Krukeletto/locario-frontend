@@ -428,6 +428,30 @@ abstract class AppLocalizations {
   /// **'Write a review'**
   String get eventDetailsReviewButton;
 
+  /// No description provided for @eventEditAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get eventEditAction;
+
+  /// No description provided for @eventEditScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit event'**
+  String get eventEditScreenTitle;
+
+  /// No description provided for @eventEditSubmitButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get eventEditSubmitButton;
+
+  /// No description provided for @eventUpdateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event updated successfully.'**
+  String get eventUpdateSuccess;
+
   /// No description provided for @eventJoinSuccess.
   ///
   /// In en, this message translates to:
@@ -1579,6 +1603,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Manage'**
   String get groupsTabManage;
+
+  /// No description provided for @groupsTabInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Info'**
+  String get groupsTabInfo;
 
   /// No description provided for @groupsFeedEmptyTitle.
   ///

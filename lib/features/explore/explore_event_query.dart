@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' hide Category;
 import 'package:latlong2/latlong.dart';
 import '../../shared/services/l10n_service.dart';
 import 'models.dart';
@@ -30,8 +29,6 @@ class ExploreEventQuery {
         );
       });
     }
-    debugPrint('After category filter: ${filteredEvents.length}');
-
     if (!(advancedFilters?.showPastEvents ?? false)) {
       final now = DateTime.now();
       filteredEvents = filteredEvents.where((event) {
@@ -39,7 +36,6 @@ class ExploreEventQuery {
         return cutoff.isAfter(now);
       });
     }
-    debugPrint('After past filter: ${filteredEvents.length}');
 
     if (normalizedQuery.isNotEmpty) {
       final l10n = L10nService.l10n;
@@ -58,19 +54,10 @@ class ExploreEventQuery {
         maxDistanceMeters ?? advancedFilters?.distanceFilter.maxDistanceMeters;
     if (distanceFilterMeters != null) {
       filteredEvents = filteredEvents.where((event) {
-        final distance = event.distanceMetersFrom(referenceLocation);
-        debugPrint(
-          'Event "${event.title}" distance: $distance m (limit: $distanceFilterMeters)',
-        );
-        return distance <= distanceFilterMeters;
+        return event.distanceMetersFrom(referenceLocation) <=
+            distanceFilterMeters;
       });
     }
-    debugPrint(
-      'After distance filter ($distanceFilterMeters): ${filteredEvents.length}',
-    );
-    debugPrint(
-      'After distance filter ($distanceFilterMeters): ${filteredEvents.length}',
-    );
 
     if (advancedFilters != null) {
       if (advancedFilters.dateFrom != null) {
@@ -108,8 +95,6 @@ class ExploreEventQuery {
         });
       }
     }
-    debugPrint('After advanced filters: ${filteredEvents.length}');
-
     final sortedEvents = filteredEvents.toList(growable: false);
     sortedEvents.sort((first, second) {
       final comparison = switch (sort) {

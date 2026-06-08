@@ -96,7 +96,8 @@ bool _requiresAuth(String location) {
       location.startsWith('/profile/edit') ||
       location.startsWith('/profile/reviews') ||
       location.startsWith('/profile/history') ||
-      location.startsWith('/events/') && location.contains('/review');
+      location.startsWith('/events/') &&
+          (location.contains('/review') || location.endsWith('/edit'));
 }
 
 bool _shouldRememberAsSafeLocation(String location) {
@@ -397,6 +398,18 @@ GoRouter createAppRouter({
           child: EventScreen(eventId: state.pathParameters['eventId']),
         ),
         routes: [
+          GoRoute(
+            path: 'edit',
+            pageBuilder: (context, state) => _trackedNoTransitionPage(
+              controller: navigationHistory,
+              location: state.uri.toString(),
+              rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+              child: CreateEventScreen(
+                editingEventId: state.pathParameters['eventId'],
+                canSubmit: true,
+              ),
+            ),
+          ),
           GoRoute(
             path: 'review',
             pageBuilder: (context, state) => _trackedNoTransitionPage(

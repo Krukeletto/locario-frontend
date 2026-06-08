@@ -106,6 +106,54 @@ class EventDetailsInfo extends StatelessWidget {
               label: l10n.eventDetailsTitleLabel,
               value: event.title,
             ),
+            if (event.organizerUsername != null || event.createdAt != null) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  if (event.organizerUsername != null)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.person_outline_rounded,
+                          size: 14,
+                          color: scheme.onSurface.withValues(alpha: 0.68),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          event.organizerUsername!,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: scheme.onSurface.withValues(alpha: 0.68),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (event.createdAt != null)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.schedule_rounded,
+                          size: 14,
+                          color: scheme.onSurface.withValues(alpha: 0.52),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatCardTimestamp(event.createdAt!),
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: scheme.onSurface.withValues(alpha: 0.52),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ],
             const SizedBox(height: 12),
             EventInfoCard(
               label: l10n.eventDetailsLocationLabel,
@@ -347,5 +395,15 @@ class EventDetailsInfo extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatCardTimestamp(DateTime date) {
+    final local = date.toLocal();
+    final day = local.day.toString().padLeft(2, '0');
+    final month = local.month.toString().padLeft(2, '0');
+    final year = local.year.toString();
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '$day.$month.$year, $hour:$minute';
   }
 }

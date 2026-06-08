@@ -53,6 +53,7 @@ class EventDetailController extends ChangeNotifier {
 
   Future<void> loadEvent(String eventId, {bool forceRefresh = false}) async {
     final cacheKey = 'event_$eventId';
+    _error = null;
 
     if (!forceRefresh) {
       final cached = await _cache.get<ExploreEvent>(
@@ -67,10 +68,12 @@ class EventDetailController extends ChangeNotifier {
       }
     }
 
-    if (_event == null && !forceRefresh) {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
+    if (_event == null || _event!.id != eventId) {
+      if (!forceRefresh) {
+        _event = null;
+        _isLoading = true;
+        notifyListeners();
+      }
     }
 
     try {
@@ -79,8 +82,9 @@ class EventDetailController extends ChangeNotifier {
       final cachedHash = await _cache.getHash(cacheKey);
 
       if (freshHash != cachedHash) {
-        _event = fresh;
-        await _cache.set(cacheKey, fresh.toJson(), hash: freshHash);
+        final merged = _mergeEventDetails(previousEvent: _event, fresh: fresh);
+        _event = merged;
+        await _cache.set(cacheKey, merged.toJson(), hash: _computeHash(merged));
         notifyListeners();
       }
 
@@ -131,5 +135,48 @@ class EventDetailController extends ChangeNotifier {
     _isLoading = false;
     _isRefreshing = false;
     _error = null;
+  }
+
+  ExploreEvent _mergeEventDetails({
+    required ExploreEvent? previousEvent,
+    required ExploreEvent fresh,
+  }) {
+    final previous = previousEvent;
+    if (previous == null || previous.id != fresh.id) {
+      return fresh;
+    }
+
+    return ExploreEvent(
+      id: fresh.id,
+      title: fresh.title,
+      categories: fresh.categories,
+      media: fresh.media,
+      thumbnailUrl: fresh.thumbnailUrl,
+      startsAt: fresh.startsAt,
+      endsAt: fresh.endsAt,
+      trendingScore: fresh.trendingScore,
+      venue: fresh.venue,
+      location: fresh.location,
+      minAge: fresh.minAge,
+      maxAge: fresh.maxAge,
+      eventType: fresh.eventType,
+      eventSource: fresh.eventSource,
+      description: fresh.description,
+      address: fresh.address,
+      tags: fresh.tags,
+      status: fresh.status,
+      slotLimit: fresh.slotLimit,
+      ticketUrl: fresh.ticketUrl,
+      organizers: fresh.organizers.isNotEmpty
+          ? fresh.organizers
+          : previous.organizers,
+      organizerId: fresh.organizerId ?? previous.organizerId,
+      organizerUsername: fresh.organizerUsername ?? previous.organizerUsername,
+      createdAt: fresh.createdAt ?? previous.createdAt,
+      updatedAt: fresh.updatedAt ?? previous.updatedAt,
+      groupIds: fresh.groupIds.isNotEmpty ? fresh.groupIds : previous.groupIds,
+      groups: fresh.groups.isNotEmpty ? fresh.groups : previous.groups,
+      publicEvent: fresh.publicEvent,
+    );
   }
 }

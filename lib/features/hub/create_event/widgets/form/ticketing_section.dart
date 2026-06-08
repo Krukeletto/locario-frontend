@@ -7,12 +7,14 @@ class CreateEventTicketingSection extends StatelessWidget {
   const CreateEventTicketingSection({
     super.key,
     required this.state,
+    required this.ticketUrlController,
     required this.seatsController,
     required this.onTicketUrlChanged,
     required this.onSlotLimitChanged,
   });
 
   final CreateEventState state;
+  final TextEditingController ticketUrlController;
   final TextEditingController seatsController;
   final ValueChanged<String> onTicketUrlChanged;
   final ValueChanged<int?> onSlotLimitChanged;
@@ -27,6 +29,7 @@ class CreateEventTicketingSection extends StatelessWidget {
         CreateEventFieldLabel(text: l10n.hubCreateEventTicketingLabel),
         const SizedBox(height: 8),
         TextFormField(
+          controller: ticketUrlController,
           onChanged: onTicketUrlChanged,
           decoration: createEventFieldDecoration(
             context,

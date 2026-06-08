@@ -63,10 +63,10 @@ class ReviewResponse {
 
   factory ReviewResponse.fromJson(Map<String, dynamic> json) {
     return ReviewResponse(
-      id: json['id'] as String,
-      eventId: json['eventId'] as String? ?? '',
-      userId: json['userId'] as String? ?? '',
-      username: json['username'] as String? ?? '',
+      id: (json['id'] as String?) ?? '',
+      eventId: (json['eventId'] as String?) ?? '',
+      userId: (json['userId'] as String?) ?? '',
+      username: (json['username'] as String?) ?? '',
       rating: json['rating'] as int? ?? 0,
       comment: json['comment'] as String?,
       createdAt:

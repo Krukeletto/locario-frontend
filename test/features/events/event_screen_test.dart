@@ -29,7 +29,11 @@ import 'package:locario/shared/services/calendar_service.dart';
 import '../../test_helpers/fake_event_repository.dart';
 import '../../test_helpers/test_app.dart';
 
-ExploreEvent _futureEvent() {
+ExploreEvent _futureEvent({
+  String? organizerId,
+  String? organizerUsername,
+  DateTime? createdAt,
+}) {
   return ExploreEvent(
     id: '11111111-1111-1111-1111-111111111111',
     title: 'Jazz Evening',
@@ -38,6 +42,9 @@ ExploreEvent _futureEvent() {
     location: const LatLng(51.7592, 19.4550),
     description: 'Live music and open-air atmosphere.',
     address: 'Piotrkowska 10, Lodz',
+    organizerId: organizerId,
+    organizerUsername: organizerUsername,
+    createdAt: createdAt,
   );
 }
 
@@ -186,9 +193,12 @@ void main() {
         repository: _MemorySavedEventsRepository(),
       );
 
-      final detailController = _createDetailController(
-        eventDetails: _futureEvent(),
+      final event = _futureEvent(
+        organizerId: 'user-1',
+        organizerUsername: 'Anna',
+        createdAt: DateTime(2026, 6, 10, 18, 15),
       );
+      final detailController = _createDetailController(eventDetails: event);
 
       await tester.pumpWidget(
         _buildTestApp(
@@ -205,6 +215,8 @@ void main() {
       await tester.pump();
 
       expect(find.text('Jazz Evening'), findsOneWidget);
+      expect(find.text('Anna'), findsOneWidget);
+      expect(find.text('10.06.2026, 18:15'), findsOneWidget);
       expect(find.text('Piotrkowska 10, Lodz'), findsOneWidget);
       expect(find.text('Show on map'), findsOneWidget);
       expect(find.text('Save event'), findsOneWidget);
@@ -293,6 +305,31 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(calendarService.addedEvent?.id, _futureEvent().id);
+    });
+
+    testWidgets('shows edit action for the event author', (tester) async {
+      final authController = _AuthenticatedSessionController();
+      final detailController = _createDetailController(
+        eventDetails: _futureEvent(organizerId: 'user-1'),
+      );
+
+      await tester.pumpWidget(
+        _buildTestApp(
+          detailController: detailController,
+          child: AuthScope(
+            controller: authController,
+            child: const EventScreen(
+              eventId: '11111111-1111-1111-1111-111111111111',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.more_vert_rounded));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edit'), findsOneWidget);
     });
   });
 }

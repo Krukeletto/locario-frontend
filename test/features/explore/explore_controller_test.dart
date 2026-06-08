@@ -118,6 +118,8 @@ class _EmptyRepository implements EventRepository {
     required double longitude,
     double? radiusKm,
     int? limit,
+    String? accessToken,
+    String tokenType = 'Bearer',
   }) async {
     final gate = _nextFetchGate;
     if (gate != null) {
@@ -132,7 +134,10 @@ class _EmptyRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchEvents() {
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) {
     return fetchNearbyEvents(latitude: 0, longitude: 0);
   }
 }

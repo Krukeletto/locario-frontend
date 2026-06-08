@@ -37,7 +37,9 @@ class CacheService {
     final db = await _database;
     final rows = await db.query('cache', where: 'key = ?', whereArgs: [key]);
     if (rows.isEmpty) return null;
-    return rows.first['data'] as String;
+    final value = rows.first['data'];
+    if (value is String) return value;
+    return null;
   }
 
   Future<T?> get<T>(
@@ -47,7 +49,12 @@ class CacheService {
     final raw = await getRaw(key);
     if (raw == null) return null;
     try {
-      return fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      final decoded = jsonDecode(raw);
+      if (decoded is Map) {
+        return fromJson(Map<String, dynamic>.from(decoded));
+      }
+      await invalidate(key);
+      return null;
     } catch (_) {
       await invalidate(key);
       return null;
@@ -61,10 +68,15 @@ class CacheService {
     final raw = await getRaw(key);
     if (raw == null) return null;
     try {
-      final list = jsonDecode(raw) as List<dynamic>;
-      return list
-          .map((e) => fromJson(e as Map<String, dynamic>))
-          .toList(growable: false);
+      final decoded = jsonDecode(raw);
+      if (decoded is List) {
+        return decoded
+            .whereType<Map>()
+            .map((e) => fromJson(Map<String, dynamic>.from(e)))
+            .toList(growable: false);
+      }
+      await invalidate(key);
+      return null;
     } catch (_) {
       await invalidate(key);
       return null;
@@ -104,7 +116,9 @@ class CacheService {
       whereArgs: [key],
     );
     if (rows.isEmpty) return null;
-    return rows.first['hash'] as int;
+    final value = rows.first['hash'];
+    if (value is int) return value;
+    return null;
   }
 
   Future<void> invalidate(String key) async {

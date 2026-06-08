@@ -173,8 +173,8 @@ class Group {
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(
-      id: json['id'] as String,
-      name: json['name'] as String? ?? '',
+      id: (json['id'] as String?) ?? '',
+      name: (json['name'] as String?) ?? '',
       description: json['description'] as String?,
       categoryId: json['categoryId'] as String?,
       categoryName: json['categoryName'] as String?,
@@ -257,8 +257,8 @@ class GroupMember {
 
   factory GroupMember.fromJson(Map<String, dynamic> json) {
     return GroupMember(
-      userId: json['userId'] as String,
-      username: json['username'] as String? ?? '',
+      userId: (json['userId'] as String?) ?? '',
+      username: (json['username'] as String?) ?? '',
       avatarUrl: json['avatarUrl'] as String?,
       role: GroupRole.fromString(json['role'] as String?),
       status: GroupMembershipStatus.fromString(json['status'] as String?),
@@ -319,12 +319,21 @@ class GroupFeedItem {
   final bool canModerate;
 
   factory GroupFeedItem.fromJson(Map<String, dynamic> json) {
+    final author = _asMap(json['author']) ?? _asMap(json['organizer']);
     return GroupFeedItem(
       type: GroupFeedItemType.fromString(json['type'] as String?),
-      id: json['id'] as String,
-      authorId: json['authorId'] as String?,
-      authorUsername: json['authorUsername'] as String?,
-      authorAvatarUrl: json['authorAvatarUrl'] as String?,
+      id: (json['id'] as String?) ?? '',
+      authorId:
+          json['authorId'] as String? ??
+          json['organizerId'] as String? ??
+          author?['userId'] as String? ??
+          author?['id'] as String?,
+      authorUsername:
+          json['authorUsername'] as String? ??
+          json['organizerUsername'] as String? ??
+          author?['username'] as String?,
+      authorAvatarUrl:
+          json['authorAvatarUrl'] as String? ?? author?['avatarUrl'] as String?,
       content: json['content'] as String?,
       mediaUrls: (json['mediaUrls'] as List?)?.cast<String>() ?? const [],
       createdAt: _parseDate(json['createdAt'] as String?),
@@ -383,7 +392,7 @@ class GroupPost {
 
   factory GroupPost.fromJson(Map<String, dynamic> json) {
     return GroupPost(
-      id: json['id'] as String,
+      id: (json['id'] as String?) ?? '',
       groupId: json['groupId'] as String?,
       authorId: json['authorId'] as String?,
       authorUsername: json['authorUsername'] as String?,
@@ -461,7 +470,7 @@ class GroupReport {
 
   factory GroupReport.fromJson(Map<String, dynamic> json) {
     return GroupReport(
-      id: json['id'] as String,
+      id: (json['id'] as String?) ?? '',
       reporterId: json['reporterId'] as String?,
       targetType: json['targetType'] as String?,
       targetId: json['targetId'] as String?,
@@ -481,4 +490,14 @@ DateTime? _parseDate(String? value) {
     return null;
   }
   return DateTime.tryParse(value);
+}
+
+Map<String, dynamic>? _asMap(dynamic value) {
+  if (value is Map<String, dynamic>) {
+    return value;
+  }
+  if (value is Map) {
+    return Map<String, dynamic>.from(value);
+  }
+  return null;
 }

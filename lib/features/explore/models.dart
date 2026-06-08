@@ -37,9 +37,9 @@ class Category {
 
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      slug: json['slug'] as String,
+      id: (json['id'] as String?) ?? '',
+      name: (json['name'] as String?) ?? '',
+      slug: (json['slug'] as String?) ?? '',
       parentId: json['parentId'] as String?,
       sortOrder: json['sortOrder'] as int? ?? 0,
     );
@@ -100,8 +100,8 @@ class EventMedia {
 
   factory EventMedia.fromJson(Map<String, dynamic> json) {
     return EventMedia(
-      id: json['id'] as String,
-      url: json['url'] as String,
+      id: (json['id'] as String?) ?? '',
+      url: (json['url'] as String?) ?? '',
       type: MediaType.fromString(json['type'] as String?),
       sortOrder: json['sortOrder'] as int? ?? 0,
     );
@@ -134,8 +134,8 @@ class EventGroupSummary {
 
   factory EventGroupSummary.fromJson(Map<String, dynamic> json) {
     return EventGroupSummary(
-      id: json['id'] as String,
-      name: json['name'] as String? ?? '',
+      id: (json['id'] as String?) ?? '',
+      name: (json['name'] as String?) ?? '',
       iconUrl: json['iconUrl'] as String?,
       mapPinIconUrl: json['mapPinIconUrl'] as String?,
       mapPinStyle: json['mapPinStyle'] as String?,
@@ -310,6 +310,8 @@ class ExploreEvent {
     final latitude = (json['latitude'] as num?)?.toDouble();
     final longitude = (json['longitude'] as num?)?.toDouble();
     final location = LatLng(latitude ?? 0, longitude ?? 0);
+    final organizerJson = json['organizer'];
+    final organizersJson = json['organizers'] ?? organizerJson;
 
     return ExploreEvent(
       id: _normalizedString(json['id']) ?? '',
@@ -336,9 +338,13 @@ class ExploreEvent {
       status: EventStatus.fromString(json['status'] as String?),
       slotLimit: json['slotLimit'] as int?,
       ticketUrl: _normalizedString(json['ticketUrl']),
-      organizers: _organizersFromJson(json['organizers']),
-      organizerId: _primaryOrganizerIdFromJson(json['organizers']),
-      organizerUsername: _primaryOrganizerUsernameFromJson(json['organizers']),
+      organizers: _organizersFromJson(organizersJson),
+      organizerId:
+          _primaryOrganizerIdFromJson(organizersJson) ??
+          _primaryOrganizerIdFromJson(organizerJson),
+      organizerUsername:
+          _primaryOrganizerUsernameFromJson(organizersJson) ??
+          _primaryOrganizerUsernameFromJson(organizerJson),
       createdAt: _parseDateTime(json['createdAt']),
       updatedAt: _parseDateTime(json['updatedAt']),
       groupIds: _stringListFromJson(json['groupIds']),
@@ -568,6 +574,15 @@ List<String> _stringListFromJson(dynamic value) {
 }
 
 List<String> _organizersFromJson(dynamic value) {
+  if (value is Map) {
+    final map = Map<String, dynamic>.from(value);
+    final organizer =
+        _normalizedString(map['username']) ??
+        _normalizedString(map['userId']) ??
+        '';
+    return organizer.isEmpty ? const [] : [organizer];
+  }
+
   if (value is! List) {
     return const [];
   }
@@ -590,6 +605,11 @@ List<String> _organizersFromJson(dynamic value) {
 }
 
 String? _primaryOrganizerIdFromJson(dynamic value) {
+  if (value is Map) {
+    final map = Map<String, dynamic>.from(value);
+    return _normalizedString(map['userId']) ?? _normalizedString(map['id']);
+  }
+
   if (value is! List || value.isEmpty) {
     return null;
   }
@@ -599,6 +619,11 @@ String? _primaryOrganizerIdFromJson(dynamic value) {
 }
 
 String? _primaryOrganizerUsernameFromJson(dynamic value) {
+  if (value is Map) {
+    final map = Map<String, dynamic>.from(value);
+    return _normalizedString(map['username']);
+  }
+
   if (value is! List || value.isEmpty) {
     return null;
   }

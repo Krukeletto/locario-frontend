@@ -20,6 +20,7 @@ import '../shared/events/event_detail_controller.dart';
 import '../shared/events/event_detail_scope.dart';
 import '../shared/events/category_controller.dart';
 import '../shared/events/category_scope.dart';
+import '../shared/cache/cache_scope.dart';
 import '../shared/cache/cache_service.dart';
 import '../shared/groups/group_controller.dart';
 import '../shared/groups/group_scope.dart';
@@ -236,79 +237,82 @@ class _LocarioAppState extends State<LocarioApp> {
   Widget build(BuildContext context) {
     return CategoryScope(
       controller: _categoryController,
-      child: AuthScope(
-        controller: _sessionController,
-        child: GroupScope(
-          controller: _groupController,
-          child: EventDetailScope(
-            controller: _eventDetailController,
-            child: ReviewScope(
-              controller: _reviewController,
-              child: LegalScope(
-                controller: _legalController,
-                child: SavedEventsScope(
-                  controller: _savedEventsController,
-                  child: SavedFiltersScope(
-                    controller: _savedFiltersController,
-                    child: JoinedEventsScope(
-                      controller: _joinedEventsController,
-                      child: NotificationScope(
-                        controller: _notificationController,
-                        child: LocaleScope(
-                          controller: _localeController,
-                          child: ThemeScope(
-                            controller: _themeController,
-                            child: AnimatedBuilder(
-                              animation: Listenable.merge([
-                                _localeController,
-                                _themeController,
-                                _categoryController,
-                                _savedEventsController,
-                                _notificationController,
-                              ]),
-                              builder: (context, _) {
-                                return MaterialApp.router(
-                                  scaffoldMessengerKey:
-                                      rootScaffoldMessengerKey,
-                                  onGenerateTitle: (context) =>
-                                      AppLocalizations.of(context).appTitle,
-                                  debugShowCheckedModeBanner: false,
-                                  theme: buildLightAppTheme(),
-                                  darkTheme: buildDarkAppTheme(),
-                                  themeMode: _themeController.themeMode,
-                                  routerConfig: _router,
-                                  locale: _localeController.locale,
-                                  supportedLocales:
-                                      AppLocalizations.supportedLocales,
-                                  localizationsDelegates: const [
-                                    AppLocalizations.delegate,
-                                    GlobalMaterialLocalizations.delegate,
-                                    GlobalWidgetsLocalizations.delegate,
-                                    GlobalCupertinoLocalizations.delegate,
-                                  ],
-                                  builder: (context, child) {
-                                    final l10n = AppLocalizations.of(context);
-                                    L10nService.update(l10n);
-                                    return child!;
-                                  },
-                                  localeResolutionCallback:
-                                      (locale, supportedLocales) {
-                                        if (locale == null) {
-                                          return const Locale('pl');
-                                        }
-
-                                        for (final supportedLocale
-                                            in supportedLocales) {
-                                          if (supportedLocale.languageCode ==
-                                              locale.languageCode) {
-                                            return supportedLocale;
+      child: CacheScope(
+        cacheService: _cacheService,
+        child: AuthScope(
+          controller: _sessionController,
+          child: GroupScope(
+            controller: _groupController,
+            child: EventDetailScope(
+              controller: _eventDetailController,
+              child: ReviewScope(
+                controller: _reviewController,
+                child: LegalScope(
+                  controller: _legalController,
+                  child: SavedEventsScope(
+                    controller: _savedEventsController,
+                    child: SavedFiltersScope(
+                      controller: _savedFiltersController,
+                      child: JoinedEventsScope(
+                        controller: _joinedEventsController,
+                        child: NotificationScope(
+                          controller: _notificationController,
+                          child: LocaleScope(
+                            controller: _localeController,
+                            child: ThemeScope(
+                              controller: _themeController,
+                              child: AnimatedBuilder(
+                                animation: Listenable.merge([
+                                  _localeController,
+                                  _themeController,
+                                  _categoryController,
+                                  _savedEventsController,
+                                  _notificationController,
+                                ]),
+                                builder: (context, _) {
+                                  return MaterialApp.router(
+                                    scaffoldMessengerKey:
+                                        rootScaffoldMessengerKey,
+                                    onGenerateTitle: (context) =>
+                                        AppLocalizations.of(context).appTitle,
+                                    debugShowCheckedModeBanner: false,
+                                    theme: buildLightAppTheme(),
+                                    darkTheme: buildDarkAppTheme(),
+                                    themeMode: _themeController.themeMode,
+                                    routerConfig: _router,
+                                    locale: _localeController.locale,
+                                    supportedLocales:
+                                        AppLocalizations.supportedLocales,
+                                    localizationsDelegates: const [
+                                      AppLocalizations.delegate,
+                                      GlobalMaterialLocalizations.delegate,
+                                      GlobalWidgetsLocalizations.delegate,
+                                      GlobalCupertinoLocalizations.delegate,
+                                    ],
+                                    builder: (context, child) {
+                                      final l10n = AppLocalizations.of(context);
+                                      L10nService.update(l10n);
+                                      return child!;
+                                    },
+                                    localeResolutionCallback:
+                                        (locale, supportedLocales) {
+                                          if (locale == null) {
+                                            return const Locale('pl');
                                           }
-                                        }
 
-                                        return const Locale('pl');
-                                      },
-                                );
-                              },
+                                          for (final supportedLocale
+                                              in supportedLocales) {
+                                            if (supportedLocale.languageCode ==
+                                                locale.languageCode) {
+                                              return supportedLocale;
+                                            }
+                                          }
+
+                                          return const Locale('pl');
+                                        },
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ),

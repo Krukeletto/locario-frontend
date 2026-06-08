@@ -296,19 +296,6 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     }
   }
 
-  Future<void> _handleUnlinkEvent(ExploreEvent event) async {
-    final ctrl = GroupScope.of(context);
-    final group = ctrl.detailGroup;
-    final l10n = AppLocalizations.of(context);
-    if (group == null) return;
-
-    try {
-      await ctrl.unlinkEvent(group.id, event.id);
-    } catch (_) {
-      _showMessage(l10n.groupsActionFailed);
-    }
-  }
-
   void _onFeedScroll() {
     final ctrl = GroupScope.of(context);
     if (!_feedScrollController.hasClients ||
@@ -494,10 +481,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     final canTransferOwnership = _canTransferOwnership(group, profile?.id);
     final canCreateEvents = _canCreateGroupsEvents(group);
     final canLinkEvents = canCreateEvents;
-    final tabCount = canModerate ? 4 : 3;
 
     return DefaultTabController(
-      length: tabCount,
+      initialIndex: group.isMember ? 0 : 3,
+      length: 4,
       child: Scaffold(
         backgroundColor: scheme.surface,
         appBar: AppBar(
@@ -558,22 +545,18 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
             ),
           ],
           bottom: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.center,
             tabs: [
               Tab(text: l10n.groupsTabFeed),
-              Tab(text: l10n.groupsTabMembers),
               Tab(text: l10n.groupsTabEvents),
-              if (canModerate) Tab(text: l10n.groupsTabManage),
+              Tab(text: l10n.groupsTabMembers),
+              Tab(text: l10n.groupsTabInfo),
             ],
           ),
         ),
         body: Column(
           children: [
-            _GroupHeader(
-              group: group,
-              onJoinOrLeave: _handleJoinOrLeave,
-              canJoinOrLeave: tokens != null && !group.isBanned,
-            ),
-            if (_hasVisualMetadata(group)) _GroupVisualsCard(group: group),
             if (ctrl.isDetailRefreshing) const LinearProgressIndicator(),
             Expanded(
               child: TabBarView(
@@ -587,6 +570,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                     isLoadingMore: ctrl.isLoadingMoreFeed,
                     scrollController: _feedScrollController,
                     items: ctrl.detailFeed,
+                    events: ctrl.detailEvents,
                     onRetry: () => ctrl.loadGroupFeed(widget.groupId, page: 0),
                     onCreatePost: () => _handleCreatePost(),
                     onEditPost: (item) => _handleCreatePost(
@@ -633,6 +617,17 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                       );
                     },
                   ),
+                  _EventsTab(
+                    events: ctrl.detailEvents,
+                    isLoading: false,
+                    error: null,
+                    canCreateEvents: canCreateEvents,
+                    canLinkEvents: canLinkEvents,
+                    onRetry: () => ctrl.loadGroupEvents(widget.groupId),
+                    onCreateEvent: _handleCreateEventForGroup,
+                    onLinkEvent: _handleLinkExistingEvent,
+                    onOpenEvent: (event) => context.push('/events/${event.id}'),
+                  ),
                   _MembersTab(
                     members: ctrl.detailMembers,
                     isLoadingMembers: false,
@@ -651,122 +646,16 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                     onMemberAction: _handleMemberAction,
                     canTransferOwnership: canTransferOwnership,
                   ),
-                  _EventsTab(
-                    events: ctrl.detailEvents,
-                    isLoading: false,
-                    error: null,
-                    canCreateEvents: canCreateEvents,
-                    canLinkEvents: canLinkEvents,
-                    canUnlinkEvents: canModerate,
-                    onRetry: () => ctrl.loadGroupEvents(widget.groupId),
-                    onCreateEvent: _handleCreateEventForGroup,
-                    onLinkEvent: _handleLinkExistingEvent,
-                    onUnlinkEvent: _handleUnlinkEvent,
-                    onOpenEvent: (event) => context.push('/events/${event.id}'),
-                    onReportEvent: (event) async {
-                      if (tokens == null) return;
-                      await _showReportDialog(
-                        title: l10n.groupsReportEventTitle,
-                        submit: (reason, description) => ctrl.reportEvent(
-                          group.id,
-                          event.id,
-                          GroupReportRequest(
-                            targetType: 'group_event',
-                            targetId: event.id,
-                            reason: reason,
-                            description: description,
-                            groupId: group.id,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  _ManageTab(
-                    canModerate: canModerate,
-                    isLoading: false,
-                    error: null,
-                    reports: ctrl.detailReports,
-                    onRetry: () => ctrl.loadGroupReports(widget.groupId),
-                    onResolveReport: (report) =>
-                        ctrl.resolveReport(group.id, report.id),
-                    onRejectReport: (report) =>
-                        ctrl.rejectReport(group.id, report.id),
+                  _InfoTab(
+                    group: group,
+                    onJoinOrLeave: _handleJoinOrLeave,
+                    canJoinOrLeave: tokens != null && !group.isBanned,
                   ),
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _GroupHeader extends StatelessWidget {
-  const _GroupHeader({
-    required this.group,
-    required this.onJoinOrLeave,
-    required this.canJoinOrLeave,
-  });
-
-  final Group group;
-  final VoidCallback onJoinOrLeave;
-  final bool canJoinOrLeave;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context);
-
-    final actionLabel = group.isMember
-        ? l10n.groupsLeaveAction
-        : group.isPending
-        ? l10n.groupsPendingAction
-        : l10n.groupsJoinAction;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        border: Border(
-          bottom: BorderSide(color: scheme.outline.withValues(alpha: 0.18)),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _HeaderChip(
-                label: group.categoryName ?? l10n.groupsCategoryUnknown,
-              ),
-              _HeaderChip(
-                label: group.isPublic
-                    ? l10n.groupsVisibilityPublic
-                    : l10n.groupsVisibilityPrivate,
-              ),
-              _HeaderChip(label: l10n.groupsMembersCount(group.memberCount)),
-            ],
-          ),
-          if ((group.description ?? '').isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Text(
-              group.description!,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.74),
-              ),
-            ),
-          ],
-          const SizedBox(height: 16),
-          FilledButton.tonal(
-            onPressed: canJoinOrLeave ? onJoinOrLeave : null,
-            child: Text(actionLabel),
-          ),
-        ],
       ),
     );
   }
@@ -807,6 +696,7 @@ class _FeedTab extends StatelessWidget {
     required this.isLoadingMore,
     required this.scrollController,
     required this.items,
+    required this.events,
     required this.onRetry,
     required this.onCreatePost,
     required this.onEditPost,
@@ -825,6 +715,7 @@ class _FeedTab extends StatelessWidget {
   final bool isLoadingMore;
   final ScrollController scrollController;
   final List<GroupFeedItem> items;
+  final List<ExploreEvent> events;
   final Future<void> Function() onRetry;
   final VoidCallback onCreatePost;
   final ValueChanged<GroupFeedItem> onEditPost;
@@ -837,6 +728,7 @@ class _FeedTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final eventsById = {for (final event in events) event.id: event};
 
     if (isLoading && items.isEmpty) {
       return StatePanel.loading(
@@ -887,6 +779,9 @@ class _FeedTab extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: _FeedItemCard(
                 item: item,
+                linkedEvent: item.type == GroupFeedItemType.event
+                    ? eventsById[item.eventId]
+                    : null,
                 currentUserId: currentUserId,
                 onEditPost: onEditPost,
                 onDeletePost: onDeletePost,
@@ -910,6 +805,7 @@ class _FeedTab extends StatelessWidget {
 class _FeedItemCard extends StatelessWidget {
   const _FeedItemCard({
     required this.item,
+    required this.linkedEvent,
     required this.currentUserId,
     required this.onEditPost,
     required this.onDeletePost,
@@ -920,6 +816,7 @@ class _FeedItemCard extends StatelessWidget {
   });
 
   final GroupFeedItem item;
+  final ExploreEvent? linkedEvent;
   final String? currentUserId;
   final ValueChanged<GroupFeedItem> onEditPost;
   final ValueChanged<GroupFeedItem> onDeletePost;
@@ -987,6 +884,29 @@ class _FeedItemCard extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
+                    if (item.type == GroupFeedItemType.post ||
+                        item.type == GroupFeedItemType.event) ...[
+                      const SizedBox(height: 6),
+                      if ((item.authorUsername ??
+                              linkedEvent?.organizerUsername) !=
+                          null)
+                        _CardMetaLine(
+                          icon: Icons.person_outline_rounded,
+                          label:
+                              item.authorUsername ??
+                              linkedEvent!.organizerUsername!,
+                        ),
+                      if (item.createdAt != null) ...[
+                        if ((item.authorUsername ??
+                                linkedEvent?.organizerUsername) !=
+                            null)
+                          const SizedBox(height: 4),
+                        _CardMetaLine(
+                          icon: Icons.schedule_rounded,
+                          label: _formatCardTimestamp(item.createdAt!),
+                        ),
+                      ],
+                    ],
                   ],
                 ),
               ),
@@ -1362,13 +1282,10 @@ class _EventsTab extends StatelessWidget {
     required this.error,
     required this.canCreateEvents,
     required this.canLinkEvents,
-    required this.canUnlinkEvents,
     required this.onRetry,
     required this.onCreateEvent,
     required this.onLinkEvent,
-    required this.onUnlinkEvent,
     required this.onOpenEvent,
-    required this.onReportEvent,
   });
 
   final List<ExploreEvent> events;
@@ -1376,13 +1293,10 @@ class _EventsTab extends StatelessWidget {
   final Object? error;
   final bool canCreateEvents;
   final bool canLinkEvents;
-  final bool canUnlinkEvents;
   final Future<void> Function() onRetry;
   final VoidCallback onCreateEvent;
   final VoidCallback onLinkEvent;
-  final ValueChanged<ExploreEvent> onUnlinkEvent;
   final ValueChanged<ExploreEvent> onOpenEvent;
-  final ValueChanged<ExploreEvent> onReportEvent;
 
   @override
   Widget build(BuildContext context) {
@@ -1442,13 +1356,7 @@ class _EventsTab extends StatelessWidget {
           ...events.map(
             (event) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: _EventCard(
-                event: event,
-                canUnlink: canUnlinkEvents,
-                onOpen: () => onOpenEvent(event),
-                onUnlink: () => onUnlinkEvent(event),
-                onReport: () => onReportEvent(event),
-              ),
+              child: _EventCard(event: event, onOpen: () => onOpenEvent(event)),
             ),
           ),
       ],
@@ -1457,19 +1365,10 @@ class _EventsTab extends StatelessWidget {
 }
 
 class _EventCard extends StatelessWidget {
-  const _EventCard({
-    required this.event,
-    required this.canUnlink,
-    required this.onOpen,
-    required this.onUnlink,
-    required this.onReport,
-  });
+  const _EventCard({required this.event, required this.onOpen});
 
   final ExploreEvent event;
-  final bool canUnlink;
   final VoidCallback onOpen;
-  final VoidCallback onUnlink;
-  final VoidCallback onReport;
 
   @override
   Widget build(BuildContext context) {
@@ -1499,184 +1398,33 @@ class _EventCard extends StatelessWidget {
                   ),
                 ),
               ),
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'unlink') {
-                    onUnlink();
-                  } else if (value == 'report') {
-                    onReport();
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem<String>(
-                    value: 'report',
-                    child: Text(l10n.groupsReportAction),
-                  ),
-                  if (canUnlink)
-                    PopupMenuItem<String>(
-                      value: 'unlink',
-                      child: Text(l10n.groupsUnlinkEventAction),
-                    ),
-                ],
-              ),
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            event.timeLabel(l10n),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.72),
+          if (event.organizerUsername != null) ...[
+            const SizedBox(height: 6),
+            _CardMetaLine(
+              icon: Icons.person_outline_rounded,
+              label: event.organizerUsername!,
             ),
+          ],
+          const SizedBox(height: 4),
+          _CardMetaLine(
+            icon: Icons.schedule_rounded,
+            label: event.timeLabel(l10n),
           ),
+          if (event.createdAt != null) ...[
+            const SizedBox(height: 4),
+            _CardMetaLine(
+              icon: Icons.access_time_rounded,
+              label: _formatCardTimestamp(event.createdAt!),
+              color: scheme.onSurface.withValues(alpha: 0.56),
+            ),
+          ],
           const SizedBox(height: 12),
           FilledButton.tonal(
             onPressed: onOpen,
             child: Text(l10n.groupsOpenEventAction),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ManageTab extends StatelessWidget {
-  const _ManageTab({
-    required this.canModerate,
-    required this.isLoading,
-    required this.error,
-    required this.reports,
-    required this.onRetry,
-    required this.onResolveReport,
-    required this.onRejectReport,
-  });
-
-  final bool canModerate;
-  final bool isLoading;
-  final Object? error;
-  final List<GroupReport> reports;
-  final Future<void> Function() onRetry;
-  final ValueChanged<GroupReport> onResolveReport;
-  final ValueChanged<GroupReport> onRejectReport;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    if (!canModerate) {
-      return ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          _InfoCard(
-            title: l10n.groupsManageRestrictedTitle,
-            subtitle: l10n.groupsManageRestrictedSubtitle,
-          ),
-        ],
-      );
-    }
-
-    if (isLoading && reports.isEmpty) {
-      return StatePanel.loading(
-        title: l10n.groupsTabManage,
-        subtitle: l10n.groupsLoadingSubtitle,
-      );
-    }
-
-    if (error != null && reports.isEmpty) {
-      return StatePanel.error(
-        title: l10n.groupsTabManage,
-        subtitle: l10n.groupsErrorSubtitle,
-        retryLabel: l10n.exploreRetryButton,
-        onRetry: onRetry,
-      );
-    }
-
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        if (error != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _SectionNotice(
-              title: l10n.groupsTabManage,
-              subtitle: l10n.groupsActionFailed,
-              actionLabel: l10n.exploreRetryButton,
-              onAction: onRetry,
-            ),
-          ),
-        if (reports.isEmpty)
-          _InfoCard(
-            title: l10n.groupsReportsEmptyTitle,
-            subtitle: l10n.groupsReportsEmptySubtitle,
-          )
-        else
-          ...reports.map(
-            (report) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _ReportCard(
-                report: report,
-                onResolve: () => onResolveReport(report),
-                onReject: () => onRejectReport(report),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _ReportCard extends StatelessWidget {
-  const _ReportCard({
-    required this.report,
-    required this.onResolve,
-    required this.onReject,
-  });
-
-  final GroupReport report;
-  final VoidCallback onResolve;
-  final VoidCallback onReject;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: scheme.outline.withValues(alpha: 0.22)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            report.reason ?? '-',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: scheme.primary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          if ((report.description ?? '').isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(report.description!),
-          ],
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.tonal(
-                  onPressed: onReject,
-                  child: Text(AppLocalizations.of(context).groupsRejectAction),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton(
-                  onPressed: onResolve,
-                  child: Text(AppLocalizations.of(context).groupsResolveAction),
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -1726,87 +1474,42 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-bool _hasVisualMetadata(Group group) {
-  return (group.avatarUrl ?? '').isNotEmpty ||
-      (group.iconUrl ?? '').isNotEmpty ||
-      (group.mapPinIconUrl ?? '').isNotEmpty ||
-      (group.mapPinStyle ?? '').isNotEmpty;
+String _formatCardTimestamp(DateTime date) {
+  final local = date.toLocal();
+  final day = local.day.toString().padLeft(2, '0');
+  final month = local.month.toString().padLeft(2, '0');
+  final year = local.year.toString();
+  final hour = local.hour.toString().padLeft(2, '0');
+  final minute = local.minute.toString().padLeft(2, '0');
+  return '$day.$month.$year, $hour:$minute';
 }
 
-class _GroupVisualsCard extends StatelessWidget {
-  const _GroupVisualsCard({required this.group});
+class _CardMetaLine extends StatelessWidget {
+  const _CardMetaLine({required this.icon, required this.label, this.color});
 
-  final Group group;
+  final IconData icon;
+  final String label;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context);
+    final resolvedColor = color ?? scheme.onSurface.withValues(alpha: 0.68);
 
-    final fields = <Widget>[
-      if ((group.avatarUrl ?? '').isNotEmpty)
-        _VisualMetadataRow(
-          label: l10n.groupsFieldAvatarUrl,
-          value: group.avatarUrl!,
-          imageUrl: group.avatarUrl,
-          fallbackIcon: Icons.person_rounded,
-        ),
-      if ((group.iconUrl ?? '').isNotEmpty)
-        _VisualMetadataRow(
-          label: l10n.groupsFieldIconUrl,
-          value: group.iconUrl!,
-          imageUrl: group.iconUrl,
-          fallbackIcon: Icons.emoji_events_outlined,
-        ),
-      if ((group.mapPinIconUrl ?? '').isNotEmpty)
-        _VisualMetadataRow(
-          label: l10n.groupsFieldMapPinIconUrl,
-          value: group.mapPinIconUrl!,
-          imageUrl: group.mapPinIconUrl,
-          fallbackIcon: Icons.place_outlined,
-        ),
-      if ((group.mapPinStyle ?? '').isNotEmpty)
-        _VisualMetadataRow(
-          label: l10n.groupsFieldMapPinStyle,
-          value: group.mapPinStyle!,
-          fallbackIcon: Icons.tune_rounded,
-        ),
-    ];
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: scheme.outline.withValues(alpha: 0.22)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.groupsAdvancedTitle,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: scheme.primary,
-              fontWeight: FontWeight.w800,
-            ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: resolvedColor),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: resolvedColor,
+            fontWeight: FontWeight.w600,
           ),
-          const SizedBox(height: 4),
-          Text(
-            l10n.groupsAdvancedSubtitle,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.68),
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...fields
-              .expand((field) => [field, const SizedBox(height: 12)])
-              .toList()
-            ..removeLast(),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -1995,6 +1698,143 @@ class _SectionNotice extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _InfoTab extends StatelessWidget {
+  const _InfoTab({
+    required this.group,
+    required this.onJoinOrLeave,
+    required this.canJoinOrLeave,
+  });
+
+  final Group group;
+  final VoidCallback onJoinOrLeave;
+  final bool canJoinOrLeave;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+
+    final actionLabel = group.isMember
+        ? l10n.groupsLeaveAction
+        : group.isPending
+        ? l10n.groupsPendingAction
+        : l10n.groupsJoinAction;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: scheme.outline.withValues(alpha: 0.22)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _HeaderChip(
+                    label: group.categoryName ?? l10n.groupsCategoryUnknown,
+                  ),
+                  _HeaderChip(
+                    label: group.isPublic
+                        ? l10n.groupsVisibilityPublic
+                        : l10n.groupsVisibilityPrivate,
+                  ),
+                  _HeaderChip(
+                    label: l10n.groupsMembersCount(group.memberCount),
+                  ),
+                ],
+              ),
+              if ((group.description ?? '').isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  group.description!,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.74),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              FilledButton.tonal(
+                onPressed: canJoinOrLeave ? onJoinOrLeave : null,
+                child: Text(actionLabel),
+              ),
+            ],
+          ),
+        ),
+        if ((group.avatarUrl ?? '').isNotEmpty ||
+            (group.iconUrl ?? '').isNotEmpty ||
+            (group.mapPinIconUrl ?? '').isNotEmpty ||
+            (group.mapPinStyle ?? '').isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: scheme.outline.withValues(alpha: 0.22)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.groupsAdvancedTitle,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if ((group.avatarUrl ?? '').isNotEmpty) ...[
+                  _VisualMetadataRow(
+                    label: l10n.groupsFieldAvatarUrl,
+                    value: group.avatarUrl!,
+                    imageUrl: group.avatarUrl,
+                    fallbackIcon: Icons.person_rounded,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if ((group.iconUrl ?? '').isNotEmpty) ...[
+                  _VisualMetadataRow(
+                    label: l10n.groupsFieldIconUrl,
+                    value: group.iconUrl!,
+                    imageUrl: group.iconUrl,
+                    fallbackIcon: Icons.emoji_events_outlined,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if ((group.mapPinIconUrl ?? '').isNotEmpty) ...[
+                  _VisualMetadataRow(
+                    label: l10n.groupsFieldMapPinIconUrl,
+                    value: group.mapPinIconUrl!,
+                    imageUrl: group.mapPinIconUrl,
+                    fallbackIcon: Icons.place_outlined,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if ((group.mapPinStyle ?? '').isNotEmpty)
+                  _VisualMetadataRow(
+                    label: l10n.groupsFieldMapPinStyle,
+                    value: group.mapPinStyle!,
+                    fallbackIcon: Icons.tune_rounded,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -79,8 +79,13 @@ abstract class EventRepository {
     required double longitude,
     double? radiusKm,
     int? limit,
+    String? accessToken,
+    String tokenType = 'Bearer',
   });
-  Future<List<ExploreEvent>> fetchEvents();
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  });
   Future<ExploreEvent> fetchEvent(String id);
   Future<List<ExploreEvent>> fetchOrganizerEvents({
     required String accessToken,
@@ -141,19 +146,39 @@ class HttpEventRepository implements EventRepository {
     required String accessToken,
     String tokenType = 'Bearer',
   }) async {
-    final response = await _client.get(
-      _uri('/api/organizer/events'),
-      headers: {'Authorization': '$tokenType $accessToken'},
-    );
+    var page = 0;
+    final events = <ExploreEvent>[];
 
-    if (response.statusCode != 200) {
-      throw EventRepositoryException(
-        'Unable to fetch organizer events',
-        statusCode: response.statusCode,
+    while (true) {
+      final uri = _uri('/api/organizer/events/me').replace(
+        queryParameters: {
+          'page': page.toString(),
+          'size': '50',
+          'sort': 'startAt',
+          'direction': 'desc',
+        },
       );
+      final response = await _client.get(
+        uri,
+        headers: {'Authorization': '$tokenType $accessToken'},
+      );
+
+      if (response.statusCode != 200) {
+        throw EventRepositoryException(
+          'Unable to fetch organizer events',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final pageEvents = _decodePagedEvents(jsonDecode(response.body));
+      events.addAll(pageEvents.events);
+      if (pageEvents.isLast) {
+        break;
+      }
+      page++;
     }
 
-    return _decodeEventsList(response.body);
+    return events;
   }
 
   @override
@@ -220,6 +245,8 @@ class HttpEventRepository implements EventRepository {
     required double longitude,
     double? radiusKm,
     int? limit,
+    String? accessToken,
+    String tokenType = 'Bearer',
   }) async {
     final queryParams = {
       'lat': latitude.toString(),
@@ -231,7 +258,12 @@ class HttpEventRepository implements EventRepository {
     final uri = _uri(
       '/api/events/nearby',
     ).replace(queryParameters: queryParams);
-    final response = await _client.get(uri);
+    final response = await _client.get(
+      uri,
+      headers: accessToken != null
+          ? {'Authorization': '$tokenType $accessToken'}
+          : null,
+    );
 
     if (response.statusCode != 200) {
       throw EventRepositoryException(
@@ -244,8 +276,16 @@ class HttpEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchEvents() async {
-    final response = await _client.get(_uri('/api/events'));
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.get(
+      _uri('/api/events'),
+      headers: accessToken != null
+          ? {'Authorization': '$tokenType $accessToken'}
+          : null,
+    );
     if (response.statusCode != 200) {
       throw EventRepositoryException(
         'Unable to fetch events',
@@ -369,10 +409,43 @@ class HttpEventRepository implements EventRepository {
       throw const EventRepositoryException('Unexpected events payload format');
     }
 
-    return content
-        .whereType<Map>()
-        .map((item) => _eventFromJson(Map<String, dynamic>.from(item)))
-        .toList(growable: false);
+    final results = <ExploreEvent>[];
+    for (final item in content) {
+      if (item is! Map) continue;
+      try {
+        results.add(_eventFromJson(Map<String, dynamic>.from(item)));
+      } catch (_) {
+        continue;
+      }
+    }
+    return results;
+  }
+
+  _PagedEvents _decodePagedEvents(dynamic decoded) {
+    if (decoded is Map<String, dynamic>) {
+      final content = decoded['content'];
+      if (content is List) {
+        return _PagedEvents(
+          events: content
+              .whereType<Map>()
+              .map((item) => _eventFromJson(Map<String, dynamic>.from(item)))
+              .toList(growable: false),
+          isLast: decoded['last'] as bool? ?? true,
+        );
+      }
+    }
+
+    if (decoded is List) {
+      return _PagedEvents(
+        events: decoded
+            .whereType<Map>()
+            .map((item) => _eventFromJson(Map<String, dynamic>.from(item)))
+            .toList(growable: false),
+        isLast: true,
+      );
+    }
+
+    return const _PagedEvents(events: [], isLast: true);
   }
 
   ExploreEvent _decodeEventResponse(String responseBody) {
@@ -399,4 +472,11 @@ class HttpEventRepository implements EventRepository {
       fallbackVenue: fallbackLocationLabel,
     );
   }
+}
+
+class _PagedEvents {
+  const _PagedEvents({required this.events, required this.isLast});
+
+  final List<ExploreEvent> events;
+  final bool isLast;
 }

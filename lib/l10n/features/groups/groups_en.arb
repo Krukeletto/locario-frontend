@@ -59,6 +59,7 @@
   "groupsTabMembers": "Members",
   "groupsTabEvents": "Events",
   "groupsTabManage": "Manage",
+  "groupsTabInfo": "Info",
   "groupsFeedEmptyTitle": "No feed yet",
   "groupsFeedEmptySubtitle": "Posts and events linked to this group will appear here.",
   "groupsFeedPostLabel": "Post",

@@ -8,11 +8,14 @@ import 'package:locario/l10n/app_localizations.dart';
 
 import '../../../shared/auth/auth_scope.dart';
 import '../../../shared/events/event_repository.dart';
-import '../../../shared/groups/group_models.dart';
-import '../../../shared/groups/group_scope.dart';
 import '../../../shared/events/event_refresh_signal.dart';
+import '../../../shared/groups/group_models.dart';
+import '../../../shared/groups/group_controller.dart';
+import '../../../shared/groups/group_scope.dart';
 import '../../../shared/location/location_service.dart';
 import '../../../shared/services/feedback_service.dart';
+import '../../../shared/widgets/state_panel.dart';
+import '../../explore/models.dart';
 import '../../explore/widgets/area_picker.dart';
 import 'create_event_controller.dart';
 import 'create_event_location_controller.dart';
@@ -42,6 +45,7 @@ class CreateEventScreen extends StatefulWidget {
     CreateEventGeocoder? geocoder,
     EventRefreshSignal? eventRefreshSignal,
     Future<List<CreateEventPickedFile>> Function()? pickImageFiles,
+    this.editingEventId,
     this.initialGroupId,
     this.canSubmit = false,
   }) : _eventRepository = eventRepository,
@@ -55,6 +59,7 @@ class CreateEventScreen extends StatefulWidget {
   final CreateEventGeocoder? _geocoder;
   final EventRefreshSignal? _eventRefreshSignal;
   final Future<List<CreateEventPickedFile>> Function()? _pickImageFiles;
+  final String? editingEventId;
   final String? initialGroupId;
   final bool canSubmit;
 
@@ -70,9 +75,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _ticketUrlController = TextEditingController();
   final TextEditingController _seatsController = TextEditingController();
 
+  GroupController? _groupController;
+  ExploreEvent? _editingEvent;
   bool _didInitController = false;
+  bool _didRequestEditingEvent = false;
+  bool _didApplyEditingGroups = false;
+  bool _isEditingEventLoading = false;
 
   @override
   void initState() {
@@ -92,6 +103,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_didInitController) {
+      _tryApplyEditingGroups();
       return;
     }
     final sessionController = AuthScope.of(context);
@@ -108,7 +120,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     _didInitController = true;
 
     final groupController = GroupScope.of(context);
+    _groupController = groupController;
     groupController.loadMyGroups();
+    groupController.addListener(_tryApplyEditingGroups);
+
+    if (widget.editingEventId != null) {
+      controller.setEditingEventId(widget.editingEventId);
+      _loadEditingEvent();
+    }
 
     if (widget.initialGroupId != null) {
       void trySetInitialGroups() {
@@ -143,8 +162,64 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     _locationController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
+    _ticketUrlController.dispose();
     _seatsController.dispose();
+    _groupController?.removeListener(_tryApplyEditingGroups);
     super.dispose();
+  }
+
+  Future<void> _loadEditingEvent() async {
+    final eventId = widget.editingEventId;
+    if (eventId == null || _didRequestEditingEvent) {
+      return;
+    }
+    _didRequestEditingEvent = true;
+    setState(() => _isEditingEventLoading = true);
+
+    try {
+      final repository = widget._eventRepository ?? HttpEventRepository();
+      final event = await repository.fetchEvent(eventId);
+      if (!mounted) return;
+
+      _editingEvent = event;
+      _controller?.setEditingEventId(event.id);
+      _controller?.initializeFromEvent(event: event);
+      _titleController.text = event.title;
+      _descriptionController.text = event.description ?? '';
+      _ticketUrlController.text = event.ticketUrl ?? '';
+      _seatsController.text = event.slotLimit?.toString() ?? '';
+      _locationController.setPinnedLocation(
+        event.location,
+        label: event.locationLabel(AppLocalizations.of(context)),
+        address: event.address,
+      );
+      _tryApplyEditingGroups();
+    } catch (_) {
+      if (!mounted) return;
+    } finally {
+      if (mounted) {
+        setState(() => _isEditingEventLoading = false);
+      }
+    }
+  }
+
+  void _tryApplyEditingGroups() {
+    final controller = _controller;
+    final groupController = _groupController;
+    final event = _editingEvent;
+    if (controller == null ||
+        groupController == null ||
+        event == null ||
+        _didApplyEditingGroups ||
+        groupController.isMyGroupsLoading) {
+      return;
+    }
+
+    final selectedGroups = groupController.myGroups
+        .where((group) => event.groupIds.contains(group.id))
+        .toList();
+    controller.setSelectedGroups(selectedGroups);
+    _didApplyEditingGroups = true;
   }
 
   void _handleStateChanged() {
@@ -154,7 +229,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
     final state = controller.state;
     if (state.status == CreateEventFormStatus.success) {
-      FeedbackService.showSuccess(FeedbackMessage.eventCreated);
+      FeedbackService.showSuccess(
+        widget.editingEventId == null
+            ? FeedbackMessage.eventCreated
+            : FeedbackMessage.eventUpdated,
+      );
       _eventRefreshSignal.notifyChanged();
       Navigator.of(context).maybePop();
     } else if (state.status == CreateEventFormStatus.error) {
@@ -318,6 +397,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
+    final isEditing = widget.editingEventId != null;
     final state = controller.state;
     final sessionController = AuthScope.of(context);
     final profile = sessionController.profile;
@@ -330,9 +410,33 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         .toList();
     final isGroupsLoading = groupController.isMyGroupsLoading;
 
+    if (isEditing && _isEditingEventLoading && _editingEvent == null) {
+      return Scaffold(
+        backgroundColor: scheme.surface,
+        appBar: _buildAppBar(context, l10n, scheme, theme, isEditing),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (isEditing && _editingEvent == null && !_isEditingEventLoading) {
+      return Scaffold(
+        backgroundColor: scheme.surface,
+        appBar: _buildAppBar(context, l10n, scheme, theme, isEditing),
+        body: StatePanel.error(
+          title: l10n.eventDetailsErrorTitle,
+          subtitle: l10n.eventDetailsErrorSubtitle,
+          retryLabel: l10n.exploreRetryButton,
+          onRetry: () {
+            _didRequestEditingEvent = false;
+            _loadEditingEvent();
+          },
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: _buildAppBar(context, l10n, scheme, theme),
+      appBar: _buildAppBar(context, l10n, scheme, theme, isEditing),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: _clearFocus,
@@ -394,6 +498,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   const SizedBox(height: 16),
                   CreateEventTicketingSection(
                     state: state,
+                    ticketUrlController: _ticketUrlController,
                     seatsController: _seatsController,
                     onTicketUrlChanged: controller.updateTicketUrl,
                     onSlotLimitChanged: controller.updateSlotLimit,
@@ -433,7 +538,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         color: scheme.onPrimary,
                       ),
                     )
-                  : Text(l10n.hubCreateEventSubmitButton),
+                  : Text(
+                      isEditing
+                          ? l10n.eventEditSubmitButton
+                          : l10n.hubCreateEventSubmitButton,
+                    ),
             ),
           ],
         ),
@@ -446,13 +555,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     AppLocalizations l10n,
     ColorScheme scheme,
     ThemeData theme,
+    bool isEditing,
   ) {
     return AppBar(
       backgroundColor: scheme.surface,
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
       title: Text(
-        l10n.hubCreateEventTitle,
+        isEditing ? l10n.eventEditScreenTitle : l10n.hubCreateEventTitle,
         style: theme.textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w800,
           color: scheme.primary,

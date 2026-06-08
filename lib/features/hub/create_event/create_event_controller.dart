@@ -24,6 +24,56 @@ class CreateEventController extends ChangeNotifier {
   CreateEventState get state => _state;
 
   LatLng? _selectedLocation;
+  String? _editingEventId;
+
+  bool get isEditing => _editingEventId != null;
+
+  void setEditingEventId(String? eventId) {
+    _editingEventId = eventId;
+  }
+
+  void initializeFromEvent({
+    required ExploreEvent event,
+    List<Group> selectedGroups = const [],
+  }) {
+    final date = DateTime(
+      event.startsAt.year,
+      event.startsAt.month,
+      event.startsAt.day,
+    );
+    final time = DateTime(
+      event.startsAt.year,
+      event.startsAt.month,
+      event.startsAt.day,
+      event.startsAt.hour,
+      event.startsAt.minute,
+    );
+    _selectedLocation = event.location;
+    _state = _state.copyWith(
+      title: event.title,
+      titleError: () => null,
+      description: event.description ?? '',
+      descriptionError: () => null,
+      locationLabel: event.locationLabel(L10nService.l10n),
+      locationError: () => null,
+      selectedDate: () => date,
+      dateError: () => null,
+      selectedTime: () => time,
+      timeError: () => null,
+      selectedCategories: event.categories,
+      categoriesError: () => null,
+      selectedGroups: selectedGroups,
+      groupsError: () => null,
+      eventStatus: event.status,
+      ticketUrl: () => event.ticketUrl,
+      ticketUrlError: () => null,
+      slotLimit: () => event.slotLimit,
+      slotLimitError: () => null,
+      selectedImages: const [],
+      status: CreateEventFormStatus.idle,
+    );
+    notifyListeners();
+  }
 
   void updateTitle(String title) {
     final l10n = L10nService.l10n;
@@ -264,18 +314,26 @@ class CreateEventController extends ChangeNotifier {
         slotLimit: _state.slotLimit,
       );
 
-      final createdEvent = await _eventRepository.createEvent(
-        request,
-        accessToken: tokens.accessToken,
-        tokenType: tokens.tokenType,
-      );
+      final eventId = _editingEventId;
+      final savedEvent = eventId == null
+          ? await _eventRepository.createEvent(
+              request,
+              accessToken: tokens.accessToken,
+              tokenType: tokens.tokenType,
+            )
+          : await _eventRepository.updateEvent(
+              eventId,
+              request,
+              accessToken: tokens.accessToken,
+              tokenType: tokens.tokenType,
+            );
       final selectedImages = _state.selectedImages;
       if (selectedImages.isNotEmpty) {
         try {
           final uploadedMedia = <EventMedia>[];
           for (final image in selectedImages) {
             final media = await _eventRepository.uploadEventMedia(
-              createdEvent.id,
+              savedEvent.id,
               image.bytes,
               image.fileName,
               accessToken: tokens.accessToken,
@@ -286,7 +344,7 @@ class CreateEventController extends ChangeNotifier {
           final firstMediaId = uploadedMedia.firstOrNull?.id;
           if (firstMediaId != null && firstMediaId.isNotEmpty) {
             await _eventRepository.setEventThumbnail(
-              createdEvent.id,
+              savedEvent.id,
               firstMediaId,
               accessToken: tokens.accessToken,
               tokenType: tokens.tokenType,

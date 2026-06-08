@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../shared/auth/auth_models.dart';
 import '../../shared/auth/auth_scope.dart';
 import '../../shared/events/event_detail_controller.dart';
 import '../../shared/events/event_detail_scope.dart';
@@ -56,7 +57,7 @@ class _EventScreenState extends State<EventScreen> {
   void _loadEvent() {
     final eventId = widget.eventId;
     if (eventId == null || eventId.isEmpty) {
-      _invalidEventId = true;
+      setState(() => _invalidEventId = true);
       return;
     }
     EventDetailScope.of(context).loadEvent(eventId);
@@ -244,6 +245,8 @@ class _EventScreenState extends State<EventScreen> {
     ReviewController reviewController,
   ) {
     final event = detailController.event;
+    final auth = AuthScope.maybeOf(context);
+    final isAuthor = event != null && _isEventAuthor(event, auth?.profile);
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -279,6 +282,26 @@ class _EventScreenState extends State<EventScreen> {
           ),
         ),
         actions: [
+          if (event != null && isAuthor)
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert_rounded, color: scheme.primary),
+              onSelected: (value) async {
+                if (value == 'edit') {
+                  await context.push('/events/${event.id}/edit');
+                  if (!mounted) return;
+                  await detailController.loadEvent(
+                    event.id,
+                    forceRefresh: true,
+                  );
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  value: 'edit',
+                  child: Text(l10n.eventEditAction),
+                ),
+              ],
+            ),
           if (event != null)
             IconButton(
               icon: Icon(Icons.share_rounded, size: 20, color: scheme.primary),
@@ -297,6 +320,20 @@ class _EventScreenState extends State<EventScreen> {
       ),
       floatingActionButton: _buildReviewAction(context, l10n, event),
     );
+  }
+
+  bool _isEventAuthor(ExploreEvent event, UserProfile? currentProfile) {
+    final currentUserId = currentProfile?.id;
+    final currentUsername = currentProfile?.username;
+    if ((currentUserId == null || currentUserId.isEmpty) &&
+        (currentUsername == null || currentUsername.isEmpty)) {
+      return false;
+    }
+
+    return event.organizerId == currentUserId ||
+        event.organizerUsername == currentUsername ||
+        event.organizers.contains(currentUserId) ||
+        event.organizers.contains(currentUsername);
   }
 
   Widget? _buildReviewAction(
@@ -338,7 +375,7 @@ class _EventScreenState extends State<EventScreen> {
     if (_invalidEventId || detailController.error != null) {
       return StatePanel.error(
         title: l10n.eventDetailsErrorTitle,
-        subtitle: l10n.eventDetailsErrorSubtitle,
+        subtitle: detailController.error ?? l10n.eventDetailsErrorSubtitle,
         retryLabel: l10n.exploreRetryButton,
         onRetry: _loadEvent,
       );

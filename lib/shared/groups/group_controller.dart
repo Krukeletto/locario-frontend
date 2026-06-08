@@ -53,7 +53,16 @@ class GroupController extends ChangeNotifier {
   bool _hasMoreFeed = true;
   bool _isLoadingMoreFeed = false;
 
-  List<Group> get discoverGroups => List.unmodifiable(_discoverGroups);
+  List<Group> get discoverGroups {
+    if (_myGroups.isEmpty) return List.unmodifiable(_discoverGroups);
+    final myGroupIds = _myGroups.map((group) => group.id).toSet();
+    return List.unmodifiable(
+      _discoverGroups
+          .where((group) => !myGroupIds.contains(group.id))
+          .toList(growable: false),
+    );
+  }
+
   bool get isDiscoverLoading => _isDiscoverLoading;
   bool get isDiscoverRefreshing => _isDiscoverRefreshing;
   String? get discoverError => _discoverError;
@@ -77,9 +86,6 @@ class GroupController extends ChangeNotifier {
   bool get hasMoreFeed => _hasMoreFeed;
   bool get isLoadingMoreFeed => _isLoadingMoreFeed;
 
-  int _computeListHash(List<Object?> items) =>
-      jsonEncode(items.map((e) => (e as dynamic).toJson()).toList()).hashCode;
-
   // ── Discover ──────────────────────────────────────────────────────────
 
   Future<void> loadDiscoverGroups({
@@ -89,6 +95,7 @@ class GroupController extends ChangeNotifier {
   }) async {
     _discoverSearch = search ?? '';
     _discoverCategoryId = categoryId;
+    _discoverError = null;
     final cacheKey =
         'discover_groups_${_discoverSearch}_${_discoverCategoryId ?? 'all'}';
 
@@ -194,11 +201,29 @@ class GroupController extends ChangeNotifier {
     String groupId, {
     bool refreshOnly = false,
   }) async {
-    _clearDetail();
+    _detailError = null;
+    final cacheKey = 'group_detail_$groupId';
+
+    if (!refreshOnly) {
+      _clearDetail();
+    }
+
+    if (!refreshOnly) {
+      final cached = await _cache.get<Group>(cacheKey, Group.fromJson);
+      if (cached != null) {
+        _detailGroup = cached;
+        _isDetailLoading = false;
+        _isDetailRefreshing = true;
+        notifyListeners();
+
+        unawaited(_loadCachedSubData(groupId));
+        unawaited(_refreshGroupDetail(groupId, cacheKey));
+        return;
+      }
+    }
 
     if (!refreshOnly) {
       _isDetailLoading = true;
-      _detailError = null;
       notifyListeners();
     } else {
       _isDetailRefreshing = true;
@@ -206,21 +231,24 @@ class GroupController extends ChangeNotifier {
     }
 
     try {
-      final group = await _groupRepository.fetchGroup(
-        groupId,
-        accessToken: _accessToken,
-        tokenType: _tokenType,
-      );
-      _detailGroup = group;
+      final fresh = await _resolveGroupDetail(groupId);
+      if (fresh == null) {
+        throw const GroupRepositoryException('Unable to fetch group');
+      }
+      _detailGroup = fresh;
+      await _cache.set(cacheKey, fresh.toJson(), hash: _computeHash(fresh));
       notifyListeners();
 
       unawaited(loadGroupMembers(groupId));
       unawaited(loadGroupFeed(groupId, page: 0));
       unawaited(loadGroupEvents(groupId));
 
-      if (_canModerate(group)) {
+      if (_canModerate(fresh)) {
         unawaited(loadGroupJoinRequests(groupId));
         unawaited(loadGroupReports(groupId));
+      } else {
+        _detailJoinRequests = [];
+        _detailReports = [];
       }
     } catch (e) {
       if (!refreshOnly) {
@@ -234,14 +262,199 @@ class GroupController extends ChangeNotifier {
     }
   }
 
-  Future<void> loadGroupMembers(String groupId) async {
+  Future<void> _loadCachedSubData(String groupId) async {
+    await Future.wait([
+      _loadCachedMembers(groupId),
+      _loadCachedFeed(groupId),
+      _loadCachedEvents(groupId),
+    ]);
+  }
+
+  Future<void> _loadCachedMembers(String groupId) async {
+    final cached = await _cache.getList<GroupMember>(
+      'group_members_$groupId',
+      GroupMember.fromJson,
+    );
+    if (cached != null) {
+      _detailMembers = cached;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadCachedFeed(String groupId) async {
+    final cached = await _cache.getList<GroupFeedItem>(
+      'group_feed_${groupId}_page0',
+      GroupFeedItem.fromJson,
+    );
+    if (cached != null) {
+      _detailFeed = cached;
+      _detailFeedPage = 0;
+      _hasMoreFeed = cached.length >= 20;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadCachedEvents(String groupId) async {
+    final cached = await _cache.getList<ExploreEvent>(
+      'group_events_$groupId',
+      ExploreEvent.fromJson,
+    );
+    if (cached != null) {
+      _detailEvents = cached;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _refreshGroupDetail(String groupId, String cacheKey) async {
     try {
-      _detailMembers = await _groupRepository.fetchMembers(
+      final fresh = await _resolveGroupDetail(groupId);
+      if (fresh == null) return;
+      final freshHash = _computeHash(fresh);
+      final cachedHash = await _cache.getHash(cacheKey);
+
+      if (freshHash != cachedHash) {
+        _detailGroup = fresh;
+        await _cache.set(cacheKey, fresh.toJson(), hash: freshHash);
+        notifyListeners();
+      }
+
+      unawaited(_refreshMembers(groupId));
+      unawaited(_refreshFeed(groupId));
+      unawaited(_refreshEvents(groupId));
+      if (_canModerate(fresh)) {
+        unawaited(loadGroupJoinRequests(groupId));
+        unawaited(loadGroupReports(groupId));
+      } else {
+        _detailJoinRequests = [];
+        _detailReports = [];
+      }
+    } catch (_) {
+    } finally {
+      _isDetailRefreshing = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Group?> _resolveGroupDetail(String groupId) async {
+    try {
+      return await _groupRepository.fetchGroup(
         groupId,
         accessToken: _accessToken,
         tokenType: _tokenType,
       );
-      notifyListeners();
+    } catch (_) {}
+
+    try {
+      return await _groupRepository.fetchGroup(groupId);
+    } catch (_) {}
+
+    return _findKnownGroup(groupId);
+  }
+
+  Group? _findKnownGroup(String groupId) {
+    for (final group in _myGroups) {
+      if (group.id == groupId) return group;
+    }
+    for (final group in _discoverGroups) {
+      if (group.id == groupId) return group;
+    }
+    return null;
+  }
+
+  int _computeHash(Object? data) =>
+      jsonEncode((data as dynamic).toJson()).hashCode;
+
+  int _computeListHash(List<Object?> items) =>
+      jsonEncode(items.map((e) => (e as dynamic).toJson()).toList()).hashCode;
+
+  Future<void> _refreshMembers(String groupId) async {
+    try {
+      final fresh = await _groupRepository.fetchMembers(
+        groupId,
+        accessToken: _accessToken,
+        tokenType: _tokenType,
+      );
+      final cacheKey = 'group_members_$groupId';
+      final freshHash = _computeListHash(fresh);
+      final cachedHash = await _cache.getHash(cacheKey);
+      if (freshHash != cachedHash) {
+        _detailMembers = fresh;
+        await _cache.setList(
+          cacheKey,
+          fresh.map((m) => m.toJson()).toList(),
+          hash: freshHash,
+        );
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _refreshFeed(String groupId) async {
+    try {
+      final fresh = await _groupRepository.fetchFeed(
+        groupId,
+        accessToken: _accessToken,
+        tokenType: _tokenType,
+        page: 0,
+      );
+      final cacheKey = 'group_feed_${groupId}_page0';
+      final freshHash = _computeListHash(fresh);
+      final cachedHash = await _cache.getHash(cacheKey);
+      if (freshHash != cachedHash) {
+        _detailFeed = fresh;
+        _hasMoreFeed = fresh.length >= 20;
+        _detailFeedPage = 0;
+        await _cache.setList(
+          cacheKey,
+          fresh.map((f) => f.toJson()).toList(),
+          hash: freshHash,
+        );
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _refreshEvents(String groupId) async {
+    try {
+      final fresh = await _groupRepository.fetchGroupEvents(
+        groupId,
+        accessToken: _accessToken,
+        tokenType: _tokenType,
+      );
+      final cacheKey = 'group_events_$groupId';
+      final freshHash = _computeListHash(fresh);
+      final cachedHash = await _cache.getHash(cacheKey);
+      if (freshHash != cachedHash) {
+        _detailEvents = fresh;
+        await _cache.setList(
+          cacheKey,
+          fresh.map((e) => e.toJson()).toList(),
+          hash: freshHash,
+        );
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
+
+  Future<void> loadGroupMembers(String groupId) async {
+    try {
+      final fresh = await _groupRepository.fetchMembers(
+        groupId,
+        accessToken: _accessToken,
+        tokenType: _tokenType,
+      );
+      final cacheKey = 'group_members_$groupId';
+      final freshHash = _computeListHash(fresh);
+      final cachedHash = await _cache.getHash(cacheKey);
+      if (freshHash != cachedHash) {
+        _detailMembers = fresh;
+        await _cache.setList(
+          cacheKey,
+          fresh.map((m) => m.toJson()).toList(),
+          hash: freshHash,
+        );
+        notifyListeners();
+      }
     } catch (_) {}
   }
 
@@ -253,14 +466,24 @@ class GroupController extends ChangeNotifier {
         tokenType: _tokenType,
         page: page,
       );
-      _detailFeedPage = page;
-      _hasMoreFeed = items.length >= 20;
-      if (page == 0) {
-        _detailFeed = items;
-      } else {
-        _detailFeed = [..._detailFeed, ...items];
+      final cacheKey = 'group_feed_${groupId}_page$page';
+      final freshHash = _computeListHash(items);
+      final cachedHash = await _cache.getHash(cacheKey);
+      if (freshHash != cachedHash) {
+        if (page == 0) {
+          _detailFeed = items;
+        } else {
+          _detailFeed = [..._detailFeed, ...items];
+        }
+        _detailFeedPage = page;
+        _hasMoreFeed = items.length >= 20;
+        await _cache.setList(
+          cacheKey,
+          items.map((f) => f.toJson()).toList(),
+          hash: freshHash,
+        );
+        notifyListeners();
       }
-      notifyListeners();
     } catch (_) {}
   }
 
@@ -278,12 +501,23 @@ class GroupController extends ChangeNotifier {
 
   Future<void> loadGroupEvents(String groupId) async {
     try {
-      _detailEvents = await _groupRepository.fetchGroupEvents(
+      final fresh = await _groupRepository.fetchGroupEvents(
         groupId,
         accessToken: _accessToken,
         tokenType: _tokenType,
       );
-      notifyListeners();
+      final cacheKey = 'group_events_$groupId';
+      final freshHash = _computeListHash(fresh);
+      final cachedHash = await _cache.getHash(cacheKey);
+      if (freshHash != cachedHash) {
+        _detailEvents = fresh;
+        await _cache.setList(
+          cacheKey,
+          fresh.map((e) => e.toJson()).toList(),
+          hash: freshHash,
+        );
+        notifyListeners();
+      }
     } catch (_) {}
   }
 
@@ -309,6 +543,18 @@ class GroupController extends ChangeNotifier {
       );
       notifyListeners();
     } catch (_) {}
+  }
+
+  void _clearDetail() {
+    _detailGroup = null;
+    _detailMembers = [];
+    _detailFeed = [];
+    _detailEvents = [];
+    _detailJoinRequests = [];
+    _detailReports = [];
+    _detailFeedPage = 0;
+    _hasMoreFeed = true;
+    _isLoadingMoreFeed = false;
   }
 
   // ── Mutations ─────────────────────────────────────────────────────────
@@ -346,7 +592,6 @@ class GroupController extends ChangeNotifier {
         accessToken: _accessToken!,
         tokenType: _tokenType,
       );
-      unawaited(loadGroupFeed(groupId, page: 0));
     } catch (_) {}
   }
 
@@ -392,7 +637,6 @@ class GroupController extends ChangeNotifier {
         accessToken: _accessToken!,
         tokenType: _tokenType,
       );
-      await loadGroupFeed(groupId, page: 0);
     } catch (_) {}
   }
 
@@ -405,7 +649,6 @@ class GroupController extends ChangeNotifier {
         accessToken: _accessToken!,
         tokenType: _tokenType,
       );
-      await loadGroupFeed(groupId, page: 0);
     } catch (_) {}
   }
 
@@ -418,7 +661,6 @@ class GroupController extends ChangeNotifier {
         accessToken: _accessToken!,
         tokenType: _tokenType,
       );
-      await loadGroupFeed(groupId, page: 0);
     } catch (_) {}
   }
 
@@ -610,16 +852,5 @@ class GroupController extends ChangeNotifier {
     return group.isAdmin ||
         (group.ownerUserId != null &&
             group.ownerUserId == _sessionController.profile?.id);
-  }
-
-  void _clearDetail() {
-    _detailGroup = null;
-    _detailMembers = [];
-    _detailFeed = [];
-    _detailEvents = [];
-    _detailJoinRequests = [];
-    _detailReports = [];
-    _detailFeedPage = 0;
-    _hasMoreFeed = true;
   }
 }

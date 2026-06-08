@@ -25,29 +25,16 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
   final TextEditingController _searchController = TextEditingController();
 
   Timer? _debounceTimer;
-  bool _initialTabSet = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(_onTabChanged);
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 1);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         final controller = GroupScope.of(context);
         controller.loadDiscoverGroups();
-        controller.loadMyGroups().then((_) {
-          if (mounted && !_initialTabSet) {
-            setState(() {
-              _initialTabSet = true;
-            });
-            if (controller.myGroups.isNotEmpty) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) _tabController.animateTo(1);
-              });
-            }
-          }
-        });
+        controller.loadMyGroups();
       }
     });
   }
@@ -56,18 +43,8 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
   void dispose() {
     _debounceTimer?.cancel();
     _searchController.dispose();
-    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
-  }
-
-  void _onTabChanged() {
-    final controller = GroupScope.of(context);
-    if (_initialTabSet &&
-        controller.myGroups.isEmpty &&
-        _tabController.index == 1) {
-      _tabController.index = 0;
-    }
   }
 
   void _onSearchChanged(String value) {
@@ -93,9 +70,6 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
     final profile = session.profile;
     final categories = CategoryScope.maybeOf(context)?.categories ?? const [];
     final ctrl = GroupScope.of(context);
-    final showMyGroupsDisabled =
-        !session.isAuthenticated || ctrl.myGroups.isEmpty;
-    final myGroupsDisabled = showMyGroupsDisabled && _initialTabSet;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -134,18 +108,7 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
                 controller: _tabController,
                 tabs: [
                   Tab(text: l10n.groupsDiscoverTab),
-                  Tab(
-                    child: AnimatedDefaultTextStyle(
-                      style: theme.textTheme.labelLarge!.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: myGroupsDisabled
-                            ? scheme.onSurfaceVariant.withValues(alpha: 0.45)
-                            : null,
-                      ),
-                      duration: const Duration(milliseconds: 200),
-                      child: Text(l10n.groupsMyGroupsTab),
-                    ),
-                  ),
+                  Tab(text: l10n.groupsMyGroupsTab),
                 ],
                 labelColor: scheme.primary,
                 unselectedLabelColor: scheme.onSurfaceVariant,
@@ -158,7 +121,6 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        physics: myGroupsDisabled ? const NeverScrollableScrollPhysics() : null,
         children: [
           _DiscoverTab(
             searchController: _searchController,
@@ -191,7 +153,7 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
             isLoading: ctrl.isMyGroupsLoading,
             isAuthenticated: session.isAuthenticated,
             groups: ctrl.myGroups,
-            disabled: myGroupsDisabled,
+            disabled: false,
             l10n: l10n,
             theme: theme,
             scheme: scheme,
