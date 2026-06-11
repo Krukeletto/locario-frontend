@@ -9,6 +9,7 @@ import '../../shared/groups/group_models.dart';
 import '../../shared/groups/group_repository.dart';
 import '../../shared/groups/group_scope.dart';
 import '../../shared/services/feedback_service.dart';
+import 'widgets/pin_selector.dart';
 
 class GroupFormScreen extends StatefulWidget {
   const GroupFormScreen({super.key, this.groupId, GroupRepository? repository})
@@ -30,8 +31,8 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
   final _descriptionController = TextEditingController();
   final _avatarUrlController = TextEditingController();
   final _iconUrlController = TextEditingController();
-  final _mapPinIconUrlController = TextEditingController();
-  final _mapPinStyleController = TextEditingController();
+  String? _pinStyleKey;
+  String? _pinCustomUrl;
 
   GroupVisibility _visibility = GroupVisibility.public;
   String? _categoryId;
@@ -58,8 +59,6 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
     _descriptionController.dispose();
     _avatarUrlController.dispose();
     _iconUrlController.dispose();
-    _mapPinIconUrlController.dispose();
-    _mapPinStyleController.dispose();
     super.dispose();
   }
 
@@ -79,8 +78,8 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
         _descriptionController.text = group.description ?? '';
         _avatarUrlController.text = group.avatarUrl ?? '';
         _iconUrlController.text = group.iconUrl ?? '';
-        _mapPinIconUrlController.text = group.mapPinIconUrl ?? '';
-        _mapPinStyleController.text = group.mapPinStyle ?? '';
+        _pinStyleKey = group.mapPinStyle;
+        _pinCustomUrl = group.mapPinIconUrl;
         _visibility = group.visibility;
         _categoryId = group.categoryId;
       }
@@ -136,8 +135,8 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
                 visibility: _visibility,
                 avatarUrl: _emptyToNull(_avatarUrlController.text),
                 iconUrl: _emptyToNull(_iconUrlController.text),
-                mapPinIconUrl: _emptyToNull(_mapPinIconUrlController.text),
-                mapPinStyle: _emptyToNull(_mapPinStyleController.text),
+                mapPinIconUrl: _pinCustomUrl,
+                mapPinStyle: _pinStyleKey,
               ),
               accessToken: tokens.accessToken,
               tokenType: tokens.tokenType,
@@ -150,8 +149,8 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
                 visibility: _visibility,
                 avatarUrl: _emptyToNull(_avatarUrlController.text),
                 iconUrl: _emptyToNull(_iconUrlController.text),
-                mapPinIconUrl: _emptyToNull(_mapPinIconUrlController.text),
-                mapPinStyle: _emptyToNull(_mapPinStyleController.text),
+                mapPinIconUrl: _pinCustomUrl,
+                mapPinStyle: _pinStyleKey,
               ),
               accessToken: tokens.accessToken,
               tokenType: tokens.tokenType,
@@ -353,25 +352,26 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
                     ),
                     validator: _validateUrl,
                   ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _mapPinIconUrlController,
-                    decoration: InputDecoration(
-                      labelText: l10n.groupsFieldMapPinIconUrl,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Ikona pina na mapie',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    validator: _validateUrl,
                   ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _mapPinStyleController,
-                    decoration: InputDecoration(
-                      labelText: l10n.groupsFieldMapPinStyle,
-                    ),
-                    validator: (value) {
-                      if ((value ?? '').length > 50) {
-                        return l10n.groupsValidationMapPinStyleTooLong;
-                      }
-                      return null;
+                  const SizedBox(height: 8),
+                  PinSelector(
+                    groupId: widget.groupId,
+                    initialStyleKey: _pinStyleKey,
+                    initialCustomUrl: _pinCustomUrl,
+                    repository: HttpGroupRepository(),
+                    onChanged: (result) {
+                      setState(() {
+                        _pinStyleKey = result.styleKey;
+                        _pinCustomUrl = result.customUrl;
+                      });
                     },
                   ),
                 ],
