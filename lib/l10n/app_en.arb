@@ -422,6 +422,28 @@
   "groupsEventGroupsEmpty": "You are not an active member of any group yet.",
   "groupsEventValidationGroupRequired": "Select at least one group for this event.",
   "groupsEventValidationSlotLimitRequired": "Regular members must set a positive slot limit.",
+  "groupsCommentsTitle": "Comments",
+  "groupsCommentsEmpty": "No comments yet. Be the first to comment!",
+  "groupsCommentHint": "Write a comment...",
+  "groupsCommentPost": "Send",
+  "groupsCommentEdit": "Edit comment",
+  "groupsCommentDelete": "Delete comment",
+  "groupsCommentDeleteBody": "This comment will be permanently removed.",
+  "groupsCommentEdited": "(edited)",
+  "groupsLikeAction": "Like",
+  "groupsUnlikeAction": "Unlike",
+  "groupsPostPhotoAction": "Add photos",
+  "groupsPostPhotoRemove": "Remove",
+  "groupsPostPhotoLimit": "Maximum {count} photos allowed",
+  "@groupsPostPhotoLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupsPostUploadingPhotos": "Uploading photos...",
+  "groupsCommentsRefresh": "Refresh comments",
   "hubTitle": "Hub",
   "hubDescription": "Shortcuts for creating and managing your local circle",
   "hubCreateEventTitle": "Create event",

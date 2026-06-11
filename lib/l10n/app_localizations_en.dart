@@ -1037,6 +1037,54 @@ class AppLocalizationsEn extends AppLocalizations {
       'Regular members must set a positive slot limit.';
 
   @override
+  String get groupsCommentsTitle => 'Comments';
+
+  @override
+  String get groupsCommentsEmpty => 'No comments yet. Be the first to comment!';
+
+  @override
+  String get groupsCommentHint => 'Write a comment...';
+
+  @override
+  String get groupsCommentPost => 'Send';
+
+  @override
+  String get groupsCommentEdit => 'Edit comment';
+
+  @override
+  String get groupsCommentDelete => 'Delete comment';
+
+  @override
+  String get groupsCommentDeleteBody =>
+      'This comment will be permanently removed.';
+
+  @override
+  String get groupsCommentEdited => '(edited)';
+
+  @override
+  String get groupsLikeAction => 'Like';
+
+  @override
+  String get groupsUnlikeAction => 'Unlike';
+
+  @override
+  String get groupsPostPhotoAction => 'Add photos';
+
+  @override
+  String get groupsPostPhotoRemove => 'Remove';
+
+  @override
+  String groupsPostPhotoLimit(int count) {
+    return 'Maximum $count photos allowed';
+  }
+
+  @override
+  String get groupsPostUploadingPhotos => 'Uploading photos...';
+
+  @override
+  String get groupsCommentsRefresh => 'Refresh comments';
+
+  @override
   String get hubTitle => 'Hub';
 
   @override

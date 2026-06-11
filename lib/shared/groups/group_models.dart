@@ -150,6 +150,8 @@ class Group {
     this.updatedAt,
     this.currentUserMembership,
     this.currentUserRole,
+    this.latitude,
+    this.longitude,
   });
 
   final String id;
@@ -170,6 +172,8 @@ class Group {
   final DateTime? updatedAt;
   final GroupMembershipStatus? currentUserMembership;
   final GroupRole? currentUserRole;
+  final double? latitude;
+  final double? longitude;
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(
@@ -193,6 +197,8 @@ class Group {
         json['currentUserMembership'] as String?,
       ),
       currentUserRole: GroupRole.fromString(json['currentUserRole'] as String?),
+      latitude: _parseDouble(json['latitude']),
+      longitude: _parseDouble(json['longitude']),
     );
   }
 
@@ -224,6 +230,8 @@ class Group {
       if (currentUserMembership != null)
         'currentUserMembership': currentUserMembership!.toJson(),
       if (currentUserRole != null) 'currentUserRole': currentUserRole!.toJson(),
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
     };
   }
 }
@@ -356,6 +364,34 @@ class GroupFeedItem {
     );
   }
 
+  GroupFeedItem copyWith({
+    int? commentCount,
+    int? likeCount,
+    bool? likedByMe,
+    String? title,
+    String? content,
+    List<String>? mediaUrls,
+  }) {
+    return GroupFeedItem(
+      type: type,
+      id: id,
+      authorId: authorId,
+      authorUsername: authorUsername,
+      authorAvatarUrl: authorAvatarUrl,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      mediaUrls: mediaUrls ?? this.mediaUrls,
+      commentCount: commentCount ?? this.commentCount,
+      likeCount: likeCount ?? this.likeCount,
+      likedByMe: likedByMe ?? this.likedByMe,
+      createdAt: createdAt,
+      eventId: eventId,
+      eventName: eventName,
+      eventStartAt: eventStartAt,
+      canModerate: canModerate,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'type': type.name,
@@ -397,6 +433,73 @@ class GroupPostRequest {
   };
 }
 
+class GroupPostComment {
+  const GroupPostComment({
+    required this.id,
+    this.postId,
+    this.authorId,
+    this.authorUsername,
+    required this.content,
+    this.mediaUrls = const [],
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  final String id;
+  final String? postId;
+  final String? authorId;
+  final String? authorUsername;
+  final String content;
+  final List<String> mediaUrls;
+  final String? status;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  factory GroupPostComment.fromJson(Map<String, dynamic> json) {
+    return GroupPostComment(
+      id: (json['id'] as String?) ?? '',
+      postId: json['postId'] as String?,
+      authorId: json['authorId'] as String?,
+      authorUsername: json['authorUsername'] as String?,
+      content: (json['content'] as String?) ?? '',
+      mediaUrls: (json['mediaUrls'] as List?)?.cast<String>() ?? const [],
+      status: json['status'] as String?,
+      createdAt: _parseDate(json['createdAt'] as String?),
+      updatedAt: _parseDate(json['updatedAt'] as String?),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      if (postId != null) 'postId': postId,
+      if (authorId != null) 'authorId': authorId,
+      if (authorUsername != null) 'authorUsername': authorUsername,
+      'content': content,
+      'mediaUrls': mediaUrls,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt!.toUtc().toIso8601String(),
+    };
+  }
+}
+
+class GroupPostCommentRequest {
+  const GroupPostCommentRequest({
+    required this.content,
+    this.mediaObjectKey,
+  });
+
+  final String content;
+  final String? mediaObjectKey;
+
+  Map<String, dynamic> toJson() => {
+    'content': content,
+    if (mediaObjectKey != null) 'mediaObjectKey': mediaObjectKey,
+  };
+}
+
 class GroupPost {
   const GroupPost({
     required this.id,
@@ -408,6 +511,9 @@ class GroupPost {
     this.mediaUrls = const [],
     this.status,
     this.createdAt,
+    this.commentCount = 0,
+    this.likeCount = 0,
+    this.likedByMe = false,
   });
 
   final String id;
@@ -419,6 +525,9 @@ class GroupPost {
   final List<String> mediaUrls;
   final String? status;
   final DateTime? createdAt;
+  final int commentCount;
+  final int likeCount;
+  final bool likedByMe;
 
   factory GroupPost.fromJson(Map<String, dynamic> json) {
     return GroupPost(
@@ -431,6 +540,34 @@ class GroupPost {
       mediaUrls: (json['mediaUrls'] as List?)?.cast<String>() ?? const [],
       status: json['status'] as String?,
       createdAt: _parseDate(json['createdAt'] as String?),
+      commentCount: json['commentCount'] as int? ?? 0,
+      likeCount: json['likeCount'] as int? ?? 0,
+      likedByMe: json['likedByMe'] as bool? ?? false,
+    );
+  }
+
+  GroupPost copyWith({
+    int? commentCount,
+    int? likeCount,
+    bool? likedByMe,
+    String? title,
+    String? content,
+    List<String>? mediaUrls,
+    String? status,
+  }) {
+    return GroupPost(
+      id: id,
+      groupId: groupId,
+      authorId: authorId,
+      authorUsername: authorUsername,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      mediaUrls: mediaUrls ?? this.mediaUrls,
+      status: status ?? this.status,
+      createdAt: createdAt,
+      commentCount: commentCount ?? this.commentCount,
+      likeCount: likeCount ?? this.likeCount,
+      likedByMe: likedByMe ?? this.likedByMe,
     );
   }
 
@@ -445,6 +582,9 @@ class GroupPost {
       'mediaUrls': mediaUrls,
       if (status != null) 'status': status,
       if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
+      'commentCount': commentCount,
+      'likeCount': likeCount,
+      'likedByMe': likedByMe,
     };
   }
 }
@@ -524,6 +664,13 @@ DateTime? _parseDate(String? value) {
     return null;
   }
   return DateTime.tryParse(value);
+}
+
+double? _parseDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
 }
 
 Map<String, dynamic>? _asMap(dynamic value) {

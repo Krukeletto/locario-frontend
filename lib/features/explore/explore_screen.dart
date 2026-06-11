@@ -7,6 +7,7 @@ import 'package:locario/l10n/app_localizations.dart';
 import '../../shared/auth/auth_scope.dart';
 import '../../shared/cache/cache_scope.dart';
 import '../../shared/events/event_repository.dart';
+import '../../shared/groups/group_scope.dart';
 import '../../shared/location/location_service.dart';
 import '../../shared/map/style_repository.dart';
 import '../../shared/widgets/state_panel.dart';
@@ -367,6 +368,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   Future<void> _handleFilterPressed() async {
+    final userGroups = GroupScope.maybeOf(context)?.myGroups ?? [];
     final result = await showModalBottomSheet<ExploreAdvancedFilterResult>(
       context: context,
       isScrollControlled: true,
@@ -375,6 +377,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       builder: (context) => ExploreAdvancedFilterSheet(
         initialFilters: _exploreController.advancedFilters,
         areaController: _areaController,
+        userGroups: userGroups,
       ),
     );
 

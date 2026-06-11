@@ -1045,6 +1045,54 @@ class AppLocalizationsPl extends AppLocalizations {
       'Zwykły członek musi ustawić dodatni limit miejsc.';
 
   @override
+  String get groupsCommentsTitle => 'Komentarze';
+
+  @override
+  String get groupsCommentsEmpty => 'Brak komentarzy. Bądź pierwszy!';
+
+  @override
+  String get groupsCommentHint => 'Napisz komentarz...';
+
+  @override
+  String get groupsCommentPost => 'Wyślij';
+
+  @override
+  String get groupsCommentEdit => 'Edytuj komentarz';
+
+  @override
+  String get groupsCommentDelete => 'Usuń komentarz';
+
+  @override
+  String get groupsCommentDeleteBody =>
+      'Ten komentarz zostanie trwale usunięty.';
+
+  @override
+  String get groupsCommentEdited => '(edytowano)';
+
+  @override
+  String get groupsLikeAction => 'Polub';
+
+  @override
+  String get groupsUnlikeAction => 'Cofnij polubienie';
+
+  @override
+  String get groupsPostPhotoAction => 'Dodaj zdjęcia';
+
+  @override
+  String get groupsPostPhotoRemove => 'Usuń';
+
+  @override
+  String groupsPostPhotoLimit(int count) {
+    return 'Maksymalnie $count zdjęć dozwolonych';
+  }
+
+  @override
+  String get groupsPostUploadingPhotos => 'Przesyłanie zdjęć...';
+
+  @override
+  String get groupsCommentsRefresh => 'Odśwież komentarze';
+
+  @override
   String get hubTitle => 'Hub';
 
   @override

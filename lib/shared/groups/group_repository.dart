@@ -75,6 +75,9 @@ abstract class GroupRepository {
     String? categoryId,
     int page = 0,
     int size = 20,
+    double? latitude,
+    double? longitude,
+    double? radiusKm,
     String? accessToken,
     String tokenType = 'Bearer',
   });
@@ -253,6 +256,68 @@ abstract class GroupRepository {
     required String accessToken,
     String tokenType = 'Bearer',
   });
+
+  // ── Post interactions: comments ──────────────────────────────────────
+
+  Future<List<GroupPostComment>> fetchComments(
+    String groupId,
+    String postId, {
+    String? accessToken,
+    String tokenType = 'Bearer',
+    int page = 0,
+    int size = 20,
+  });
+
+  Future<GroupPostComment> createComment(
+    String groupId,
+    String postId,
+    GroupPostCommentRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+
+  Future<GroupPostComment> updateComment(
+    String groupId,
+    String postId,
+    String commentId,
+    GroupPostCommentRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+
+  Future<void> deleteComment(
+    String groupId,
+    String postId,
+    String commentId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+
+  // ── Post interactions: likes ─────────────────────────────────────────
+
+  Future<GroupPost> likePost(
+    String groupId,
+    String postId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+
+  Future<GroupPost> unlikePost(
+    String groupId,
+    String postId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+
+  // ── Post media upload ────────────────────────────────────────────────
+
+  Future<String> uploadGroupPostMedia(
+    String groupId,
+    List<int> bytes,
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
 }
 
 class HttpGroupRepository implements GroupRepository {
@@ -282,6 +347,9 @@ class HttpGroupRepository implements GroupRepository {
     String? categoryId,
     int page = 0,
     int size = 20,
+    double? latitude,
+    double? longitude,
+    double? radiusKm,
     String? accessToken,
     String tokenType = 'Bearer',
   }) async {
@@ -291,6 +359,9 @@ class HttpGroupRepository implements GroupRepository {
           if (query != null && query.isNotEmpty) 'q': query,
           if (categoryId != null && categoryId.isNotEmpty)
             'categoryId': categoryId,
+          if (latitude != null) 'lat': latitude.toString(),
+          if (longitude != null) 'lng': longitude.toString(),
+          if (radiusKm != null) 'radiusKm': radiusKm.toString(),
           'page': '$page',
           'size': '$size',
         },
@@ -1262,4 +1333,233 @@ class HttpGroupRepository implements GroupRepository {
       );
     }
   }
+
+  // ── Comments ───────────────────────────────────────────────────────────
+
+  @override
+  Future<List<GroupPostComment>> fetchComments(
+    String groupId,
+    String postId, {
+    String? accessToken,
+    String tokenType = 'Bearer',
+    int page = 0,
+    int size = 20,
+  }) async {
+    final response = await _client.get(
+      _uri('/api/groups/$groupId/posts/$postId/comments').replace(
+        queryParameters: {'page': '$page', 'size': '$size'},
+      ),
+      headers: accessToken == null
+          ? null
+          : _authHeaders(accessToken, tokenType),
+    );
+
+    if (response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to fetch comments',
+        statusCode: response.statusCode,
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is List) {
+      return decoded
+          .whereType<Map>()
+          .map((item) => GroupPostComment.fromJson(Map<String, dynamic>.from(item)))
+          .toList(growable: false);
+    }
+    if (decoded is Map && decoded['content'] is List) {
+      return (decoded['content'] as List)
+          .whereType<Map>()
+          .map((item) => GroupPostComment.fromJson(Map<String, dynamic>.from(item)))
+          .toList(growable: false);
+    }
+    throw const GroupRepositoryException('Unexpected comments payload');
+  }
+
+  @override
+  Future<GroupPostComment> createComment(
+    String groupId,
+    String postId,
+    GroupPostCommentRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.post(
+      _uri('/api/groups/$groupId/posts/$postId/comments'),
+      headers: _authHeaders(accessToken, tokenType, includeJson: true),
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to create comment',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return _decodeComment(response.body);
+  }
+
+  @override
+  Future<GroupPostComment> updateComment(
+    String groupId,
+    String postId,
+    String commentId,
+    GroupPostCommentRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.patch(
+      _uri('/api/groups/$groupId/posts/$postId/comments/$commentId'),
+      headers: _authHeaders(accessToken, tokenType, includeJson: true),
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to update comment',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return _decodeComment(response.body);
+  }
+
+  @override
+  Future<void> deleteComment(
+    String groupId,
+    String postId,
+    String commentId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.delete(
+      _uri('/api/groups/$groupId/posts/$postId/comments/$commentId'),
+      headers: _authHeaders(accessToken, tokenType),
+    );
+
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to delete comment',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  // ── Likes ──────────────────────────────────────────────────────────────
+
+  @override
+  Future<GroupPost> likePost(
+    String groupId,
+    String postId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.put(
+      _uri('/api/groups/$groupId/posts/$postId/like'),
+      headers: _authHeaders(accessToken, tokenType),
+    );
+
+    if (response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to like post',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return _decodePost(response.body);
+  }
+
+  @override
+  Future<GroupPost> unlikePost(
+    String groupId,
+    String postId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.delete(
+      _uri('/api/groups/$groupId/posts/$postId/like'),
+      headers: _authHeaders(accessToken, tokenType),
+    );
+
+    if (response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to unlike post',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return _decodePost(response.body);
+  }
+
+  // ── Post media upload ──────────────────────────────────────────────────
+
+  @override
+  Future<String> uploadGroupPostMedia(
+    String groupId,
+    List<int> bytes,
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final contentType = _resolveImageMimeType(fileName);
+
+    final response = await _client.post(
+      _uri('/api/media/presigned-upload-url'),
+      headers: _authHeaders(accessToken, tokenType, includeJson: true),
+      body: jsonEncode({
+        'entityType': 'GROUP_POST',
+        'entityId': groupId,
+        'fileName': fileName,
+        'contentType': contentType,
+        'fileSize': bytes.length,
+      }),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to get presigned upload URL',
+        statusCode: response.statusCode,
+      );
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final uploadUrl = decoded['uploadUrl'] as String;
+    final objectKey = decoded['objectKey'] as String;
+
+    final uploadResponse = await http.put(
+      Uri.parse(uploadUrl),
+      headers: {'Content-Type': contentType},
+      body: bytes,
+    );
+
+    if (uploadResponse.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to upload group post media',
+        statusCode: uploadResponse.statusCode,
+      );
+    }
+
+    return objectKey;
+  }
+
+  String _resolveImageMimeType(String fileName) {
+    final extension = fileName.split('.').last.toLowerCase();
+    return switch (extension) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      'gif' => 'image/gif',
+      'jpg' || 'jpeg' => 'image/jpeg',
+      _ => 'image/jpeg',
+    };
+  }
+}
+
+GroupPostComment _decodeComment(String body) {
+  final decoded = jsonDecode(body);
+  if (decoded is! Map) {
+    throw const GroupRepositoryException('Unexpected comment payload');
+  }
+  return GroupPostComment.fromJson(Map<String, dynamic>.from(decoded));
 }

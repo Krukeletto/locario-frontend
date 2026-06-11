@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:locario/features/explore/models.dart';
 import 'package:locario/features/groups/group_discover_screen.dart';
 import 'package:locario/shared/auth/auth_api.dart';
@@ -13,6 +15,7 @@ import 'package:locario/shared/groups/group_controller.dart';
 import 'package:locario/shared/groups/group_models.dart';
 import 'package:locario/shared/groups/group_repository.dart';
 import 'package:locario/shared/groups/group_scope.dart';
+import 'package:locario/shared/location/location_service.dart';
 
 import '../../test_helpers/fake_event_repository.dart';
 import '../../test_helpers/test_app.dart';
@@ -60,7 +63,7 @@ void main() {
             controller: categoryController,
             child: GroupScope(
               controller: groupController,
-              child: const GroupDiscoverScreen(),
+              child: GroupDiscoverScreen(locationService: _StubLocationService()),
             ),
           ),
         ),
@@ -126,6 +129,9 @@ class _FakeGroupRepository implements GroupRepository {
     String? categoryId,
     int page = 0,
     int size = 20,
+    double? latitude,
+    double? longitude,
+    double? radiusKm,
     String? accessToken,
     String tokenType = 'Bearer',
   }) async => discoverGroups;
@@ -436,6 +442,69 @@ class _FakeGroupRepository implements GroupRepository {
     required String accessToken,
     String tokenType = 'Bearer',
   }) => throw UnimplementedError();
+
+  @override
+  Future<List<GroupPostComment>> fetchComments(
+    String groupId,
+    String postId, {
+    String? accessToken,
+    String tokenType = 'Bearer',
+    int page = 0,
+    int size = 20,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<GroupPostComment> createComment(
+    String groupId,
+    String postId,
+    GroupPostCommentRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<GroupPostComment> updateComment(
+    String groupId,
+    String postId,
+    String commentId,
+    GroupPostCommentRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteComment(
+    String groupId,
+    String postId,
+    String commentId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<GroupPost> likePost(
+    String groupId,
+    String postId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<GroupPost> unlikePost(
+    String groupId,
+    String postId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<String> uploadGroupPostMedia(
+    String groupId,
+    List<int> bytes,
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
 }
 
 class _MemoryAuthStorage implements AuthTokenStorage {
@@ -503,4 +572,38 @@ Future<SessionController> _createSessionController() async {
 
   await controller.load();
   return controller;
+}
+
+class _StubLocationService implements LocationService {
+  @override
+  bool get supportsLastKnownLocation => true;
+
+  @override
+  bool get supportsAppSettings => true;
+
+  @override
+  bool get supportsLocationSettings => true;
+
+  @override
+  Future<bool> isLocationServiceEnabled() async => true;
+
+  @override
+  Future<LocationPermission> checkPermission() async =>
+      LocationPermission.always;
+
+  @override
+  Future<LocationPermission> requestPermission() async =>
+      LocationPermission.always;
+
+  @override
+  Future<LatLng?> getCurrentLocation() async => null;
+
+  @override
+  Future<LatLng?> getLastKnownLocation() async => null;
+
+  @override
+  Future<bool> openAppSettings() async => false;
+
+  @override
+  Future<bool> openLocationSettings() async => false;
 }

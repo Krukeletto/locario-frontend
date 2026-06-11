@@ -130,8 +130,12 @@ class ExploreController extends ChangeNotifier {
             _advancedFilters.distanceFilter.maxDistanceMeters) /
         1000.0;
 
+    final groupSuffix =
+        _advancedFilters.groupIds.isNotEmpty
+            ? '_g${_advancedFilters.groupIds.join(',')}'
+            : '';
     final cacheKey =
-        'nearby_${location.latitude.toStringAsFixed(1)}_${location.longitude.toStringAsFixed(1)}_${radiusKm.toStringAsFixed(1)}';
+        'map_events_${location.latitude.toStringAsFixed(1)}_${location.longitude.toStringAsFixed(1)}_${radiusKm.toStringAsFixed(1)}$groupSuffix';
 
     if (!forceRefresh && cache != null) {
       final cached = await cache.getList<ExploreEvent>(
@@ -155,10 +159,15 @@ class ExploreController extends ChangeNotifier {
     }
 
     try {
-      final events = await _eventRepository.fetchNearbyEvents(
+      final events = await _eventRepository.fetchMapEvents(
         latitude: location.latitude,
         longitude: location.longitude,
         radiusKm: radiusKm,
+        includeCommunityEvents: true,
+        groupIds:
+            _advancedFilters.groupIds.isNotEmpty
+                ? _advancedFilters.groupIds
+                : null,
         accessToken: accessToken,
         tokenType: tokenType,
       );

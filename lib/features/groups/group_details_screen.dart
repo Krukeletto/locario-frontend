@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
@@ -10,6 +12,7 @@ import '../../shared/auth/auth_scope.dart';
 import '../../shared/groups/group_models.dart';
 import '../../shared/groups/group_scope.dart';
 import '../../shared/widgets/state_panel.dart';
+import 'group_post_comments_screen.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
   const GroupDetailsScreen({super.key, required this.groupId});
@@ -103,7 +106,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     if (session.tokens == null) return;
 
     final l10n = AppLocalizations.of(context);
-    final content = await showDialog<String>(
+    final result = await showDialog<_PostComposerResult>(
       context: context,
       builder: (context) => _PostComposerDialog(
         title: editingPost == null
@@ -118,17 +121,38 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
       ),
     );
 
-    if (content == null || content.isEmpty) return;
+    if (result == null || result.content.isEmpty) return;
 
     setState(() {
       _isSubmittingPost = true;
     });
 
     try {
+      List<String> mediaObjectKeys = [];
+      if (result.pickedImages.isNotEmpty) {
+        for (final image in result.pickedImages) {
+          final objectKey = await ctrl.uploadMedia(
+            group.id,
+            image.bytes,
+            image.fileName,
+          );
+          mediaObjectKeys.add(objectKey);
+        }
+      }
+
       if (editingPost == null) {
-        await ctrl.createPost(group.id, content);
+        await ctrl.createPost(
+          group.id,
+          content: result.content,
+          mediaObjectKeys: mediaObjectKeys.isNotEmpty ? mediaObjectKeys : null,
+        );
       } else {
-        await ctrl.updatePost(group.id, editingPost.id, content);
+        await ctrl.updatePost(
+          group.id,
+          editingPost.id,
+          content: result.content,
+          mediaObjectKeys: mediaObjectKeys.isNotEmpty ? mediaObjectKeys : null,
+        );
       }
       if (!mounted) return;
       _postController.clear();
@@ -557,6 +581,26 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                         ),
                       );
                     },
+                    onLikePost: (item) {
+                      if (tokens == null) return;
+                      if (item.type != GroupFeedItemType.post) return;
+                      if (item.likedByMe) {
+                        ctrl.unlikePost(group.id, item.id);
+                      } else {
+                        ctrl.likePost(group.id, item.id);
+                      }
+                    },
+                    onOpenComments: (item) {
+                      if (item.type != GroupFeedItemType.post) return;
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => GroupPostCommentsScreen(
+                            groupId: group.id,
+                            postId: item.id,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   _EventsTab(
                     events: ctrl.detailEvents,
@@ -591,6 +635,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                     group: group,
                     onJoinOrLeave: _handleJoinOrLeave,
                     canJoinOrLeave: tokens != null && !group.isBanned,
+                    canModerate: canModerate,
                   ),
                 ],
               ),
@@ -627,6 +672,23 @@ class _HeaderChip extends StatelessWidget {
   }
 }
 
+class _PostComposerResult {
+  const _PostComposerResult({
+    required this.content,
+    this.pickedImages = const [],
+  });
+
+  final String content;
+  final List<_PickedImage> pickedImages;
+}
+
+class _PickedImage {
+  const _PickedImage({required this.bytes, required this.fileName});
+
+  final List<int> bytes;
+  final String fileName;
+}
+
 class _PostComposerDialog extends StatefulWidget {
   const _PostComposerDialog({
     required this.title,
@@ -648,6 +710,7 @@ class _PostComposerDialog extends StatefulWidget {
 
 class _PostComposerDialogState extends State<_PostComposerDialog> {
   late final TextEditingController _controller;
+  final List<_PickedImage> _pickedImages = [];
 
   @override
   void initState() {
@@ -661,17 +724,127 @@ class _PostComposerDialogState extends State<_PostComposerDialog> {
     super.dispose();
   }
 
+  Future<void> _pickImages() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+      allowMultiple: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+
+    final maxSlots = 5 - _pickedImages.length;
+    if (maxSlots <= 0) return;
+
+    final files = result.files
+        .where((f) => f.bytes != null && f.bytes!.isNotEmpty)
+        .take(maxSlots)
+        .map((f) => _PickedImage(bytes: f.bytes!, fileName: f.name))
+        .toList(growable: false);
+
+    setState(() {
+      _pickedImages.addAll(files);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+
     return AlertDialog(
       title: Text(widget.title),
-      content: TextField(
-        controller: _controller,
-        maxLines: 6,
-        maxLength: 10000,
-        decoration: InputDecoration(
-          hintText: widget.hintText,
-          counterText: null,
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _controller,
+                maxLines: 6,
+                maxLength: 10000,
+                decoration: InputDecoration(
+                  hintText: widget.hintText,
+                  counterText: null,
+                ),
+              ),
+              if (_pickedImages.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  '${_pickedImages.length}/5',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 72,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _pickedImages.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final image = _pickedImages[index];
+                      return Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.memory(
+                              Uint8List.fromList(image.bytes),
+                              width: 72,
+                              height: 72,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Container(
+                                width: 72,
+                                height: 72,
+                                color: scheme.surfaceContainerHighest,
+                                child: Icon(
+                                  Icons.broken_image_rounded,
+                                  color: scheme.onSurface
+                                      .withValues(alpha: 0.4),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _pickedImages.removeAt(index);
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: scheme.error,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 14,
+                                  color: scheme.onError,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              if (_pickedImages.length < 5)
+                TextButton.icon(
+                  onPressed: _pickImages,
+                  icon: const Icon(Icons.add_photo_alternate_outlined),
+                  label: Text(l10n.groupsPostPhotoAction),
+                ),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -680,13 +853,24 @@ class _PostComposerDialogState extends State<_PostComposerDialog> {
           child: Text(widget.cancelLabel),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          onPressed: () {
+            final text = _controller.text.trim();
+            if (text.isEmpty) return;
+            Navigator.of(context).pop(
+              _PostComposerResult(
+                content: text,
+                pickedImages: List.of(_pickedImages),
+              ),
+            );
+          },
           child: Text(widget.confirmLabel),
         ),
       ],
     );
   }
 }
+
+
 
 class _GroupReportDialog extends StatefulWidget {
   const _GroupReportDialog({required this.title});
@@ -781,6 +965,8 @@ class _FeedTab extends StatelessWidget {
     required this.onOpenEvent,
     required this.onReportPost,
     required this.onReportEvent,
+    required this.onLikePost,
+    required this.onOpenComments,
   });
 
   final bool canPost;
@@ -800,6 +986,8 @@ class _FeedTab extends StatelessWidget {
   final ValueChanged<String> onOpenEvent;
   final ValueChanged<GroupFeedItem> onReportPost;
   final ValueChanged<GroupFeedItem> onReportEvent;
+  final ValueChanged<GroupFeedItem> onLikePost;
+  final ValueChanged<GroupFeedItem> onOpenComments;
 
   @override
   Widget build(BuildContext context) {
@@ -865,6 +1053,8 @@ class _FeedTab extends StatelessWidget {
                 onOpenEvent: onOpenEvent,
                 onReportPost: onReportPost,
                 onReportEvent: onReportEvent,
+                onLikePost: onLikePost,
+                onOpenComments: onOpenComments,
               ),
             ),
           ),
@@ -889,6 +1079,8 @@ class _FeedItemCard extends StatelessWidget {
     required this.onOpenEvent,
     required this.onReportPost,
     required this.onReportEvent,
+    required this.onLikePost,
+    required this.onOpenComments,
   });
 
   final GroupFeedItem item;
@@ -900,6 +1092,8 @@ class _FeedItemCard extends StatelessWidget {
   final ValueChanged<String> onOpenEvent;
   final ValueChanged<GroupFeedItem> onReportPost;
   final ValueChanged<GroupFeedItem> onReportEvent;
+  final ValueChanged<GroupFeedItem> onLikePost;
+  final ValueChanged<GroupFeedItem> onOpenComments;
 
   @override
   Widget build(BuildContext context) {
@@ -1045,6 +1239,76 @@ class _FeedItemCard extends StatelessWidget {
             FilledButton.tonal(
               onPressed: () => onOpenEvent(item.eventId!),
               child: Text(l10n.groupsOpenEventAction),
+            ),
+          ],
+          if (item.type == GroupFeedItemType.post) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => onLikePost(item),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          item.likedByMe
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          size: 20,
+                          color: item.likedByMe
+                              ? scheme.error
+                              : scheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${item.likeCount}',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: item.likedByMe
+                                ? scheme.error
+                                : scheme.onSurface.withValues(alpha: 0.6),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => onOpenComments(item),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          size: 20,
+                          color: scheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${item.commentCount}',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: scheme.onSurface.withValues(alpha: 0.6),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ],
@@ -1783,11 +2047,13 @@ class _InfoTab extends StatelessWidget {
     required this.group,
     required this.onJoinOrLeave,
     required this.canJoinOrLeave,
+    required this.canModerate,
   });
 
   final Group group;
   final VoidCallback onJoinOrLeave;
   final bool canJoinOrLeave;
+  final bool canModerate;
 
   @override
   Widget build(BuildContext context) {
@@ -1849,10 +2115,10 @@ class _InfoTab extends StatelessWidget {
             ],
           ),
         ),
-        if ((group.avatarUrl ?? '').isNotEmpty ||
+        if (canModerate && ((group.avatarUrl ?? '').isNotEmpty ||
             (group.iconUrl ?? '').isNotEmpty ||
             (group.mapPinIconUrl ?? '').isNotEmpty ||
-            (group.mapPinStyle ?? '').isNotEmpty) ...[
+            (group.mapPinStyle ?? '').isNotEmpty)) ...[
           const SizedBox(height: 12),
           Container(
             width: double.infinity,

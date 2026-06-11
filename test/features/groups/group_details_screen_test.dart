@@ -436,6 +436,9 @@ class _FakeGroupRepository implements GroupRepository {
     String? categoryId,
     int page = 0,
     int size = 20,
+    double? latitude,
+    double? longitude,
+    double? radiusKm,
     String? accessToken,
     String tokenType = 'Bearer',
   }) async => const [];
@@ -764,6 +767,69 @@ class _FakeGroupRepository implements GroupRepository {
   @override
   Future<void> deleteMapPin(
     String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<List<GroupPostComment>> fetchComments(
+    String groupId,
+    String postId, {
+    String? accessToken,
+    String tokenType = 'Bearer',
+    int page = 0,
+    int size = 20,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<GroupPostComment> createComment(
+    String groupId,
+    String postId,
+    GroupPostCommentRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<GroupPostComment> updateComment(
+    String groupId,
+    String postId,
+    String commentId,
+    GroupPostCommentRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteComment(
+    String groupId,
+    String postId,
+    String commentId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<GroupPost> likePost(
+    String groupId,
+    String postId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<GroupPost> unlikePost(
+    String groupId,
+    String postId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<String> uploadGroupPostMedia(
+    String groupId,
+    List<int> bytes,
+    String fileName, {
     required String accessToken,
     String tokenType = 'Bearer',
   }) => throw UnimplementedError();

@@ -78,18 +78,6 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchNearbyEvents({
-    required double latitude,
-    required double longitude,
-    double? radiusKm,
-    int? limit,
-    String? accessToken,
-    String tokenType = 'Bearer',
-  }) async {
-    return events;
-  }
-
-  @override
   Future<List<Category>> fetchCategories() async {
     return categories;
   }
@@ -138,6 +126,20 @@ class FakeEventRepository implements EventRepository {
   }) async {
     lastThumbnailEventId = eventId;
     lastThumbnailMediaId = mediaId;
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchMapEvents({
+    required double latitude,
+    required double longitude,
+    double? radiusKm,
+    int? limit,
+    bool includeCommunityEvents = true,
+    List<String>? groupIds,
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    return events;
   }
 }
 

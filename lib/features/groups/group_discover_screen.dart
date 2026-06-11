@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
 import '../../features/explore/models.dart';
@@ -10,10 +11,13 @@ import '../../shared/auth/auth_scope.dart';
 import '../../shared/events/category_scope.dart';
 import '../../shared/groups/group_models.dart';
 import '../../shared/groups/group_scope.dart';
+import '../../shared/location/location_service.dart';
 import '../../shared/widgets/state_panel.dart';
 
 class GroupDiscoverScreen extends StatefulWidget {
-  const GroupDiscoverScreen({super.key});
+  const GroupDiscoverScreen({super.key, this.locationService});
+
+  final LocationService? locationService;
 
   @override
   State<GroupDiscoverScreen> createState() => _GroupDiscoverScreenState();
@@ -23,6 +27,8 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
+  late final LocationService _locationService = widget.locationService ?? GeolocatorLocationService();
+  double _discoverRadiusKm = 10.0;
 
   Timer? _debounceTimer;
 
@@ -32,9 +38,40 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
     _tabController = TabController(length: 2, vsync: this, initialIndex: 1);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        final controller = GroupScope.of(context);
-        controller.loadDiscoverGroups();
-        controller.loadMyGroups();
+        _loadDiscoverWithLocation();
+        GroupScope.of(context).loadMyGroups();
+      }
+    });
+  }
+
+  Future<void> _loadDiscoverWithLocation({
+    String? search,
+    String? categoryId,
+    bool forceRefresh = false,
+  }) async {
+    final controller = GroupScope.of(context);
+    LatLng? location;
+    try {
+      location = await _locationService.getLastKnownLocation();
+    } catch (_) {}
+    await controller.loadDiscoverGroups(
+      search: search,
+      categoryId: categoryId,
+      forceRefresh: forceRefresh,
+      latitude: location?.latitude,
+      longitude: location?.longitude,
+      radiusKm: _discoverRadiusKm,
+    );
+  }
+
+  void _onSearchChanged(String value) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        _loadDiscoverWithLocation(
+          search: value,
+          categoryId: GroupScope.of(context).discoverCategoryId,
+        );
       }
     });
   }
@@ -45,15 +82,6 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
     _searchController.dispose();
     _tabController.dispose();
     super.dispose();
-  }
-
-  void _onSearchChanged(String value) {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        GroupScope.of(context).loadDiscoverGroups(search: value);
-      }
-    });
   }
 
   bool _canCreateGroups(UserProfile? profile) {
@@ -88,10 +116,10 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: FilledButton.tonalIcon(
-                onPressed: () async {
+                  onPressed: () async {
                   await context.push('/groups/create');
                   if (!mounted) return;
-                  unawaited(ctrl.loadDiscoverGroups());
+                  unawaited(_loadDiscoverWithLocation(forceRefresh: true));
                   unawaited(ctrl.loadMyGroups());
                 },
                 icon: const Icon(Icons.add_rounded),
@@ -127,11 +155,13 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
             categories: categories,
             selectedCategoryId: ctrl.discoverCategoryId,
             onCategorySelected: (categoryId) {
-              ctrl.loadDiscoverGroups(categoryId: categoryId);
+              _loadDiscoverWithLocation(categoryId: categoryId);
             },
             onSearchChanged: _onSearchChanged,
             onSearchSubmitted: () =>
-                ctrl.loadDiscoverGroups(search: _searchController.text.trim()),
+                _loadDiscoverWithLocation(
+                  search: _searchController.text.trim(),
+                ),
             isLoading: ctrl.isDiscoverLoading,
             error: ctrl.discoverError,
             groups: ctrl.discoverGroups,
@@ -139,14 +169,19 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
             theme: theme,
             scheme: scheme,
             onRefresh: () async {
-              await ctrl.loadDiscoverGroups(forceRefresh: true);
+              await _loadDiscoverWithLocation(forceRefresh: true);
               await ctrl.loadMyGroups(forceRefresh: true);
             },
             onGroupTap: (groupId) async {
               await context.push('/groups/$groupId');
               if (!mounted) return;
-              unawaited(ctrl.loadDiscoverGroups());
+              unawaited(_loadDiscoverWithLocation(forceRefresh: true));
               unawaited(ctrl.loadMyGroups());
+            },
+            discoverRadiusKm: _discoverRadiusKm,
+            onRadiusChanged: (radius) {
+              setState(() => _discoverRadiusKm = radius);
+              _loadDiscoverWithLocation(forceRefresh: true);
             },
           ),
           _MyGroupsTab(
@@ -159,12 +194,12 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
             scheme: scheme,
             onRefresh: () async {
               await ctrl.loadMyGroups(forceRefresh: true);
-              await ctrl.loadDiscoverGroups(forceRefresh: true);
+              await _loadDiscoverWithLocation(forceRefresh: true);
             },
             onGroupTap: (groupId) async {
               await context.push('/groups/$groupId');
               if (!mounted) return;
-              unawaited(ctrl.loadDiscoverGroups());
+              unawaited(_loadDiscoverWithLocation(forceRefresh: true));
               unawaited(ctrl.loadMyGroups());
             },
           ),
@@ -254,6 +289,8 @@ class _DiscoverTab extends StatelessWidget {
     required this.scheme,
     required this.onRefresh,
     required this.onGroupTap,
+    this.discoverRadiusKm = 10.0,
+    this.onRadiusChanged,
   });
 
   final TextEditingController searchController;
@@ -270,6 +307,8 @@ class _DiscoverTab extends StatelessWidget {
   final ColorScheme scheme;
   final Future<void> Function() onRefresh;
   final Future<void> Function(String groupId) onGroupTap;
+  final double discoverRadiusKm;
+  final ValueChanged<double>? onRadiusChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -286,7 +325,48 @@ class _DiscoverTab extends StatelessWidget {
             onChanged: onSearchChanged,
             onSubmitted: onSearchSubmitted,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          if (onRadiusChanged != null) ...[
+            Row(
+              children: [
+                Text(
+                  'Zasięg:',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.6),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        ...[1, 5, 10, 25, 50].map(
+                          (km) => Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: ChoiceChip(
+                              label: Text('$km km'),
+                              selected: discoverRadiusKm == km,
+                              onSelected: (_) => onRadiusChanged!(km.toDouble()),
+                              visualDensity: VisualDensity.compact,
+                              labelStyle: TextStyle(
+                                fontWeight:
+                                discoverRadiusKm == km
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
           if (isLoading)
             SizedBox(
               height: 320,

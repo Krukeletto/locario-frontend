@@ -113,22 +113,6 @@ class _EmptyRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchNearbyEvents({
-    required double latitude,
-    required double longitude,
-    double? radiusKm,
-    int? limit,
-    String? accessToken,
-    String tokenType = 'Bearer',
-  }) async {
-    final gate = _nextFetchGate;
-    if (gate != null) {
-      await gate.future;
-    }
-    return const [];
-  }
-
-  @override
   Future<ExploreEvent> fetchEvent(String id) {
     throw UnimplementedError();
   }
@@ -138,6 +122,24 @@ class _EmptyRepository implements EventRepository {
     String? accessToken,
     String tokenType = 'Bearer',
   }) {
-    return fetchNearbyEvents(latitude: 0, longitude: 0);
+    return fetchMapEvents(latitude: 0, longitude: 0);
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchMapEvents({
+    required double latitude,
+    required double longitude,
+    double? radiusKm,
+    int? limit,
+    bool includeCommunityEvents = true,
+    List<String>? groupIds,
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final gate = _nextFetchGate;
+    if (gate != null) {
+      await gate.future;
+    }
+    return const [];
   }
 }

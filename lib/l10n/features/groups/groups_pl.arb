@@ -119,5 +119,27 @@
   "groupsEventGroupsRequiredHint": "Wybierz co najmniej jedną grupę. Jako zwykły członek możesz tworzyć tylko eventy grupowe.",
   "groupsEventGroupsEmpty": "Nie należysz jeszcze aktywnie do żadnej grupy.",
   "groupsEventValidationGroupRequired": "Wybierz co najmniej jedną grupę dla tego eventu.",
-  "groupsEventValidationSlotLimitRequired": "Zwykły członek musi ustawić dodatni limit miejsc."
+  "groupsEventValidationSlotLimitRequired": "Zwykły członek musi ustawić dodatni limit miejsc.",
+  "groupsCommentsTitle": "Komentarze",
+  "groupsCommentsEmpty": "Brak komentarzy. Bądź pierwszy!",
+  "groupsCommentHint": "Napisz komentarz...",
+  "groupsCommentPost": "Wyślij",
+  "groupsCommentEdit": "Edytuj komentarz",
+  "groupsCommentDelete": "Usuń komentarz",
+  "groupsCommentDeleteBody": "Ten komentarz zostanie trwale usunięty.",
+  "groupsCommentEdited": "(edytowano)",
+  "groupsLikeAction": "Polub",
+  "groupsUnlikeAction": "Cofnij polubienie",
+  "groupsPostPhotoAction": "Dodaj zdjęcia",
+  "groupsPostPhotoRemove": "Usuń",
+  "groupsPostPhotoLimit": "Maksymalnie {count} zdjęć dozwolonych",
+  "@groupsPostPhotoLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupsPostUploadingPhotos": "Przesyłanie zdjęć...",
+  "groupsCommentsRefresh": "Odśwież komentarze"
 }

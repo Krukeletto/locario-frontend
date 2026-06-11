@@ -1970,6 +1970,96 @@ abstract class AppLocalizations {
   /// **'Regular members must set a positive slot limit.'**
   String get groupsEventValidationSlotLimitRequired;
 
+  /// No description provided for @groupsCommentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get groupsCommentsTitle;
+
+  /// No description provided for @groupsCommentsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet. Be the first to comment!'**
+  String get groupsCommentsEmpty;
+
+  /// No description provided for @groupsCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment...'**
+  String get groupsCommentHint;
+
+  /// No description provided for @groupsCommentPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get groupsCommentPost;
+
+  /// No description provided for @groupsCommentEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit comment'**
+  String get groupsCommentEdit;
+
+  /// No description provided for @groupsCommentDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete comment'**
+  String get groupsCommentDelete;
+
+  /// No description provided for @groupsCommentDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This comment will be permanently removed.'**
+  String get groupsCommentDeleteBody;
+
+  /// No description provided for @groupsCommentEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'(edited)'**
+  String get groupsCommentEdited;
+
+  /// No description provided for @groupsLikeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Like'**
+  String get groupsLikeAction;
+
+  /// No description provided for @groupsUnlikeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlike'**
+  String get groupsUnlikeAction;
+
+  /// No description provided for @groupsPostPhotoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos'**
+  String get groupsPostPhotoAction;
+
+  /// No description provided for @groupsPostPhotoRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get groupsPostPhotoRemove;
+
+  /// No description provided for @groupsPostPhotoLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum {count} photos allowed'**
+  String groupsPostPhotoLimit(int count);
+
+  /// No description provided for @groupsPostUploadingPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading photos...'**
+  String get groupsPostUploadingPhotos;
+
+  /// No description provided for @groupsCommentsRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh comments'**
+  String get groupsCommentsRefresh;
+
   /// No description provided for @hubTitle.
   ///
   /// In en, this message translates to:

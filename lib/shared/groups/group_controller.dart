@@ -92,12 +92,15 @@ class GroupController extends ChangeNotifier {
     String? search,
     String? categoryId,
     bool forceRefresh = false,
+    double? latitude,
+    double? longitude,
+    double radiusKm = 10.0,
   }) async {
     _discoverSearch = search ?? '';
     _discoverCategoryId = categoryId;
     _discoverError = null;
     final cacheKey =
-        'discover_groups_${_discoverSearch}_${_discoverCategoryId ?? 'all'}';
+        'discover_groups_${_discoverSearch}_${_discoverCategoryId ?? 'all'}_${latitude?.toStringAsFixed(1) ?? 'noloc'}_${radiusKm.toStringAsFixed(0)}';
 
     if (!forceRefresh) {
       final cached = await _cache.getList<Group>(cacheKey, Group.fromJson);
@@ -119,6 +122,9 @@ class GroupController extends ChangeNotifier {
       final fresh = await _groupRepository.fetchDiscoverGroups(
         query: _discoverSearch.isNotEmpty ? _discoverSearch : null,
         categoryId: _discoverCategoryId,
+        latitude: latitude,
+        longitude: longitude,
+        radiusKm: radiusKm,
         accessToken: _accessToken,
         tokenType: _tokenType,
       );
@@ -583,12 +589,21 @@ class GroupController extends ChangeNotifier {
     } catch (_) {}
   }
 
-  Future<void> createPost(String groupId, String content) async {
+  Future<void> createPost(
+    String groupId, {
+    required String content,
+    String? title,
+    List<String>? mediaObjectKeys,
+  }) async {
     if (_accessToken == null) return;
     try {
       await _groupRepository.createPost(
         groupId,
-        GroupPostRequest(content: content),
+        GroupPostRequest(
+          content: content,
+          title: title,
+          mediaObjectKeys: mediaObjectKeys ?? const [],
+        ),
         accessToken: _accessToken!,
         tokenType: _tokenType,
       );
@@ -627,13 +642,23 @@ class GroupController extends ChangeNotifier {
     await loadGroupDetail(groupId);
   }
 
-  Future<void> updatePost(String groupId, String postId, String content) async {
+  Future<void> updatePost(
+    String groupId,
+    String postId, {
+    required String content,
+    String? title,
+    List<String>? mediaObjectKeys,
+  }) async {
     if (_accessToken == null) return;
     try {
       await _groupRepository.updatePost(
         groupId,
         postId,
-        GroupPostRequest(content: content),
+        GroupPostRequest(
+          content: content,
+          title: title,
+          mediaObjectKeys: mediaObjectKeys ?? const [],
+        ),
         accessToken: _accessToken!,
         tokenType: _tokenType,
       );
@@ -833,6 +858,25 @@ class GroupController extends ChangeNotifier {
     } catch (_) {}
   }
 
+  Future<String> uploadMedia(
+    String groupId,
+    List<int> bytes,
+    String fileName,
+  ) async {
+    if (_accessToken == null) return '';
+    try {
+      return await _groupRepository.uploadGroupPostMedia(
+        groupId,
+        bytes,
+        fileName,
+        accessToken: _accessToken!,
+        tokenType: _tokenType,
+      );
+    } catch (_) {
+      return '';
+    }
+  }
+
   Future<List<ExploreEvent>> fetchOrganizerEvents() async {
     if (_accessToken == null) return [];
     try {
@@ -842,6 +886,138 @@ class GroupController extends ChangeNotifier {
       );
     } catch (_) {
       return [];
+    }
+  }
+
+  // ── Post interactions: comments ──────────────────────────────────────
+
+  Future<List<GroupPostComment>> fetchComments(
+    String groupId,
+    String postId, {
+    int page = 0,
+    int size = 20,
+  }) async {
+    if (_accessToken == null) return [];
+    try {
+      return await _groupRepository.fetchComments(
+        groupId,
+        postId,
+        accessToken: _accessToken!,
+        tokenType: _tokenType,
+        page: page,
+        size: size,
+      );
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<GroupPostComment?> createComment(
+    String groupId,
+    String postId,
+    String content,
+  ) async {
+    if (_accessToken == null) return null;
+    try {
+      return await _groupRepository.createComment(
+        groupId,
+        postId,
+        GroupPostCommentRequest(content: content),
+        accessToken: _accessToken!,
+        tokenType: _tokenType,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<GroupPostComment?> updateComment(
+    String groupId,
+    String postId,
+    String commentId,
+    String content,
+  ) async {
+    if (_accessToken == null) return null;
+    try {
+      return await _groupRepository.updateComment(
+        groupId,
+        postId,
+        commentId,
+        GroupPostCommentRequest(content: content),
+        accessToken: _accessToken!,
+        tokenType: _tokenType,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<bool> deleteComment(
+    String groupId,
+    String postId,
+    String commentId,
+  ) async {
+    if (_accessToken == null) return false;
+    try {
+      await _groupRepository.deleteComment(
+        groupId,
+        postId,
+        commentId,
+        accessToken: _accessToken!,
+        tokenType: _tokenType,
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // ── Post interactions: likes ─────────────────────────────────────────
+
+  Future<void> likePost(String groupId, String postId) async {
+    if (_accessToken == null) return;
+    _updateFeedLike(postId, likedByMe: true);
+    try {
+      final updated = await _groupRepository.likePost(
+        groupId,
+        postId,
+        accessToken: _accessToken!,
+        tokenType: _tokenType,
+      );
+      _updateFeedLike(postId, likedByMe: true, count: updated.likeCount);
+    } catch (_) {
+      _updateFeedLike(postId, likedByMe: false);
+      notifyListeners();
+    }
+  }
+
+  Future<void> unlikePost(String groupId, String postId) async {
+    if (_accessToken == null) return;
+    _updateFeedLike(postId, likedByMe: false);
+    try {
+      final updated = await _groupRepository.unlikePost(
+        groupId,
+        postId,
+        accessToken: _accessToken!,
+        tokenType: _tokenType,
+      );
+      _updateFeedLike(postId, likedByMe: false, count: updated.likeCount);
+    } catch (_) {
+      _updateFeedLike(postId, likedByMe: true);
+      notifyListeners();
+    }
+  }
+
+  void _updateFeedLike(String postId, {bool? likedByMe, int? count}) {
+    for (var i = 0; i < _detailFeed.length; i++) {
+      if (_detailFeed[i].id == postId &&
+          _detailFeed[i].type == GroupFeedItemType.post) {
+        _detailFeed[i] = _detailFeed[i].copyWith(
+          likedByMe: likedByMe,
+          likeCount: count,
+        );
+        break;
+      }
     }
   }
 

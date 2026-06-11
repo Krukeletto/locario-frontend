@@ -499,11 +499,26 @@ class _EmptyAreaSearchRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchNearbyEvents({
+  Future<ExploreEvent> fetchEvent(String id) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    return fetchMapEvents(latitude: 51.0, longitude: 19.0);
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchMapEvents({
     required double latitude,
     required double longitude,
     double? radiusKm,
     int? limit,
+    bool includeCommunityEvents = true,
+    List<String>? groupIds,
     String? accessToken,
     String tokenType = 'Bearer',
   }) async {
@@ -519,19 +534,6 @@ class _EmptyAreaSearchRepository implements EventRepository {
     return [
       _event(id: '1', title: 'First', location: const LatLng(51.0, 19.0)),
     ];
-  }
-
-  @override
-  Future<ExploreEvent> fetchEvent(String id) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<ExploreEvent>> fetchEvents({
-    String? accessToken,
-    String tokenType = 'Bearer',
-  }) async {
-    return fetchNearbyEvents(latitude: 51.0, longitude: 19.0);
   }
 }
 
@@ -637,11 +639,26 @@ class _SequencedEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchNearbyEvents({
+  Future<ExploreEvent> fetchEvent(String id) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    return fetchMapEvents(latitude: 0, longitude: 0);
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchMapEvents({
     required double latitude,
     required double longitude,
     double? radiusKm,
     int? limit,
+    bool includeCommunityEvents = true,
+    List<String>? groupIds,
     String? accessToken,
     String tokenType = 'Bearer',
   }) async {
@@ -652,19 +669,6 @@ class _SequencedEventRepository implements EventRepository {
         : responses.length - 1;
     fetchEventsCallCount += 1;
     return responses[index];
-  }
-
-  @override
-  Future<ExploreEvent> fetchEvent(String id) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<ExploreEvent>> fetchEvents({
-    String? accessToken,
-    String tokenType = 'Bearer',
-  }) async {
-    return fetchNearbyEvents(latitude: 0, longitude: 0);
   }
 }
 

@@ -74,11 +74,13 @@ class EventRequest {
 }
 
 abstract class EventRepository {
-  Future<List<ExploreEvent>> fetchNearbyEvents({
+  Future<List<ExploreEvent>> fetchMapEvents({
     required double latitude,
     required double longitude,
     double? radiusKm,
     int? limit,
+    bool includeCommunityEvents = true,
+    List<String>? groupIds,
     String? accessToken,
     String tokenType = 'Bearer',
   });
@@ -240,11 +242,13 @@ class HttpEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchNearbyEvents({
+  Future<List<ExploreEvent>> fetchMapEvents({
     required double latitude,
     required double longitude,
     double? radiusKm,
     int? limit,
+    bool includeCommunityEvents = true,
+    List<String>? groupIds,
     String? accessToken,
     String tokenType = 'Bearer',
   }) async {
@@ -253,10 +257,13 @@ class HttpEventRepository implements EventRepository {
       'lng': longitude.toString(),
       if (radiusKm != null) 'radiusKm': radiusKm.toString(),
       if (limit != null) 'limit': limit.toString(),
+      'includeCommunityEvents': includeCommunityEvents.toString(),
+      if (groupIds != null && groupIds.isNotEmpty)
+        'groupIds': groupIds.join(','),
     };
 
     final uri = _uri(
-      '/api/events/nearby',
+      '/api/events/map',
     ).replace(queryParameters: queryParams);
     final response = await _client.get(
       uri,
@@ -267,7 +274,7 @@ class HttpEventRepository implements EventRepository {
 
     if (response.statusCode != 200) {
       throw EventRepositoryException(
-        'Unable to fetch nearby events',
+        'Unable to fetch map events',
         statusCode: response.statusCode,
       );
     }

@@ -725,6 +725,7 @@ class ExploreAdvancedFilters {
     this.eventType,
     this.eventSource,
     this.showPastEvents = false,
+    this.groupIds = const [],
   });
 
   final ExploreDistanceFilter distanceFilter;
@@ -735,6 +736,7 @@ class ExploreAdvancedFilters {
   final String? eventType;
   final String? eventSource;
   final bool showPastEvents;
+  final List<String> groupIds;
 
   static const defaults = ExploreAdvancedFilters();
 
@@ -747,6 +749,7 @@ class ExploreAdvancedFilters {
     String? Function()? eventType,
     String? Function()? eventSource,
     bool? showPastEvents,
+    List<String>? groupIds,
   }) {
     return ExploreAdvancedFilters(
       distanceFilter: distanceFilter ?? this.distanceFilter,
@@ -757,6 +760,7 @@ class ExploreAdvancedFilters {
       eventType: eventType != null ? eventType() : this.eventType,
       eventSource: eventSource != null ? eventSource() : this.eventSource,
       showPastEvents: showPastEvents ?? this.showPastEvents,
+      groupIds: groupIds ?? this.groupIds,
     );
   }
 
@@ -769,6 +773,7 @@ class ExploreAdvancedFilters {
     if (ageFrom != null || ageTo != null) count++;
     if (eventType != null) count++;
     if (eventSource != null) count++;
+    if (groupIds.isNotEmpty) count++;
     return count;
   }
 
@@ -783,7 +788,8 @@ class ExploreAdvancedFilters {
         other.ageTo == ageTo &&
         other.eventType == eventType &&
         other.eventSource == eventSource &&
-        other.showPastEvents == showPastEvents;
+        other.showPastEvents == showPastEvents &&
+        _listEquals(other.groupIds, groupIds);
   }
 
   @override
@@ -796,7 +802,16 @@ class ExploreAdvancedFilters {
     eventType,
     eventSource,
     showPastEvents,
+    Object.hashAll(groupIds),
   );
+
+  static bool _listEquals(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -808,6 +823,7 @@ class ExploreAdvancedFilters {
       if (eventType != null) 'eventType': eventType,
       if (eventSource != null) 'eventSource': eventSource,
       'showPastEvents': showPastEvents,
+      if (groupIds.isNotEmpty) 'groupIds': groupIds,
     };
   }
 
@@ -828,6 +844,7 @@ class ExploreAdvancedFilters {
       eventType: json['eventType'] as String?,
       eventSource: json['eventSource'] as String?,
       showPastEvents: json['showPastEvents'] as bool? ?? false,
+      groupIds: (json['groupIds'] as List?)?.cast<String>() ?? const [],
     );
   }
 
