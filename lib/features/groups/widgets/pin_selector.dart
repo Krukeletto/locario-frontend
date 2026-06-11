@@ -140,10 +140,7 @@ class _PinSelectorState extends State<PinSelector> {
       final accessToken = _getAccessToken();
       if (accessToken == null) return;
 
-      await _repository.deleteMapPin(
-        widget.groupId!,
-        accessToken: accessToken,
-      );
+      await _repository.deleteMapPin(widget.groupId!, accessToken: accessToken);
 
       if (mounted) {
         setState(() {
@@ -207,7 +204,9 @@ class _PinSelectorState extends State<PinSelector> {
               ),
             if (_hasGroupId)
               _PinOption(
-                icon: _isCustom ? Icons.image_rounded : Icons.add_photo_alternate_outlined,
+                icon: _isCustom
+                    ? Icons.image_rounded
+                    : Icons.add_photo_alternate_outlined,
                 label: 'Własny',
                 isSelected: _isCustom,
                 isCustom: true,
@@ -304,7 +303,9 @@ class _PinOption extends StatelessWidget {
               Icon(
                 icon,
                 size: 24,
-                color: isSelected ? scheme.onPrimaryContainer : scheme.onSurface,
+                color: isSelected
+                    ? scheme.onPrimaryContainer
+                    : scheme.onSurface,
               ),
             const SizedBox(height: 4),
             Padding(

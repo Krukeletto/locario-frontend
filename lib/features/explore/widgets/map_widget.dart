@@ -591,7 +591,8 @@ class _MapWidgetState extends State<MapWidget> {
   Widget _buildEventMarkerBadge(ExploreEvent event) {
     final groupPin = _findGroupPin(event);
     if (groupPin != null) {
-      if (groupPin.mapPinIconUrl != null && groupPin.mapPinIconUrl!.isNotEmpty) {
+      if (groupPin.mapPinIconUrl != null &&
+          groupPin.mapPinIconUrl!.isNotEmpty) {
         return _EventMarkerImageBadge(imageUrl: groupPin.mapPinIconUrl!);
       }
       final predefined = PredefinedPin.fromStyleKey(groupPin.mapPinStyle);
