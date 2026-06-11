@@ -35,6 +35,7 @@ class GroupController extends ChangeNotifier {
   String? _discoverError;
   String _discoverSearch = '';
   String? _discoverCategoryId;
+  String? _discoverVisibility;
 
   List<Group> _myGroups = [];
   bool _isMyGroupsLoading = false;
@@ -68,6 +69,7 @@ class GroupController extends ChangeNotifier {
   String? get discoverError => _discoverError;
   String get discoverSearch => _discoverSearch;
   String? get discoverCategoryId => _discoverCategoryId;
+  String? get discoverVisibility => _discoverVisibility;
 
   List<Group> get myGroups => List.unmodifiable(_myGroups);
   bool get isMyGroupsLoading => _isMyGroupsLoading;
@@ -91,6 +93,7 @@ class GroupController extends ChangeNotifier {
   Future<void> loadDiscoverGroups({
     String? search,
     String? categoryId,
+    String? visibility,
     bool forceRefresh = false,
     double? latitude,
     double? longitude,
@@ -98,9 +101,10 @@ class GroupController extends ChangeNotifier {
   }) async {
     _discoverSearch = search ?? '';
     _discoverCategoryId = categoryId;
+    _discoverVisibility = visibility;
     _discoverError = null;
     final cacheKey =
-        'discover_groups_${_discoverSearch}_${_discoverCategoryId ?? 'all'}_${latitude?.toStringAsFixed(1) ?? 'noloc'}_${radiusKm.toStringAsFixed(0)}';
+        'discover_groups_${_discoverSearch}_${_discoverCategoryId ?? 'all'}_${visibility ?? 'all'}_${latitude?.toStringAsFixed(1) ?? 'noloc'}_${radiusKm.toStringAsFixed(0)}';
 
     if (!forceRefresh) {
       final cached = await _cache.getList<Group>(cacheKey, Group.fromJson);
@@ -122,6 +126,7 @@ class GroupController extends ChangeNotifier {
       final fresh = await _groupRepository.fetchDiscoverGroups(
         query: _discoverSearch.isNotEmpty ? _discoverSearch : null,
         categoryId: _discoverCategoryId,
+        visibility: visibility,
         latitude: latitude,
         longitude: longitude,
         radiusKm: radiusKm,

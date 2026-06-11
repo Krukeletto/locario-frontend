@@ -189,7 +189,7 @@ class SessionController extends ChangeNotifier {
       debugPrint(
         'Auth: profile fetch failed (api) ${error.statusCode}: ${error.message}',
       );
-      if (error.statusCode == 401) {
+      if (error.statusCode == 401 || error.statusCode == 404) {
         await _authRepository.clear();
         _tokens = null;
         _profile = null;

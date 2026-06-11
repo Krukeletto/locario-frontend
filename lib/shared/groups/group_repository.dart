@@ -73,6 +73,7 @@ abstract class GroupRepository {
   Future<List<Group>> fetchDiscoverGroups({
     String? query,
     String? categoryId,
+    String? visibility,
     int page = 0,
     int size = 20,
     double? latitude,
@@ -345,6 +346,7 @@ class HttpGroupRepository implements GroupRepository {
   Future<List<Group>> fetchDiscoverGroups({
     String? query,
     String? categoryId,
+    String? visibility,
     int page = 0,
     int size = 20,
     double? latitude,
@@ -359,6 +361,8 @@ class HttpGroupRepository implements GroupRepository {
           if (query != null && query.isNotEmpty) 'q': query,
           if (categoryId != null && categoryId.isNotEmpty)
             'categoryId': categoryId,
+          if (visibility != null && visibility.isNotEmpty)
+            'visibility': visibility,
           if (latitude != null) 'lat': latitude.toString(),
           if (longitude != null) 'lng': longitude.toString(),
           if (radiusKm != null) 'radiusKm': radiusKm.toString(),

@@ -446,6 +446,109 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     final canTransferOwnership = _canTransferOwnership(group, profile?.id);
     final canCreateEvents = _canCreateGroupsEvents(group);
     final canLinkEvents = canCreateEvents;
+    final isPrivateNonMember = group.isPrivate && !group.isMember && !canModerate;
+
+    if (isPrivateNonMember) {
+      return Scaffold(
+        backgroundColor: scheme.surface,
+        appBar: AppBar(
+          backgroundColor: scheme.surface,
+          surfaceTintColor: Colors.transparent,
+          title: Text(
+            group.name,
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: scheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          actions: [
+            if (tokens != null)
+              PopupMenuButton<String>(
+                onSelected: (value) async {
+                  if (value == 'report') {
+                    await _showReportDialog(
+                      title: l10n.groupsReportGroupTitle,
+                      submit: (reason, description) => ctrl.reportGroup(
+                        group.id,
+                        GroupReportRequest(
+                          targetType: 'group',
+                          targetId: group.id,
+                          reason: reason,
+                          description: description,
+                          groupId: group.id,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem<String>(
+                    value: 'report',
+                    child: Text(l10n.groupsReportGroupAction),
+                  ),
+                ],
+              ),
+          ],
+        ),
+        body: Column(
+          children: [
+            if (ctrl.isDetailRefreshing) const LinearProgressIndicator(),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: scheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: scheme.outline.withValues(alpha: 0.22)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _HeaderChip(
+                              label: group.categoryName ?? l10n.groupsCategoryUnknown,
+                            ),
+                            _HeaderChip(
+                              label: l10n.groupsVisibilityPrivate,
+                            ),
+                            _HeaderChip(
+                              label: l10n.groupsMembersCount(group.memberCount),
+                            ),
+                          ],
+                        ),
+                        if ((group.description ?? '').isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            group.description!,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: scheme.onSurface.withValues(alpha: 0.74),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        FilledButton.tonal(
+                          onPressed: tokens != null ? _handleJoinOrLeave : null,
+                          child: Text(group.isPending
+                              ? l10n.groupsPendingAction
+                              : l10n.groupsJoinAction),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return DefaultTabController(
       initialIndex: group.isMember ? 0 : 3,

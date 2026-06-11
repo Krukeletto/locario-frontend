@@ -127,6 +127,7 @@ class _FakeGroupRepository implements GroupRepository {
   Future<List<Group>> fetchDiscoverGroups({
     String? query,
     String? categoryId,
+    String? visibility,
     int page = 0,
     int size = 20,
     double? latitude,

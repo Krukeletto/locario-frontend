@@ -29,6 +29,7 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
   final TextEditingController _searchController = TextEditingController();
   late final LocationService _locationService = widget.locationService ?? GeolocatorLocationService();
   double _discoverRadiusKm = 10.0;
+  String? _discoverVisibility;
 
   Timer? _debounceTimer;
 
@@ -47,6 +48,7 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
   Future<void> _loadDiscoverWithLocation({
     String? search,
     String? categoryId,
+    String? visibility,
     bool forceRefresh = false,
   }) async {
     final controller = GroupScope.of(context);
@@ -57,6 +59,7 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
     await controller.loadDiscoverGroups(
       search: search,
       categoryId: categoryId,
+      visibility: visibility ?? _discoverVisibility,
       forceRefresh: forceRefresh,
       latitude: location?.latitude,
       longitude: location?.longitude,
@@ -74,6 +77,11 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
         );
       }
     });
+  }
+
+  void _onVisibilityChanged(String? visibility) {
+    setState(() => _discoverVisibility = visibility);
+    _loadDiscoverWithLocation(forceRefresh: true);
   }
 
   @override
@@ -183,6 +191,8 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
               setState(() => _discoverRadiusKm = radius);
               _loadDiscoverWithLocation(forceRefresh: true);
             },
+            discoverVisibility: _discoverVisibility,
+            onVisibilityChanged: _onVisibilityChanged,
           ),
           _MyGroupsTab(
             isLoading: ctrl.isMyGroupsLoading,
@@ -291,6 +301,8 @@ class _DiscoverTab extends StatelessWidget {
     required this.onGroupTap,
     this.discoverRadiusKm = 10.0,
     this.onRadiusChanged,
+    this.discoverVisibility,
+    this.onVisibilityChanged,
   });
 
   final TextEditingController searchController;
@@ -309,6 +321,8 @@ class _DiscoverTab extends StatelessWidget {
   final Future<void> Function(String groupId) onGroupTap;
   final double discoverRadiusKm;
   final ValueChanged<double>? onRadiusChanged;
+  final String? discoverVisibility;
+  final ValueChanged<String?>? onVisibilityChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -357,6 +371,57 @@ class _DiscoverTab extends StatelessWidget {
                                     : FontWeight.w500,
                               ),
                             ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
+          if (onVisibilityChanged != null) ...[
+            Row(
+              children: [
+                Text(
+                  'Rodzaj:',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.6),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: ChoiceChip(
+                            label: const Text('Wszystkie'),
+                            selected: discoverVisibility == null,
+                            onSelected: (_) => onVisibilityChanged!(null),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: ChoiceChip(
+                            label: const Text('Publiczne'),
+                            selected: discoverVisibility == 'PUBLIC',
+                            onSelected: (_) => onVisibilityChanged!('PUBLIC'),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: ChoiceChip(
+                            label: const Text('Prywatne'),
+                            selected: discoverVisibility == 'PRIVATE',
+                            onSelected: (_) => onVisibilityChanged!('PRIVATE'),
+                            visualDensity: VisualDensity.compact,
                           ),
                         ),
                       ],
