@@ -486,10 +486,7 @@ class GroupPostComment {
 }
 
 class GroupPostCommentRequest {
-  const GroupPostCommentRequest({
-    required this.content,
-    this.mediaObjectKey,
-  });
+  const GroupPostCommentRequest({required this.content, this.mediaObjectKey});
 
   final String content;
   final String? mediaObjectKey;

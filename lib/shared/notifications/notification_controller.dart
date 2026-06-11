@@ -9,6 +9,8 @@ import 'notification_payload.dart';
 import 'notification_preferences_store.dart';
 import 'notification_service.dart';
 import 'notification_type.dart';
+import 'notifications_api.dart';
+import '../auth/session_controller.dart';
 
 typedef NavigateCallback = void Function(NotificationPayload payload);
 
@@ -16,11 +18,17 @@ class NotificationController extends ChangeNotifier {
   NotificationController({
     required NotificationHistoryRepository historyRepository,
     required NotificationPreferencesStore preferencesStore,
+    NotificationsApi? api,
+    SessionController? sessionController,
   }) : _historyRepository = historyRepository,
-       _preferencesStore = preferencesStore;
+       _preferencesStore = preferencesStore,
+       _api = api,
+       _sessionController = sessionController;
 
   final NotificationHistoryRepository _historyRepository;
   final NotificationPreferencesStore _preferencesStore;
+  final NotificationsApi? _api;
+  final SessionController? _sessionController;
 
   // ---------------------------------------------------------------------------
   // State
@@ -48,8 +56,6 @@ class NotificationController extends ChangeNotifier {
   Map<NotificationType, bool> _preferences = {};
   bool isEnabled(NotificationType type) =>
       _preferences[type] ?? _defaultEnabled(type);
-
-  Set<String> _scheduledJoinReminderIds = {};
 
   // ---------------------------------------------------------------------------
   // Pagination
@@ -97,14 +103,29 @@ class NotificationController extends ChangeNotifier {
 
     if (!isEnabled(type)) return;
 
+    final notificationId =
+        data['notification_id'] as String? ??
+        message.messageId ??
+        DateTime.now().toIso8601String();
+
+    String? route;
+    final screen = data['screen'] as String?;
+    final chatId = data['chatId'] as String?;
+    final eventId = data['event_id'] as String?;
+    if (screen != null) {
+      route = screen;
+    } else if (chatId != null) {
+      route = '/chat/$chatId';
+    } else if (eventId != null) {
+      route = '/events/$eventId';
+    }
+
     final entry = NotificationEntry(
-      id: message.messageId ?? DateTime.now().toIso8601String(),
+      id: notificationId,
       type: type,
       title: message.notification?.title ?? '',
       body: message.notification?.body ?? '',
-      route:
-          data['screen'] as String? ??
-          (data['event_id'] != null ? '/events/${data['event_id']}' : null),
+      route: route,
       rawPayload: Map<String, dynamic>.from(data),
       timestamp: DateTime.now(),
       isRead: isForegroundTap,
@@ -169,55 +190,34 @@ class NotificationController extends ChangeNotifier {
   void setFcmToken(String? token) {
     _fcmToken = token;
     notifyListeners();
+    if (token != null && token.isNotEmpty) {
+      unawaited(_registerDevice(token));
+    }
   }
 
-  // ---------------------------------------------------------------------------
-  // Event reminders (for saved / favorited events)
-  // ---------------------------------------------------------------------------
+  Future<void> retryDeviceRegistrationIfNeeded() async {
+    if (_fcmToken != null && _fcmToken!.isNotEmpty) {
+      await _registerDevice(_fcmToken!);
+    }
+  }
 
-  void scheduleRemindersForSavedEvents(
-    List<({String id, String title, DateTime startsAt})> events, {
-    Set<String>? excludeEventIds,
-  }) {
-    for (final event in events) {
-      if (excludeEventIds?.contains(event.id) == true) continue;
+  Future<void> _registerDevice(String fcmToken) async {
+    final api = _api;
+    final session = _sessionController;
+    if (api == null || session == null) return;
+    if (!session.isAuthenticated || session.tokens == null) return;
 
-      const type = NotificationType.upcomingEvent;
-      if (!isEnabled(type)) continue;
-
-      NotificationService.scheduleEventReminder(
-        eventId: event.id,
-        title: event.title,
-        startsAt: event.startsAt,
+    try {
+      await api.registerDevice(
+        accessToken: session.tokens!.accessToken,
+        fcmToken: fcmToken,
+        platform: defaultTargetPlatform == TargetPlatform.iOS
+            ? 'IOS'
+            : 'ANDROID',
       );
+    } catch (_) {
+      // Non-fatal; will retry when session changes
     }
-  }
-
-  void scheduleRemindersForJoinedEvents(
-    List<({String id, String title, DateTime startsAt})> events,
-  ) {
-    final currentIds = events.map((event) => event.id).toSet();
-    final removedJoinIds = _scheduledJoinReminderIds.difference(currentIds);
-
-    for (final eventId in removedJoinIds) {
-      unawaited(NotificationService.cancelEventReminder(eventId));
-    }
-
-    _scheduledJoinReminderIds = currentIds;
-
-    for (final event in events) {
-      if (isEnabled(NotificationType.upcomingEvent)) {
-        NotificationService.scheduleEventReminder(
-          eventId: event.id,
-          title: event.title,
-          startsAt: event.startsAt,
-        );
-      }
-    }
-  }
-
-  void cancelReminderForEvent(String eventId) {
-    NotificationService.cancelEventReminder(eventId);
   }
 
   // ---------------------------------------------------------------------------
@@ -268,6 +268,7 @@ class NotificationController extends ChangeNotifier {
       NotificationType.expiredEvent => true,
       NotificationType.eventPublished => true,
       NotificationType.systemMessage => true,
+      NotificationType.chatMessage => true,
     };
   }
 }

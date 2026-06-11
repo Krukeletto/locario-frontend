@@ -262,9 +262,7 @@ class HttpEventRepository implements EventRepository {
         'groupIds': groupIds.join(','),
     };
 
-    final uri = _uri(
-      '/api/events/map',
-    ).replace(queryParameters: queryParams);
+    final uri = _uri('/api/events/map').replace(queryParameters: queryParams);
     final response = await _client.get(
       uri,
       headers: accessToken != null
@@ -343,7 +341,8 @@ class HttpEventRepository implements EventRepository {
         'contentType': contentType,
       }),
     );
-    if (confirmResponse.statusCode != 201 && confirmResponse.statusCode != 200) {
+    if (confirmResponse.statusCode != 201 &&
+        confirmResponse.statusCode != 200) {
       throw EventRepositoryException(
         'Unable to confirm media upload',
         statusCode: confirmResponse.statusCode,

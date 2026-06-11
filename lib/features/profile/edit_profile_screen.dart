@@ -180,7 +180,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             'fileSize': _avatarBytes!.length,
           }),
         );
-        if (presignedResponse.statusCode != 201 && presignedResponse.statusCode != 200) {
+        if (presignedResponse.statusCode != 201 &&
+            presignedResponse.statusCode != 200) {
           throw AuthApiException(
             'Presigned URL request failed',
             statusCode: presignedResponse.statusCode,

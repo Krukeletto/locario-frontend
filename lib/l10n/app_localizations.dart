@@ -2624,6 +2624,18 @@ abstract class AppLocalizations {
   /// **'Important updates from the app'**
   String get notificationTypeSystemMessageDesc;
 
+  /// Label for chat message notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat messages'**
+  String get notificationTypeChatMessage;
+
+  /// Description for chat message notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'New messages from your chats'**
+  String get notificationTypeChatMessageDesc;
+
   /// No description provided for @profileTitle.
   ///
   /// In en, this message translates to:

@@ -1417,6 +1417,13 @@ class AppLocalizationsPl extends AppLocalizations {
       'Ważne aktualizacje z aplikacji';
 
   @override
+  String get notificationTypeChatMessage => 'Wiadomości czatu';
+
+  @override
+  String get notificationTypeChatMessageDesc =>
+      'Nowe wiadomości z Twoich czatów';
+
+  @override
   String get profileTitle => 'Profil';
 
   @override

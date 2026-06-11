@@ -26,7 +26,11 @@ abstract class GroupRepository {
     required String accessToken,
     String tokenType = 'Bearer',
   });
-  Future<void> uploadToPresignedUrl(String uploadUrl, List<int> bytes, String contentType);
+  Future<void> uploadToPresignedUrl(
+    String uploadUrl,
+    List<int> bytes,
+    String contentType,
+  );
   Future<void> deletePostMedia(
     String groupId,
     String postId,
@@ -1172,7 +1176,11 @@ class HttpGroupRepository implements GroupRepository {
   }
 
   @override
-  Future<void> uploadToPresignedUrl(String uploadUrl, List<int> bytes, String contentType) async {
+  Future<void> uploadToPresignedUrl(
+    String uploadUrl,
+    List<int> bytes,
+    String contentType,
+  ) async {
     final request = http.Request('PUT', Uri.parse(uploadUrl));
     request.headers['Content-Type'] = contentType;
     request.bodyBytes = bytes;
@@ -1350,9 +1358,9 @@ class HttpGroupRepository implements GroupRepository {
     int size = 20,
   }) async {
     final response = await _client.get(
-      _uri('/api/groups/$groupId/posts/$postId/comments').replace(
-        queryParameters: {'page': '$page', 'size': '$size'},
-      ),
+      _uri(
+        '/api/groups/$groupId/posts/$postId/comments',
+      ).replace(queryParameters: {'page': '$page', 'size': '$size'}),
       headers: accessToken == null
           ? null
           : _authHeaders(accessToken, tokenType),
@@ -1369,13 +1377,19 @@ class HttpGroupRepository implements GroupRepository {
     if (decoded is List) {
       return decoded
           .whereType<Map>()
-          .map((item) => GroupPostComment.fromJson(Map<String, dynamic>.from(item)))
+          .map(
+            (item) =>
+                GroupPostComment.fromJson(Map<String, dynamic>.from(item)),
+          )
           .toList(growable: false);
     }
     if (decoded is Map && decoded['content'] is List) {
       return (decoded['content'] as List)
           .whereType<Map>()
-          .map((item) => GroupPostComment.fromJson(Map<String, dynamic>.from(item)))
+          .map(
+            (item) =>
+                GroupPostComment.fromJson(Map<String, dynamic>.from(item)),
+          )
           .toList(growable: false);
     }
     throw const GroupRepositoryException('Unexpected comments payload');

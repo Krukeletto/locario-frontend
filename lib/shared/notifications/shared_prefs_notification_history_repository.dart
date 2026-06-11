@@ -50,6 +50,7 @@ class SharedPrefsNotificationHistoryRepository
   @override
   Future<void> insertEntry(NotificationEntry entry) async {
     final all = await _loadAll();
+    all.removeWhere((e) => e.id == entry.id);
     all.insert(0, entry);
     if (all.length > _maxEntries) {
       all.removeRange(_maxEntries, all.length);

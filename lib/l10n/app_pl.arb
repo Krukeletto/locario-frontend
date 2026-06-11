@@ -581,6 +581,14 @@
     "description": "Opis powiadomień systemowych."
   },
   "notificationTypeSystemMessageDesc": "Ważne aktualizacje z aplikacji",
+  "@notificationTypeChatMessage": {
+    "description": "Etykieta powiadomień o wiadomościach czatu."
+  },
+  "notificationTypeChatMessage": "Wiadomości czatu",
+  "@notificationTypeChatMessageDesc": {
+    "description": "Opis powiadomień o wiadomościach czatu."
+  },
+  "notificationTypeChatMessageDesc": "Nowe wiadomości z Twoich czatów",
   "profileTitle": "Profil",
   "profileDescription": "Konto, preferencje i zapisane miejsca.",
   "profileAuthLoginTitle": "Logowanie",

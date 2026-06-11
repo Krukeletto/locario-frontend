@@ -581,6 +581,14 @@
     "description": "Description for system message notifications."
   },
   "notificationTypeSystemMessageDesc": "Important updates from the app",
+  "@notificationTypeChatMessage": {
+    "description": "Label for chat message notifications."
+  },
+  "notificationTypeChatMessage": "Chat messages",
+  "@notificationTypeChatMessageDesc": {
+    "description": "Description for chat message notifications."
+  },
+  "notificationTypeChatMessageDesc": "New messages from your chats",
   "profileTitle": "Profile",
   "profileDescription": "Account, preferences and saved places.",
   "profileAuthLoginTitle": "Sign in",

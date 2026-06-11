@@ -446,7 +446,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     final canTransferOwnership = _canTransferOwnership(group, profile?.id);
     final canCreateEvents = _canCreateGroupsEvents(group);
     final canLinkEvents = canCreateEvents;
-    final isPrivateNonMember = group.isPrivate && !group.isMember && !canModerate;
+    final isPrivateNonMember =
+        group.isPrivate && !group.isMember && !canModerate;
 
     if (isPrivateNonMember) {
       return Scaffold(
@@ -503,7 +504,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                     decoration: BoxDecoration(
                       color: scheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: scheme.outline.withValues(alpha: 0.22)),
+                      border: Border.all(
+                        color: scheme.outline.withValues(alpha: 0.22),
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,11 +516,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                           runSpacing: 8,
                           children: [
                             _HeaderChip(
-                              label: group.categoryName ?? l10n.groupsCategoryUnknown,
+                              label:
+                                  group.categoryName ??
+                                  l10n.groupsCategoryUnknown,
                             ),
-                            _HeaderChip(
-                              label: l10n.groupsVisibilityPrivate,
-                            ),
+                            _HeaderChip(label: l10n.groupsVisibilityPrivate),
                             _HeaderChip(
                               label: l10n.groupsMembersCount(group.memberCount),
                             ),
@@ -535,9 +538,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                         const SizedBox(height: 16),
                         FilledButton.tonal(
                           onPressed: tokens != null ? _handleJoinOrLeave : null,
-                          child: Text(group.isPending
-                              ? l10n.groupsPendingAction
-                              : l10n.groupsJoinAction),
+                          child: Text(
+                            group.isPending
+                                ? l10n.groupsPendingAction
+                                : l10n.groupsJoinAction,
+                          ),
                         ),
                       ],
                     ),
@@ -904,8 +909,9 @@ class _PostComposerDialogState extends State<_PostComposerDialog> {
                                 color: scheme.surfaceContainerHighest,
                                 child: Icon(
                                   Icons.broken_image_rounded,
-                                  color: scheme.onSurface
-                                      .withValues(alpha: 0.4),
+                                  color: scheme.onSurface.withValues(
+                                    alpha: 0.4,
+                                  ),
                                 ),
                               ),
                             ),
@@ -972,8 +978,6 @@ class _PostComposerDialogState extends State<_PostComposerDialog> {
     );
   }
 }
-
-
 
 class _GroupReportDialog extends StatefulWidget {
   const _GroupReportDialog({required this.title});
@@ -2218,10 +2222,11 @@ class _InfoTab extends StatelessWidget {
             ],
           ),
         ),
-        if (canModerate && ((group.avatarUrl ?? '').isNotEmpty ||
-            (group.iconUrl ?? '').isNotEmpty ||
-            (group.mapPinIconUrl ?? '').isNotEmpty ||
-            (group.mapPinStyle ?? '').isNotEmpty)) ...[
+        if (canModerate &&
+            ((group.avatarUrl ?? '').isNotEmpty ||
+                (group.iconUrl ?? '').isNotEmpty ||
+                (group.mapPinIconUrl ?? '').isNotEmpty ||
+                (group.mapPinStyle ?? '').isNotEmpty)) ...[
           const SizedBox(height: 12),
           Container(
             width: double.infinity,

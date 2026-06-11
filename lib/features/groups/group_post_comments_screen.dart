@@ -74,11 +74,7 @@ class _GroupPostCommentsScreenState extends State<GroupPostCommentsScreen> {
         text,
       );
     } else {
-      comment = await ctrl.createComment(
-        widget.groupId,
-        widget.postId,
-        text,
-      );
+      comment = await ctrl.createComment(widget.groupId, widget.postId, text);
     }
 
     if (!mounted) return;
@@ -86,9 +82,7 @@ class _GroupPostCommentsScreenState extends State<GroupPostCommentsScreen> {
     if (comment != null) {
       setState(() {
         if (_editingCommentId != null) {
-          final idx = _comments.indexWhere(
-            (c) => c.id == _editingCommentId,
-          );
+          final idx = _comments.indexWhere((c) => c.id == _editingCommentId);
           if (idx >= 0) {
             _comments[idx] = comment!;
           }
@@ -169,33 +163,32 @@ class _GroupPostCommentsScreenState extends State<GroupPostCommentsScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _comments.isEmpty
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32),
-                          child: Text(
-                            l10n.groupsCommentsEmpty,
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: scheme.onSurface.withValues(alpha: 0.6),
-                            ),
-                          ),
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Text(
+                        l10n.groupsCommentsEmpty,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: scheme.onSurface.withValues(alpha: 0.6),
                         ),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                        itemCount: _comments.length,
-                        itemBuilder: (context, index) {
-                          return _CommentCard(
-                            comment: _comments[index],
-                            currentUserId:
-                                AuthScope.of(context).profile?.id,
-                            canModerate: false,
-                            onEdit: _startEdit,
-                            onDelete: _handleDelete,
-                          );
-                        },
                       ),
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    itemCount: _comments.length,
+                    itemBuilder: (context, index) {
+                      return _CommentCard(
+                        comment: _comments[index],
+                        currentUserId: AuthScope.of(context).profile?.id,
+                        canModerate: false,
+                        onEdit: _startEdit,
+                        onDelete: _handleDelete,
+                      );
+                    },
+                  ),
           ),
           if (_editingCommentId != null)
             Container(
@@ -229,9 +222,7 @@ class _GroupPostCommentsScreenState extends State<GroupPostCommentsScreen> {
             decoration: BoxDecoration(
               color: scheme.surface,
               border: Border(
-                top: BorderSide(
-                  color: scheme.outline.withValues(alpha: 0.15),
-                ),
+                top: BorderSide(color: scheme.outline.withValues(alpha: 0.15)),
               ),
             ),
             child: Row(
@@ -321,9 +312,7 @@ class _CommentCard extends StatelessWidget {
                   radius: 14,
                   backgroundColor: scheme.primary.withValues(alpha: 0.12),
                   child: Text(
-                    (comment.authorUsername ?? '?')
-                        .characters
-                        .first
+                    (comment.authorUsername ?? '?').characters.first
                         .toUpperCase(),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: scheme.primary,
@@ -366,10 +355,7 @@ class _CommentCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        comment.content,
-                        style: theme.textTheme.bodyMedium,
-                      ),
+                      Text(comment.content, style: theme.textTheme.bodyMedium),
                     ],
                   ),
                 ),
@@ -415,8 +401,10 @@ class _CommentCard extends StatelessWidget {
                           width: 120,
                           height: 120,
                           color: scheme.surfaceContainerHighest,
-                          child: Icon(Icons.broken_image_rounded,
-                              color: scheme.onSurface.withValues(alpha: 0.4)),
+                          child: Icon(
+                            Icons.broken_image_rounded,
+                            color: scheme.onSurface.withValues(alpha: 0.4),
+                          ),
                         ),
                       ),
                     );

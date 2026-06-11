@@ -729,9 +729,7 @@ class _ExploreAdvancedFilterSheetState
                                   );
                                 });
                               },
-                              isSelected: _filters.groupIds.contains(
-                                group.id,
-                              ),
+                              isSelected: _filters.groupIds.contains(group.id),
                             ),
                         ],
                       ),

@@ -472,8 +472,11 @@ class _FakeGroupRepository implements GroupRepository {
   }) => throw UnimplementedError();
 
   @override
-  Future<void> uploadToPresignedUrl(String uploadUrl, List<int> bytes, String contentType) =>
-      throw UnimplementedError();
+  Future<void> uploadToPresignedUrl(
+    String uploadUrl,
+    List<int> bytes,
+    String contentType,
+  ) => throw UnimplementedError();
 
   @override
   Future<void> deletePostMedia(

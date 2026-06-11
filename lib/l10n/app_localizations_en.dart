@@ -1406,6 +1406,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Important updates from the app';
 
   @override
+  String get notificationTypeChatMessage => 'Chat messages';
+
+  @override
+  String get notificationTypeChatMessageDesc => 'New messages from your chats';
+
+  @override
   String get profileTitle => 'Profile';
 
   @override

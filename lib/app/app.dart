@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -42,9 +40,11 @@ import '../shared/auth/auth_scope.dart';
 import '../shared/auth/favorites_api.dart';
 import '../shared/auth/session_controller.dart';
 import '../shared/auth/auth_storage.dart';
+import '../shared/notifications/api_notification_history_repository.dart';
 import '../shared/notifications/notification_controller.dart';
 import '../shared/notifications/notification_scope.dart';
 import '../shared/notifications/notification_service.dart';
+import '../shared/notifications/notifications_api.dart';
 import '../shared/notifications/shared_prefs_notification_history_repository.dart';
 import '../shared/notifications/shared_prefs_notification_preferences_store.dart';
 import '../features/legals/legal_controller.dart';
@@ -81,8 +81,8 @@ class _LocarioAppState extends State<LocarioApp> {
   late final SessionController _sessionController;
   late final LegalController _legalController;
   late final GoRouter _router;
+  late final NotificationsApi _notificationsApi;
   late final NotificationController _notificationController;
-  late final Future<void> _notificationResetFuture;
 
   @override
   void initState() {
@@ -140,11 +140,18 @@ class _LocarioAppState extends State<LocarioApp> {
     _savedFiltersController = SavedFiltersController(
       repository: const SharedPreferencesSavedFiltersRepository(),
     );
+    _notificationsApi = NotificationsApi();
     _notificationController = NotificationController(
-      historyRepository: const SharedPrefsNotificationHistoryRepository(),
+      historyRepository: ApiNotificationHistoryRepository(
+        api: _notificationsApi,
+        tokenProvider: () => _sessionController.tokens?.accessToken,
+        localCache: const SharedPrefsNotificationHistoryRepository(),
+      ),
       preferencesStore: const SharedPrefsNotificationPreferencesStore(),
+      api: _notificationsApi,
+      sessionController: _sessionController,
     );
-    _notificationResetFuture = NotificationService.cancelAllEventReminders();
+    NotificationService.cancelAllLocalNotifications();
 
     _localeController.load();
     _themeController.load();
@@ -162,50 +169,13 @@ class _LocarioAppState extends State<LocarioApp> {
       controller: _notificationController,
       router: _router,
     );
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _savedEventsController.addListener(_syncReminders);
-      _joinedEventsController.addListener(_syncReminders);
-      _syncReminders();
-    });
-  }
-
-  void _syncReminders() {
-    unawaited(_syncRemindersAsync());
-  }
-
-  Future<void> _syncRemindersAsync() async {
-    await _notificationResetFuture;
-
-    final joinedIds = _joinedEventsController.joinedEventIds;
-
-    final profile = _sessionController.profile;
-    if (profile != null) {
-      final registrations = profile.eventRegistrations
-          .map((r) => (id: r.eventId, title: r.name, startsAt: r.startAt))
-          .toList();
-      _notificationController.scheduleRemindersForJoinedEvents(registrations);
-    } else {
-      _notificationController.scheduleRemindersForJoinedEvents(
-        <({String id, String title, DateTime startsAt})>[],
-      );
-    }
-
-    final savedEvents = _savedEventsController.events;
-    if (savedEvents.isNotEmpty) {
-      _notificationController.scheduleRemindersForSavedEvents(
-        savedEvents
-            .map((e) => (id: e.id, title: e.title, startsAt: e.startsAt))
-            .toList(),
-        excludeEventIds: joinedIds,
-      );
-    }
   }
 
   void _onSessionChanged() {
     if (_sessionController.isAuthenticated &&
         _sessionController.tokens != null) {
       _groupController.loadMyGroups();
+      _notificationController.retryDeviceRegistrationIfNeeded();
     } else {
       _cacheService.invalidateByPrefix('my_groups');
       _groupController.loadMyGroups(forceRefresh: true);
@@ -215,8 +185,6 @@ class _LocarioAppState extends State<LocarioApp> {
   @override
   void dispose() {
     _sessionController.removeListener(_onSessionChanged);
-    _savedEventsController.removeListener(_syncReminders);
-    _joinedEventsController.removeListener(_syncReminders);
     _localeController.dispose();
     _themeController.dispose();
     _categoryController.dispose();

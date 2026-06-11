@@ -5,8 +5,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
 
 import 'notification_controller.dart';
 import 'notification_payload.dart';
@@ -19,11 +17,8 @@ class NotificationService {
   static NotificationController? _controller;
   static bool _firebaseAvailable = false;
 
-  /// Initialize [FlutterLocalNotificationsPlugin] before runApp.
   static Future<void> initLocalNotifications() async {
     try {
-      tz.initializeTimeZones();
-
       const androidSettings = AndroidInitializationSettings('ic_notification');
       const iosSettings = DarwinInitializationSettings(
         requestAlertPermission: false,
@@ -39,13 +34,9 @@ class NotificationService {
         initSettings,
         onDidReceiveNotificationResponse: _onLocalNotificationTap,
       );
-    } catch (_) {
-      // Platform channels not available (e.g. tests)
-    }
+    } catch (_) {}
   }
 
-  /// Full initialisation — call once [NotificationController] and
-  /// [GoRouter] are available (inside your app's initState).
   static Future<void> init({
     required NotificationController controller,
     required GoRouter router,
@@ -57,7 +48,6 @@ class NotificationService {
       Firebase.app();
       _firebaseAvailable = true;
     } catch (_) {
-      // Firebase not initialised (e.g. in tests)
       return;
     }
 
@@ -80,10 +70,6 @@ class NotificationService {
 
     _requestPermissionsAfterDelay();
   }
-
-  // ---------------------------------------------------------------------------
-  // Topics
-  // ---------------------------------------------------------------------------
 
   static Future<void> subscribeToTopic(String topic) async {
     if (!_firebaseAvailable) return;
@@ -120,67 +106,10 @@ class NotificationService {
   }
 
   // ---------------------------------------------------------------------------
-  // Event reminders
+  // Local notification cleanup
   // ---------------------------------------------------------------------------
 
-  static const _reminderIdBase = 1_000_000;
-
-  static int _reminderNotificationId(String eventId) =>
-      _reminderIdBase + eventId.hashCode.abs();
-
-  static Future<void> scheduleEventReminder({
-    required String eventId,
-    required String title,
-    required DateTime startsAt,
-  }) async {
-    try {
-      final fireAt = startsAt.subtract(const Duration(days: 1));
-      if (fireAt.isBefore(DateTime.now())) return;
-
-      final hour = startsAt.hour.toString().padLeft(2, '0');
-      final minute = startsAt.minute.toString().padLeft(2, '0');
-      final body = '$title starts tomorrow at $hour:$minute';
-
-      final tzScheduled = tz.TZDateTime.from(fireAt, tz.local);
-      final payload = jsonEncode({
-        'screen': '/events/$eventId',
-        'event_id': eventId,
-      });
-
-      await _localNotifications.zonedSchedule(
-        _reminderNotificationId(eventId),
-        'Event reminder',
-        body,
-        tzScheduled,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'high_importance_channel',
-            'High Importance Notifications',
-            channelDescription:
-                'This channel is used for important notifications.',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: 'ic_notification',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
-        ),
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        payload: payload,
-      );
-    } catch (_) {}
-  }
-
-  static Future<void> cancelEventReminder(String eventId) async {
-    try {
-      await _localNotifications.cancel(_reminderNotificationId(eventId));
-    } catch (_) {}
-  }
-
-  static Future<void> cancelAllEventReminders() async {
+  static Future<void> cancelAllLocalNotifications() async {
     try {
       await _localNotifications.cancelAll();
     } catch (_) {}
@@ -243,11 +172,13 @@ class NotificationService {
 
   static void _onLocalNotificationTap(NotificationResponse response) {
     if (response.payload == null) return;
-    final json = jsonDecode(response.payload!) as Map<String, dynamic>;
-    final payload = NotificationPayload.fromJson(json);
-    if (payload.route != null) {
-      _controller?.onNavigate?.call(payload);
-    }
+    try {
+      final json = jsonDecode(response.payload!) as Map<String, dynamic>;
+      final payload = NotificationPayload.fromJson(json);
+      if (payload.route != null) {
+        _controller?.onNavigate?.call(payload);
+      }
+    } catch (_) {}
   }
 
   static void _showLocalNotification(RemoteMessage message) {

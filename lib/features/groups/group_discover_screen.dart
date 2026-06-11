@@ -27,7 +27,8 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
-  late final LocationService _locationService = widget.locationService ?? GeolocatorLocationService();
+  late final LocationService _locationService =
+      widget.locationService ?? GeolocatorLocationService();
   double _discoverRadiusKm = 10.0;
   String? _discoverVisibility;
 
@@ -124,7 +125,7 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: FilledButton.tonalIcon(
-                  onPressed: () async {
+                onPressed: () async {
                   await context.push('/groups/create');
                   if (!mounted) return;
                   unawaited(_loadDiscoverWithLocation(forceRefresh: true));
@@ -166,10 +167,9 @@ class _GroupDiscoverScreenState extends State<GroupDiscoverScreen>
               _loadDiscoverWithLocation(categoryId: categoryId);
             },
             onSearchChanged: _onSearchChanged,
-            onSearchSubmitted: () =>
-                _loadDiscoverWithLocation(
-                  search: _searchController.text.trim(),
-                ),
+            onSearchSubmitted: () => _loadDiscoverWithLocation(
+              search: _searchController.text.trim(),
+            ),
             isLoading: ctrl.isDiscoverLoading,
             error: ctrl.discoverError,
             groups: ctrl.discoverGroups,
@@ -362,11 +362,11 @@ class _DiscoverTab extends StatelessWidget {
                             child: ChoiceChip(
                               label: Text('$km km'),
                               selected: discoverRadiusKm == km,
-                              onSelected: (_) => onRadiusChanged!(km.toDouble()),
+                              onSelected: (_) =>
+                                  onRadiusChanged!(km.toDouble()),
                               visualDensity: VisualDensity.compact,
                               labelStyle: TextStyle(
-                                fontWeight:
-                                discoverRadiusKm == km
+                                fontWeight: discoverRadiusKm == km
                                     ? FontWeight.w700
                                     : FontWeight.w500,
                               ),
