@@ -296,8 +296,12 @@ class GroupFeedItem {
     this.authorId,
     this.authorUsername,
     this.authorAvatarUrl,
+    this.title,
     this.content,
     this.mediaUrls = const [],
+    this.commentCount = 0,
+    this.likeCount = 0,
+    this.likedByMe = false,
     this.createdAt,
     this.eventId,
     this.eventName,
@@ -310,8 +314,12 @@ class GroupFeedItem {
   final String? authorId;
   final String? authorUsername;
   final String? authorAvatarUrl;
+  final String? title;
   final String? content;
   final List<String> mediaUrls;
+  final int commentCount;
+  final int likeCount;
+  final bool likedByMe;
   final DateTime? createdAt;
   final String? eventId;
   final String? eventName;
@@ -334,8 +342,12 @@ class GroupFeedItem {
           author?['username'] as String?,
       authorAvatarUrl:
           json['authorAvatarUrl'] as String? ?? author?['avatarUrl'] as String?,
+      title: json['title'] as String?,
       content: json['content'] as String?,
       mediaUrls: (json['mediaUrls'] as List?)?.cast<String>() ?? const [],
+      commentCount: json['commentCount'] as int? ?? 0,
+      likeCount: json['likeCount'] as int? ?? 0,
+      likedByMe: json['likedByMe'] as bool? ?? false,
       createdAt: _parseDate(json['createdAt'] as String?),
       eventId: json['eventId'] as String?,
       eventName: json['eventName'] as String?,
@@ -351,8 +363,12 @@ class GroupFeedItem {
       if (authorId != null) 'authorId': authorId,
       if (authorUsername != null) 'authorUsername': authorUsername,
       if (authorAvatarUrl != null) 'authorAvatarUrl': authorAvatarUrl,
+      if (title != null) 'title': title,
       if (content != null) 'content': content,
       'mediaUrls': mediaUrls,
+      'commentCount': commentCount,
+      'likeCount': likeCount,
+      'likedByMe': likedByMe,
       if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
       if (eventId != null) 'eventId': eventId,
       if (eventName != null) 'eventName': eventName,
@@ -364,11 +380,21 @@ class GroupFeedItem {
 }
 
 class GroupPostRequest {
-  const GroupPostRequest({required this.content});
+  const GroupPostRequest({
+    required this.content,
+    this.title,
+    this.mediaObjectKeys = const [],
+  });
 
   final String content;
+  final String? title;
+  final List<String> mediaObjectKeys;
 
-  Map<String, dynamic> toJson() => {'content': content};
+  Map<String, dynamic> toJson() => {
+    'content': content,
+    if (title != null) 'title': title,
+    if (mediaObjectKeys.isNotEmpty) 'mediaObjectKeys': mediaObjectKeys,
+  };
 }
 
 class GroupPost {
@@ -377,7 +403,9 @@ class GroupPost {
     this.groupId,
     this.authorId,
     this.authorUsername,
+    this.title,
     this.content,
+    this.mediaUrls = const [],
     this.status,
     this.createdAt,
   });
@@ -386,7 +414,9 @@ class GroupPost {
   final String? groupId;
   final String? authorId;
   final String? authorUsername;
+  final String? title;
   final String? content;
+  final List<String> mediaUrls;
   final String? status;
   final DateTime? createdAt;
 
@@ -396,7 +426,9 @@ class GroupPost {
       groupId: json['groupId'] as String?,
       authorId: json['authorId'] as String?,
       authorUsername: json['authorUsername'] as String?,
+      title: json['title'] as String?,
       content: json['content'] as String?,
+      mediaUrls: (json['mediaUrls'] as List?)?.cast<String>() ?? const [],
       status: json['status'] as String?,
       createdAt: _parseDate(json['createdAt'] as String?),
     );
@@ -408,7 +440,9 @@ class GroupPost {
       if (groupId != null) 'groupId': groupId,
       if (authorId != null) 'authorId': authorId,
       if (authorUsername != null) 'authorUsername': authorUsername,
+      if (title != null) 'title': title,
       if (content != null) 'content': content,
+      'mediaUrls': mediaUrls,
       if (status != null) 'status': status,
       if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
     };

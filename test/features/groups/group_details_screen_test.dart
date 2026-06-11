@@ -334,13 +334,12 @@ Future<SessionController> _createAuthenticatedSessionController() async {
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
       tokenType: 'Bearer',
-      expiresAt: DateTime.utc(2026, 6, 8, 12),
+      expiresAt: DateTime.now().add(const Duration(days: 1)),
     );
   final controller = SessionController(
     authRepository: AuthRepository(
       api: _FakeAuthApi(profile: _profile()),
       storage: storage,
-      now: () => DateTime.utc(2026, 6, 8, 11),
     ),
   );
   await controller.load();
@@ -693,6 +692,78 @@ class _FakeGroupRepository implements GroupRepository {
   Future<GroupReport> rejectReport(
     String groupId,
     String reportId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<String> getPresignedUploadUrl({
+    required String entityType,
+    required String entityId,
+    required String fileName,
+    required String contentType,
+    required int fileSize,
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> uploadToPresignedUrl(String uploadUrl, List<int> bytes, String contentType) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> deletePostMedia(
+    String groupId,
+    String postId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<Group> confirmAvatar(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteAvatar(
+    String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<Group> confirmIcon(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteIcon(
+    String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<Group> confirmMapPin(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteMapPin(
+    String groupId, {
     required String accessToken,
     String tokenType = 'Bearer',
   }) => throw UnimplementedError();

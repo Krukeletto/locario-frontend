@@ -304,31 +304,100 @@ class HttpEventRepository implements EventRepository {
     required String accessToken,
     String tokenType = 'Bearer',
   }) async {
-    final request = http.MultipartRequest(
-      'POST',
-      _uri('/api/events/$eventId/media'),
-    );
-    request.headers['Authorization'] = '$tokenType $accessToken';
-    request.files.add(
-      http.MultipartFile.fromBytes('file', bytes, filename: fileName),
+    final contentType = _resolveImageMimeType(fileName);
+
+    final presigned = await _getPresignedUploadUrl(
+      entityType: 'EVENT_MEDIA',
+      entityId: eventId,
+      fileName: fileName,
+      contentType: contentType,
+      fileSize: bytes.length,
+      accessToken: accessToken,
+      tokenType: tokenType,
     );
 
-    final streamedResponse = await _client.send(request);
-    final response = await http.Response.fromStream(streamedResponse);
-
-    if (response.statusCode != 200 && response.statusCode != 201) {
+    final uploadResponse = await http.put(
+      Uri.parse(presigned.uploadUrl),
+      headers: {'Content-Type': contentType},
+      body: bytes,
+    );
+    if (uploadResponse.statusCode != 200) {
       throw EventRepositoryException(
-        'Unable to upload media',
-        statusCode: response.statusCode,
+        'Unable to upload media to storage',
+        statusCode: uploadResponse.statusCode,
       );
     }
 
-    final decoded = jsonDecode(response.body);
+    final confirmResponse = await _client.post(
+      _uri('/api/events/$eventId/media'),
+      headers: _authorizedHeaders(accessToken, tokenType),
+      body: jsonEncode({
+        'objectKey': presigned.objectKey,
+        'contentType': contentType,
+      }),
+    );
+    if (confirmResponse.statusCode != 201 && confirmResponse.statusCode != 200) {
+      throw EventRepositoryException(
+        'Unable to confirm media upload',
+        statusCode: confirmResponse.statusCode,
+      );
+    }
+
+    final decoded = jsonDecode(confirmResponse.body);
     if (decoded is! Map<String, dynamic>) {
       throw const EventRepositoryException('Unexpected event media payload');
     }
 
     return EventMedia.fromJson(decoded);
+  }
+
+  Future<PresignedUploadResponse> _getPresignedUploadUrl({
+    required String entityType,
+    required String entityId,
+    required String fileName,
+    required String contentType,
+    required int fileSize,
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.post(
+      _uri('/api/media/presigned-upload-url'),
+      headers: _authorizedHeaders(accessToken, tokenType),
+      body: jsonEncode({
+        'entityType': entityType,
+        'entityId': entityId,
+        'fileName': fileName,
+        'contentType': contentType,
+        'fileSize': fileSize,
+      }),
+    );
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw EventRepositoryException(
+        'Unable to request upload URL',
+        statusCode: response.statusCode,
+      );
+    }
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw const EventRepositoryException('Unexpected presigned URL payload');
+    }
+    return PresignedUploadResponse(
+      uploadUrl: decoded['uploadUrl'] as String,
+      objectKey: decoded['objectKey'] as String,
+      publicUrl: decoded['publicUrl'] as String? ?? '',
+      expiresAt: decoded['expiresAt'] as String?,
+    );
+  }
+
+  String _resolveImageMimeType(String fileName) {
+    final extension = fileName.split('.').last.toLowerCase();
+    return switch (extension) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      'gif' => 'image/gif',
+      'jpg' || 'jpeg' => 'image/jpeg',
+      _ => 'image/jpeg',
+    };
   }
 
   @override
@@ -472,6 +541,20 @@ class HttpEventRepository implements EventRepository {
       fallbackVenue: fallbackLocationLabel,
     );
   }
+}
+
+class PresignedUploadResponse {
+  const PresignedUploadResponse({
+    required this.uploadUrl,
+    required this.objectKey,
+    this.publicUrl = '',
+    this.expiresAt,
+  });
+
+  final String uploadUrl;
+  final String objectKey;
+  final String publicUrl;
+  final String? expiresAt;
 }
 
 class _PagedEvents {

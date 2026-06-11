@@ -455,4 +455,76 @@ class _FakeGroupRepository implements GroupRepository {
     required String accessToken,
     String tokenType = 'Bearer',
   }) => throw UnimplementedError();
+
+  @override
+  Future<String> getPresignedUploadUrl({
+    required String entityType,
+    required String entityId,
+    required String fileName,
+    required String contentType,
+    required int fileSize,
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> uploadToPresignedUrl(String uploadUrl, List<int> bytes, String contentType) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> deletePostMedia(
+    String groupId,
+    String postId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<Group> confirmAvatar(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteAvatar(
+    String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<Group> confirmIcon(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteIcon(
+    String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<Group> confirmMapPin(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteMapPin(
+    String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) => throw UnimplementedError();
 }

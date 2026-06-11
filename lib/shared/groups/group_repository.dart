@@ -17,6 +17,59 @@ class GroupRepositoryException implements Exception {
 }
 
 abstract class GroupRepository {
+  Future<String> getPresignedUploadUrl({
+    required String entityType,
+    required String entityId,
+    required String fileName,
+    required String contentType,
+    required int fileSize,
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<void> uploadToPresignedUrl(String uploadUrl, List<int> bytes, String contentType);
+  Future<void> deletePostMedia(
+    String groupId,
+    String postId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<Group> confirmAvatar(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<void> deleteAvatar(
+    String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<Group> confirmIcon(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<void> deleteIcon(
+    String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<Group> confirmMapPin(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<void> deleteMapPin(
+    String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
   Future<List<Group>> fetchDiscoverGroups({
     String? query,
     String? categoryId,
@@ -1008,5 +1061,205 @@ class HttpGroupRepository implements GroupRepository {
       throw const GroupRepositoryException('Unexpected report payload');
     }
     return GroupReport.fromJson(Map<String, dynamic>.from(decoded));
+  }
+
+  @override
+  Future<String> getPresignedUploadUrl({
+    required String entityType,
+    required String entityId,
+    required String fileName,
+    required String contentType,
+    required int fileSize,
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.post(
+      _uri('/api/media/presigned-upload-url'),
+      headers: _authHeaders(accessToken, tokenType, includeJson: true),
+      body: jsonEncode({
+        'entityType': entityType,
+        'entityId': entityId,
+        'fileName': fileName,
+        'contentType': contentType,
+        'fileSize': fileSize,
+      }),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to get presigned upload URL',
+        statusCode: response.statusCode,
+      );
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return decoded['uploadUrl'] as String;
+  }
+
+  @override
+  Future<void> uploadToPresignedUrl(String uploadUrl, List<int> bytes, String contentType) async {
+    final request = http.Request('PUT', Uri.parse(uploadUrl));
+    request.headers['Content-Type'] = contentType;
+    request.bodyBytes = bytes;
+
+    final streamedResponse = await _client.send(request);
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Upload to storage failed',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  @override
+  Future<void> deletePostMedia(
+    String groupId,
+    String postId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.delete(
+      _uri('/api/groups/$groupId/posts/$postId/media/$mediaId'),
+      headers: _authHeaders(accessToken, tokenType),
+    );
+
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to delete post media',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  @override
+  Future<Group> confirmAvatar(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.post(
+      _uri('/api/groups/$groupId/avatar'),
+      headers: _authHeaders(accessToken, tokenType, includeJson: true),
+      body: jsonEncode({'objectKey': objectKey, 'contentType': contentType}),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to confirm avatar',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return _decodeGroup(response.body);
+  }
+
+  @override
+  Future<void> deleteAvatar(
+    String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.delete(
+      _uri('/api/groups/$groupId/avatar'),
+      headers: _authHeaders(accessToken, tokenType),
+    );
+
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to delete avatar',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  @override
+  Future<Group> confirmIcon(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.post(
+      _uri('/api/groups/$groupId/icon'),
+      headers: _authHeaders(accessToken, tokenType, includeJson: true),
+      body: jsonEncode({'objectKey': objectKey, 'contentType': contentType}),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to confirm icon',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return _decodeGroup(response.body);
+  }
+
+  @override
+  Future<void> deleteIcon(
+    String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.delete(
+      _uri('/api/groups/$groupId/icon'),
+      headers: _authHeaders(accessToken, tokenType),
+    );
+
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to delete icon',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  @override
+  Future<Group> confirmMapPin(
+    String groupId,
+    String objectKey,
+    String contentType, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.post(
+      _uri('/api/groups/$groupId/map-pin'),
+      headers: _authHeaders(accessToken, tokenType, includeJson: true),
+      body: jsonEncode({'objectKey': objectKey, 'contentType': contentType}),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to confirm map pin',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return _decodeGroup(response.body);
+  }
+
+  @override
+  Future<void> deleteMapPin(
+    String groupId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.delete(
+      _uri('/api/groups/$groupId/map-pin'),
+      headers: _authHeaders(accessToken, tokenType),
+    );
+
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw GroupRepositoryException(
+        'Unable to delete map pin',
+        statusCode: response.statusCode,
+      );
+    }
   }
 }

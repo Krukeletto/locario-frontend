@@ -5,11 +5,13 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:locario/l10n/app_localizations.dart';
 
 import '../../shared/auth/auth_api.dart';
 import '../../shared/auth/auth_models.dart';
 import '../../shared/auth/auth_scope.dart';
+import '../../shared/config/api_config.dart';
 import '../../shared/services/feedback_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -86,23 +88,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     };
   }
 
-  String _buildAvatarDataUri(Uint8List bytes, String? fileName) {
-    final mimeType = _resolveImageMimeType(fileName);
-    return 'data:$mimeType;base64,${base64Encode(bytes)}';
-  }
-
-  Uint8List? _decodeDataImage(String dataUri) {
-    final commaIndex = dataUri.indexOf(',');
-    if (commaIndex == -1) {
-      return null;
-    }
-    try {
-      return base64Decode(dataUri.substring(commaIndex + 1));
-    } catch (_) {
-      return null;
-    }
-  }
-
   Future<void> _pickAvatar() async {
     FocusManager.instance.primaryFocus?.unfocus();
     final result = await FilePicker.platform.pickFiles(
@@ -173,9 +158,53 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
 
     try {
-      final avatarUrl = _avatarBytes != null
-          ? _buildAvatarDataUri(_avatarBytes!, _avatarFileName)
-          : (profile.avatarUrl ?? '');
+      String avatarUrl;
+      if (_avatarBytes != null) {
+        final contentType = _resolveImageMimeType(_avatarFileName);
+        final tokens = sessionController.tokens;
+        if (tokens == null) {
+          throw const AuthApiException('Missing session tokens');
+        }
+
+        final presignedResponse = await http.post(
+          Uri.parse('${ApiConfig.baseUrl}/api/media/presigned-upload-url'),
+          headers: {
+            'Authorization': '${tokens.tokenType} ${tokens.accessToken}',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'entityType': 'USER_AVATAR',
+            'entityId': profile.id,
+            'fileName': _avatarFileName ?? 'avatar.jpg',
+            'contentType': contentType,
+            'fileSize': _avatarBytes!.length,
+          }),
+        );
+        if (presignedResponse.statusCode != 201 && presignedResponse.statusCode != 200) {
+          throw AuthApiException(
+            'Presigned URL request failed',
+            statusCode: presignedResponse.statusCode,
+          );
+        }
+        final presigned = jsonDecode(presignedResponse.body);
+
+        final uploadResponse = await http.put(
+          Uri.parse(presigned['uploadUrl'] as String),
+          headers: {'Content-Type': contentType},
+          body: _avatarBytes,
+        );
+        if (uploadResponse.statusCode != 200) {
+          throw AuthApiException(
+            'Avatar upload failed',
+            statusCode: uploadResponse.statusCode,
+          );
+        }
+
+        avatarUrl = presigned['publicUrl'] as String? ?? '';
+      } else {
+        avatarUrl = profile.avatarUrl ?? '';
+      }
+
       final request = UpdateProfileRequest(
         username: _resolveValue(_usernameController.text, profile.username),
         email: profile.email,
@@ -235,13 +264,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     final avatarUrl = (AuthScope.of(context).profile?.avatarUrl ?? '').trim();
     if (avatarUrl.isNotEmpty) {
-      final dataBytes = avatarUrl.startsWith('data:')
-          ? _decodeDataImage(avatarUrl)
-          : null;
-      if (dataBytes != null) {
-        return _buildMemoryAvatar(dataBytes);
-      }
-
       return ClipOval(
         child: CachedNetworkImage(
           imageUrl: avatarUrl,
