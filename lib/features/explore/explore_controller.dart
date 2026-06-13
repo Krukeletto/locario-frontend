@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:latlong2/latlong.dart';
+import '../../shared/cache/cache_service.dart';
 import '../../shared/events/event_repository.dart';
 import 'explore_event_query.dart';
 import 'explore_state.dart';
@@ -22,6 +24,7 @@ class ExploreController extends ChangeNotifier {
   List<ExploreEvent> _allEvents = const [];
   int _activeRequestId = 0;
   Timer? _debounceTimer;
+  bool _isRefreshing = false;
 
   // Query parameters
   String _searchQuery = '';
@@ -108,18 +111,44 @@ class ExploreController extends ChangeNotifier {
     loadEvents();
   }
 
-  Future<void> loadEvents({bool forceRefresh = false}) async {
+  Future<void> loadEvents({
+    bool forceRefresh = false,
+    String? accessToken,
+    String tokenType = 'Bearer',
+    CacheService? cache,
+  }) async {
     final location = _referenceLocation;
     if (location == null) {
-      // We can't fetch nearby events without a location.
-      // If we don't have location yet, we might be waiting for it.
       return;
     }
 
     final requestId = ++_activeRequestId;
     final previousResults = _visiblePreviousResults();
 
-    if (_allEvents.isEmpty || forceRefresh) {
+    final radiusKm =
+        (_distanceOverrideMeters ??
+            _advancedFilters.distanceFilter.maxDistanceMeters) /
+        1000.0;
+
+    final groupSuffix = _advancedFilters.groupIds.isNotEmpty
+        ? '_g${_advancedFilters.groupIds.join(',')}'
+        : '';
+    final cacheKey =
+        'map_events_${location.latitude.toStringAsFixed(1)}_${location.longitude.toStringAsFixed(1)}_${radiusKm.toStringAsFixed(1)}$groupSuffix';
+
+    if (!forceRefresh && cache != null) {
+      final cached = await cache.getList<ExploreEvent>(
+        cacheKey,
+        ExploreEvent.fromJson,
+      );
+      if (cached != null && cached.isNotEmpty) {
+        _allEvents = cached;
+        _updateResults();
+      }
+    }
+
+    if ((_allEvents.isEmpty || forceRefresh) && !_isRefreshing) {
+      _isRefreshing = true;
       if (previousResults != null) {
         _state = ExploreDataLoading(previous: previousResults);
       } else {
@@ -129,19 +158,36 @@ class ExploreController extends ChangeNotifier {
     }
 
     try {
-      final events = await _eventRepository.fetchNearbyEvents(
+      final events = await _eventRepository.fetchMapEvents(
         latitude: location.latitude,
         longitude: location.longitude,
-        radiusKm:
-            (_distanceOverrideMeters ??
-                _advancedFilters.distanceFilter.maxDistanceMeters) /
-            1000.0,
+        radiusKm: radiusKm,
+        includeCommunityEvents: true,
+        groupIds: _advancedFilters.groupIds.isNotEmpty
+            ? _advancedFilters.groupIds
+            : null,
+        accessToken: accessToken,
+        tokenType: tokenType,
       );
 
       if (requestId != _activeRequestId) return;
 
-      _allEvents = events;
-      _updateResults();
+      final freshHash = jsonEncode(
+        events.map((e) => e.toJson()).toList(),
+      ).hashCode;
+      final cachedHash = cache != null ? await cache.getHash(cacheKey) : null;
+
+      if (freshHash != cachedHash) {
+        _allEvents = events;
+        _updateResults();
+        if (cache != null) {
+          await cache.setList(
+            cacheKey,
+            events.map((e) => e.toJson()).toList(),
+            hash: freshHash,
+          );
+        }
+      }
     } on EventRepositoryException catch (e) {
       if (requestId != _activeRequestId) return;
 
@@ -150,8 +196,13 @@ class ExploreController extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (requestId != _activeRequestId) return;
-      _state = const ExploreError(type: ExploreErrorType.unknown);
+      _state = const ExploreError(
+        type: ExploreErrorType.unknown,
+        details: null,
+      );
       notifyListeners();
+    } finally {
+      _isRefreshing = false;
     }
   }
 
@@ -185,9 +236,6 @@ class ExploreController extends ChangeNotifier {
       return;
     }
 
-    debugPrint(
-      'ExploreController updating results. allEvents: ${_allEvents.length}, state: $_state',
-    );
     final results = _filterAndSort();
     if (results.isEmpty) {
       _state = const ExploreEmpty();

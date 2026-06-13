@@ -50,12 +50,29 @@ class _EmptyRepository implements EventRepository {
   }
 
   @override
-  Future<ExploreEvent> createEvent(EventRequest request) {
+  Future<ExploreEvent> createEvent(
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  Future<ExploreEvent> updateEvent(String id, EventRequest request) {
+  Future<ExploreEvent> updateEvent(
+    String id,
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
@@ -63,18 +80,30 @@ class _EmptyRepository implements EventRepository {
   Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
-    String fileName,
-  ) {
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  Future<void> deleteEventMedia(String eventId, String mediaId) {
+  Future<void> deleteEventMedia(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  Future<void> setEventThumbnail(String eventId, String mediaId) {
+  Future<void> setEventThumbnail(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
     throw UnimplementedError();
   }
 
@@ -84,26 +113,33 @@ class _EmptyRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchNearbyEvents({
+  Future<ExploreEvent> fetchEvent(String id) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) {
+    return fetchMapEvents(latitude: 0, longitude: 0);
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchMapEvents({
     required double latitude,
     required double longitude,
     double? radiusKm,
     int? limit,
+    bool includeCommunityEvents = true,
+    List<String>? groupIds,
+    String? accessToken,
+    String tokenType = 'Bearer',
   }) async {
     final gate = _nextFetchGate;
     if (gate != null) {
       await gate.future;
     }
     return const [];
-  }
-
-  @override
-  Future<ExploreEvent> fetchEvent(String id) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<ExploreEvent>> fetchEvents() {
-    return fetchNearbyEvents(latitude: 0, longitude: 0);
   }
 }

@@ -9,6 +9,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../shared/groups/pin_styles.dart';
 import '../../../shared/map/style_repository.dart';
 import '../map_view_model.dart';
 import '../models.dart';
@@ -118,9 +119,7 @@ class _MapWidgetState extends State<MapWidget> {
       }
 
       mapController.setStyle(styleJson);
-    } catch (error) {
-      debugPrint('Map style apply failed: $error');
-    }
+    } catch (_) {}
   }
 
   @override
@@ -357,8 +356,7 @@ class _MapWidgetState extends State<MapWidget> {
 
     try {
       return _cameraSync.isLocationVisible(mapController, location);
-    } catch (error) {
-      debugPrint('Map location visibility check failed: $error');
+    } catch (_) {
       return false;
     }
   }
@@ -392,9 +390,7 @@ class _MapWidgetState extends State<MapWidget> {
       if (radiusMeters > 0) {
         widget.onVisibleRadiusChanged?.call(radiusMeters);
       }
-    } catch (error) {
-      debugPrint('Visible search radius update failed: $error');
-    }
+    } catch (_) {}
   }
 
   Future<void> _moveTo(
@@ -415,9 +411,7 @@ class _MapWidgetState extends State<MapWidget> {
           zoom: zoom,
           nativeDuration: duration,
         );
-      } catch (error) {
-        debugPrint('Map camera animation interrupted: $error');
-      }
+      } catch (_) {}
       return;
     }
 
@@ -595,10 +589,36 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   Widget _buildEventMarkerBadge(ExploreEvent event) {
+    final groupPin = _findGroupPin(event);
+    if (groupPin != null) {
+      if (groupPin.mapPinIconUrl != null &&
+          groupPin.mapPinIconUrl!.isNotEmpty) {
+        return _EventMarkerImageBadge(imageUrl: groupPin.mapPinIconUrl!);
+      }
+      final predefined = PredefinedPin.fromStyleKey(groupPin.mapPinStyle);
+      if (predefined != null) {
+        return _EventMarkerBadge(
+          backgroundColor: event.accentColor,
+          icon: predefined.icon,
+        );
+      }
+    }
     return _EventMarkerBadge(
       backgroundColor: event.accentColor,
       icon: event.icon,
     );
+  }
+
+  EventGroupSummary? _findGroupPin(ExploreEvent event) {
+    for (final group in event.groups) {
+      if (group.mapPinStyle != null && group.mapPinStyle!.isNotEmpty) {
+        return group;
+      }
+      if (group.mapPinIconUrl != null && group.mapPinIconUrl!.isNotEmpty) {
+        return group;
+      }
+    }
+    return null;
   }
 
   Widget _buildMapSurface(
@@ -678,10 +698,6 @@ class _MapWidgetState extends State<MapWidget> {
                 isStyleLoading || controller.isInitialLoading;
             final showStartupLoading =
                 !_hasCompletedStartupLoading && isWaitingForStartup;
-
-            if (styleLoadError != null) {
-              debugPrint('Map style load failed: $styleLoadError');
-            }
 
             if (showStartupLoading) {
               return _StartupLoadingView(
@@ -1192,6 +1208,54 @@ class _EventMarkerBadge extends StatelessWidget {
             ],
           ),
           child: Icon(icon, color: themeColors.onScrim, size: 22),
+        ),
+      ),
+    );
+  }
+}
+
+class _EventMarkerImageBadge extends StatelessWidget {
+  const _EventMarkerImageBadge({required this.imageUrl});
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Material(
+      color: Colors.transparent,
+      child: Center(
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: theme.shadowColor,
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            child: Image.network(
+              imageUrl,
+              width: 44,
+              height: 44,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Container(
+                color: theme.colorScheme.surfaceContainerHigh,
+                child: Icon(
+                  Icons.place_rounded,
+                  color: theme.colorScheme.onSurface,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

@@ -6,10 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart' show LatLng;
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../../shared/auth/auth_scope.dart';
 import '../../../shared/events/event_repository.dart';
 import '../../../shared/events/event_refresh_signal.dart';
+import '../../../shared/groups/group_models.dart';
+import '../../../shared/groups/group_controller.dart';
+import '../../../shared/groups/group_scope.dart';
 import '../../../shared/location/location_service.dart';
 import '../../../shared/services/feedback_service.dart';
+import '../../../shared/widgets/state_panel.dart';
+import '../../explore/models.dart';
 import '../../explore/widgets/area_picker.dart';
 import 'create_event_controller.dart';
 import 'create_event_location_controller.dart';
@@ -39,6 +45,8 @@ class CreateEventScreen extends StatefulWidget {
     CreateEventGeocoder? geocoder,
     EventRefreshSignal? eventRefreshSignal,
     Future<List<CreateEventPickedFile>> Function()? pickImageFiles,
+    this.editingEventId,
+    this.initialGroupId,
     this.canSubmit = false,
   }) : _eventRepository = eventRepository,
        _locationService = locationService,
@@ -51,6 +59,8 @@ class CreateEventScreen extends StatefulWidget {
   final CreateEventGeocoder? _geocoder;
   final EventRefreshSignal? _eventRefreshSignal;
   final Future<List<CreateEventPickedFile>> Function()? _pickImageFiles;
+  final String? editingEventId;
+  final String? initialGroupId;
   final bool canSubmit;
 
   @override
@@ -58,14 +68,22 @@ class CreateEventScreen extends StatefulWidget {
 }
 
 class _CreateEventScreenState extends State<CreateEventScreen> {
-  late final CreateEventController _controller;
+  CreateEventController? _controller;
   late final CreateEventLocationController _locationController;
   late final EventRefreshSignal _eventRefreshSignal;
   late final LocationService _locationService;
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _ticketUrlController = TextEditingController();
   final TextEditingController _seatsController = TextEditingController();
+
+  GroupController? _groupController;
+  ExploreEvent? _editingEvent;
+  bool _didInitController = false;
+  bool _didRequestEditingEvent = false;
+  bool _didApplyEditingGroups = false;
+  bool _isEditingEventLoading = false;
 
   @override
   void initState() {
@@ -73,33 +91,149 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     _locationService = widget._locationService ?? GeolocatorLocationService();
     _eventRefreshSignal =
         widget._eventRefreshSignal ?? globalEventRefreshSignal;
-    _controller = CreateEventController(
-      eventRepository: widget._eventRepository ?? HttpEventRepository(),
-    );
     _locationController = CreateEventLocationController(
       locationService: _locationService,
       geocoder: widget._geocoder,
     );
 
-    _controller.addListener(_handleStateChanged);
     _locationController.addListener(() => setState(() {}));
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInitController) {
+      _tryApplyEditingGroups();
+      return;
+    }
+    final sessionController = AuthScope.of(context);
+    final profile = sessionController.profile;
+    final canCreatePublicEvents =
+        profile?.organizer == true || profile?.admin == true;
+    final controller = CreateEventController(
+      eventRepository: widget._eventRepository ?? HttpEventRepository(),
+      sessionController: sessionController,
+      canCreatePublicEvents: canCreatePublicEvents,
+    );
+    controller.addListener(_handleStateChanged);
+    _controller = controller;
+    _didInitController = true;
+
+    final groupController = GroupScope.of(context);
+    _groupController = groupController;
+    groupController.loadMyGroups();
+    groupController.addListener(_tryApplyEditingGroups);
+
+    if (widget.editingEventId != null) {
+      controller.setEditingEventId(widget.editingEventId);
+      _loadEditingEvent();
+    }
+
+    if (widget.initialGroupId != null) {
+      void trySetInitialGroups() {
+        if (!mounted) {
+          groupController.removeListener(trySetInitialGroups);
+          return;
+        }
+        final activeGroups = groupController.myGroups
+            .where(
+              (g) => g.currentUserMembership == GroupMembershipStatus.active,
+            )
+            .toList();
+        final initial = activeGroups
+            .where((g) => g.id == widget.initialGroupId)
+            .toList();
+        if (initial.isNotEmpty) {
+          controller.setSelectedGroups(initial);
+          groupController.removeListener(trySetInitialGroups);
+        } else if (!groupController.isMyGroupsLoading) {
+          groupController.removeListener(trySetInitialGroups);
+        }
+      }
+
+      groupController.addListener(trySetInitialGroups);
+    }
+  }
+
+  @override
   void dispose() {
-    _controller.removeListener(_handleStateChanged);
-    _controller.dispose();
+    _controller?.removeListener(_handleStateChanged);
+    _controller?.dispose();
     _locationController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
+    _ticketUrlController.dispose();
     _seatsController.dispose();
+    _groupController?.removeListener(_tryApplyEditingGroups);
     super.dispose();
   }
 
+  Future<void> _loadEditingEvent() async {
+    final eventId = widget.editingEventId;
+    if (eventId == null || _didRequestEditingEvent) {
+      return;
+    }
+    _didRequestEditingEvent = true;
+    setState(() => _isEditingEventLoading = true);
+
+    try {
+      final repository = widget._eventRepository ?? HttpEventRepository();
+      final event = await repository.fetchEvent(eventId);
+      if (!mounted) return;
+
+      _editingEvent = event;
+      _controller?.setEditingEventId(event.id);
+      _controller?.initializeFromEvent(event: event);
+      _titleController.text = event.title;
+      _descriptionController.text = event.description ?? '';
+      _ticketUrlController.text = event.ticketUrl ?? '';
+      _seatsController.text = event.slotLimit?.toString() ?? '';
+      _locationController.setPinnedLocation(
+        event.location,
+        label: event.locationLabel(AppLocalizations.of(context)),
+        address: event.address,
+      );
+      _tryApplyEditingGroups();
+    } catch (_) {
+      if (!mounted) return;
+    } finally {
+      if (mounted) {
+        setState(() => _isEditingEventLoading = false);
+      }
+    }
+  }
+
+  void _tryApplyEditingGroups() {
+    final controller = _controller;
+    final groupController = _groupController;
+    final event = _editingEvent;
+    if (controller == null ||
+        groupController == null ||
+        event == null ||
+        _didApplyEditingGroups ||
+        groupController.isMyGroupsLoading) {
+      return;
+    }
+
+    final selectedGroups = groupController.myGroups
+        .where((group) => event.groupIds.contains(group.id))
+        .toList();
+    controller.setSelectedGroups(selectedGroups);
+    _didApplyEditingGroups = true;
+  }
+
   void _handleStateChanged() {
-    final state = _controller.state;
+    final controller = _controller;
+    if (controller == null) {
+      return;
+    }
+    final state = controller.state;
     if (state.status == CreateEventFormStatus.success) {
-      FeedbackService.showSuccess(FeedbackMessage.eventCreated);
+      FeedbackService.showSuccess(
+        widget.editingEventId == null
+            ? FeedbackMessage.eventCreated
+            : FeedbackMessage.eventUpdated,
+      );
       _eventRefreshSignal.notifyChanged();
       Navigator.of(context).maybePop();
     } else if (state.status == CreateEventFormStatus.error) {
@@ -113,6 +247,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   Future<void> _handleImagePressed() async {
+    final controller = _controller;
+    if (controller == null) {
+      return;
+    }
     _clearFocus();
     final pickedFiles =
         await (widget._pickImageFiles?.call() ?? _pickImageFiles());
@@ -120,7 +258,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       return;
     }
 
-    _controller.addSelectedImages(
+    controller.addSelectedImages(
       pickedFiles
           .map(
             (file) => CreateEventSelectedImage(
@@ -149,26 +287,34 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   Future<void> _pickDate() async {
+    final controller = _controller;
+    if (controller == null) {
+      return;
+    }
     _clearFocus();
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
       firstDate: now,
       lastDate: DateTime(now.year + 2),
-      initialDate: _controller.state.selectedDate ?? now,
+      initialDate: controller.state.selectedDate ?? now,
     );
 
     if (mounted && picked != null) {
-      _controller.updateDate(picked);
+      controller.updateDate(picked);
     }
   }
 
   Future<void> _pickTime() async {
+    final controller = _controller;
+    if (controller == null) {
+      return;
+    }
     _clearFocus();
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(
-        _controller.state.selectedTime ?? DateTime.now(),
+        controller.state.selectedTime ?? DateTime.now(),
       ),
     );
 
@@ -181,11 +327,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         picked.hour,
         picked.minute,
       );
-      _controller.updateTime(time);
+      controller.updateTime(time);
     }
   }
 
   Future<void> _handleLocationPressed() async {
+    final controller = _controller;
+    if (controller == null) {
+      return;
+    }
     _clearFocus();
     final l10n = AppLocalizations.of(context);
     final action = await showModalBottomSheet<ExploreAreaSelectionAction>(
@@ -229,25 +379,64 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     if (mounted && _locationController.selection != null) {
       final selection = _locationController.selection!;
-      _controller.updateLocation(selection.label, selection.coordinates);
+      controller.updateLocation(selection.label, selection.coordinates);
     } else if (mounted &&
         result != null &&
         result.status != CreateEventLocationLookupStatus.success) {
-      _controller.clearLocation();
+      controller.clearLocation();
       FeedbackService.showError(FeedbackMessage.networkError);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+    if (controller == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
-    final state = _controller.state;
+    final isEditing = widget.editingEventId != null;
+    final state = controller.state;
+    final sessionController = AuthScope.of(context);
+    final profile = sessionController.profile;
+    final canCreatePublicEvents =
+        profile?.organizer == true || profile?.admin == true;
+    final groupController = GroupScope.of(context);
+    final allGroups = groupController.myGroups;
+    final activeGroups = allGroups
+        .where((g) => g.currentUserMembership == GroupMembershipStatus.active)
+        .toList();
+    final isGroupsLoading = groupController.isMyGroupsLoading;
+
+    if (isEditing && _isEditingEventLoading && _editingEvent == null) {
+      return Scaffold(
+        backgroundColor: scheme.surface,
+        appBar: _buildAppBar(context, l10n, scheme, theme, isEditing),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (isEditing && _editingEvent == null && !_isEditingEventLoading) {
+      return Scaffold(
+        backgroundColor: scheme.surface,
+        appBar: _buildAppBar(context, l10n, scheme, theme, isEditing),
+        body: StatePanel.error(
+          title: l10n.eventDetailsErrorTitle,
+          subtitle: l10n.eventDetailsErrorSubtitle,
+          retryLabel: l10n.exploreRetryButton,
+          onRetry: () {
+            _didRequestEditingEvent = false;
+            _loadEditingEvent();
+          },
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: _buildAppBar(context, l10n, scheme, theme),
+      appBar: _buildAppBar(context, l10n, scheme, theme, isEditing),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: _clearFocus,
@@ -267,8 +456,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     const SizedBox(height: 12),
                     _SelectedImagesList(
                       images: state.selectedImages,
-                      onRemove: _controller.removeSelectedImageAt,
-                      onReorder: _controller.reorderSelectedImages,
+                      onRemove: controller.removeSelectedImageAt,
+                      onReorder: controller.reorderSelectedImages,
                     ),
                   ],
                   const SizedBox(height: 16),
@@ -277,13 +466,22 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     descriptionController: _descriptionController,
                     titleError: state.titleError,
                     descriptionError: state.descriptionError,
-                    onTitleChanged: _controller.updateTitle,
-                    onDescriptionChanged: _controller.updateDescription,
+                    onTitleChanged: controller.updateTitle,
+                    onDescriptionChanged: controller.updateDescription,
                   ),
                   const SizedBox(height: 16),
                   CreateEventCategoriesSection(
                     state: state,
-                    onCategoryToggled: _controller.toggleCategory,
+                    onCategoryToggled: controller.toggleCategory,
+                  ),
+                  const SizedBox(height: 16),
+                  _CreateEventGroupsSection(
+                    isLoading: isGroupsLoading,
+                    groups: activeGroups,
+                    selectedGroups: state.selectedGroups,
+                    groupsError: state.groupsError,
+                    canCreatePublicEvents: canCreatePublicEvents,
+                    onGroupToggled: controller.toggleGroup,
                   ),
                   const SizedBox(height: 16),
                   CreateEventDateTimeSection(
@@ -300,14 +498,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   const SizedBox(height: 16),
                   CreateEventTicketingSection(
                     state: state,
+                    ticketUrlController: _ticketUrlController,
                     seatsController: _seatsController,
-                    onTicketUrlChanged: _controller.updateTicketUrl,
-                    onSlotLimitChanged: _controller.updateSlotLimit,
+                    onTicketUrlChanged: controller.updateTicketUrl,
+                    onSlotLimitChanged: controller.updateSlotLimit,
                   ),
                   const SizedBox(height: 16),
                   CreateEventStatusSection(
                     state: state,
-                    onStatusChanged: _controller.updateStatus,
+                    onStatusChanged: controller.updateStatus,
                   ),
                 ],
               ),
@@ -329,7 +528,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   !widget.canSubmit ||
                       state.status == CreateEventFormStatus.submitting
                   ? null
-                  : () => _controller.submit(),
+                  : () => controller.submit(),
               child: state.status == CreateEventFormStatus.submitting
                   ? SizedBox(
                       height: 20,
@@ -339,7 +538,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         color: scheme.onPrimary,
                       ),
                     )
-                  : Text(l10n.hubCreateEventSubmitButton),
+                  : Text(
+                      isEditing
+                          ? l10n.eventEditSubmitButton
+                          : l10n.hubCreateEventSubmitButton,
+                    ),
             ),
           ],
         ),
@@ -352,13 +555,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     AppLocalizations l10n,
     ColorScheme scheme,
     ThemeData theme,
+    bool isEditing,
   ) {
     return AppBar(
       backgroundColor: scheme.surface,
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
       title: Text(
-        l10n.hubCreateEventTitle,
+        isEditing ? l10n.eventEditScreenTitle : l10n.hubCreateEventTitle,
         style: theme.textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w800,
           color: scheme.primary,
@@ -368,6 +572,86 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         onPressed: () => Navigator.of(context).maybePop(),
         icon: const Icon(Icons.close_rounded),
       ),
+    );
+  }
+}
+
+class _CreateEventGroupsSection extends StatelessWidget {
+  const _CreateEventGroupsSection({
+    required this.isLoading,
+    required this.groups,
+    required this.selectedGroups,
+    required this.groupsError,
+    required this.canCreatePublicEvents,
+    required this.onGroupToggled,
+  });
+
+  final bool isLoading;
+  final List<Group> groups;
+  final List<Group> selectedGroups;
+  final String? groupsError;
+  final bool canCreatePublicEvents;
+  final ValueChanged<Group> onGroupToggled;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CreateEventFieldLabel(text: l10n.groupsEventGroupsLabel),
+        const SizedBox(height: 8),
+        Text(
+          canCreatePublicEvents
+              ? l10n.groupsEventGroupsOptionalHint
+              : l10n.groupsEventGroupsRequiredHint,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: scheme.onSurface.withValues(alpha: 0.72),
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (groups.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Text(
+              l10n.groupsEventGroupsEmpty,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurface.withValues(alpha: 0.72),
+              ),
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final group in groups)
+                FilterChip(
+                  key: Key('create-event-group-${group.id}'),
+                  label: Text(group.name),
+                  selected: selectedGroups.any((item) => item.id == group.id),
+                  onSelected: (_) => onGroupToggled(group),
+                ),
+            ],
+          ),
+        if (groupsError != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            groupsError!,
+            style: theme.textTheme.bodySmall?.copyWith(color: scheme.error),
+          ),
+        ],
+      ],
     );
   }
 }

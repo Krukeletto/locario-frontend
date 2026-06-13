@@ -27,9 +27,15 @@ class FakeEventRepository implements EventRepository {
   final List<String> uploadedFileNames = [];
   String? lastThumbnailEventId;
   String? lastThumbnailMediaId;
+  String? lastUpdateEventId;
+  EventRequest? lastUpdateInput;
 
   @override
-  Future<ExploreEvent> createEvent(EventRequest request) async {
+  Future<ExploreEvent> createEvent(
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     if (createEventError != null) {
       throw createEventError!;
     }
@@ -39,7 +45,14 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<ExploreEvent> updateEvent(String id, EventRequest request) async {
+  Future<ExploreEvent> updateEvent(
+    String id,
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    lastUpdateEventId = id;
+    lastUpdateInput = request;
     return eventDetails;
   }
 
@@ -53,21 +66,14 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchEvents() async {
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     if (fetchEventsError != null) {
       throw fetchEventsError!;
     }
 
-    return events;
-  }
-
-  @override
-  Future<List<ExploreEvent>> fetchNearbyEvents({
-    required double latitude,
-    required double longitude,
-    double? radiusKm,
-    int? limit,
-  }) async {
     return events;
   }
 
@@ -77,11 +83,21 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
+  Future<List<ExploreEvent>> fetchOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    return events;
+  }
+
+  @override
   Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
-    String fileName,
-  ) async {
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     uploadedEventIds.add(eventId);
     uploadedBytes.add(bytes);
     uploadedFileNames.add(fileName);
@@ -94,12 +110,36 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> deleteEventMedia(String eventId, String mediaId) async {}
+  Future<void> deleteEventMedia(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {}
 
   @override
-  Future<void> setEventThumbnail(String eventId, String mediaId) async {
+  Future<void> setEventThumbnail(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     lastThumbnailEventId = eventId;
     lastThumbnailMediaId = mediaId;
+  }
+
+  @override
+  Future<List<ExploreEvent>> fetchMapEvents({
+    required double latitude,
+    required double longitude,
+    double? radiusKm,
+    int? limit,
+    bool includeCommunityEvents = true,
+    List<String>? groupIds,
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    return events;
   }
 }
 

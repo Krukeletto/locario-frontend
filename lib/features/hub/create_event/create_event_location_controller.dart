@@ -59,6 +59,21 @@ class CreateEventLocationController extends ChangeNotifier {
   CreateEventLocationSelection? get selection => _selection;
   bool get isResolvingSelection => _isResolvingSelection;
 
+  void setPinnedLocation(LatLng location, {String? label, String? address}) {
+    final l10n = L10nService.l10n;
+    final lat = location.latitude.toStringAsFixed(4);
+    final lon = location.longitude.toStringAsFixed(4);
+    _selection = CreateEventLocationSelection(
+      label: label ?? l10n.areaPinnedOnMap,
+      description: l10n.areaPinnedCoordinates(lat, lon),
+      coordinates: location,
+      source: CreateEventLocationSource.pinnedOnMap,
+      icon: Icons.place_rounded,
+      address: address,
+    );
+    notifyListeners();
+  }
+
   Future<CreateEventLocationLookupResult> useCurrentLocation() async {
     final l10n = L10nService.l10n;
     _isResolvingSelection = true;

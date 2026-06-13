@@ -1,11 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 
 import '../../shared/auth/session_controller.dart';
 import '../../shared/events/event_registration_api.dart';
 import '../../shared/events/event_slots_response.dart';
-import '../../shared/notifications/notification_service.dart';
 import '../explore/models.dart';
 
 class JoinedEventsController extends ChangeNotifier {
@@ -44,11 +41,7 @@ class JoinedEventsController extends ChangeNotifier {
     if (_sessionController?.isAuthenticated == true) {
       load();
     } else {
-      final removedIds = _joinedEventIds;
       _joinedEventIds = {};
-      for (final eventId in removedIds) {
-        unawaited(NotificationService.cancelEventReminder(eventId));
-      }
       _slotsCache.clear();
       notifyListeners();
     }
@@ -61,12 +54,9 @@ class JoinedEventsController extends ChangeNotifier {
   void load() {
     final profile = _sessionController?.profile;
     if (profile != null) {
-      final nextIds = profile.eventRegistrations.map((r) => r.eventId).toSet();
-      final removedIds = _joinedEventIds.difference(nextIds);
-      _joinedEventIds = nextIds;
-      for (final eventId in removedIds) {
-        unawaited(NotificationService.cancelEventReminder(eventId));
-      }
+      _joinedEventIds = profile.eventRegistrations
+          .map((r) => r.eventId)
+          .toSet();
       notifyListeners();
     }
   }
@@ -110,7 +100,6 @@ class JoinedEventsController extends ChangeNotifier {
 
     _joinedEventIds.remove(eventId);
     notifyListeners();
-    unawaited(NotificationService.cancelEventReminder(eventId));
 
     await _sessionController?.refreshProfile();
     load();

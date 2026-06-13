@@ -1,19 +1,79 @@
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:latlong2/latlong.dart';
 import '../../../shared/events/event_repository.dart';
+import '../../../shared/auth/session_controller.dart';
+import '../../../shared/groups/group_models.dart';
 import '../../../shared/services/l10n_service.dart';
 import '../../explore/models.dart';
 import 'create_event_state.dart';
 
 class CreateEventController extends ChangeNotifier {
-  CreateEventController({required EventRepository eventRepository})
-    : _eventRepository = eventRepository;
+  CreateEventController({
+    required EventRepository eventRepository,
+    required SessionController sessionController,
+    required this.canCreatePublicEvents,
+    List<Group> initialSelectedGroups = const [],
+  }) : _eventRepository = eventRepository,
+       _sessionController = sessionController,
+       _state = CreateEventState(selectedGroups: initialSelectedGroups);
 
   final EventRepository _eventRepository;
-  CreateEventState _state = const CreateEventState();
+  final SessionController _sessionController;
+  final bool canCreatePublicEvents;
+  CreateEventState _state;
   CreateEventState get state => _state;
 
   LatLng? _selectedLocation;
+  String? _editingEventId;
+
+  bool get isEditing => _editingEventId != null;
+
+  void setEditingEventId(String? eventId) {
+    _editingEventId = eventId;
+  }
+
+  void initializeFromEvent({
+    required ExploreEvent event,
+    List<Group> selectedGroups = const [],
+  }) {
+    final date = DateTime(
+      event.startsAt.year,
+      event.startsAt.month,
+      event.startsAt.day,
+    );
+    final time = DateTime(
+      event.startsAt.year,
+      event.startsAt.month,
+      event.startsAt.day,
+      event.startsAt.hour,
+      event.startsAt.minute,
+    );
+    _selectedLocation = event.location;
+    _state = _state.copyWith(
+      title: event.title,
+      titleError: () => null,
+      description: event.description ?? '',
+      descriptionError: () => null,
+      locationLabel: event.locationLabel(L10nService.l10n),
+      locationError: () => null,
+      selectedDate: () => date,
+      dateError: () => null,
+      selectedTime: () => time,
+      timeError: () => null,
+      selectedCategories: event.categories,
+      categoriesError: () => null,
+      selectedGroups: selectedGroups,
+      groupsError: () => null,
+      eventStatus: event.status,
+      ticketUrl: () => event.ticketUrl,
+      ticketUrlError: () => null,
+      slotLimit: () => event.slotLimit,
+      slotLimitError: () => null,
+      selectedImages: const [],
+      status: CreateEventFormStatus.idle,
+    );
+    notifyListeners();
+  }
 
   void updateTitle(String title) {
     final l10n = L10nService.l10n;
@@ -103,6 +163,35 @@ class CreateEventController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleGroup(Group group) {
+    final l10n = L10nService.l10n;
+    final next = [..._state.selectedGroups];
+    if (next.any((item) => item.id == group.id)) {
+      next.removeWhere((item) => item.id == group.id);
+    } else {
+      next.add(group);
+    }
+
+    _state = _state.copyWith(
+      selectedGroups: next,
+      groupsError: () => !canCreatePublicEvents && next.isEmpty
+          ? l10n.groupsEventValidationGroupRequired
+          : null,
+    );
+    notifyListeners();
+  }
+
+  void setSelectedGroups(List<Group> groups) {
+    final l10n = L10nService.l10n;
+    _state = _state.copyWith(
+      selectedGroups: groups,
+      groupsError: () => !canCreatePublicEvents && groups.isEmpty
+          ? l10n.groupsEventValidationGroupRequired
+          : null,
+    );
+    notifyListeners();
+  }
+
   void updateStatus(EventStatus status) {
     _state = _state.copyWith(eventStatus: status);
     notifyListeners();
@@ -176,6 +265,9 @@ class CreateEventController extends ChangeNotifier {
       categoriesError: () => _state.selectedCategories.isEmpty
           ? l10n.hubCreateEventValidationCategoryRequired
           : null,
+      groupsError: () => !canCreatePublicEvents && _state.selectedGroups.isEmpty
+          ? l10n.groupsEventValidationGroupRequired
+          : null,
       locationError: () => _selectedLocation == null
           ? l10n.hubCreateEventValidationLocationRequired
           : null,
@@ -185,6 +277,13 @@ class CreateEventController extends ChangeNotifier {
       timeError: () => _state.selectedTime == null
           ? l10n.hubCreateEventValidationDateTimeRequired
           : null,
+      slotLimitError: () =>
+          !canCreatePublicEvents &&
+              (_state.slotLimit == null || _state.slotLimit! <= 0)
+          ? l10n.groupsEventValidationSlotLimitRequired
+          : (_state.slotLimit != null && _state.slotLimit! <= 0
+                ? l10n.hubCreateEventValidationPositiveNumber
+                : null),
     );
     notifyListeners();
 
@@ -194,6 +293,10 @@ class CreateEventController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final tokens = _sessionController.tokens;
+      if (tokens == null) {
+        throw StateError('Missing session tokens');
+      }
       final request = EventRequest(
         name: _state.title,
         description: _state.description,
@@ -205,29 +308,46 @@ class CreateEventController extends ChangeNotifier {
         longitude: _selectedLocation!.longitude,
         address: _state.locationLabel,
         categoryIds: _state.selectedCategories.map((c) => c.id).toList(),
+        groupIds: _state.selectedGroups.map((group) => group.id).toList(),
         status: _state.eventStatus,
         ticketUrl: _state.ticketUrl,
         slotLimit: _state.slotLimit,
       );
 
-      final createdEvent = await _eventRepository.createEvent(request);
+      final eventId = _editingEventId;
+      final savedEvent = eventId == null
+          ? await _eventRepository.createEvent(
+              request,
+              accessToken: tokens.accessToken,
+              tokenType: tokens.tokenType,
+            )
+          : await _eventRepository.updateEvent(
+              eventId,
+              request,
+              accessToken: tokens.accessToken,
+              tokenType: tokens.tokenType,
+            );
       final selectedImages = _state.selectedImages;
       if (selectedImages.isNotEmpty) {
         try {
           final uploadedMedia = <EventMedia>[];
           for (final image in selectedImages) {
             final media = await _eventRepository.uploadEventMedia(
-              createdEvent.id,
+              savedEvent.id,
               image.bytes,
               image.fileName,
+              accessToken: tokens.accessToken,
+              tokenType: tokens.tokenType,
             );
             uploadedMedia.add(media);
           }
           final firstMediaId = uploadedMedia.firstOrNull?.id;
           if (firstMediaId != null && firstMediaId.isNotEmpty) {
             await _eventRepository.setEventThumbnail(
-              createdEvent.id,
+              savedEvent.id,
               firstMediaId,
+              accessToken: tokens.accessToken,
+              tokenType: tokens.tokenType,
             );
           }
         } catch (error, stackTrace) {

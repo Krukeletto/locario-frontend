@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../shared/auth/auth_models.dart';
 import '../../shared/auth/auth_scope.dart';
-import '../../shared/events/event_repository.dart';
-import '../../shared/events/event_slots_response.dart';
+import '../../shared/events/event_detail_controller.dart';
+import '../../shared/events/event_detail_scope.dart';
 import '../../shared/services/calendar_service.dart';
-import '../../shared/reviews/review_models.dart';
-import '../../shared/reviews/review_repository.dart';
+import '../../shared/reviews/review_controller.dart';
+import '../../shared/reviews/review_scope.dart';
 import '../../shared/services/feedback_service.dart';
 import '../../shared/services/map_launch_service.dart';
 import '../../shared/services/share_service.dart';
@@ -21,16 +22,10 @@ import 'widgets/gallery/event_details_gallery.dart';
 import 'widgets/info/event_details_info.dart';
 
 class EventScreen extends StatefulWidget {
-  const EventScreen({
-    super.key,
-    this.eventId,
-    EventRepository? eventRepository,
-    CalendarService? calendarService,
-  }) : _eventRepository = eventRepository,
-       _calendarService = calendarService;
+  const EventScreen({super.key, this.eventId, CalendarService? calendarService})
+    : _calendarService = calendarService;
 
   final String? eventId;
-  final EventRepository? _eventRepository;
   final CalendarService? _calendarService;
 
   @override
@@ -38,113 +33,34 @@ class EventScreen extends StatefulWidget {
 }
 
 class _EventScreenState extends State<EventScreen> {
-  late final EventRepository _eventRepository;
   late final CalendarService _calendarService;
-  late final ReviewRepository _reviewRepository;
-  AppLocalizations? _l10n;
   bool _hasRequestedInitialLoad = false;
+  bool _hasRequestedRatingLoad = false;
+  bool _invalidEventId = false;
 
-  bool _isLoading = true;
-  String? _error;
-  ExploreEvent? _event;
-  AverageRating? _organizerAverageRating;
-  EventSlotsResponse? _slots;
   bool _isJoinLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _eventRepository = widget._eventRepository ?? HttpEventRepository();
     _calendarService = widget._calendarService ?? CalendarService();
-    _reviewRepository = HttpReviewRepository();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _l10n ??= AppLocalizations.of(context);
-    if (_hasRequestedInitialLoad) {
-      return;
-    }
-
+    if (_hasRequestedInitialLoad) return;
     _hasRequestedInitialLoad = true;
     _loadEvent();
   }
 
-  Future<void> _loadEvent() async {
+  void _loadEvent() {
     final eventId = widget.eventId;
     if (eventId == null || eventId.isEmpty) {
-      setState(() {
-        _isLoading = false;
-        _error = 'missing-id';
-      });
+      setState(() => _invalidEventId = true);
       return;
     }
-
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final event = await _eventRepository.fetchEvent(eventId);
-      final results = await Future.wait([
-        _fetchSlots(eventId),
-        _fetchOrganizerRating(event),
-      ]);
-      final slots = results[0] as EventSlotsResponse?;
-      final organizerRating = results[1] as AverageRating?;
-      if (!mounted) return;
-
-      setState(() {
-        _event = event;
-        _slots = slots;
-        _organizerAverageRating = organizerRating;
-        _isLoading = false;
-      });
-    } on EventRepositoryException catch (error) {
-      if (!mounted) return;
-
-      setState(() {
-        _error = error.message;
-        _isLoading = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-
-      setState(() {
-        _error = 'unknown';
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<EventSlotsResponse?> _fetchSlots(String eventId) async {
-    final controller = JoinedEventsScope.maybeOf(context);
-    if (controller == null) return null;
-
-    try {
-      return await controller.fetchSlots(eventId);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Future<AverageRating?> _fetchOrganizerRating(ExploreEvent event) async {
-    final organizerId = event.organizerId;
-    if (organizerId == null || organizerId.isEmpty) {
-      return null;
-    }
-
-    try {
-      final auth = AuthScope.maybeOf(context);
-      return await _reviewRepository.fetchOrganizerAverageRating(
-        organizerId,
-        accessToken: auth?.tokens?.accessToken,
-        tokenType: auth?.tokens?.tokenType ?? 'Bearer',
-      );
-    } catch (_) {}
-    return null;
+    EventDetailScope.of(context).loadEvent(eventId);
   }
 
   void _shareEvent(ExploreEvent event) {
@@ -291,6 +207,17 @@ class _EventScreenState extends State<EventScreen> {
     final l10n = AppLocalizations.of(context);
     final savedController = SavedEventsScope.maybeOf(context);
     final joinedController = JoinedEventsScope.maybeOf(context);
+    final detailController = EventDetailScope.of(context);
+    final reviewController = ReviewScope.of(context);
+
+    final event = detailController.event;
+    if (event != null && !_hasRequestedRatingLoad) {
+      _hasRequestedRatingLoad = true;
+      final organizerId = event.organizerId;
+      if (organizerId != null && organizerId.isNotEmpty) {
+        reviewController.loadOrganizerRating(organizerId);
+      }
+    }
 
     return AnimatedBuilder(
       animation: Listenable.merge([?savedController, ?joinedController]),
@@ -301,6 +228,8 @@ class _EventScreenState extends State<EventScreen> {
         l10n,
         savedController,
         joinedController,
+        detailController,
+        reviewController,
       ),
     );
   }
@@ -312,7 +241,13 @@ class _EventScreenState extends State<EventScreen> {
     AppLocalizations l10n,
     SavedEventsController? savedController,
     JoinedEventsController? joinedController,
+    EventDetailController detailController,
+    ReviewController reviewController,
   ) {
+    final event = detailController.event;
+    final auth = AuthScope.maybeOf(context);
+    final isAuthor = event != null && _isEventAuthor(event, auth?.profile);
+
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
@@ -347,21 +282,65 @@ class _EventScreenState extends State<EventScreen> {
           ),
         ),
         actions: [
-          if (_event != null)
+          if (event != null && isAuthor)
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert_rounded, color: scheme.primary),
+              onSelected: (value) async {
+                if (value == 'edit') {
+                  await context.push('/events/${event.id}/edit');
+                  if (!mounted) return;
+                  await detailController.loadEvent(
+                    event.id,
+                    forceRefresh: true,
+                  );
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  value: 'edit',
+                  child: Text(l10n.eventEditAction),
+                ),
+              ],
+            ),
+          if (event != null)
             IconButton(
               icon: Icon(Icons.share_rounded, size: 20, color: scheme.primary),
-              onPressed: () => _shareEvent(_event!),
+              onPressed: () => _shareEvent(event),
             ),
           const SizedBox(width: 8),
         ],
       ),
-      body: _buildBody(context, l10n, savedController, joinedController),
-      floatingActionButton: _buildReviewAction(context, l10n),
+      body: _buildBody(
+        context,
+        l10n,
+        savedController,
+        joinedController,
+        detailController,
+        reviewController,
+      ),
+      floatingActionButton: _buildReviewAction(context, l10n, event),
     );
   }
 
-  Widget? _buildReviewAction(BuildContext context, AppLocalizations l10n) {
-    final event = _event;
+  bool _isEventAuthor(ExploreEvent event, UserProfile? currentProfile) {
+    final currentUserId = currentProfile?.id;
+    final currentUsername = currentProfile?.username;
+    if ((currentUserId == null || currentUserId.isEmpty) &&
+        (currentUsername == null || currentUsername.isEmpty)) {
+      return false;
+    }
+
+    return event.organizerId == currentUserId ||
+        event.organizerUsername == currentUsername ||
+        event.organizers.contains(currentUserId) ||
+        event.organizers.contains(currentUsername);
+  }
+
+  Widget? _buildReviewAction(
+    BuildContext context,
+    AppLocalizations l10n,
+    ExploreEvent? event,
+  ) {
     if (event == null || !event.hasEnded) {
       return null;
     }
@@ -390,28 +369,30 @@ class _EventScreenState extends State<EventScreen> {
     AppLocalizations l10n,
     SavedEventsController? savedController,
     JoinedEventsController? joinedController,
+    EventDetailController detailController,
+    ReviewController reviewController,
   ) {
-    if (_isLoading) {
+    if (_invalidEventId || detailController.error != null) {
+      return StatePanel.error(
+        title: l10n.eventDetailsErrorTitle,
+        subtitle: detailController.error ?? l10n.eventDetailsErrorSubtitle,
+        retryLabel: l10n.exploreRetryButton,
+        onRetry: _loadEvent,
+      );
+    }
+
+    if (detailController.isLoading) {
       return StatePanel.loading(
         title: l10n.eventDetailsLoadingTitle,
         subtitle: l10n.eventDetailsLoadingSubtitle,
       );
     }
 
-    if (_error != null) {
-      return StatePanel.error(
-        title: l10n.eventDetailsErrorTitle,
-        subtitle: l10n.eventDetailsErrorSubtitle,
-        retryLabel: l10n.exploreRetryButton,
-        onRetry: _loadEvent,
-      );
-    }
-
-    if (_event == null) {
+    final event = detailController.event;
+    if (event == null) {
       return const SizedBox.shrink();
     }
 
-    final event = _event!;
     const overlap = 12.0;
     final isJoined = joinedController?.isJoined(event.id) ?? false;
 
@@ -429,13 +410,13 @@ class _EventScreenState extends State<EventScreen> {
               onSavePressed: () => _toggleSaved(event),
               isSaved: savedController?.isSaved(event.id) ?? false,
               isJoined: isJoined,
-              organizerRating: _organizerAverageRating,
+              organizerRating: reviewController.organizerRating,
               onJoinPressed: isJoined ? null : () => _joinEvent(event),
               onLeavePressed: isJoined ? () => _leaveEvent(event) : null,
               onAddToCalendarPressed: isJoined
                   ? () => _addEventToCalendar(event)
                   : null,
-              slots: _slots,
+              slots: detailController.slots,
               isJoinLoading: _isJoinLoading,
             ),
           ),

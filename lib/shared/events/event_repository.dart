@@ -28,6 +28,7 @@ class EventRequest {
     this.slotLimit,
     this.ticketUrl,
     this.categoryIds = const [],
+    this.groupIds = const [],
     this.tags = const [],
     this.status = EventStatus.published,
     this.thumbnailUrl,
@@ -45,6 +46,7 @@ class EventRequest {
   final int? slotLimit;
   final String? ticketUrl;
   final List<String> categoryIds;
+  final List<String> groupIds;
   final List<String> tags;
   final EventStatus status;
   final String? thumbnailUrl;
@@ -63,6 +65,7 @@ class EventRequest {
       if (slotLimit != null) 'slotLimit': slotLimit,
       if (ticketUrl != null) 'ticketUrl': ticketUrl,
       'categoryIds': categoryIds,
+      if (groupIds.isNotEmpty) 'groupIds': groupIds,
       if (tags.isNotEmpty) 'tags': tags,
       'status': status.toJson(),
       if (thumbnailUrl != null) 'thumbnailUrl': thumbnailUrl,
@@ -71,23 +74,55 @@ class EventRequest {
 }
 
 abstract class EventRepository {
-  Future<List<ExploreEvent>> fetchNearbyEvents({
+  Future<List<ExploreEvent>> fetchMapEvents({
     required double latitude,
     required double longitude,
     double? radiusKm,
     int? limit,
+    bool includeCommunityEvents = true,
+    List<String>? groupIds,
+    String? accessToken,
+    String tokenType = 'Bearer',
   });
-  Future<List<ExploreEvent>> fetchEvents();
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  });
   Future<ExploreEvent> fetchEvent(String id);
-  Future<ExploreEvent> createEvent(EventRequest request);
-  Future<ExploreEvent> updateEvent(String id, EventRequest request);
+  Future<List<ExploreEvent>> fetchOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<ExploreEvent> createEvent(
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<ExploreEvent> updateEvent(
+    String id,
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
   Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
-    String fileName,
-  );
-  Future<void> deleteEventMedia(String eventId, String mediaId);
-  Future<void> setEventThumbnail(String eventId, String mediaId);
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<void> deleteEventMedia(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
+  Future<void> setEventThumbnail(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  });
   Future<List<Category>> fetchCategories();
 }
 
@@ -101,11 +136,62 @@ class HttpEventRepository implements EventRepository {
 
   Uri _uri(String path) => Uri.parse('$_baseUrl$path');
 
+  Map<String, String> _authorizedHeaders(String accessToken, String tokenType) {
+    return {
+      'Authorization': '$tokenType $accessToken',
+      'Content-Type': 'application/json',
+    };
+  }
+
   @override
-  Future<ExploreEvent> createEvent(EventRequest request) async {
+  Future<List<ExploreEvent>> fetchOrganizerEvents({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    var page = 0;
+    final events = <ExploreEvent>[];
+
+    while (true) {
+      final uri = _uri('/api/organizer/events/me').replace(
+        queryParameters: {
+          'page': page.toString(),
+          'size': '50',
+          'sort': 'startAt',
+          'direction': 'desc',
+        },
+      );
+      final response = await _client.get(
+        uri,
+        headers: {'Authorization': '$tokenType $accessToken'},
+      );
+
+      if (response.statusCode != 200) {
+        throw EventRepositoryException(
+          'Unable to fetch organizer events',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final pageEvents = _decodePagedEvents(jsonDecode(response.body));
+      events.addAll(pageEvents.events);
+      if (pageEvents.isLast) {
+        break;
+      }
+      page++;
+    }
+
+    return events;
+  }
+
+  @override
+  Future<ExploreEvent> createEvent(
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     final response = await _client.post(
       _uri('/api/events'),
-      headers: const {'Content-Type': 'application/json'},
+      headers: _authorizedHeaders(accessToken, tokenType),
       body: jsonEncode(request.toJson()),
     );
 
@@ -120,10 +206,15 @@ class HttpEventRepository implements EventRepository {
   }
 
   @override
-  Future<ExploreEvent> updateEvent(String id, EventRequest request) async {
+  Future<ExploreEvent> updateEvent(
+    String id,
+    EventRequest request, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     final response = await _client.put(
       _uri('/api/events/$id'),
-      headers: const {'Content-Type': 'application/json'},
+      headers: _authorizedHeaders(accessToken, tokenType),
       body: jsonEncode(request.toJson()),
     );
 
@@ -151,27 +242,37 @@ class HttpEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchNearbyEvents({
+  Future<List<ExploreEvent>> fetchMapEvents({
     required double latitude,
     required double longitude,
     double? radiusKm,
     int? limit,
+    bool includeCommunityEvents = true,
+    List<String>? groupIds,
+    String? accessToken,
+    String tokenType = 'Bearer',
   }) async {
     final queryParams = {
       'lat': latitude.toString(),
       'lng': longitude.toString(),
       if (radiusKm != null) 'radiusKm': radiusKm.toString(),
       if (limit != null) 'limit': limit.toString(),
+      'includeCommunityEvents': includeCommunityEvents.toString(),
+      if (groupIds != null && groupIds.isNotEmpty)
+        'groupIds': groupIds.join(','),
     };
 
-    final uri = _uri(
-      '/api/events/nearby',
-    ).replace(queryParameters: queryParams);
-    final response = await _client.get(uri);
+    final uri = _uri('/api/events/map').replace(queryParameters: queryParams);
+    final response = await _client.get(
+      uri,
+      headers: accessToken != null
+          ? {'Authorization': '$tokenType $accessToken'}
+          : null,
+    );
 
     if (response.statusCode != 200) {
       throw EventRepositoryException(
-        'Unable to fetch nearby events',
+        'Unable to fetch map events',
         statusCode: response.statusCode,
       );
     }
@@ -180,8 +281,16 @@ class HttpEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<ExploreEvent>> fetchEvents() async {
-    final response = await _client.get(_uri('/api/events'));
+  Future<List<ExploreEvent>> fetchEvents({
+    String? accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.get(
+      _uri('/api/events'),
+      headers: accessToken != null
+          ? {'Authorization': '$tokenType $accessToken'}
+          : null,
+    );
     if (response.statusCode != 200) {
       throw EventRepositoryException(
         'Unable to fetch events',
@@ -196,27 +305,51 @@ class HttpEventRepository implements EventRepository {
   Future<EventMedia> uploadEventMedia(
     String eventId,
     List<int> bytes,
-    String fileName,
-  ) async {
-    final request = http.MultipartRequest(
-      'POST',
-      _uri('/api/events/$eventId/media'),
-    );
-    request.files.add(
-      http.MultipartFile.fromBytes('file', bytes, filename: fileName),
+    String fileName, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final contentType = _resolveImageMimeType(fileName);
+
+    final presigned = await _getPresignedUploadUrl(
+      entityType: 'EVENT_MEDIA',
+      entityId: eventId,
+      fileName: fileName,
+      contentType: contentType,
+      fileSize: bytes.length,
+      accessToken: accessToken,
+      tokenType: tokenType,
     );
 
-    final streamedResponse = await _client.send(request);
-    final response = await http.Response.fromStream(streamedResponse);
-
-    if (response.statusCode != 200 && response.statusCode != 201) {
+    final uploadResponse = await http.put(
+      Uri.parse(presigned.uploadUrl),
+      headers: {'Content-Type': contentType},
+      body: bytes,
+    );
+    if (uploadResponse.statusCode != 200) {
       throw EventRepositoryException(
-        'Unable to upload media',
-        statusCode: response.statusCode,
+        'Unable to upload media to storage',
+        statusCode: uploadResponse.statusCode,
       );
     }
 
-    final decoded = jsonDecode(response.body);
+    final confirmResponse = await _client.post(
+      _uri('/api/events/$eventId/media'),
+      headers: _authorizedHeaders(accessToken, tokenType),
+      body: jsonEncode({
+        'objectKey': presigned.objectKey,
+        'contentType': contentType,
+      }),
+    );
+    if (confirmResponse.statusCode != 201 &&
+        confirmResponse.statusCode != 200) {
+      throw EventRepositoryException(
+        'Unable to confirm media upload',
+        statusCode: confirmResponse.statusCode,
+      );
+    }
+
+    final decoded = jsonDecode(confirmResponse.body);
     if (decoded is! Map<String, dynamic>) {
       throw const EventRepositoryException('Unexpected event media payload');
     }
@@ -224,10 +357,65 @@ class HttpEventRepository implements EventRepository {
     return EventMedia.fromJson(decoded);
   }
 
+  Future<PresignedUploadResponse> _getPresignedUploadUrl({
+    required String entityType,
+    required String entityId,
+    required String fileName,
+    required String contentType,
+    required int fileSize,
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
+    final response = await _client.post(
+      _uri('/api/media/presigned-upload-url'),
+      headers: _authorizedHeaders(accessToken, tokenType),
+      body: jsonEncode({
+        'entityType': entityType,
+        'entityId': entityId,
+        'fileName': fileName,
+        'contentType': contentType,
+        'fileSize': fileSize,
+      }),
+    );
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw EventRepositoryException(
+        'Unable to request upload URL',
+        statusCode: response.statusCode,
+      );
+    }
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw const EventRepositoryException('Unexpected presigned URL payload');
+    }
+    return PresignedUploadResponse(
+      uploadUrl: decoded['uploadUrl'] as String,
+      objectKey: decoded['objectKey'] as String,
+      publicUrl: decoded['publicUrl'] as String? ?? '',
+      expiresAt: decoded['expiresAt'] as String?,
+    );
+  }
+
+  String _resolveImageMimeType(String fileName) {
+    final extension = fileName.split('.').last.toLowerCase();
+    return switch (extension) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      'gif' => 'image/gif',
+      'jpg' || 'jpeg' => 'image/jpeg',
+      _ => 'image/jpeg',
+    };
+  }
+
   @override
-  Future<void> deleteEventMedia(String eventId, String mediaId) async {
+  Future<void> deleteEventMedia(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     final response = await _client.delete(
       _uri('/api/events/$eventId/media/$mediaId'),
+      headers: {'Authorization': '$tokenType $accessToken'},
     );
     if (response.statusCode != 204 && response.statusCode != 200) {
       throw EventRepositoryException(
@@ -238,9 +426,15 @@ class HttpEventRepository implements EventRepository {
   }
 
   @override
-  Future<void> setEventThumbnail(String eventId, String mediaId) async {
+  Future<void> setEventThumbnail(
+    String eventId,
+    String mediaId, {
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) async {
     final response = await _client.put(
       _uri('/api/events/$eventId/media/$mediaId/thumbnail'),
+      headers: {'Authorization': '$tokenType $accessToken'},
     );
     if (response.statusCode != 204 && response.statusCode != 200) {
       throw EventRepositoryException(
@@ -290,10 +484,43 @@ class HttpEventRepository implements EventRepository {
       throw const EventRepositoryException('Unexpected events payload format');
     }
 
-    return content
-        .whereType<Map>()
-        .map((item) => _eventFromJson(Map<String, dynamic>.from(item)))
-        .toList(growable: false);
+    final results = <ExploreEvent>[];
+    for (final item in content) {
+      if (item is! Map) continue;
+      try {
+        results.add(_eventFromJson(Map<String, dynamic>.from(item)));
+      } catch (_) {
+        continue;
+      }
+    }
+    return results;
+  }
+
+  _PagedEvents _decodePagedEvents(dynamic decoded) {
+    if (decoded is Map<String, dynamic>) {
+      final content = decoded['content'];
+      if (content is List) {
+        return _PagedEvents(
+          events: content
+              .whereType<Map>()
+              .map((item) => _eventFromJson(Map<String, dynamic>.from(item)))
+              .toList(growable: false),
+          isLast: decoded['last'] as bool? ?? true,
+        );
+      }
+    }
+
+    if (decoded is List) {
+      return _PagedEvents(
+        events: decoded
+            .whereType<Map>()
+            .map((item) => _eventFromJson(Map<String, dynamic>.from(item)))
+            .toList(growable: false),
+        isLast: true,
+      );
+    }
+
+    return const _PagedEvents(events: [], isLast: true);
   }
 
   ExploreEvent _decodeEventResponse(String responseBody) {
@@ -320,4 +547,25 @@ class HttpEventRepository implements EventRepository {
       fallbackVenue: fallbackLocationLabel,
     );
   }
+}
+
+class PresignedUploadResponse {
+  const PresignedUploadResponse({
+    required this.uploadUrl,
+    required this.objectKey,
+    this.publicUrl = '',
+    this.expiresAt,
+  });
+
+  final String uploadUrl;
+  final String objectKey;
+  final String publicUrl;
+  final String? expiresAt;
+}
+
+class _PagedEvents {
+  const _PagedEvents({required this.events, required this.isLast});
+
+  final List<ExploreEvent> events;
+  final bool isLast;
 }

@@ -12,8 +12,7 @@ import '../../shared/auth/auth_models.dart';
 import '../../shared/auth/auth_scope.dart';
 import '../../shared/auth/session_controller.dart';
 import '../../shared/reviews/review_formatters.dart';
-import '../../shared/reviews/review_models.dart';
-import '../../shared/reviews/review_repository.dart';
+import '../../shared/reviews/review_scope.dart';
 import '../../shared/services/feedback_service.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -24,16 +23,13 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late final ReviewRepository _reviewRepository;
   bool _hasLoadedRatings = false;
   String? _ratingsUserId;
-  Future<AverageRating?>? _ratingsFuture;
   SessionController? _sessionController;
 
   @override
   void initState() {
     super.initState();
-    _reviewRepository = HttpReviewRepository();
   }
 
   @override
@@ -62,9 +58,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         profile == null ||
         !sessionController.isAuthenticated ||
         !profile.hasOrganizerReviewAccess) {
-      if (_ratingsFuture != null || _ratingsUserId != null) {
+      if (_hasLoadedRatings || _ratingsUserId != null) {
         setState(() {
-          _ratingsFuture = null;
           _ratingsUserId = null;
           _hasLoadedRatings = false;
         });
@@ -78,29 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     _hasLoadedRatings = true;
     _ratingsUserId = profile.id;
-    setState(() {
-      _ratingsFuture = _loadRatings(
-        profile.id,
-        sessionController.tokens?.accessToken,
-        sessionController.tokens?.tokenType ?? 'Bearer',
-      );
-    });
-  }
-
-  Future<AverageRating?> _loadRatings(
-    String organizerId,
-    String? accessToken,
-    String tokenType,
-  ) async {
-    try {
-      return await _reviewRepository.fetchOrganizerAverageRating(
-        organizerId,
-        accessToken: accessToken,
-        tokenType: tokenType,
-      );
-    } catch (_) {
-      return null;
-    }
+    ReviewScope.of(context).loadOrganizerRating(profile.id);
   }
 
   @override
@@ -180,25 +153,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
           if (isOrganizer) ...[
             _OrganizerSectionCard(
-              onMyEventsTap: () {},
+              onMyEventsTap: () => context.push('/profile/my-events'),
               onCreateEventTap: () => context.push('/hub/create-event'),
+              onReviewsTap: canSeeOrganizerRatings
+                  ? () => context.push('/profile/reviews')
+                  : null,
             ),
             const SizedBox(height: 14),
           ],
-          if (canSeeOrganizerRatings) ...[
-            _OrganizerRatingsCard(
-              future: _ratingsFuture,
-              onTap: () => context.push('/profile/reviews'),
-            ),
-            const SizedBox(height: 14),
-          ],
-          _ProfileActionCard(
-            icon: Icons.bookmark_rounded,
-            title: l10n.savedTitle,
-            subtitle: l10n.savedSubtitle,
-            onTap: () => context.push('/profile/saved'),
-          ),
-          const SizedBox(height: 14),
           if (isAuthenticated) ...[
             _LogoutActionCard(
               title: l10n.profileAuthLogoutTitle,
@@ -606,109 +568,16 @@ class _ProfileLinkRow extends StatelessWidget {
   }
 }
 
-class _OrganizerRatingsCard extends StatelessWidget {
-  const _OrganizerRatingsCard({required this.future, required this.onTap});
-
-  final Future<AverageRating?>? future;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context);
-
-    return FutureBuilder<AverageRating?>(
-      future: future,
-      builder: (context, snapshot) {
-        final rating = snapshot.data;
-        final subtitle = snapshot.connectionState == ConnectionState.waiting
-            ? l10n.profileOrganizerRatingsLoading
-            : rating == null || !rating.hasReviews
-            ? l10n.profileOrganizerRatingsEmpty
-            : l10n.profileOrganizerRatingsValue(
-                formatReviewAverage(rating.averageRating),
-                rating.totalReviews,
-              );
-
-        return InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(28),
-          child: Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: scheme.outline.withValues(alpha: 0.28)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: scheme.tertiary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Icon(
-                    Icons.star_rounded,
-                    color: scheme.tertiary,
-                    size: 26,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.profileOrganizerRatingsTitle,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurface.withValues(alpha: 0.72),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: scheme.tertiary.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: scheme.tertiary,
-                    size: 16,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
 class _OrganizerSectionCard extends StatelessWidget {
   const _OrganizerSectionCard({
     required this.onMyEventsTap,
     required this.onCreateEventTap,
+    this.onReviewsTap,
   });
 
   final VoidCallback onMyEventsTap;
   final VoidCallback onCreateEventTap;
+  final VoidCallback? onReviewsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -825,7 +694,79 @@ class _OrganizerSectionCard extends StatelessWidget {
               ),
             ),
           ),
+          if (onReviewsTap != null) ...[
+            const SizedBox(height: 8),
+            _OrganizerRatingsRow(onTap: onReviewsTap!),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _OrganizerRatingsRow extends StatelessWidget {
+  const _OrganizerRatingsRow({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final controller = ReviewScope.of(context);
+    final rating = controller.organizerRating;
+    final isLoading = controller.isRatingLoading;
+
+    final subtitle = isLoading
+        ? l10n.profileOrganizerRatingsLoading
+        : rating == null || !rating.hasReviews
+        ? l10n.profileOrganizerRatingsEmpty
+        : l10n.profileOrganizerRatingsValue(
+            formatReviewAverage(rating.averageRating),
+            rating.totalReviews,
+          );
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.star_rounded, color: scheme.tertiary, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.profileOrganizerRatingsTitle,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: scheme.onSurface.withValues(alpha: 0.38),
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }

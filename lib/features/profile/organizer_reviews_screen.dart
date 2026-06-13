@@ -5,7 +5,7 @@ import '../../shared/auth/auth_scope.dart';
 import '../../shared/auth/session_controller.dart';
 import '../../shared/reviews/review_formatters.dart';
 import '../../shared/reviews/review_models.dart';
-import '../../shared/reviews/review_repository.dart';
+import '../../shared/reviews/review_scope.dart';
 import '../../shared/widgets/state_panel.dart';
 
 class OrganizerReviewsScreen extends StatefulWidget {
@@ -16,14 +16,12 @@ class OrganizerReviewsScreen extends StatefulWidget {
 }
 
 class _OrganizerReviewsScreenState extends State<OrganizerReviewsScreen> {
-  late final ReviewRepository _reviewRepository;
-  Future<OrganizerReviewsOverview?>? _future;
+  bool _hasLoaded = false;
   SessionController? _sessionController;
 
   @override
   void initState() {
     super.initState();
-    _reviewRepository = HttpReviewRepository();
   }
 
   @override
@@ -34,7 +32,7 @@ class _OrganizerReviewsScreenState extends State<OrganizerReviewsScreen> {
       _sessionController?.removeListener(_sync);
       _sessionController = sessionController;
       _sessionController?.addListener(_sync);
-      _future = null;
+      _hasLoaded = false;
     }
     _sync();
   }
@@ -51,39 +49,12 @@ class _OrganizerReviewsScreenState extends State<OrganizerReviewsScreen> {
     if (sessionController == null ||
         profile == null ||
         !sessionController.isAuthenticated) {
-      if (_future != null) {
-        setState(() => _future = null);
-      }
       return;
     }
 
-    if (_future != null) {
-      return;
-    }
-
-    setState(() {
-      _future = _loadOverview(
-        organizerId: profile.id,
-        accessToken: sessionController.tokens?.accessToken,
-        tokenType: sessionController.tokens?.tokenType ?? 'Bearer',
-      );
-    });
-  }
-
-  Future<OrganizerReviewsOverview?> _loadOverview({
-    required String organizerId,
-    required String? accessToken,
-    required String tokenType,
-  }) async {
-    try {
-      return await _reviewRepository.fetchMyOrganizerReviews(
-        organizerId: organizerId,
-        accessToken: accessToken ?? '',
-        tokenType: tokenType,
-      );
-    } catch (_) {
-      return null;
-    }
+    if (_hasLoaded) return;
+    _hasLoaded = true;
+    ReviewScope.of(context).loadOrganizerReviews(profile.id);
   }
 
   @override
@@ -126,17 +97,19 @@ class _OrganizerReviewsScreenState extends State<OrganizerReviewsScreen> {
           ),
         ),
       ),
-      body: FutureBuilder<OrganizerReviewsOverview?>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      body: Builder(
+        builder: (context) {
+          final controller = ReviewScope.of(context);
+          final isLoading = controller.isOrganizerReviewsLoading;
+          final overview = controller.organizerReviewsOverview;
+
+          if (isLoading) {
             return StatePanel.loading(
               title: l10n.profileOrganizerReviewsLoadingTitle,
               subtitle: l10n.profileOrganizerReviewsLoadingSubtitle,
             );
           }
 
-          final overview = snapshot.data;
           if (overview == null) {
             return StatePanel.empty(
               title: l10n.profileOrganizerReviewsEmptyTitle,

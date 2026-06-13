@@ -39,6 +39,7 @@ class SharedPrefsNotificationPreferencesStore
       NotificationType.expiredEvent => true,
       NotificationType.eventPublished => true,
       NotificationType.systemMessage => true,
+      NotificationType.chatMessage => true,
     };
   }
 }

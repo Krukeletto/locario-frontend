@@ -627,6 +627,7 @@ class _NotificationToggle extends StatelessWidget {
       NotificationType.expiredEvent => l10n.notificationTypeExpiredEvent,
       NotificationType.eventPublished => l10n.notificationTypeEventPublished,
       NotificationType.systemMessage => l10n.notificationTypeSystemMessage,
+      NotificationType.chatMessage => l10n.notificationTypeChatMessage,
     };
   }
 
@@ -637,6 +638,7 @@ class _NotificationToggle extends StatelessWidget {
       NotificationType.eventPublished =>
         l10n.notificationTypeEventPublishedDesc,
       NotificationType.systemMessage => l10n.notificationTypeSystemMessageDesc,
+      NotificationType.chatMessage => l10n.notificationTypeChatMessageDesc,
     };
   }
 }

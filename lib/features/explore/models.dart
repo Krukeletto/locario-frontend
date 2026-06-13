@@ -37,9 +37,9 @@ class Category {
 
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      slug: json['slug'] as String,
+      id: (json['id'] as String?) ?? '',
+      name: (json['name'] as String?) ?? '',
+      slug: (json['slug'] as String?) ?? '',
       parentId: json['parentId'] as String?,
       sortOrder: json['sortOrder'] as int? ?? 0,
     );
@@ -100,8 +100,8 @@ class EventMedia {
 
   factory EventMedia.fromJson(Map<String, dynamic> json) {
     return EventMedia(
-      id: json['id'] as String,
-      url: json['url'] as String,
+      id: (json['id'] as String?) ?? '',
+      url: (json['url'] as String?) ?? '',
       type: MediaType.fromString(json['type'] as String?),
       sortOrder: json['sortOrder'] as int? ?? 0,
     );
@@ -113,6 +113,42 @@ class EventMedia {
       'url': url,
       'type': type.toJson(),
       'sortOrder': sortOrder,
+    };
+  }
+}
+
+class EventGroupSummary {
+  const EventGroupSummary({
+    required this.id,
+    required this.name,
+    this.iconUrl,
+    this.mapPinIconUrl,
+    this.mapPinStyle,
+  });
+
+  final String id;
+  final String name;
+  final String? iconUrl;
+  final String? mapPinIconUrl;
+  final String? mapPinStyle;
+
+  factory EventGroupSummary.fromJson(Map<String, dynamic> json) {
+    return EventGroupSummary(
+      id: (json['id'] as String?) ?? '',
+      name: (json['name'] as String?) ?? '',
+      iconUrl: json['iconUrl'] as String?,
+      mapPinIconUrl: json['mapPinIconUrl'] as String?,
+      mapPinStyle: json['mapPinStyle'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'iconUrl': iconUrl,
+      'mapPinIconUrl': mapPinIconUrl,
+      'mapPinStyle': mapPinStyle,
     };
   }
 }
@@ -224,6 +260,9 @@ class ExploreEvent {
     this.organizerUsername,
     this.createdAt,
     this.updatedAt,
+    this.groupIds = const [],
+    this.groups = const [],
+    this.publicEvent = true,
     this.trendingScore = 0,
   });
 
@@ -252,6 +291,9 @@ class ExploreEvent {
   final String? organizerUsername;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final List<String> groupIds;
+  final List<EventGroupSummary> groups;
+  final bool publicEvent;
 
   factory ExploreEvent.fromJson(
     Map<String, dynamic> json, {
@@ -268,6 +310,8 @@ class ExploreEvent {
     final latitude = (json['latitude'] as num?)?.toDouble();
     final longitude = (json['longitude'] as num?)?.toDouble();
     final location = LatLng(latitude ?? 0, longitude ?? 0);
+    final organizerJson = json['organizer'];
+    final organizersJson = json['organizers'] ?? organizerJson;
 
     return ExploreEvent(
       id: _normalizedString(json['id']) ?? '',
@@ -294,11 +338,18 @@ class ExploreEvent {
       status: EventStatus.fromString(json['status'] as String?),
       slotLimit: json['slotLimit'] as int?,
       ticketUrl: _normalizedString(json['ticketUrl']),
-      organizers: _organizersFromJson(json['organizers']),
-      organizerId: _primaryOrganizerIdFromJson(json['organizers']),
-      organizerUsername: _primaryOrganizerUsernameFromJson(json['organizers']),
+      organizers: _organizersFromJson(organizersJson),
+      organizerId:
+          _primaryOrganizerIdFromJson(organizersJson) ??
+          _primaryOrganizerIdFromJson(organizerJson),
+      organizerUsername:
+          _primaryOrganizerUsernameFromJson(organizersJson) ??
+          _primaryOrganizerUsernameFromJson(organizerJson),
       createdAt: _parseDateTime(json['createdAt']),
       updatedAt: _parseDateTime(json['updatedAt']),
+      groupIds: _stringListFromJson(json['groupIds']),
+      groups: _groupSummariesFromJson(json['groups']),
+      publicEvent: json['publicEvent'] as bool? ?? true,
     );
   }
 
@@ -333,6 +384,10 @@ class ExploreEvent {
         },
       if (createdAt != null) 'createdAt': createdAt!.toUtc().toIso8601String(),
       if (updatedAt != null) 'updatedAt': updatedAt!.toUtc().toIso8601String(),
+      if (groupIds.isNotEmpty) 'groupIds': groupIds,
+      if (groups.isNotEmpty)
+        'groups': groups.map((group) => group.toJson()).toList(),
+      'publicEvent': publicEvent,
       'tags': tags,
     };
   }
@@ -502,7 +557,32 @@ List<String> _tagsFromJson(dynamic value) {
       .toList(growable: false);
 }
 
+List<String> _stringListFromJson(dynamic value) {
+  if (value is! List) {
+    return const [];
+  }
+
+  return value
+      .map((item) {
+        if (item is String) {
+          return item.trim();
+        }
+        return item?.toString().trim() ?? '';
+      })
+      .where((value) => value.isNotEmpty)
+      .toList(growable: false);
+}
+
 List<String> _organizersFromJson(dynamic value) {
+  if (value is Map) {
+    final map = Map<String, dynamic>.from(value);
+    final organizer =
+        _normalizedString(map['username']) ??
+        _normalizedString(map['userId']) ??
+        '';
+    return organizer.isEmpty ? const [] : [organizer];
+  }
+
   if (value is! List) {
     return const [];
   }
@@ -525,6 +605,11 @@ List<String> _organizersFromJson(dynamic value) {
 }
 
 String? _primaryOrganizerIdFromJson(dynamic value) {
+  if (value is Map) {
+    final map = Map<String, dynamic>.from(value);
+    return _normalizedString(map['userId']) ?? _normalizedString(map['id']);
+  }
+
   if (value is! List || value.isEmpty) {
     return null;
   }
@@ -534,12 +619,29 @@ String? _primaryOrganizerIdFromJson(dynamic value) {
 }
 
 String? _primaryOrganizerUsernameFromJson(dynamic value) {
+  if (value is Map) {
+    final map = Map<String, dynamic>.from(value);
+    return _normalizedString(map['username']);
+  }
+
   if (value is! List || value.isEmpty) {
     return null;
   }
 
   final first = _asMap(value.first);
   return first == null ? null : _normalizedString(first['username']);
+}
+
+List<EventGroupSummary> _groupSummariesFromJson(dynamic value) {
+  if (value is! List) {
+    return const [];
+  }
+
+  return value
+      .map(_asMap)
+      .whereType<Map<String, dynamic>>()
+      .map(EventGroupSummary.fromJson)
+      .toList(growable: false);
 }
 
 String _formatCoordinates(LatLng location) {
@@ -623,6 +725,7 @@ class ExploreAdvancedFilters {
     this.eventType,
     this.eventSource,
     this.showPastEvents = false,
+    this.groupIds = const [],
   });
 
   final ExploreDistanceFilter distanceFilter;
@@ -633,6 +736,7 @@ class ExploreAdvancedFilters {
   final String? eventType;
   final String? eventSource;
   final bool showPastEvents;
+  final List<String> groupIds;
 
   static const defaults = ExploreAdvancedFilters();
 
@@ -645,6 +749,7 @@ class ExploreAdvancedFilters {
     String? Function()? eventType,
     String? Function()? eventSource,
     bool? showPastEvents,
+    List<String>? groupIds,
   }) {
     return ExploreAdvancedFilters(
       distanceFilter: distanceFilter ?? this.distanceFilter,
@@ -655,6 +760,7 @@ class ExploreAdvancedFilters {
       eventType: eventType != null ? eventType() : this.eventType,
       eventSource: eventSource != null ? eventSource() : this.eventSource,
       showPastEvents: showPastEvents ?? this.showPastEvents,
+      groupIds: groupIds ?? this.groupIds,
     );
   }
 
@@ -667,6 +773,7 @@ class ExploreAdvancedFilters {
     if (ageFrom != null || ageTo != null) count++;
     if (eventType != null) count++;
     if (eventSource != null) count++;
+    if (groupIds.isNotEmpty) count++;
     return count;
   }
 
@@ -681,7 +788,8 @@ class ExploreAdvancedFilters {
         other.ageTo == ageTo &&
         other.eventType == eventType &&
         other.eventSource == eventSource &&
-        other.showPastEvents == showPastEvents;
+        other.showPastEvents == showPastEvents &&
+        _listEquals(other.groupIds, groupIds);
   }
 
   @override
@@ -694,7 +802,16 @@ class ExploreAdvancedFilters {
     eventType,
     eventSource,
     showPastEvents,
+    Object.hashAll(groupIds),
   );
+
+  static bool _listEquals(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -706,6 +823,7 @@ class ExploreAdvancedFilters {
       if (eventType != null) 'eventType': eventType,
       if (eventSource != null) 'eventSource': eventSource,
       'showPastEvents': showPastEvents,
+      if (groupIds.isNotEmpty) 'groupIds': groupIds,
     };
   }
 
@@ -726,6 +844,7 @@ class ExploreAdvancedFilters {
       eventType: json['eventType'] as String?,
       eventSource: json['eventSource'] as String?,
       showPastEvents: json['showPastEvents'] as bool? ?? false,
+      groupIds: (json['groupIds'] as List?)?.cast<String>() ?? const [],
     );
   }
 

@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:locario/features/profile/profile_screen.dart';
 import 'package:locario/shared/auth/auth_api.dart';
 import 'package:locario/shared/auth/auth_models.dart';
 import 'package:locario/shared/auth/auth_repository.dart';
 import 'package:locario/shared/auth/auth_scope.dart';
 import 'package:locario/shared/auth/session_controller.dart';
+import 'package:locario/shared/cache/cache_service.dart';
+import 'package:locario/shared/reviews/review_controller.dart';
+import 'package:locario/shared/reviews/review_repository.dart';
+import 'package:locario/shared/reviews/review_scope.dart';
 
 import '../../test_helpers/test_app.dart';
 
@@ -25,6 +30,72 @@ class _MemoryAuthStorage implements AuthTokenStorage {
     stored = null;
   }
 }
+
+class _StubSessionController extends SessionController {
+  _StubSessionController()
+    : super(
+        authRepository: AuthRepository(
+          api: AuthApi(client: http.Client(), baseUrl: 'http://localhost'),
+          storage: _MemoryAuthStorage(),
+        ),
+      );
+
+  @override
+  bool get isAuthenticated => false;
+
+  @override
+  AuthTokens? get tokens => null;
+}
+
+class _InMemoryCacheService extends CacheService {
+  final Map<String, String> _store = {};
+
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<String?> getRaw(String key) async => _store[key];
+
+  @override
+  Future<void> setRaw(String key, String data, {int? hash}) async {
+    _store[key] = data;
+  }
+
+  @override
+  Future<int?> getHash(String key) async {
+    final data = _store[key];
+    if (data == null) return null;
+    return data.hashCode;
+  }
+
+  @override
+  Future<void> invalidate(String key) async {
+    _store.remove(key);
+  }
+
+  @override
+  Future<void> invalidateByPrefix(String prefix) async {
+    _store.removeWhere((key, _) => key.startsWith(prefix));
+  }
+
+  @override
+  Future<void> clear() async {
+    _store.clear();
+  }
+
+  @override
+  Future<void> dispose() async {}
+}
+
+Widget _buildTestApp(Widget child) {
+  return ReviewScope(controller: _reviewController, child: child);
+}
+
+final _reviewController = ReviewController(
+  reviewRepository: HttpReviewRepository(),
+  cacheService: _InMemoryCacheService(),
+  sessionController: _StubSessionController(),
+);
 
 class _FakeAuthApi extends AuthApi {
   _FakeAuthApi({required this.profile}) : super();
@@ -119,7 +190,7 @@ void main() {
         controller: sessionController,
         child: buildLocalizedTestApp(
           locale: const Locale('en'),
-          home: const ProfileScreen(),
+          home: _buildTestApp(const ProfileScreen()),
         ),
       ),
     );
@@ -142,7 +213,7 @@ void main() {
         controller: sessionController,
         child: buildLocalizedTestApp(
           locale: const Locale('en'),
-          home: const ProfileScreen(),
+          home: _buildTestApp(const ProfileScreen()),
         ),
       ),
     );
@@ -168,7 +239,7 @@ void main() {
         controller: sessionController,
         child: buildLocalizedTestApp(
           locale: const Locale('en'),
-          home: const ProfileScreen(),
+          home: _buildTestApp(const ProfileScreen()),
         ),
       ),
     );

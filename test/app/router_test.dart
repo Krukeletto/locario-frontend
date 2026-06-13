@@ -79,13 +79,10 @@ void main() {
         ),
       );
 
-      router.go('/profile/saved');
+      router.go('/hub/saved');
       await tester.pumpAndSettle();
 
-      expect(
-        router.routerDelegate.currentConfiguration.uri.path,
-        '/profile/saved',
-      );
+      expect(router.routerDelegate.currentConfiguration.uri.path, '/hub/saved');
       expect(find.byType(SavedScreen), findsOneWidget);
     });
 
@@ -123,14 +120,14 @@ void main() {
           ),
         );
 
-        router.go('/profile/saved');
+        router.go('/hub/saved');
         await tester.pumpAndSettle();
         expect(
           router.routerDelegate.currentConfiguration.uri.path,
-          '/profile/saved',
+          '/hub/saved',
         );
 
-        router.go('/profile/saved');
+        router.go('/hub/saved');
         await tester.pumpAndSettle();
 
         router.go('/hub/create-event');
@@ -154,7 +151,7 @@ void main() {
               .currentConfiguration
               .uri
               .queryParameters['from'],
-          '/profile/saved',
+          '/hub/saved',
         );
         expect(find.byType(LoginScreen), findsOneWidget);
       },

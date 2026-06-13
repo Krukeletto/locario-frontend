@@ -185,6 +185,18 @@ class AppLocalizationsPl extends AppLocalizations {
   String get eventDetailsReviewButton => 'Wystaw opinię';
 
   @override
+  String get eventEditAction => 'Edytuj';
+
+  @override
+  String get eventEditScreenTitle => 'Edytuj wydarzenie';
+
+  @override
+  String get eventEditSubmitButton => 'Zapisz zmiany';
+
+  @override
+  String get eventUpdateSuccess => 'Wydarzenie zaktualizowane.';
+
+  @override
   String get eventJoinSuccess => 'Zapisano na wydarzenie.';
 
   @override
@@ -662,6 +674,425 @@ class AppLocalizationsPl extends AppLocalizations {
   String get areaMokotowDescription => 'Rejon Pole Mokotowskie i okolice';
 
   @override
+  String get groupsDiscoverTitle => 'Grupy';
+
+  @override
+  String get groupsLoadingTitle => 'Ładowanie grup';
+
+  @override
+  String get groupsLoadingSubtitle =>
+      'Pobieramy społeczności dostępne w aplikacji.';
+
+  @override
+  String get groupsErrorTitle => 'Nie udało się wczytać grup';
+
+  @override
+  String get groupsErrorSubtitle => 'Spróbuj ponownie za chwilę.';
+
+  @override
+  String get groupsCreateCta => 'Utwórz grupę';
+
+  @override
+  String get groupsMyGroupsTab => 'Moje grupy';
+
+  @override
+  String get groupsMyGroupsTitle => 'Moje grupy';
+
+  @override
+  String get groupsMyGroupsSubtitle => 'Społeczności, do których już należysz.';
+
+  @override
+  String get groupsMyGroupsEmptyTitle => 'Nie należysz jeszcze do żadnej grupy';
+
+  @override
+  String get groupsMyGroupsEmptySubtitle =>
+      'Dołącz do publicznej grupy, aby zobaczyć ją tutaj.';
+
+  @override
+  String get groupsDiscoverTab => 'Odkryj';
+
+  @override
+  String get groupsDiscoverPublicTitle => 'Publiczne grupy';
+
+  @override
+  String get groupsDiscoverPublicSubtitle =>
+      'Przeglądaj społeczności dostępne w discover.';
+
+  @override
+  String get groupsDiscoverEmptyTitle => 'Nie znaleziono grup';
+
+  @override
+  String get groupsDiscoverEmptySubtitle =>
+      'Spróbuj innej frazy albo kategorii.';
+
+  @override
+  String get groupsSearchHint => 'Szukaj grup';
+
+  @override
+  String get groupsCategoryAll => 'Wszystkie kategorie';
+
+  @override
+  String get groupsCategoryUnknown => 'Bez kategorii';
+
+  @override
+  String get groupsVisibilityPublic => 'Publiczna';
+
+  @override
+  String get groupsVisibilityPrivate => 'Prywatna';
+
+  @override
+  String groupsMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count członków',
+      many: '$count członków',
+      few: '$count członków',
+      one: '1 członek',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupsMembershipActive => 'Członek';
+
+  @override
+  String get groupsMembershipPending => 'Oczekuje';
+
+  @override
+  String get groupsMembershipBanned => 'Zbanowany';
+
+  @override
+  String get groupsCreateTitle => 'Utwórz grupę';
+
+  @override
+  String get groupsEditTitle => 'Edytuj grupę';
+
+  @override
+  String get groupsEditForbidden => 'Nie masz uprawnień do edycji tej grupy.';
+
+  @override
+  String get groupsFieldName => 'Nazwa grupy';
+
+  @override
+  String get groupsFieldDescription => 'Opis';
+
+  @override
+  String get groupsFieldCategory => 'Kategoria';
+
+  @override
+  String get groupsFieldAvatarUrl => 'URL avatara';
+
+  @override
+  String get groupsFieldIconUrl => 'URL ikony';
+
+  @override
+  String get groupsFieldMapPinIconUrl => 'URL ikony pinezki';
+
+  @override
+  String get groupsFieldMapPinStyle => 'Styl pinezki';
+
+  @override
+  String get groupsCategoryNone => 'Brak kategorii';
+
+  @override
+  String get groupsAdvancedTitle => 'Ustawienia zaawansowane';
+
+  @override
+  String get groupsAdvancedSubtitle =>
+      'Opcjonalne pola wizualne zgodne z backendowym kontraktem.';
+
+  @override
+  String get groupsCreateSubmit => 'Utwórz grupę';
+
+  @override
+  String get groupsSaveChanges => 'Zapisz zmiany';
+
+  @override
+  String get groupsValidationNameRequired => 'Podaj nazwę grupy.';
+
+  @override
+  String get groupsValidationNameTooLong =>
+      'Nazwa może mieć maksymalnie 255 znaków.';
+
+  @override
+  String get groupsValidationDescriptionTooLong =>
+      'Opis może mieć maksymalnie 5000 znaków.';
+
+  @override
+  String get groupsValidationMapPinStyleTooLong =>
+      'Styl pinezki może mieć maksymalnie 50 znaków.';
+
+  @override
+  String get groupsValidationUrlTooLong =>
+      'URL może mieć maksymalnie 2048 znaków.';
+
+  @override
+  String get groupsValidationUrlInvalid => 'Podaj poprawny URL.';
+
+  @override
+  String get groupsJoinAction => 'Dołącz do grupy';
+
+  @override
+  String get groupsLeaveAction => 'Opuść grupę';
+
+  @override
+  String get groupsPendingAction => 'Wycofaj prośbę';
+
+  @override
+  String get groupsTabFeed => 'Feed';
+
+  @override
+  String get groupsTabMembers => 'Członkowie';
+
+  @override
+  String get groupsTabEvents => 'Wydarzenia';
+
+  @override
+  String get groupsTabManage => 'Zarządzanie';
+
+  @override
+  String get groupsTabInfo => 'Informacje';
+
+  @override
+  String get groupsFeedEmptyTitle => 'Feed jest jeszcze pusty';
+
+  @override
+  String get groupsFeedEmptySubtitle =>
+      'Tutaj pojawią się posty i eventy przypięte do tej grupy.';
+
+  @override
+  String get groupsFeedPostLabel => 'Post';
+
+  @override
+  String get groupsFeedEventLabel => 'Event';
+
+  @override
+  String get groupsFeedPostFallbackAuthor => 'Nieznany autor';
+
+  @override
+  String get groupsFeedEventFallbackTitle => 'Event grupowy';
+
+  @override
+  String get groupsPostCreateAction => 'Dodaj post';
+
+  @override
+  String get groupsPostCreateTitle => 'Nowy post';
+
+  @override
+  String get groupsPostEditTitle => 'Edytuj post';
+
+  @override
+  String get groupsPostHint => 'Co chcesz przekazać grupie?';
+
+  @override
+  String get groupsPostPublish => 'Opublikuj';
+
+  @override
+  String get groupsEditAction => 'Edytuj';
+
+  @override
+  String get groupsDeleteAction => 'Usuń';
+
+  @override
+  String get groupsHideAction => 'Ukryj';
+
+  @override
+  String get groupsReportAction => 'Zgłoś';
+
+  @override
+  String get groupsOpenEventAction => 'Otwórz event';
+
+  @override
+  String get groupsJoinRequestsTitle => 'Prośby o dołączenie';
+
+  @override
+  String get groupsApproveAction => 'Akceptuj';
+
+  @override
+  String get groupsRejectAction => 'Odrzuć';
+
+  @override
+  String get groupsMembersEmptyTitle => 'Brak członków';
+
+  @override
+  String get groupsMembersEmptySubtitle =>
+      'Członkowie pojawią się tutaj po dołączeniu do grupy.';
+
+  @override
+  String get groupsMemberOwner => 'Właściciel';
+
+  @override
+  String get groupsMemberAdmin => 'Admin';
+
+  @override
+  String get groupsMemberRegular => 'Członek';
+
+  @override
+  String get groupsMakeAdminAction => 'Nadaj admina';
+
+  @override
+  String get groupsMakeMemberAction => 'Nadaj członka';
+
+  @override
+  String get groupsBanAction => 'Zbanuj';
+
+  @override
+  String get groupsUnbanAction => 'Odbanuj';
+
+  @override
+  String get groupsRemoveMemberAction => 'Usuń członka';
+
+  @override
+  String get groupsTransferOwnershipAction => 'Przekaż własność';
+
+  @override
+  String get groupsCreateEventAction => 'Utwórz event dla grupy';
+
+  @override
+  String get groupsLinkExistingEventAction => 'Podepnij istniejący event';
+
+  @override
+  String get groupsUnlinkEventAction => 'Odepnij event';
+
+  @override
+  String get groupsEventsEmptyTitle => 'Brak eventów';
+
+  @override
+  String get groupsEventsEmptySubtitle =>
+      'Utwórz albo podepnij event, aby zasilić oś czasu grupy.';
+
+  @override
+  String get groupsManageRestrictedTitle => 'Sekcja ograniczona';
+
+  @override
+  String get groupsManageRestrictedSubtitle =>
+      'Tylko właściciel i admini grupy mogą zarządzać raportami i członkami.';
+
+  @override
+  String get groupsReportsEmptyTitle => 'Brak zgłoszeń';
+
+  @override
+  String get groupsReportsEmptySubtitle => 'Nowe zgłoszenia pojawią się tutaj.';
+
+  @override
+  String get groupsResolveAction => 'Rozwiąż';
+
+  @override
+  String get groupsReportGroupAction => 'Zgłoś grupę';
+
+  @override
+  String get groupsReportGroupTitle => 'Zgłoś grupę';
+
+  @override
+  String get groupsReportPostTitle => 'Zgłoś post';
+
+  @override
+  String get groupsReportEventTitle => 'Zgłoś event';
+
+  @override
+  String get groupsReportReasonLabel => 'Powód';
+
+  @override
+  String get groupsReportDescriptionLabel => 'Opis';
+
+  @override
+  String get groupsReportSubmit => 'Wyślij zgłoszenie';
+
+  @override
+  String get groupsConfirmAction => 'Potwierdź';
+
+  @override
+  String get groupsDeleteGroupTitle => 'Usuń grupę';
+
+  @override
+  String get groupsDeleteGroupBody =>
+      'Grupa zostanie usunięta dla członków i zniknie z discover.';
+
+  @override
+  String get groupsDeletePostTitle => 'Usuń post';
+
+  @override
+  String get groupsDeletePostBody => 'Ten post zniknie z feedu grupy.';
+
+  @override
+  String get groupsPostDeleteSuccess => 'Post został usunięty.';
+
+  @override
+  String get groupsActionFailed => 'Nie udało się wykonać tej akcji.';
+
+  @override
+  String get groupsEventGroupsLabel => 'Powiązane grupy';
+
+  @override
+  String get groupsEventGroupsOptionalHint =>
+      'Pozostaw puste, aby utworzyć event publiczny, albo wybierz grupy do przypięcia.';
+
+  @override
+  String get groupsEventGroupsRequiredHint =>
+      'Wybierz co najmniej jedną grupę. Jako zwykły członek możesz tworzyć tylko eventy grupowe.';
+
+  @override
+  String get groupsEventGroupsEmpty =>
+      'Nie należysz jeszcze aktywnie do żadnej grupy.';
+
+  @override
+  String get groupsEventValidationGroupRequired =>
+      'Wybierz co najmniej jedną grupę dla tego eventu.';
+
+  @override
+  String get groupsEventValidationSlotLimitRequired =>
+      'Zwykły członek musi ustawić dodatni limit miejsc.';
+
+  @override
+  String get groupsCommentsTitle => 'Komentarze';
+
+  @override
+  String get groupsCommentsEmpty => 'Brak komentarzy. Bądź pierwszy!';
+
+  @override
+  String get groupsCommentHint => 'Napisz komentarz...';
+
+  @override
+  String get groupsCommentPost => 'Wyślij';
+
+  @override
+  String get groupsCommentEdit => 'Edytuj komentarz';
+
+  @override
+  String get groupsCommentDelete => 'Usuń komentarz';
+
+  @override
+  String get groupsCommentDeleteBody =>
+      'Ten komentarz zostanie trwale usunięty.';
+
+  @override
+  String get groupsCommentEdited => '(edytowano)';
+
+  @override
+  String get groupsLikeAction => 'Polub';
+
+  @override
+  String get groupsUnlikeAction => 'Cofnij polubienie';
+
+  @override
+  String get groupsPostPhotoAction => 'Dodaj zdjęcia';
+
+  @override
+  String get groupsPostPhotoRemove => 'Usuń';
+
+  @override
+  String groupsPostPhotoLimit(int count) {
+    return 'Maksymalnie $count zdjęć dozwolonych';
+  }
+
+  @override
+  String get groupsPostUploadingPhotos => 'Przesyłanie zdjęć...';
+
+  @override
+  String get groupsCommentsRefresh => 'Odśwież komentarze';
+
+  @override
   String get hubTitle => 'Hub';
 
   @override
@@ -986,6 +1417,13 @@ class AppLocalizationsPl extends AppLocalizations {
       'Ważne aktualizacje z aplikacji';
 
   @override
+  String get notificationTypeChatMessage => 'Wiadomości czatu';
+
+  @override
+  String get notificationTypeChatMessageDesc =>
+      'Nowe wiadomości z Twoich czatów';
+
+  @override
   String get profileTitle => 'Profil';
 
   @override
@@ -1271,7 +1709,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get savedTitle => 'Zapisane';
 
   @override
-  String get savedSubtitle => 'Miejsca, eventy i listy.';
+  String get savedSubtitle => 'Wydarzenia i filtry.';
 
   @override
   String get savedSaveAction => 'Zapisz wydarzenie';

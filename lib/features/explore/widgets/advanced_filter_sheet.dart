@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:locario/l10n/app_localizations.dart';
+import 'package:locario/shared/groups/group_models.dart';
 
 import '../../saved/saved_filters_scope.dart';
 import '../explore_area_controller.dart';
@@ -22,10 +23,12 @@ class ExploreAdvancedFilterSheet extends StatefulWidget {
     super.key,
     required this.initialFilters,
     required this.areaController,
+    this.userGroups = const [],
   });
 
   final ExploreAdvancedFilters initialFilters;
   final ExploreAreaController areaController;
+  final List<Group> userGroups;
 
   @override
   State<ExploreAdvancedFilterSheet> createState() =>
@@ -691,6 +694,46 @@ class _ExploreAdvancedFilterSheetState
                         ),
                       ],
                     ),
+                    if (widget.userGroups.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      _SectionTitle(title: l10n.groupsTabFeed),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _QuickChip(
+                            label: l10n.filterAll,
+                            onTap: () {
+                              setState(() {
+                                _filters = _filters.copyWith(groupIds: []);
+                              });
+                            },
+                            isSelected: _filters.groupIds.isEmpty,
+                          ),
+                          for (final group in widget.userGroups)
+                            _QuickChip(
+                              label: group.name,
+                              onTap: () {
+                                final current = List<String>.of(
+                                  _filters.groupIds,
+                                );
+                                if (current.contains(group.id)) {
+                                  current.remove(group.id);
+                                } else {
+                                  current.add(group.id);
+                                }
+                                setState(() {
+                                  _filters = _filters.copyWith(
+                                    groupIds: current,
+                                  );
+                                });
+                              },
+                              isSelected: _filters.groupIds.contains(group.id),
+                            ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),

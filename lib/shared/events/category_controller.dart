@@ -24,18 +24,12 @@ class CategoryController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final fetched = await _eventRepository.fetchCategories();
-      if (fetched.isEmpty) {
-        _categories = [const Category(id: 'any', name: 'Dowolna', slug: 'any')];
-      } else {
-        _categories = fetched;
-      }
+      _categories = await _eventRepository.fetchCategories();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
       _isLoading = false;
       _error = e.toString();
-      _categories = [const Category(id: 'any', name: 'Dowolna', slug: 'any')];
       notifyListeners();
     }
   }

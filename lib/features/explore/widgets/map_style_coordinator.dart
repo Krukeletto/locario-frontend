@@ -238,7 +238,5 @@ class MapStyleCoordinator {
     };
   }
 
-  static void _defaultLogger(String message, [Object? error]) {
-    debugPrint(error == null ? message : '$message: $error');
-  }
+  static void _defaultLogger(String message, [Object? error]) {}
 }

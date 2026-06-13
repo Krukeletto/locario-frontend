@@ -57,5 +57,15 @@
   "@notificationTypeSystemMessageDesc": {
     "description": "Description for system message notifications."
   },
-  "notificationTypeSystemMessageDesc": "Important updates from the app"
+  "notificationTypeSystemMessageDesc": "Important updates from the app",
+
+  "@notificationTypeChatMessage": {
+    "description": "Label for chat message notifications."
+  },
+  "notificationTypeChatMessage": "Chat messages",
+
+  "@notificationTypeChatMessageDesc": {
+    "description": "Description for chat message notifications."
+  },
+  "notificationTypeChatMessageDesc": "New messages from your chats"
 }

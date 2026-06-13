@@ -189,7 +189,7 @@ class SessionController extends ChangeNotifier {
       debugPrint(
         'Auth: profile fetch failed (api) ${error.statusCode}: ${error.message}',
       );
-      if (error.statusCode == 401) {
+      if (error.statusCode == 401 || error.statusCode == 404) {
         await _authRepository.clear();
         _tokens = null;
         _profile = null;
@@ -288,13 +288,23 @@ class SessionController extends ChangeNotifier {
   }
 
   Future<AuthTokens?> _tryRefreshTokens() async {
-    final refreshed = await _authRepository.refresh();
-    if (refreshed != null) {
-      _tokens = refreshed;
-      _status = SessionStatus.authenticated;
+    try {
+      final refreshed = await _authRepository.refresh();
+      if (refreshed != null) {
+        _tokens = refreshed;
+        _status = SessionStatus.authenticated;
+        notifyListeners();
+      }
+      return refreshed;
+    } catch (error) {
+      debugPrint('Auth: refresh failed (error): $error');
+      await _authRepository.clear();
+      _tokens = null;
+      _profile = null;
+      _status = SessionStatus.unauthenticated;
       notifyListeners();
+      return null;
     }
-    return refreshed;
   }
 
   void _setBusy(bool value) {

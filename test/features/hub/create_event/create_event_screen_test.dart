@@ -1,11 +1,22 @@
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:locario/features/explore/models.dart';
 import 'package:locario/features/hub/create_event/create_event_location_controller.dart';
 import 'package:locario/features/hub/create_event/create_event_screen.dart';
+import 'package:locario/shared/auth/auth_api.dart';
+import 'package:locario/shared/auth/auth_models.dart';
+import 'package:locario/shared/auth/auth_repository.dart';
+import 'package:locario/shared/auth/auth_scope.dart';
+import 'package:locario/shared/auth/session_controller.dart';
+import 'package:locario/shared/cache/cache_service.dart';
 import 'package:locario/shared/events/category_controller.dart';
 import 'package:locario/shared/events/category_scope.dart';
+import 'package:locario/shared/events/event_repository.dart';
+import 'package:locario/shared/groups/group_controller.dart';
+import 'package:locario/shared/groups/group_repository.dart';
+import 'package:locario/shared/groups/group_scope.dart';
 
 import '../../../test_helpers/fake_event_repository.dart';
 import '../../../test_helpers/fake_location_service.dart';
@@ -83,6 +94,77 @@ const List<int> _transparentImageBytes = [
   0x82,
 ];
 
+class _StubSessionController extends SessionController {
+  _StubSessionController()
+    : super(
+        authRepository: AuthRepository(
+          api: AuthApi(client: http.Client(), baseUrl: 'http://localhost'),
+          storage: _MemoryAuthStorage(),
+        ),
+      );
+
+  @override
+  bool get isAuthenticated => false;
+
+  @override
+  AuthTokens? get tokens => null;
+}
+
+class _InMemoryCacheService extends CacheService {
+  final Map<String, String> _store = {};
+
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<String?> getRaw(String key) async => _store[key];
+
+  @override
+  Future<void> setRaw(String key, String data, {int? hash}) async {
+    _store[key] = data;
+  }
+
+  @override
+  Future<int?> getHash(String key) async {
+    final data = _store[key];
+    if (data == null) return null;
+    return data.hashCode;
+  }
+
+  @override
+  Future<void> invalidate(String key) async {
+    _store.remove(key);
+  }
+
+  @override
+  Future<void> invalidateByPrefix(String prefix) async {
+    _store.removeWhere((key, _) => key.startsWith(prefix));
+  }
+
+  @override
+  Future<void> clear() async {
+    _store.clear();
+  }
+
+  @override
+  Future<void> dispose() async {}
+}
+
+Widget _buildTestApp(Widget child) {
+  return GroupScope(
+    controller: GroupController(
+      groupRepository: HttpGroupRepository(
+        client: http.Client(),
+        baseUrl: 'http://localhost',
+      ),
+      eventRepository: HttpEventRepository(),
+      cacheService: _InMemoryCacheService(),
+      sessionController: _StubSessionController(),
+    ),
+    child: child,
+  );
+}
+
 Future<void> _pumpCreateEventScreen(
   WidgetTester tester, {
   FakeEventRepository? repository,
@@ -105,23 +187,96 @@ Future<void> _pumpCreateEventScreen(
   );
   final categoryController = CategoryController(eventRepository: fakeRepo);
   await categoryController.loadCategories();
+  final sessionController = await _createSessionController();
 
   await tester.pumpWidget(
     buildLocalizedTestApp(
       locale: const Locale('pl'),
-      home: CategoryScope(
-        controller: categoryController,
-        child: CreateEventScreen(
-          eventRepository: repository ?? FakeEventRepository(),
-          locationService: locationService ?? FakeLocationService(),
-          geocoder: geocoder,
-          pickImageFiles: pickImageFiles,
-          canSubmit: canSubmit,
+      home: AuthScope(
+        controller: sessionController,
+        child: CategoryScope(
+          controller: categoryController,
+          child: _buildTestApp(
+            CreateEventScreen(
+              eventRepository: repository ?? FakeEventRepository(),
+              locationService: locationService ?? FakeLocationService(),
+              geocoder: geocoder,
+              pickImageFiles: pickImageFiles,
+              canSubmit: canSubmit,
+            ),
+          ),
         ),
       ),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _MemoryAuthStorage implements AuthTokenStorage {
+  AuthTokens? stored;
+
+  @override
+  Future<void> clear() async {
+    stored = null;
+  }
+
+  @override
+  Future<AuthTokens?> readTokens() async => stored;
+
+  @override
+  Future<void> saveTokens(AuthTokens tokens) async {
+    stored = tokens;
+  }
+}
+
+class _FakeAuthApi extends AuthApi {
+  _FakeAuthApi({required this.profile}) : super();
+
+  final UserProfile profile;
+
+  @override
+  Future<UserProfile> fetchProfile({
+    required String accessToken,
+    String tokenType = 'Bearer',
+  }) {
+    return Future.value(profile);
+  }
+}
+
+Future<SessionController> _createSessionController() async {
+  final storage = _MemoryAuthStorage();
+  storage.stored = AuthTokens(
+    accessToken: 'access-token',
+    refreshToken: 'refresh-token',
+    tokenType: 'Bearer',
+    expiresAt: DateTime.now().add(const Duration(hours: 1)),
+  );
+
+  final controller = SessionController(
+    authRepository: AuthRepository(
+      api: _FakeAuthApi(
+        profile: UserProfile(
+          id: 'organizer-id',
+          username: 'organizer',
+          email: 'organizer@example.com',
+          hasPassword: true,
+          avatarUrl: null,
+          bio: null,
+          websiteUrl: null,
+          instagramUrl: null,
+          facebookUrl: null,
+          createdAt: DateTime.utc(2026, 5, 1),
+          eventRegistrations: const [],
+          role: 'organizer',
+          organizer: true,
+        ),
+      ),
+      storage: storage,
+    ),
+  );
+
+  await controller.load();
+  return controller;
 }
 
 void main() {
