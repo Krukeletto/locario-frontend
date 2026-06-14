@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
+import '../../features/chat/chat_repository.dart';
 import '../../features/explore/models.dart';
 import '../../shared/auth/auth_scope.dart';
 import '../../shared/groups/group_models.dart';
@@ -270,6 +271,26 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     );
     if (!mounted) return;
     unawaited(GroupScope.of(context).loadGroupEvents(group.id));
+  }
+
+  void _openDirectChat(GroupMember member) {
+    final profile = AuthScope.of(context).profile;
+    final currentUserId = profile?.id;
+    if (currentUserId == null || currentUserId == member.userId) return;
+
+    final chatId = FirestoreChatRepository.directChatId(
+      currentUserId,
+      member.userId,
+    );
+    final location = Uri(
+      path: '/chat/$chatId',
+      queryParameters: {
+        'recipientId': member.userId,
+        'recipientName': member.username,
+      },
+    ).toString();
+
+    context.push(location);
   }
 
   Future<void> _handleLinkExistingEvent() async {
@@ -737,6 +758,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                     onApproveRequest: _handleApproveRequest,
                     onRejectRequest: _handleRejectRequest,
                     onMemberAction: _handleMemberAction,
+                    onOpenChat: _openDirectChat,
                     canTransferOwnership: canTransferOwnership,
                   ),
                   _InfoTab(
@@ -1440,6 +1462,7 @@ class _MembersTab extends StatelessWidget {
     required this.onApproveRequest,
     required this.onRejectRequest,
     required this.onMemberAction,
+    required this.onOpenChat,
     required this.canTransferOwnership,
   });
 
@@ -1458,6 +1481,7 @@ class _MembersTab extends StatelessWidget {
   final ValueChanged<GroupMember> onRejectRequest;
   final Future<void> Function(GroupMember member, _MemberAction action)
   onMemberAction;
+  final ValueChanged<GroupMember> onOpenChat;
   final bool canTransferOwnership;
 
   @override
@@ -1560,6 +1584,7 @@ class _MembersTab extends StatelessWidget {
                 canModerate: canModerate,
                 canTransferOwnership: canTransferOwnership,
                 onActionSelected: (action) => onMemberAction(member, action),
+                onOpenChat: () => onOpenChat(member),
               ),
             ),
           ),
@@ -1621,6 +1646,7 @@ class _MemberCard extends StatelessWidget {
     required this.canModerate,
     required this.canTransferOwnership,
     required this.onActionSelected,
+    required this.onOpenChat,
   });
 
   final GroupMember member;
@@ -1629,6 +1655,7 @@ class _MemberCard extends StatelessWidget {
   final bool canModerate;
   final bool canTransferOwnership;
   final ValueChanged<_MemberAction> onActionSelected;
+  final VoidCallback onOpenChat;
 
   @override
   Widget build(BuildContext context) {
@@ -1680,6 +1707,14 @@ class _MemberCard extends StatelessWidget {
               ],
             ),
           ),
+          if (!isCurrentUser &&
+              member.status != GroupMembershipStatus.banned &&
+              member.status != GroupMembershipStatus.removed)
+            IconButton(
+              tooltip: 'Wiadomość',
+              onPressed: onOpenChat,
+              icon: const Icon(Icons.mail_outline_rounded),
+            ),
           if (canModerate && !isOwner && !isCurrentUser)
             PopupMenuButton<_MemberAction>(
               onSelected: onActionSelected,
