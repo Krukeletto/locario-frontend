@@ -6,6 +6,11 @@ import 'package:locario/features/explore/models.dart';
 
 import '../../../../test_helpers/test_app.dart';
 
+DateTime _futureDate({int daysFromNow = 30, int hour = 19, int minute = 0}) {
+  final date = DateTime.now().toUtc().add(Duration(days: daysFromNow));
+  return DateTime.utc(date.year, date.month, date.day, hour, minute);
+}
+
 void main() {
   testWidgets('renders map action above join button', (tester) async {
     var mapPressed = false;
@@ -180,8 +185,8 @@ final _event = ExploreEvent(
   id: '11111111-1111-1111-1111-111111111111',
   title: 'Jazz Evening',
   categories: [const Category(id: 'music', name: 'Music', slug: 'music')],
-  startsAt: DateTime.utc(2026, 6, 12, 19),
-  endsAt: DateTime.utc(2026, 6, 12, 21, 30),
+  startsAt: _futureDate(),
+  endsAt: _futureDate(hour: 21, minute: 30),
   venue: 'Piotrkowska 10, Lodz',
   location: const LatLng(51.7592, 19.4550),
   description: 'Live music and open-air atmosphere.',
@@ -192,8 +197,8 @@ final _eventWithInvalidTicket = ExploreEvent(
   id: '33333333-3333-3333-3333-333333333333',
   title: 'Jazz Evening',
   categories: [const Category(id: 'music', name: 'Music', slug: 'music')],
-  startsAt: DateTime.utc(2026, 6, 12, 19),
-  endsAt: DateTime.utc(2026, 6, 12, 21, 30),
+  startsAt: _futureDate(),
+  endsAt: _futureDate(hour: 21, minute: 30),
   venue: 'Piotrkowska 10, Lodz',
   location: const LatLng(51.7592, 19.4550),
   description: 'Live music and open-air atmosphere.',
@@ -205,8 +210,8 @@ final _multiDayEvent = ExploreEvent(
   id: '44444444-4444-4444-4444-444444444444',
   title: 'Jazz Weekend',
   categories: [const Category(id: 'music', name: 'Music', slug: 'music')],
-  startsAt: DateTime.utc(2026, 6, 12, 19),
-  endsAt: DateTime.utc(2026, 6, 13, 21, 30),
+  startsAt: _futureDate(),
+  endsAt: _futureDate(daysFromNow: 31, hour: 21, minute: 30),
   venue: 'Piotrkowska 10, Lodz',
   location: const LatLng(51.7592, 19.4550),
   description: 'Live music and open-air atmosphere.',

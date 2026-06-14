@@ -272,24 +272,27 @@ class _SearchField extends StatelessWidget {
                   ),
                   itemBuilder: (context, index) {
                     final event = options.elementAt(index);
-                    return ListTile(
-                      dense: true,
-                      title: Text(
-                        event.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    return Material(
+                      color: Colors.transparent,
+                      child: ListTile(
+                        dense: true,
+                        title: Text(
+                          event.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          event.venue,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: Icon(
+                          event.icon,
+                          size: 18,
+                          color: event.accentColor,
+                        ),
+                        onTap: () => onSelected(event),
                       ),
-                      subtitle: Text(
-                        event.venue,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: Icon(
-                        event.icon,
-                        size: 18,
-                        color: event.accentColor,
-                      ),
-                      onTap: () => onSelected(event),
                     );
                   },
                 ),

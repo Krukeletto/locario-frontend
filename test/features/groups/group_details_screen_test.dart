@@ -115,6 +115,86 @@ void main() {
     expect(find.text('Member details'), findsNothing);
   });
 
+  testWidgets('shows group chat action above leave action for members', (
+    tester,
+  ) async {
+    final sessionController = await _createAuthenticatedSessionController();
+
+    await _pumpGroupDetails(
+      tester,
+      group: const Group(
+        id: 'group-1',
+        name: 'Climbing Club',
+        description: 'Member details',
+        categoryName: 'Sport',
+        memberCount: 2,
+        currentUserMembership: GroupMembershipStatus.active,
+      ),
+      members: const [
+        GroupMember(
+          userId: 'user-1',
+          username: 'tester',
+          status: GroupMembershipStatus.active,
+        ),
+        GroupMember(
+          userId: 'user-2',
+          username: 'Anna',
+          status: GroupMembershipStatus.active,
+        ),
+      ],
+      sessionController: sessionController,
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Info'));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(FilledButton, 'Chat'), findsOneWidget);
+    expect(find.text('Leave group'), findsOneWidget);
+
+    final chatTop = tester.getTopLeft(
+      find.widgetWithText(FilledButton, 'Chat'),
+    );
+    final leaveTop = tester.getTopLeft(find.text('Leave group'));
+
+    expect(chatTop.dy, lessThan(leaveTop.dy));
+  });
+
+  testWidgets('shows chat icon on group member cards', (tester) async {
+    final sessionController = await _createAuthenticatedSessionController();
+
+    await _pumpGroupDetails(
+      tester,
+      group: const Group(
+        id: 'group-1',
+        name: 'Climbing Club',
+        categoryName: 'Sport',
+        memberCount: 2,
+        currentUserMembership: GroupMembershipStatus.active,
+      ),
+      members: const [
+        GroupMember(
+          userId: 'user-1',
+          username: 'tester',
+          status: GroupMembershipStatus.active,
+        ),
+        GroupMember(
+          userId: 'user-2',
+          username: 'Anna',
+          status: GroupMembershipStatus.active,
+        ),
+      ],
+      sessionController: sessionController,
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Members'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Anna'), findsOneWidget);
+    expect(find.byIcon(Icons.chat_bubble_outline_rounded), findsOneWidget);
+  });
+
   testWidgets('publishes a post without errors', (tester) async {
     final sessionController = await _createAuthenticatedSessionController();
     final groupRepository = _FakeGroupRepository(
@@ -290,6 +370,7 @@ Future<void> _pumpGroupDetails(
   required Group group,
   List<GroupFeedItem> feedItems = const [],
   List<ExploreEvent> events = const [],
+  List<GroupMember> members = const [],
   SessionController? sessionController,
   GroupController? groupController,
 }) async {
@@ -309,6 +390,7 @@ Future<void> _pumpGroupDetails(
           detailGroup: group,
           feedItems: feedItems,
           events: events,
+          members: members,
         ),
         eventRepository: FakeEventRepository(),
         cacheService: _StubCacheService(),
@@ -420,12 +502,14 @@ class _FakeGroupRepository implements GroupRepository {
     required this.detailGroup,
     this.feedItems = const [],
     this.events = const [],
+    this.members = const [],
     this.deletePostCompleter,
   });
 
   final Group detailGroup;
   final List<GroupFeedItem> feedItems;
   final List<ExploreEvent> events;
+  final List<GroupMember> members;
   final Completer<void>? deletePostCompleter;
   final List<String> createdPostContents = [];
   final List<String> deletedPostIds = [];
@@ -511,7 +595,7 @@ class _FakeGroupRepository implements GroupRepository {
     String groupId, {
     String? accessToken,
     String tokenType = 'Bearer',
-  }) async => const [];
+  }) async => members;
 
   @override
   Future<List<GroupMember>> fetchJoinRequests(

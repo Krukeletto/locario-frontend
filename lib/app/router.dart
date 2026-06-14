@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
+import '../features/chat/chat_screen.dart';
 import '../features/events/event_screen.dart';
 import '../features/explore/explore_screen.dart';
 import '../features/groups/group_details_screen.dart';
@@ -58,6 +59,13 @@ String? normalizeIncomingLocation(Uri uri) {
   if (uri.scheme.isEmpty &&
       uri.host.isEmpty &&
       pathSegments.length == 1 &&
+      pathSegments.first == 'messages') {
+    return '/hub/messages';
+  }
+
+  if (uri.scheme.isEmpty &&
+      uri.host.isEmpty &&
+      pathSegments.length == 1 &&
       !const {
         'explore',
         'saved',
@@ -72,12 +80,7 @@ String? normalizeIncomingLocation(Uri uri) {
 }
 
 final List<HubActionItem> hubActionItems = [
-  const HubActionItem(
-    id: 'messages',
-    icon: 'mail',
-    routePath: '/hub/messages',
-    isEnabled: false,
-  ),
+  const HubActionItem(id: 'messages', icon: 'mail', routePath: '/hub/messages'),
   const HubActionItem(id: 'saved', icon: 'bookmark', routePath: '/hub/saved'),
   const HubActionItem(
     id: 'community',
@@ -88,6 +91,7 @@ final List<HubActionItem> hubActionItems = [
 
 bool _requiresAuth(String location) {
   return location.startsWith('/hub/messages') ||
+      location.startsWith('/chat/') ||
       location.startsWith('/hub/create-event') ||
       location.startsWith('/hub/community') ||
       location == '/groups/create' ||
@@ -171,7 +175,7 @@ GoRouter createAppRouter({
       if (!isAuthed && _requiresAuth(location)) {
         return _loginRedirect(
           returnLocation: navigationHistory.lastSafeLocation,
-          targetLocation: state.uri.path,
+          targetLocation: state.uri.toString(),
         );
       }
 
@@ -192,7 +196,7 @@ GoRouter createAppRouter({
         if (isAuthed &&
             legalController.isAcceptanceRequired &&
             location != '/legal/accept') {
-          return '/legal/accept?from=${Uri.encodeComponent(location)}';
+          return '/legal/accept?from=${Uri.encodeComponent(state.uri.toString())}';
         }
         if (isAuthed &&
             !legalController.isAcceptanceRequired &&
@@ -319,6 +323,7 @@ GoRouter createAppRouter({
           path: item.routePath,
           pageBuilder: (context, state) {
             final child = switch (item.id) {
+              'messages' => const ChatListScreen(),
               'community' => const GroupDiscoverScreen(),
               'saved' => const SavedScreen(),
               _ => HubPlaceholderScreen(item: item),
@@ -377,6 +382,28 @@ GoRouter createAppRouter({
             ),
           ),
         ],
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/chat/:chatId',
+        pageBuilder: (context, state) => _trackedNoTransitionPage(
+          controller: navigationHistory,
+          location: state.uri.toString(),
+          rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),
+          child: ChatThreadScreen(
+            chatId: state.pathParameters['chatId'] ?? '',
+            recipientId: state.uri.queryParameters['recipientId'],
+            recipientName: state.uri.queryParameters['recipientName'],
+            groupName: state.uri.queryParameters['groupName'],
+            isGroup: state.uri.queryParameters['isGroup'] == 'true',
+            participantIds:
+                state.uri.queryParameters['participantIds']
+                    ?.split(',')
+                    .where((id) => id.isNotEmpty)
+                    .toList() ??
+                const [],
+          ),
+        ),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

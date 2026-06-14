@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:locario/app/router.dart';
 import 'package:locario/features/auth/login_screen.dart';
+import 'package:locario/features/chat/chat_screen.dart';
 import 'package:locario/features/legals/legal_acceptance_store.dart';
 import 'package:locario/features/legals/legal_controller.dart';
 import 'package:locario/features/legals/legal_versions.dart';
@@ -44,6 +45,13 @@ void main() {
     test('does not rewrite normal top-level app routes', () {
       expect(normalizeIncomingLocation(Uri.parse('/explore')), isNull);
       expect(normalizeIncomingLocation(Uri.parse('/profile')), isNull);
+    });
+
+    test('normalizes messages shortcut to hub messages', () {
+      expect(
+        normalizeIncomingLocation(Uri.parse('/messages')),
+        '/hub/messages',
+      );
     });
   });
 
@@ -156,6 +164,109 @@ void main() {
         expect(find.byType(LoginScreen), findsOneWidget);
       },
     );
+
+    testWidgets('opens authenticated chat routes', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final sessionController = await _createSessionController(
+        authenticated: true,
+      );
+      final legalController = _createLegalController(sessionController);
+      final router = createAppRouter(
+        sessionController: sessionController,
+        legalController: legalController,
+      );
+
+      await tester.pumpWidget(
+        AuthScope(
+          controller: sessionController,
+          child: SavedEventsScope(
+            controller: SavedEventsController(
+              repository: _MemorySavedEventsRepository(),
+            ),
+            child: SavedFiltersScope(
+              controller: SavedFiltersController(
+                repository: const SharedPreferencesSavedFiltersRepository(),
+              ),
+              child: MaterialApp.router(
+                locale: const Locale('en'),
+                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                routerConfig: router,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      router.go('/hub/messages');
+      await tester.pumpAndSettle();
+
+      expect(
+        router.routerDelegate.currentConfiguration.uri.path,
+        '/hub/messages',
+      );
+      expect(find.byType(ChatListScreen), findsOneWidget);
+
+      router.go('/chat/local-runners');
+      await tester.pumpAndSettle();
+
+      expect(
+        router.routerDelegate.currentConfiguration.uri.path,
+        '/chat/local-runners',
+      );
+      expect(find.byType(ChatThreadScreen), findsOneWidget);
+    });
+
+    testWidgets('redirects unauthenticated messages route to login', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final sessionController = await _createSessionController();
+      final legalController = _createLegalController(sessionController);
+      final router = createAppRouter(
+        sessionController: sessionController,
+        legalController: legalController,
+      );
+
+      await tester.pumpWidget(
+        AuthScope(
+          controller: sessionController,
+          child: SavedEventsScope(
+            controller: SavedEventsController(
+              repository: _MemorySavedEventsRepository(),
+            ),
+            child: SavedFiltersScope(
+              controller: SavedFiltersController(
+                repository: const SharedPreferencesSavedFiltersRepository(),
+              ),
+              child: MaterialApp.router(
+                locale: const Locale('en'),
+                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                routerConfig: router,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      router.go('/messages');
+      await tester.pumpAndSettle();
+
+      expect(
+        router.routerDelegate.currentConfiguration.uri.path,
+        '/auth/login',
+      );
+      expect(
+        router
+            .routerDelegate
+            .currentConfiguration
+            .uri
+            .queryParameters['target'],
+        '/hub/messages',
+      );
+      expect(find.byType(LoginScreen), findsOneWidget);
+    });
 
     testWidgets('redirects non-organizers away from organizer reviews route', (
       tester,

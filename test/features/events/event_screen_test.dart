@@ -34,10 +34,12 @@ ExploreEvent _futureEvent({
   String? organizerUsername,
   DateTime? createdAt,
 }) {
+  final startsAt = DateTime.now().toUtc().add(const Duration(days: 30));
+
   return ExploreEvent(
     id: '11111111-1111-1111-1111-111111111111',
     title: 'Jazz Evening',
-    startsAt: DateTime.utc(2026, 6, 12, 19),
+    startsAt: DateTime.utc(startsAt.year, startsAt.month, startsAt.day, 19),
     venue: 'Piotrkowska 10, Lodz',
     location: const LatLng(51.7592, 19.4550),
     description: 'Live music and open-air atmosphere.',
