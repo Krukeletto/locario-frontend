@@ -9,6 +9,8 @@ class ChatConversation {
     required this.participantNames,
     required this.lastMessage,
     required this.updatedAt,
+    this.groupName,
+    this.isGroup = false,
   });
 
   final String id;
@@ -16,6 +18,8 @@ class ChatConversation {
   final Map<String, String> participantNames;
   final String lastMessage;
   final DateTime? updatedAt;
+  final String? groupName;
+  final bool isGroup;
 
   factory ChatConversation.fromSnapshot(
     QueryDocumentSnapshot<Map<String, dynamic>> snapshot,
@@ -29,6 +33,8 @@ class ChatConversation {
       participantNames: _stringMap(data['participantNames']),
       lastMessage: data['lastMessage'] as String? ?? '',
       updatedAt: _date(data['updatedAt']),
+      groupName: data['groupName'] as String?,
+      isGroup: data['isGroup'] as bool? ?? false,
     );
   }
 
@@ -57,10 +63,16 @@ class ChatConversation {
           _date(data['timestamp']) ??
           _date(data['createdAt']) ??
           _date(data['sentAt']),
+      groupName: data['groupName'] as String?,
+      isGroup: data['isGroup'] as bool? ?? false,
     );
   }
 
   String titleFor(String currentUserId) {
+    if (isGroup && groupName?.trim().isNotEmpty == true) {
+      return groupName!.trim();
+    }
+
     for (final entry in participantNames.entries) {
       if (entry.key != currentUserId && entry.value.trim().isNotEmpty) {
         return entry.value;
@@ -86,6 +98,7 @@ class ChatMessage {
     required this.id,
     required this.senderId,
     required this.senderAppUserId,
+    required this.senderName,
     required this.content,
     required this.timestamp,
   });
@@ -93,6 +106,7 @@ class ChatMessage {
   final String id;
   final String senderId;
   final String senderAppUserId;
+  final String senderName;
   final String content;
   final DateTime? timestamp;
 
@@ -109,6 +123,7 @@ class ChatMessage {
           data['uid'] as String? ??
           '',
       senderAppUserId: data['senderAppUserId'] as String? ?? '',
+      senderName: data['senderName'] as String? ?? '',
       content:
           data['content'] as String? ??
           data['text'] as String? ??
@@ -133,6 +148,8 @@ class FirestoreChatRepository {
     final ids = [firstUserId, secondUserId]..sort();
     return 'dm_${ids[0]}_${ids[1]}';
   }
+
+  static String groupChatId(String groupId) => 'group_$groupId';
 
   FirebaseFirestore? get _db {
     if (Firebase.apps.isEmpty) return null;
@@ -211,6 +228,8 @@ class FirestoreChatRepository {
       participantNames: _stringMap(data['participantNames']),
       lastMessage: data['lastMessage'] as String? ?? '',
       updatedAt: _date(data['updatedAt']),
+      groupName: data['groupName'] as String?,
+      isGroup: data['isGroup'] as bool? ?? false,
     );
   }
 
@@ -261,6 +280,60 @@ class FirestoreChatRepository {
           recipientId: recipientName,
         },
         'isGroup': false,
+        'lastMessage': content,
+        'updatedAt': now,
+        'createdAt': now,
+      }, SetOptions(merge: true));
+    } on FirebaseException {
+      // The backend listens to message documents. Chat metadata is only for
+      // client-side listing, so a rules failure here must not roll back send.
+    }
+  }
+
+  Future<void> sendGroupMessage({
+    required String chatId,
+    required String senderAppUserId,
+    required String senderName,
+    required String groupName,
+    required List<String> participantIds,
+    required String content,
+  }) async {
+    final db = _db;
+    if (db == null) {
+      throw const ChatSendException('Firebase nie został zainicjalizowany.');
+    }
+
+    final firebaseSenderId = await _resolveFirebaseSenderId(senderAppUserId);
+    final chatRef = db.collection('chats').doc(chatId);
+    final resolvedParticipantIds = {
+      ...participantIds.where((id) => id.trim().isNotEmpty),
+      senderAppUserId,
+    }.toList()..sort();
+    final now = FieldValue.serverTimestamp();
+
+    try {
+      await chatRef.collection('messages').add({
+        'senderId': firebaseSenderId,
+        'senderAppUserId': senderAppUserId,
+        'senderName': senderName,
+        'participantAppUserIds': resolvedParticipantIds,
+        'participantNames': {senderAppUserId: senderName},
+        'content': content,
+        'timestamp': FieldValue.serverTimestamp(),
+        'chatId': chatId,
+        'groupName': groupName,
+        'isGroup': true,
+      });
+    } on FirebaseException catch (error) {
+      throw ChatSendException.fromFirebase(error);
+    }
+
+    try {
+      await chatRef.set({
+        'participantIds': resolvedParticipantIds,
+        'participantNames': {senderAppUserId: senderName},
+        'groupName': groupName,
+        'isGroup': true,
         'lastMessage': content,
         'updatedAt': now,
         'createdAt': now,

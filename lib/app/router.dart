@@ -394,6 +394,14 @@ GoRouter createAppRouter({
             chatId: state.pathParameters['chatId'] ?? '',
             recipientId: state.uri.queryParameters['recipientId'],
             recipientName: state.uri.queryParameters['recipientName'],
+            groupName: state.uri.queryParameters['groupName'],
+            isGroup: state.uri.queryParameters['isGroup'] == 'true',
+            participantIds:
+                state.uri.queryParameters['participantIds']
+                    ?.split(',')
+                    .where((id) => id.isNotEmpty)
+                    .toList() ??
+                const [],
           ),
         ),
       ),

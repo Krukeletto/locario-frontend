@@ -293,6 +293,33 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     context.push(location);
   }
 
+  void _openGroupChat(Group group) {
+    final profile = AuthScope.of(context).profile;
+    final currentUserId = profile?.id;
+    if (currentUserId == null || currentUserId.isEmpty) return;
+
+    final ctrl = GroupScope.of(context);
+    final participantIds = {
+      currentUserId,
+      for (final member in ctrl.detailMembers)
+        if (member.status != GroupMembershipStatus.banned &&
+            member.status != GroupMembershipStatus.removed)
+          member.userId,
+    }.where((id) => id.isNotEmpty).toList()..sort();
+
+    final chatId = FirestoreChatRepository.groupChatId(group.id);
+    final location = Uri(
+      path: '/chat/$chatId',
+      queryParameters: {
+        'isGroup': 'true',
+        'groupName': group.name,
+        'participantIds': participantIds.join(','),
+      },
+    ).toString();
+
+    context.push(location);
+  }
+
   Future<void> _handleLinkExistingEvent() async {
     final ctrl = GroupScope.of(context);
     final group = ctrl.detailGroup;
@@ -764,7 +791,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                   _InfoTab(
                     group: group,
                     onJoinOrLeave: _handleJoinOrLeave,
+                    onOpenChat: () => _openGroupChat(group),
                     canJoinOrLeave: tokens != null && !group.isBanned,
+                    canOpenChat: tokens != null && group.isMember,
                     canModerate: canModerate,
                   ),
                 ],
@@ -1713,7 +1742,7 @@ class _MemberCard extends StatelessWidget {
             IconButton(
               tooltip: 'Wiadomość',
               onPressed: onOpenChat,
-              icon: const Icon(Icons.mail_outline_rounded),
+              icon: const Icon(Icons.chat_bubble_outline_rounded),
             ),
           if (canModerate && !isOwner && !isCurrentUser)
             PopupMenuButton<_MemberAction>(
@@ -2188,13 +2217,17 @@ class _InfoTab extends StatelessWidget {
   const _InfoTab({
     required this.group,
     required this.onJoinOrLeave,
+    required this.onOpenChat,
     required this.canJoinOrLeave,
+    required this.canOpenChat,
     required this.canModerate,
   });
 
   final Group group;
   final VoidCallback onJoinOrLeave;
+  final VoidCallback onOpenChat;
   final bool canJoinOrLeave;
+  final bool canOpenChat;
   final bool canModerate;
 
   @override
@@ -2250,6 +2283,14 @@ class _InfoTab extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 16),
+              if (canOpenChat) ...[
+                FilledButton.icon(
+                  onPressed: onOpenChat,
+                  icon: const Icon(Icons.chat_bubble_outline_rounded),
+                  label: const Text('Chat'),
+                ),
+                const SizedBox(height: 12),
+              ],
               FilledButton.tonal(
                 onPressed: canJoinOrLeave ? onJoinOrLeave : null,
                 child: Text(actionLabel),

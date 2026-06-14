@@ -114,12 +114,18 @@ class ChatThreadScreen extends StatefulWidget {
     required this.chatId,
     this.recipientId,
     this.recipientName,
+    this.groupName,
+    this.participantIds = const [],
+    this.isGroup = false,
     this.repository,
   });
 
   final String chatId;
   final String? recipientId;
   final String? recipientName;
+  final String? groupName;
+  final List<String> participantIds;
+  final bool isGroup;
   final FirestoreChatRepository? repository;
 
   @override
@@ -158,6 +164,19 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     });
 
     try {
+      if (widget.isGroup) {
+        await _repository.sendGroupMessage(
+          chatId: widget.chatId,
+          senderAppUserId: senderId,
+          senderName: profile?.username ?? 'User',
+          groupName: widget.groupName ?? 'Chat',
+          participantIds: widget.participantIds,
+          content: text,
+        );
+        _controller.clear();
+        return;
+      }
+
       if (recipientId == null) {
         final conversation = await _repository.fetchConversation(widget.chatId);
         recipientId = conversation?.participantIdFor(senderId);
@@ -206,7 +225,9 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final currentUserId = _currentUserId(context);
-    final title = widget.recipientName?.trim().isNotEmpty == true
+    final title = widget.groupName?.trim().isNotEmpty == true
+        ? widget.groupName!.trim()
+        : widget.recipientName?.trim().isNotEmpty == true
         ? widget.recipientName!.trim()
         : 'Chat';
 
@@ -267,9 +288,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                     final message = messages[index];
                     return _MessageBubble(
                       message: message,
-                      isMine:
-                          message.senderAppUserId == currentUserId ||
-                          message.senderId == currentUserId,
+                      isMine: message.senderAppUserId == currentUserId,
                     );
                   },
                 );
@@ -415,6 +434,11 @@ class _MessageBubble extends StatelessWidget {
     final alignment = isMine ? Alignment.centerRight : Alignment.centerLeft;
     final background = isMine ? scheme.primary : scheme.surfaceContainerHigh;
     final foreground = isMine ? scheme.onPrimary : scheme.onSurface;
+    final senderName = message.senderName.trim().isNotEmpty
+        ? message.senderName.trim()
+        : isMine
+        ? 'Ty'
+        : 'Użytkownik';
 
     return Align(
       alignment: alignment,
@@ -435,11 +459,28 @@ class _MessageBubble extends StatelessWidget {
               style: theme.textTheme.bodyMedium?.copyWith(color: foreground),
             ),
             const SizedBox(height: 4),
-            Text(
-              _formatTimestamp(message.timestamp),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: foreground.withValues(alpha: 0.72),
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    senderName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: foreground.withValues(alpha: 0.8),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  _formatTimestamp(message.timestamp),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: foreground.withValues(alpha: 0.72),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
