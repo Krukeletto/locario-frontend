@@ -13,11 +13,12 @@ void main() {
     final controller = TextEditingController(text: 'jazz');
     final focusNode = FocusNode();
     ExploreEvent? selectedEvent;
+    final startsAt = DateTime.now().toUtc().add(const Duration(days: 30));
     final event = ExploreEvent(
       id: '1',
       title: 'Jazz Evening',
       categories: const [Category(id: 'music', name: 'Music', slug: 'music')],
-      startsAt: DateTime.utc(2026, 4, 12, 19),
+      startsAt: DateTime.utc(startsAt.year, startsAt.month, startsAt.day, 19),
       trendingScore: 1,
       venue: 'Piotrkowska 10, Lodz',
       location: const LatLng(51.7592, 19.4550),
