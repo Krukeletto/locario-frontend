@@ -59,6 +59,13 @@ String? normalizeIncomingLocation(Uri uri) {
   if (uri.scheme.isEmpty &&
       uri.host.isEmpty &&
       pathSegments.length == 1 &&
+      pathSegments.first == 'messages') {
+    return '/hub/messages';
+  }
+
+  if (uri.scheme.isEmpty &&
+      uri.host.isEmpty &&
+      pathSegments.length == 1 &&
       !const {
         'explore',
         'saved',
@@ -168,7 +175,7 @@ GoRouter createAppRouter({
       if (!isAuthed && _requiresAuth(location)) {
         return _loginRedirect(
           returnLocation: navigationHistory.lastSafeLocation,
-          targetLocation: state.uri.path,
+          targetLocation: state.uri.toString(),
         );
       }
 
@@ -189,7 +196,7 @@ GoRouter createAppRouter({
         if (isAuthed &&
             legalController.isAcceptanceRequired &&
             location != '/legal/accept') {
-          return '/legal/accept?from=${Uri.encodeComponent(location)}';
+          return '/legal/accept?from=${Uri.encodeComponent(state.uri.toString())}';
         }
         if (isAuthed &&
             !legalController.isAcceptanceRequired &&

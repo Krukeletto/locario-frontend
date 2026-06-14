@@ -46,6 +46,13 @@ void main() {
       expect(normalizeIncomingLocation(Uri.parse('/explore')), isNull);
       expect(normalizeIncomingLocation(Uri.parse('/profile')), isNull);
     });
+
+    test('normalizes messages shortcut to hub messages', () {
+      expect(
+        normalizeIncomingLocation(Uri.parse('/messages')),
+        '/hub/messages',
+      );
+    });
   });
 
   group('createAppRouter', () {
@@ -208,6 +215,57 @@ void main() {
         '/chat/local-runners',
       );
       expect(find.byType(ChatThreadScreen), findsOneWidget);
+    });
+
+    testWidgets('redirects unauthenticated messages route to login', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final sessionController = await _createSessionController();
+      final legalController = _createLegalController(sessionController);
+      final router = createAppRouter(
+        sessionController: sessionController,
+        legalController: legalController,
+      );
+
+      await tester.pumpWidget(
+        AuthScope(
+          controller: sessionController,
+          child: SavedEventsScope(
+            controller: SavedEventsController(
+              repository: _MemorySavedEventsRepository(),
+            ),
+            child: SavedFiltersScope(
+              controller: SavedFiltersController(
+                repository: const SharedPreferencesSavedFiltersRepository(),
+              ),
+              child: MaterialApp.router(
+                locale: const Locale('en'),
+                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                routerConfig: router,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      router.go('/messages');
+      await tester.pumpAndSettle();
+
+      expect(
+        router.routerDelegate.currentConfiguration.uri.path,
+        '/auth/login',
+      );
+      expect(
+        router
+            .routerDelegate
+            .currentConfiguration
+            .uri
+            .queryParameters['target'],
+        '/hub/messages',
+      );
+      expect(find.byType(LoginScreen), findsOneWidget);
     });
 
     testWidgets('redirects non-organizers away from organizer reviews route', (
