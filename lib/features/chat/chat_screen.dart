@@ -7,10 +7,17 @@ import 'package:locario/l10n/app_localizations.dart';
 import '../../shared/auth/auth_scope.dart';
 import 'chat_repository.dart';
 
-class ChatListScreen extends StatelessWidget {
+class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key, this.repository});
 
   final FirestoreChatRepository? repository;
+
+  @override
+  State<ChatListScreen> createState() => _ChatListScreenState();
+}
+
+class _ChatListScreenState extends State<ChatListScreen> {
+  List<ChatConversation> _lastConversations = const [];
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +25,7 @@ class ChatListScreen extends StatelessWidget {
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
     final currentUserId = _currentUserId(context);
-    final chatRepository = repository ?? FirestoreChatRepository();
+    final chatRepository = widget.repository ?? FirestoreChatRepository();
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -44,13 +51,22 @@ class ChatListScreen extends StatelessWidget {
       ),
       body: StreamBuilder<List<ChatConversation>>(
         stream: chatRepository.watchConversations(currentUserId),
+        initialData: const [],
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting &&
-              !snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+          if (snapshot.hasError) {
+            debugPrint('Chat conversations stream failed: ${snapshot.error}');
           }
 
-          final conversations = snapshot.data ?? const [];
+          final freshConversations = snapshot.hasError
+              ? const <ChatConversation>[]
+              : snapshot.data ?? const <ChatConversation>[];
+          if (freshConversations.isNotEmpty) {
+            _lastConversations = freshConversations;
+          }
+
+          final conversations = freshConversations.isNotEmpty
+              ? freshConversations
+              : _lastConversations;
           if (conversations.isEmpty) {
             return Center(
               child: Text(
@@ -113,6 +129,7 @@ class ChatThreadScreen extends StatefulWidget {
 class _ChatThreadScreenState extends State<ChatThreadScreen> {
   final _controller = TextEditingController();
   late final FirestoreChatRepository _repository;
+  List<ChatMessage> _lastMessages = const [];
   bool _isSending = false;
 
   @override
@@ -150,15 +167,25 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
 
       await _repository.sendDirectMessage(
         chatId: widget.chatId,
-        senderId: senderId,
+        senderAppUserId: senderId,
         senderName: profile?.username ?? 'User',
         recipientId: recipientId,
         recipientName: recipientName ?? recipientId,
         content: text,
       );
       _controller.clear();
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
+      debugPrint('Chat send failed: $error');
+      if (error is ChatSendException) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.message),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Nie udało się wysłać wiadomości.'),
@@ -204,13 +231,22 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
           Expanded(
             child: StreamBuilder<List<ChatMessage>>(
               stream: _repository.watchMessages(widget.chatId),
+              initialData: const [],
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting &&
-                    !snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
+                if (snapshot.hasError) {
+                  debugPrint('Chat messages stream failed: ${snapshot.error}');
                 }
 
-                final messages = snapshot.data ?? const [];
+                final freshMessages = snapshot.hasError
+                    ? const <ChatMessage>[]
+                    : snapshot.data ?? const <ChatMessage>[];
+                if (freshMessages.isNotEmpty) {
+                  _lastMessages = freshMessages;
+                }
+
+                final messages = freshMessages.isNotEmpty
+                    ? freshMessages
+                    : _lastMessages;
                 if (messages.isEmpty) {
                   return Center(
                     child: Text(
@@ -231,7 +267,9 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                     final message = messages[index];
                     return _MessageBubble(
                       message: message,
-                      isMine: message.senderId == currentUserId,
+                      isMine:
+                          message.senderAppUserId == currentUserId ||
+                          message.senderId == currentUserId,
                     );
                   },
                 );
@@ -411,10 +449,13 @@ class _MessageBubble extends StatelessWidget {
 }
 
 String _currentUserId(BuildContext context) {
+  final profileId = AuthScope.of(context).profile?.id;
+  if (profileId != null && profileId.isNotEmpty) return profileId;
+
   final firebaseUid = Firebase.apps.isEmpty
       ? null
       : FirebaseAuth.instance.currentUser?.uid;
-  return firebaseUid ?? AuthScope.of(context).profile?.id ?? '';
+  return firebaseUid ?? '';
 }
 
 String _formatTimestamp(DateTime? date) {
