@@ -676,7 +676,6 @@ class _MapWidgetState extends State<MapWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final brightness = Theme.of(context).brightness;
     final l10n = AppLocalizations.of(context);
@@ -763,32 +762,24 @@ class _MapWidgetState extends State<MapWidget> {
                       ),
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          boxShadow: [
-                            BoxShadow(
-                              color: theme.shadowColor,
-                              blurRadius: 16,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
+                          color: currentLocation == null
+                              ? colorScheme.surfaceContainerHighest
+                              : colorScheme.primaryContainer,
+                          shape: BoxShape.circle,
                         ),
-                        child: SizedBox(
-                          width: 56,
-                          height: 56,
-                          child: FloatingActionButton(
+                        child: SizedBox.square(
+                          dimension: 56,
+                          child: IconButton(
                             key: const Key('map-recenter-button'),
-                            heroTag: 'recenter',
-                            backgroundColor: colorScheme.primaryContainer,
-                            foregroundColor: colorScheme.onPrimaryContainer,
-                            elevation: 2,
-                            focusElevation: 4,
-                            hoverElevation: 4,
-                            highlightElevation: 6,
                             tooltip: l10n.mapReturnToLocation,
                             onPressed: currentLocation == null
                                 ? null
                                 : _recenterMap,
-                            child: const Icon(
+                            color: colorScheme.onPrimaryContainer,
+                            disabledColor: colorScheme.onSurface.withValues(
+                              alpha: 0.38,
+                            ),
+                            icon: const Icon(
                               Icons.my_location_rounded,
                               size: 26,
                             ),

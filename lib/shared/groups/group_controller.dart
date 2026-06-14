@@ -109,7 +109,7 @@ class GroupController extends ChangeNotifier {
     if (!forceRefresh) {
       final cached = await _cache.getList<Group>(cacheKey, Group.fromJson);
       if (cached != null) {
-        _discoverGroups = cached;
+        _discoverGroups = cached.toList();
         _isDiscoverLoading = false;
         _isDiscoverRefreshing = true;
         notifyListeners();
@@ -138,7 +138,7 @@ class GroupController extends ChangeNotifier {
       final cachedHash = await _cache.getHash(cacheKey);
 
       if (freshHash != cachedHash) {
-        _discoverGroups = fresh;
+        _discoverGroups = fresh.toList();
         await _cache.setList(
           cacheKey,
           fresh.map((g) => g.toJson()).toList(),
@@ -167,7 +167,7 @@ class GroupController extends ChangeNotifier {
     if (!forceRefresh) {
       final cached = await _cache.getList<Group>(cacheKey, Group.fromJson);
       if (cached != null) {
-        _myGroups = cached;
+        _myGroups = cached.toList();
         _isMyGroupsLoading = false;
         _isMyGroupsRefreshing = true;
         notifyListeners();
@@ -189,7 +189,7 @@ class GroupController extends ChangeNotifier {
       final cachedHash = await _cache.getHash(cacheKey);
 
       if (freshHash != cachedHash) {
-        _myGroups = fresh;
+        _myGroups = fresh.toList();
         await _cache.setList(
           cacheKey,
           fresh.map((g) => g.toJson()).toList(),
@@ -287,7 +287,7 @@ class GroupController extends ChangeNotifier {
       GroupMember.fromJson,
     );
     if (cached != null) {
-      _detailMembers = cached;
+      _detailMembers = cached.toList();
       notifyListeners();
     }
   }
@@ -298,7 +298,7 @@ class GroupController extends ChangeNotifier {
       GroupFeedItem.fromJson,
     );
     if (cached != null) {
-      _detailFeed = cached;
+      _detailFeed = cached.toList();
       _detailFeedPage = 0;
       _hasMoreFeed = cached.length >= 20;
       notifyListeners();
@@ -311,7 +311,7 @@ class GroupController extends ChangeNotifier {
       ExploreEvent.fromJson,
     );
     if (cached != null) {
-      _detailEvents = cached;
+      _detailEvents = cached.toList();
       notifyListeners();
     }
   }
@@ -389,7 +389,7 @@ class GroupController extends ChangeNotifier {
       final freshHash = _computeListHash(fresh);
       final cachedHash = await _cache.getHash(cacheKey);
       if (freshHash != cachedHash) {
-        _detailMembers = fresh;
+        _detailMembers = fresh.toList();
         await _cache.setList(
           cacheKey,
           fresh.map((m) => m.toJson()).toList(),
@@ -412,7 +412,7 @@ class GroupController extends ChangeNotifier {
       final freshHash = _computeListHash(fresh);
       final cachedHash = await _cache.getHash(cacheKey);
       if (freshHash != cachedHash) {
-        _detailFeed = fresh;
+        _detailFeed = fresh.toList();
         _hasMoreFeed = fresh.length >= 20;
         _detailFeedPage = 0;
         await _cache.setList(
@@ -436,7 +436,7 @@ class GroupController extends ChangeNotifier {
       final freshHash = _computeListHash(fresh);
       final cachedHash = await _cache.getHash(cacheKey);
       if (freshHash != cachedHash) {
-        _detailEvents = fresh;
+        _detailEvents = fresh.toList();
         await _cache.setList(
           cacheKey,
           fresh.map((e) => e.toJson()).toList(),
@@ -458,7 +458,7 @@ class GroupController extends ChangeNotifier {
       final freshHash = _computeListHash(fresh);
       final cachedHash = await _cache.getHash(cacheKey);
       if (freshHash != cachedHash) {
-        _detailMembers = fresh;
+        _detailMembers = fresh.toList();
         await _cache.setList(
           cacheKey,
           fresh.map((m) => m.toJson()).toList(),
@@ -482,7 +482,7 @@ class GroupController extends ChangeNotifier {
       final cachedHash = await _cache.getHash(cacheKey);
       if (freshHash != cachedHash) {
         if (page == 0) {
-          _detailFeed = items;
+          _detailFeed = items.toList();
         } else {
           _detailFeed = [..._detailFeed, ...items];
         }
@@ -521,7 +521,7 @@ class GroupController extends ChangeNotifier {
       final freshHash = _computeListHash(fresh);
       final cachedHash = await _cache.getHash(cacheKey);
       if (freshHash != cachedHash) {
-        _detailEvents = fresh;
+        _detailEvents = fresh.toList();
         await _cache.setList(
           cacheKey,
           fresh.map((e) => e.toJson()).toList(),
@@ -535,11 +535,12 @@ class GroupController extends ChangeNotifier {
   Future<void> loadGroupJoinRequests(String groupId) async {
     if (_accessToken == null) return;
     try {
-      _detailJoinRequests = await _groupRepository.fetchJoinRequests(
+      final fresh = await _groupRepository.fetchJoinRequests(
         groupId,
         accessToken: _accessToken!,
         tokenType: _tokenType,
       );
+      _detailJoinRequests = fresh.toList();
       notifyListeners();
     } catch (_) {}
   }
@@ -547,11 +548,12 @@ class GroupController extends ChangeNotifier {
   Future<void> loadGroupReports(String groupId) async {
     if (_accessToken == null) return;
     try {
-      _detailReports = await _groupRepository.fetchReports(
+      final fresh = await _groupRepository.fetchReports(
         groupId,
         accessToken: _accessToken!,
         tokenType: _tokenType,
       );
+      _detailReports = fresh.toList();
       notifyListeners();
     } catch (_) {}
   }
@@ -612,7 +614,9 @@ class GroupController extends ChangeNotifier {
         accessToken: _accessToken!,
         tokenType: _tokenType,
       );
-    } catch (_) {}
+    } catch (e, s) {
+      debugPrint('createPost error: $e\n$s');
+    }
   }
 
   Future<void> approveJoinRequest(String groupId, String userId) async {
@@ -667,7 +671,9 @@ class GroupController extends ChangeNotifier {
         accessToken: _accessToken!,
         tokenType: _tokenType,
       );
-    } catch (_) {}
+    } catch (e, s) {
+      debugPrint('updatePost error: $e\n$s');
+    }
   }
 
   Future<void> deletePost(String groupId, String postId) async {
@@ -877,7 +883,8 @@ class GroupController extends ChangeNotifier {
         accessToken: _accessToken!,
         tokenType: _tokenType,
       );
-    } catch (_) {
+    } catch (e, s) {
+      debugPrint('uploadMedia error: $e\n$s');
       return '';
     }
   }
@@ -1021,6 +1028,7 @@ class GroupController extends ChangeNotifier {
           likedByMe: likedByMe,
           likeCount: count,
         );
+        notifyListeners();
         break;
       }
     }

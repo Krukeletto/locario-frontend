@@ -1,6 +1,12 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:http/http.dart' as http;
+
+import '../../shared/config/api_config.dart';
 
 class ChatConversation {
   const ChatConversation({
@@ -53,12 +59,7 @@ class ChatConversation {
           (data['participantIds'] as List?)?.whereType<String>().toList() ??
           const [],
       participantNames: _stringMap(data['participantNames']),
-      lastMessage:
-          data['content'] as String? ??
-          data['text'] as String? ??
-          data['body'] as String? ??
-          data['message'] as String? ??
-          '',
+      lastMessage: _messagePreview(data),
       updatedAt:
           _date(data['timestamp']) ??
           _date(data['createdAt']) ??
@@ -101,6 +102,7 @@ class ChatMessage {
     required this.senderName,
     required this.content,
     required this.timestamp,
+    this.imageUrl,
   });
 
   final String id;
@@ -109,6 +111,7 @@ class ChatMessage {
   final String senderName;
   final String content;
   final DateTime? timestamp;
+  final String? imageUrl;
 
   factory ChatMessage.fromSnapshot(
     QueryDocumentSnapshot<Map<String, dynamic>> snapshot,
@@ -130,6 +133,7 @@ class ChatMessage {
           data['body'] as String? ??
           data['message'] as String? ??
           '',
+      imageUrl: data['imageUrl'] as String? ?? data['mediaUrl'] as String?,
       timestamp:
           _date(data['timestamp']) ??
           _date(data['createdAt']) ??
@@ -138,11 +142,25 @@ class ChatMessage {
   }
 }
 
+class ChatImageAttachment {
+  const ChatImageAttachment({required this.bytes, required this.fileName});
+
+  final Uint8List bytes;
+  final String fileName;
+}
+
 class FirestoreChatRepository {
-  FirestoreChatRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore;
+  FirestoreChatRepository({
+    FirebaseFirestore? firestore,
+    http.Client? client,
+    String? baseUrl,
+  }) : _firestore = firestore,
+       _client = client ?? http.Client(),
+       _baseUrl = baseUrl ?? ApiConfig.baseUrl;
 
   final FirebaseFirestore? _firestore;
+  final http.Client _client;
+  final String _baseUrl;
 
   static String directChatId(String firstUserId, String secondUserId) {
     final ids = [firstUserId, secondUserId]..sort();
@@ -240,16 +258,31 @@ class FirestoreChatRepository {
     required String recipientId,
     required String recipientName,
     required String content,
+    ChatImageAttachment? image,
+    String? accessToken,
+    String tokenType = 'Bearer',
   }) async {
     final db = _db;
     if (db == null) {
       throw const ChatSendException('Firebase nie został zainicjalizowany.');
+    }
+    if (content.trim().isEmpty && image == null) {
+      return;
     }
 
     final firebaseSenderId = await _resolveFirebaseSenderId(senderAppUserId);
     final chatRef = db.collection('chats').doc(chatId);
     final participantIds = [senderAppUserId, recipientId]..sort();
     final now = FieldValue.serverTimestamp();
+    final imageUrl = image == null
+        ? null
+        : await _uploadChatImage(
+            chatId: chatId,
+            image: image,
+            accessToken: accessToken,
+            tokenType: tokenType,
+          );
+    final preview = content.trim().isNotEmpty ? content.trim() : 'Zdjęcie';
 
     try {
       await chatRef.collection('messages').add({
@@ -263,7 +296,8 @@ class FirestoreChatRepository {
           senderAppUserId: senderName,
           recipientId: recipientName,
         },
-        'content': content,
+        if (content.trim().isNotEmpty) 'content': content.trim(),
+        'imageUrl': ?imageUrl,
         'timestamp': FieldValue.serverTimestamp(),
         'chatId': chatId,
         'isGroup': false,
@@ -280,13 +314,12 @@ class FirestoreChatRepository {
           recipientId: recipientName,
         },
         'isGroup': false,
-        'lastMessage': content,
+        'lastMessage': preview,
         'updatedAt': now,
         'createdAt': now,
       }, SetOptions(merge: true));
     } on FirebaseException {
-      // The backend listens to message documents. Chat metadata is only for
-      // client-side listing, so a rules failure here must not roll back send.
+      return;
     }
   }
 
@@ -297,10 +330,16 @@ class FirestoreChatRepository {
     required String groupName,
     required List<String> participantIds,
     required String content,
+    ChatImageAttachment? image,
+    String? accessToken,
+    String tokenType = 'Bearer',
   }) async {
     final db = _db;
     if (db == null) {
       throw const ChatSendException('Firebase nie został zainicjalizowany.');
+    }
+    if (content.trim().isEmpty && image == null) {
+      return;
     }
 
     final firebaseSenderId = await _resolveFirebaseSenderId(senderAppUserId);
@@ -310,6 +349,15 @@ class FirestoreChatRepository {
       senderAppUserId,
     }.toList()..sort();
     final now = FieldValue.serverTimestamp();
+    final imageUrl = image == null
+        ? null
+        : await _uploadChatImage(
+            chatId: chatId,
+            image: image,
+            accessToken: accessToken,
+            tokenType: tokenType,
+          );
+    final preview = content.trim().isNotEmpty ? content.trim() : 'Zdjęcie';
 
     try {
       await chatRef.collection('messages').add({
@@ -318,7 +366,8 @@ class FirestoreChatRepository {
         'senderName': senderName,
         'participantAppUserIds': resolvedParticipantIds,
         'participantNames': {senderAppUserId: senderName},
-        'content': content,
+        if (content.trim().isNotEmpty) 'content': content.trim(),
+        'imageUrl': ?imageUrl,
         'timestamp': FieldValue.serverTimestamp(),
         'chatId': chatId,
         'groupName': groupName,
@@ -334,14 +383,73 @@ class FirestoreChatRepository {
         'participantNames': {senderAppUserId: senderName},
         'groupName': groupName,
         'isGroup': true,
-        'lastMessage': content,
+        'lastMessage': preview,
         'updatedAt': now,
         'createdAt': now,
       }, SetOptions(merge: true));
     } on FirebaseException {
-      // The backend listens to message documents. Chat metadata is only for
-      // client-side listing, so a rules failure here must not roll back send.
+      return;
     }
+  }
+
+  Future<String> _uploadChatImage({
+    required String chatId,
+    required ChatImageAttachment image,
+    required String? accessToken,
+    required String tokenType,
+  }) async {
+    if (accessToken == null || accessToken.isEmpty) {
+      throw const ChatSendException(
+        'Zaloguj się ponownie, żeby wysłać zdjęcie.',
+      );
+    }
+    if (image.bytes.length > 10 * 1024 * 1024) {
+      throw const ChatSendException('Zdjęcie może mieć maksymalnie 10 MB.');
+    }
+
+    final contentType = _resolveImageMimeType(image.fileName);
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/api/media/presigned-upload-url'),
+      headers: {
+        'Authorization': '$tokenType $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'entityType': 'CHAT_MEDIA',
+        'entityId': chatId,
+        'fileName': image.fileName,
+        'contentType': contentType,
+        'fileSize': image.bytes.length,
+      }),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw const ChatSendException(
+        'Nie udało się przygotować uploadu zdjęcia.',
+      );
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw const ChatSendException('Nieprawidłowa odpowiedź uploadu zdjęcia.');
+    }
+
+    final uploadUrl = decoded['uploadUrl'] as String?;
+    final publicUrl = decoded['publicUrl'] as String?;
+    if (uploadUrl == null || publicUrl == null) {
+      throw const ChatSendException('Brak adresu uploadu zdjęcia.');
+    }
+
+    final uploadResponse = await _client.put(
+      Uri.parse(uploadUrl),
+      headers: {'Content-Type': contentType},
+      body: image.bytes,
+    );
+    if (uploadResponse.statusCode != 200) {
+      throw const ChatSendException('Nie udało się wysłać zdjęcia.');
+    }
+
+    return publicUrl;
   }
 
   Future<String> _resolveFirebaseSenderId(String fallbackUserId) async {
@@ -415,4 +523,34 @@ DateTime? _date(Object? value) {
   if (value is DateTime) return value;
   if (value is String) return DateTime.tryParse(value);
   return null;
+}
+
+String _messagePreview(Map<String, dynamic> data) {
+  final content =
+      data['content'] as String? ??
+      data['text'] as String? ??
+      data['body'] as String? ??
+      data['message'] as String? ??
+      '';
+  if (content.trim().isNotEmpty) {
+    return content;
+  }
+
+  final imageUrl = data['imageUrl'] as String? ?? data['mediaUrl'] as String?;
+  if (imageUrl != null && imageUrl.trim().isNotEmpty) {
+    return 'Zdjęcie';
+  }
+
+  return '';
+}
+
+String _resolveImageMimeType(String fileName) {
+  final extension = fileName.split('.').last.toLowerCase();
+  return switch (extension) {
+    'png' => 'image/png',
+    'webp' => 'image/webp',
+    'gif' => 'image/gif',
+    'jpg' || 'jpeg' => 'image/jpeg',
+    _ => 'image/jpeg',
+  };
 }

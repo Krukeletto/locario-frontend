@@ -265,6 +265,7 @@ class _NotificationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -350,7 +351,7 @@ class _NotificationTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _formatTimestamp(entry.timestamp),
+                      _formatTimestamp(entry.timestamp, l10n),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: scheme.onSurface.withValues(alpha: 0.4),
                       ),
@@ -365,14 +366,16 @@ class _NotificationTile extends StatelessWidget {
     );
   }
 
-  String _formatTimestamp(DateTime dt) {
+  String _formatTimestamp(DateTime dt, AppLocalizations l10n) {
     final now = DateTime.now();
     final diff = now.difference(dt);
 
-    if (diff.inMinutes < 1) return 'now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return l10n.relativeTimeNow;
+    if (diff.inMinutes < 60) {
+      return l10n.relativeTimeMinutesAgo(diff.inMinutes);
+    }
+    if (diff.inHours < 24) return l10n.relativeTimeHoursAgo(diff.inHours);
+    if (diff.inDays < 7) return l10n.relativeTimeDaysAgo(diff.inDays);
 
     return '${dt.day}/${dt.month}/${dt.year}';
   }

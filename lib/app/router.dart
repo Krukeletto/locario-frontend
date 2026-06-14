@@ -154,15 +154,22 @@ GoRouter createAppRouter({
     refreshListenable: Listenable.merge([sessionController, legalController]),
     redirect: (context, state) {
       final normalizedLocation = normalizeIncomingLocation(state.uri);
-      if (normalizedLocation != null && normalizedLocation != state.uri.path) {
-        return normalizedLocation;
-      }
 
       if (sessionController.isLoading) {
         return null;
       }
 
-      final location = state.uri.path;
+      final location = normalizedLocation ?? state.uri.path;
+      if (normalizedLocation != null && normalizedLocation != state.uri.path) {
+        if (!sessionController.isAuthenticated && _requiresAuth(location)) {
+          return _loginRedirect(
+            returnLocation: navigationHistory.lastSafeLocation,
+            targetLocation: location,
+          );
+        }
+        return normalizedLocation;
+      }
+
       final isAuthed = sessionController.isAuthenticated;
 
       if (isAuthed &&

@@ -17,15 +17,16 @@ class MyGroupsCache {
     if (_myGroups != null) return;
     try {
       final repo = HttpGroupRepository();
-      _myGroups = await repo.fetchMyGroups(
+      final groups = await repo.fetchMyGroups(
         accessToken: accessToken,
         tokenType: tokenType,
       );
+      _myGroups = groups.toList();
     } catch (_) {}
   }
 
   static void set(List<Group> groups) {
-    _myGroups = groups;
+    _myGroups = groups.toList();
   }
 
   static void invalidate() {

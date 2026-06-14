@@ -499,6 +499,11 @@
   "hubCreateEventLocationLookupFailed": "We couldn't resolve that location. Try another address or point on the map.",
   "hubMessagesTitle": "Messages",
   "hubMessagesSubtitle": "Direct messages",
+  "hubMessagesDirectTab": "Direct",
+  "hubMessagesGroupsTab": "Groups",
+  "hubMessagesEmptyDirect": "No direct messages",
+  "hubMessagesEmptyGroups": "No group messages",
+  "hubMessagesThreadEmpty": "No messages",
   "hubCommunityTitle": "Community",
   "hubCommunitySubtitle": "Local updates",
   "hubFriendsTitle": "Friends",
@@ -735,6 +740,31 @@
   "featureComingSoon": "This section is still being built.",
   "networkError": "Network error. Please check your connection.",
   "networkErrorRetry": "Retry",
+  "relativeTimeNow": "now",
+  "relativeTimeMinutesAgo": "{count, plural, one {1m ago} other {{count}m ago}}",
+  "@relativeTimeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeTimeHoursAgo": "{count, plural, one {1h ago} other {{count}h ago}}",
+  "@relativeTimeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeTimeDaysAgo": "{count, plural, one {1d ago} other {{count}d ago}}",
+  "@relativeTimeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "shareEventMessage": "Check out this event on Locario: {title}\n\n{url}",
   "@shareEventMessage": {
     "placeholders": {

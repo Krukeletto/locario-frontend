@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locario/features/chat/chat_repository.dart';
@@ -37,6 +39,46 @@ void main() {
 
     expect(find.text('Anna'), findsOneWidget);
     expect(find.text('Cześć!'), findsOneWidget);
+  });
+
+  testWidgets('separates direct and group conversations into tabs', (
+    tester,
+  ) async {
+    final repository = _FakeChatRepository(
+      conversations: [
+        ChatConversation(
+          id: 'dm_user-1_user-2',
+          participantIds: const ['user-1', 'user-2'],
+          participantNames: const {'user-1': 'Tester', 'user-2': 'Anna'},
+          lastMessage: 'Hej',
+          updatedAt: DateTime(2026, 6, 14, 12, 30),
+        ),
+        ChatConversation(
+          id: 'group_group-1',
+          participantIds: const ['user-1', 'user-2', 'user-3'],
+          participantNames: const {'user-1': 'Tester'},
+          lastMessage: 'Spotkanie o 18',
+          updatedAt: DateTime(2026, 6, 14, 12, 31),
+          groupName: 'Climbing Club',
+          isGroup: true,
+        ),
+      ],
+    );
+
+    await _pumpWithAuth(tester, ChatListScreen(repository: repository));
+    await tester.pump();
+
+    expect(find.text('Direct'), findsOneWidget);
+    expect(find.text('Groups'), findsOneWidget);
+    expect(find.text('Anna'), findsOneWidget);
+    expect(find.text('Climbing Club'), findsNothing);
+
+    await tester.tap(find.text('Groups'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Anna'), findsNothing);
+    expect(find.text('Climbing Club'), findsOneWidget);
+    expect(find.text('Spotkanie o 18'), findsOneWidget);
   });
 
   testWidgets('keeps last conversations when stream emits empty list', (
@@ -116,6 +158,33 @@ void main() {
     expect(ownBubble.alignment, Alignment.centerRight);
   });
 
+  testWidgets('renders image messages', (tester) async {
+    final repository = _FakeChatRepository(
+      messages: [
+        ChatMessage(
+          id: 'msg-1',
+          senderId: 'firebase-2',
+          senderAppUserId: 'user-2',
+          senderName: 'Anna',
+          content: '',
+          imageUrl: 'https://media.locario.pl/chats/chat-1/photo.jpg',
+          timestamp: DateTime(2026, 6, 14, 12, 30),
+        ),
+      ],
+    );
+
+    await _pumpWithAuth(
+      tester,
+      ChatThreadScreen(chatId: 'dm_user-1_user-2', repository: repository),
+    );
+
+    await tester.pump();
+
+    expect(find.byType(CachedNetworkImage), findsOneWidget);
+    expect(find.byKey(const Key('chat-message-image')), findsOneWidget);
+    expect(find.text('Anna'), findsOneWidget);
+  });
+
   testWidgets('sends direct messages through repository', (tester) async {
     final repository = _FakeChatRepository();
 
@@ -135,6 +204,37 @@ void main() {
 
     expect(repository.sentDirectMessages, ['Nowa wiadomość']);
     expect(repository.sentGroupMessages, isEmpty);
+  });
+
+  testWidgets('sends selected image through repository', (tester) async {
+    final repository = _FakeChatRepository();
+
+    await _pumpWithAuth(
+      tester,
+      ChatThreadScreen(
+        chatId: 'dm_user-1_user-2',
+        recipientId: 'user-2',
+        recipientName: 'Anna',
+        repository: repository,
+        pickImage: () async =>
+            ChatPickedImage(bytes: _pngBytes(), fileName: 'photo.png'),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.image_outlined));
+    await tester.pump();
+
+    expect(
+      find.byKey(const Key('chat-selected-image-preview')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byIcon(Icons.send_rounded));
+    await tester.pump();
+
+    expect(repository.sentDirectMessages, ['']);
+    expect(repository.sentDirectImageNames, ['photo.png']);
+    expect(find.byKey(const Key('chat-selected-image-preview')), findsNothing);
   });
 
   testWidgets('sends group messages through repository', (tester) async {
@@ -218,6 +318,8 @@ class _FakeChatRepository extends FirestoreChatRepository {
   final Stream<List<ChatConversation>>? _conversationStream;
   final List<String> sentDirectMessages = [];
   final List<String> sentGroupMessages = [];
+  final List<String> sentDirectImageNames = [];
+  final List<String> sentGroupImageNames = [];
   List<String> lastParticipantIds = const [];
   String? lastGroupName;
 
@@ -239,8 +341,14 @@ class _FakeChatRepository extends FirestoreChatRepository {
     required String recipientId,
     required String recipientName,
     required String content,
+    ChatImageAttachment? image,
+    String? accessToken,
+    String tokenType = 'Bearer',
   }) async {
     sentDirectMessages.add(content);
+    if (image != null) {
+      sentDirectImageNames.add(image.fileName);
+    }
   }
 
   @override
@@ -251,11 +359,89 @@ class _FakeChatRepository extends FirestoreChatRepository {
     required String groupName,
     required List<String> participantIds,
     required String content,
+    ChatImageAttachment? image,
+    String? accessToken,
+    String tokenType = 'Bearer',
   }) async {
     sentGroupMessages.add(content);
+    if (image != null) {
+      sentGroupImageNames.add(image.fileName);
+    }
     lastGroupName = groupName;
     lastParticipantIds = participantIds;
   }
+}
+
+Uint8List _pngBytes() {
+  return Uint8List.fromList([
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
+    0x00,
+    0x00,
+    0x00,
+    0x0D,
+    0x49,
+    0x48,
+    0x44,
+    0x52,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x08,
+    0x06,
+    0x00,
+    0x00,
+    0x00,
+    0x1F,
+    0x15,
+    0xC4,
+    0x89,
+    0x00,
+    0x00,
+    0x00,
+    0x0A,
+    0x49,
+    0x44,
+    0x41,
+    0x54,
+    0x78,
+    0x9C,
+    0x63,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x05,
+    0x00,
+    0x01,
+    0x0D,
+    0x0A,
+    0x2D,
+    0xB4,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x49,
+    0x45,
+    0x4E,
+    0x44,
+    0xAE,
+    0x42,
+    0x60,
+    0x82,
+  ]);
 }
 
 class _MemoryAuthStorage implements AuthTokenStorage {

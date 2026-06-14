@@ -25,8 +25,8 @@ void main() {
         ),
         profile: _profile,
       );
-      const repository = _FakeGroupRepository(
-        discoverGroups: [
+      final repository = _FakeGroupRepository(
+        discoverGroups: const [
           Group(
             id: 'discover-1',
             name: 'Open Group',
@@ -43,7 +43,7 @@ void main() {
             currentUserMembership: GroupMembershipStatus.active,
           ),
         ],
-        myGroups: [
+        myGroups: const [
           Group(
             id: 'my-1',
             name: 'My Group',
@@ -53,7 +53,7 @@ void main() {
             currentUserMembership: GroupMembershipStatus.active,
           ),
         ],
-        detailGroups: {
+        detailGroups: const {
           'discover-1': Group(
             id: 'discover-1',
             name: 'Open Group',
@@ -85,6 +85,47 @@ void main() {
       expect(controller.detailGroup!.name, 'Open Group');
     },
   );
+
+  test('notifies listeners after liking a post', () async {
+    final sessionController = _TestSessionController(
+      tokens: AuthTokens(
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+        tokenType: 'Bearer',
+        expiresAt: DateTime.utc(2099, 1, 1),
+      ),
+      profile: _profile,
+    );
+    final repository = _FakeGroupRepository(
+      feedItems: [
+        GroupFeedItem(
+          type: GroupFeedItemType.post,
+          id: 'post-1',
+          likeCount: 0,
+          likedByMe: false,
+          createdAt: DateTime.utc(2026, 6, 8),
+        ),
+      ],
+    );
+    final controller = GroupController(
+      groupRepository: repository,
+      eventRepository: FakeEventRepository(),
+      cacheService: _MemoryCacheService(),
+      sessionController: sessionController,
+    );
+
+    await controller.loadGroupFeed('group-1');
+
+    var notifications = 0;
+    controller.addListener(() => notifications++);
+
+    await controller.likePost('group-1', 'post-1');
+
+    expect(repository.likedPostIds, ['post-1']);
+    expect(notifications, greaterThan(0));
+    expect(controller.detailFeed.single.likedByMe, isTrue);
+    expect(controller.detailFeed.single.likeCount, 1);
+  });
 }
 
 final _profile = UserProfile(
@@ -186,15 +227,18 @@ class _MemoryCacheService extends CacheService {
 }
 
 class _FakeGroupRepository implements GroupRepository {
-  const _FakeGroupRepository({
+  _FakeGroupRepository({
     this.discoverGroups = const [],
     this.myGroups = const [],
     this.detailGroups = const {},
+    this.feedItems = const [],
   });
 
   final List<Group> discoverGroups;
   final List<Group> myGroups;
   final Map<String, Group> detailGroups;
+  final List<GroupFeedItem> feedItems;
+  final List<String> likedPostIds = [];
 
   @override
   Future<List<Group>> fetchDiscoverGroups({
@@ -353,7 +397,7 @@ class _FakeGroupRepository implements GroupRepository {
     String tokenType = 'Bearer',
     int page = 0,
     int size = 20,
-  }) => throw const GroupRepositoryException('Unable to fetch feed');
+  }) async => feedItems;
 
   @override
   Future<GroupPost> createPost(
@@ -579,7 +623,10 @@ class _FakeGroupRepository implements GroupRepository {
     String postId, {
     required String accessToken,
     String tokenType = 'Bearer',
-  }) => throw UnimplementedError();
+  }) async {
+    likedPostIds.add(postId);
+    return GroupPost(id: postId, likeCount: 1, likedByMe: true);
+  }
 
   @override
   Future<GroupPost> unlikePost(

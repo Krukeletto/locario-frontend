@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /chats/{chatId} {
+      allow read, create, update: if request.auth != null;
+      allow delete: if false;
+    }
+
+    match /chats/{chatId}/messages/{messageId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.senderId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /{path=**}/messages/{messageId} {
+      allow read: if request.auth != null;
+    }
+  }
+}

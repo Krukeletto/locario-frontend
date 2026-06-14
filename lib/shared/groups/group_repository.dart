@@ -1527,7 +1527,7 @@ class HttpGroupRepository implements GroupRepository {
       _uri('/api/media/presigned-upload-url'),
       headers: _authHeaders(accessToken, tokenType, includeJson: true),
       body: jsonEncode({
-        'entityType': 'GROUP_POST',
+        'entityType': 'POST_MEDIA',
         'entityId': groupId,
         'fileName': fileName,
         'contentType': contentType,

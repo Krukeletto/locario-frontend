@@ -2348,6 +2348,36 @@ abstract class AppLocalizations {
   /// **'Direct messages'**
   String get hubMessagesSubtitle;
 
+  /// No description provided for @hubMessagesDirectTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct'**
+  String get hubMessagesDirectTab;
+
+  /// No description provided for @hubMessagesGroupsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get hubMessagesGroupsTab;
+
+  /// No description provided for @hubMessagesEmptyDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'No direct messages'**
+  String get hubMessagesEmptyDirect;
+
+  /// No description provided for @hubMessagesEmptyGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'No group messages'**
+  String get hubMessagesEmptyGroups;
+
+  /// No description provided for @hubMessagesThreadEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages'**
+  String get hubMessagesThreadEmpty;
+
   /// No description provided for @hubCommunityTitle.
   ///
   /// In en, this message translates to:
@@ -3451,6 +3481,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get networkErrorRetry;
+
+  /// No description provided for @relativeTimeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'now'**
+  String get relativeTimeNow;
+
+  /// No description provided for @relativeTimeMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one {1m ago} other {{count}m ago}}'**
+  String relativeTimeMinutesAgo(int count);
+
+  /// No description provided for @relativeTimeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one {1h ago} other {{count}h ago}}'**
+  String relativeTimeHoursAgo(int count);
+
+  /// No description provided for @relativeTimeDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one {1d ago} other {{count}d ago}}'**
+  String relativeTimeDaysAgo(int count);
 
   /// No description provided for @shareEventMessage.
   ///

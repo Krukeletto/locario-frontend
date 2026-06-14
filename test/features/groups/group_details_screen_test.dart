@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:locario/features/explore/models.dart';
 import 'package:locario/features/groups/group_details_screen.dart';
+import 'package:locario/features/groups/group_post_comments_screen.dart';
 import 'package:locario/shared/auth/auth_api.dart';
 import 'package:locario/shared/auth/auth_models.dart';
 import 'package:locario/shared/auth/auth_repository.dart';
@@ -363,6 +364,56 @@ void main() {
     expect(groupRepository.deletedPostIds, ['post-1']);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('adds a comment after loading fixed-length comments', (
+    tester,
+  ) async {
+    final sessionController = await _createAuthenticatedSessionController();
+    final groupRepository = _FakeGroupRepository(
+      detailGroup: const Group(id: 'group-1', name: 'Climbing Club'),
+      comments: [
+        GroupPostComment(
+          id: 'comment-1',
+          postId: 'post-1',
+          authorId: 'user-2',
+          authorUsername: 'Anna',
+          content: 'Existing comment',
+          createdAt: DateTime.utc(2026, 6, 8, 10),
+        ),
+      ].toList(growable: false),
+    );
+    final groupController = GroupController(
+      groupRepository: groupRepository,
+      eventRepository: FakeEventRepository(),
+      cacheService: _StubCacheService(),
+      sessionController: sessionController,
+    );
+
+    await tester.pumpWidget(
+      buildLocalizedTestApp(
+        home: AuthScope(
+          controller: sessionController,
+          child: GroupScope(
+            controller: groupController,
+            child: const GroupPostCommentsScreen(
+              groupId: 'group-1',
+              postId: 'post-1',
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'New comment');
+    await tester.tap(find.byIcon(Icons.send_rounded));
+    await tester.pumpAndSettle();
+
+    expect(groupRepository.createdCommentContents, ['New comment']);
+    expect(find.text('New comment'), findsOneWidget);
+    expect(find.text('Existing comment'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<void> _pumpGroupDetails(
@@ -503,6 +554,7 @@ class _FakeGroupRepository implements GroupRepository {
     this.feedItems = const [],
     this.events = const [],
     this.members = const [],
+    this.comments = const [],
     this.deletePostCompleter,
   });
 
@@ -510,8 +562,10 @@ class _FakeGroupRepository implements GroupRepository {
   final List<GroupFeedItem> feedItems;
   final List<ExploreEvent> events;
   final List<GroupMember> members;
+  final List<GroupPostComment> comments;
   final Completer<void>? deletePostCompleter;
   final List<String> createdPostContents = [];
+  final List<String> createdCommentContents = [];
   final List<String> deletedPostIds = [];
 
   @override
@@ -867,7 +921,7 @@ class _FakeGroupRepository implements GroupRepository {
     String tokenType = 'Bearer',
     int page = 0,
     int size = 20,
-  }) => throw UnimplementedError();
+  }) async => comments;
 
   @override
   Future<GroupPostComment> createComment(
@@ -876,7 +930,17 @@ class _FakeGroupRepository implements GroupRepository {
     GroupPostCommentRequest request, {
     required String accessToken,
     String tokenType = 'Bearer',
-  }) => throw UnimplementedError();
+  }) async {
+    createdCommentContents.add(request.content);
+    return GroupPostComment(
+      id: 'comment-created',
+      postId: postId,
+      authorId: 'user-1',
+      authorUsername: 'tester',
+      content: request.content,
+      createdAt: DateTime.utc(2026, 6, 8, 12),
+    );
+  }
 
   @override
   Future<GroupPostComment> updateComment(

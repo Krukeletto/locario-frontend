@@ -49,7 +49,7 @@ class _GroupPostCommentsScreenState extends State<GroupPostCommentsScreen> {
     );
     if (!mounted) return;
     setState(() {
-      _comments = items;
+      _comments = items.toList();
       _isLoading = false;
     });
   }
@@ -339,7 +339,7 @@ class _CommentCard extends StatelessWidget {
                           const SizedBox(width: 6),
                           if (comment.createdAt != null)
                             Text(
-                              _formatShortTime(comment.createdAt!),
+                              _formatShortTime(comment.createdAt!, l10n),
                               style: theme.textTheme.labelSmall?.copyWith(
                                 color: scheme.onSurface.withValues(alpha: 0.5),
                               ),
@@ -419,15 +419,15 @@ class _CommentCard extends StatelessWidget {
   }
 }
 
-String _formatShortTime(DateTime date) {
+String _formatShortTime(DateTime date, AppLocalizations l10n) {
   final local = date.toLocal();
   final now = DateTime.now();
   final diff = now.difference(local);
 
-  if (diff.inMinutes < 1) return 'now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m';
-  if (diff.inHours < 24) return '${diff.inHours}h';
-  if (diff.inDays < 7) return '${diff.inDays}d';
+  if (diff.inMinutes < 1) return l10n.relativeTimeNow;
+  if (diff.inMinutes < 60) return l10n.relativeTimeMinutesAgo(diff.inMinutes);
+  if (diff.inHours < 24) return l10n.relativeTimeHoursAgo(diff.inHours);
+  if (diff.inDays < 7) return l10n.relativeTimeDaysAgo(diff.inDays);
 
   return '${local.day.toString().padLeft(2, '0')}.${local.month.toString().padLeft(2, '0')}';
 }

@@ -1,1 +1,29 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"locario-events","appId":"1:931853293854:android:d6ceba32d4c6ce4bbcd10f","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"locario-events","configurations":{"android":"1:931853293854:android:d6ceba32d4c6ce4bbcd10f","ios":"1:931853293854:ios:3b810a5939f6cb28bcd10f","macos":"1:931853293854:ios:3b810a5939f6cb28bcd10f","web":"1:931853293854:web:ce114e9bf7a7867abcd10f","windows":"1:931853293854:web:64ad463941d01dcfbcd10f"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "locario-events",
+          "appId": "1:931853293854:android:d6ceba32d4c6ce4bbcd10f",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "locario-events",
+          "configurations": {
+            "android": "1:931853293854:android:d6ceba32d4c6ce4bbcd10f",
+            "ios": "1:931853293854:ios:3b810a5939f6cb28bcd10f",
+            "macos": "1:931853293854:ios:3b810a5939f6cb28bcd10f",
+            "web": "1:931853293854:web:ce114e9bf7a7867abcd10f",
+            "windows": "1:931853293854:web:64ad463941d01dcfbcd10f"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

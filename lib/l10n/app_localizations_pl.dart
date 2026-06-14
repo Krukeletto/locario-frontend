@@ -1263,6 +1263,21 @@ class AppLocalizationsPl extends AppLocalizations {
   String get hubMessagesSubtitle => 'Wiadomości prywatne';
 
   @override
+  String get hubMessagesDirectTab => 'Prywatne';
+
+  @override
+  String get hubMessagesGroupsTab => 'Grupowe';
+
+  @override
+  String get hubMessagesEmptyDirect => 'Brak wiadomości prywatnych';
+
+  @override
+  String get hubMessagesEmptyGroups => 'Brak wiadomości grupowych';
+
+  @override
+  String get hubMessagesThreadEmpty => 'Brak wiadomości';
+
+  @override
   String get hubCommunityTitle => 'Społeczność';
 
   @override
@@ -1862,6 +1877,48 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get networkErrorRetry => 'Ponów';
+
+  @override
+  String get relativeTimeNow => 'teraz';
+
+  @override
+  String relativeTimeMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count min temu',
+      many: '$count min temu',
+      few: '$count min temu',
+      one: '1 min temu',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String relativeTimeHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count godz. temu',
+      many: '$count godz. temu',
+      few: '$count godz. temu',
+      one: '1 godz. temu',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String relativeTimeDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dnia temu',
+      many: '$count dni temu',
+      few: '$count dni temu',
+      one: '1 dzień temu',
+    );
+    return '$_temp0';
+  }
 
   @override
   String shareEventMessage(String title, String url) {

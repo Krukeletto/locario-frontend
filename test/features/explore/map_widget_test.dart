@@ -52,6 +52,7 @@ void main() {
       await tester.pump();
 
       expect(find.byKey(const Key('map-message-banner')), findsOneWidget);
+      expect(find.byType(FloatingActionButton), findsNothing);
       expect(
         find.text('Enable location services to see your position.'),
         findsOneWidget,

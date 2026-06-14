@@ -1252,6 +1252,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hubMessagesSubtitle => 'Direct messages';
 
   @override
+  String get hubMessagesDirectTab => 'Direct';
+
+  @override
+  String get hubMessagesGroupsTab => 'Groups';
+
+  @override
+  String get hubMessagesEmptyDirect => 'No direct messages';
+
+  @override
+  String get hubMessagesEmptyGroups => 'No group messages';
+
+  @override
+  String get hubMessagesThreadEmpty => 'No messages';
+
+  @override
   String get hubCommunityTitle => 'Community';
 
   @override
@@ -1846,6 +1861,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get networkErrorRetry => 'Retry';
+
+  @override
+  String get relativeTimeNow => 'now';
+
+  @override
+  String relativeTimeMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '${count}m ago',
+      one: '1m ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String relativeTimeHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '${count}h ago',
+      one: '1h ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String relativeTimeDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '${count}d ago',
+      one: '1d ago',
+    );
+    return '$_temp0';
+  }
 
   @override
   String shareEventMessage(String title, String url) {

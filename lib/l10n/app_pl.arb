@@ -499,6 +499,11 @@
   "hubCreateEventLocationLookupFailed": "Nie udało się ustalić lokalizacji. Spróbuj wpisać inny adres lub wskaż punkt na mapie.",
   "hubMessagesTitle": "Wiadomości",
   "hubMessagesSubtitle": "Wiadomości prywatne",
+  "hubMessagesDirectTab": "Prywatne",
+  "hubMessagesGroupsTab": "Grupowe",
+  "hubMessagesEmptyDirect": "Brak wiadomości prywatnych",
+  "hubMessagesEmptyGroups": "Brak wiadomości grupowych",
+  "hubMessagesThreadEmpty": "Brak wiadomości",
   "hubCommunityTitle": "Społeczność",
   "hubCommunitySubtitle": "Lokalne aktualizacje",
   "hubFriendsTitle": "Znajomi",
@@ -735,6 +740,31 @@
   "featureComingSoon": "Ta sekcja jest jeszcze w przygotowaniu.",
   "networkError": "Błąd sieci. Sprawdź swoje połączenie.",
   "networkErrorRetry": "Ponów",
+  "relativeTimeNow": "teraz",
+  "relativeTimeMinutesAgo": "{count, plural, one {1 min temu} few {{count} min temu} many {{count} min temu} other {{count} min temu}}",
+  "@relativeTimeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeTimeHoursAgo": "{count, plural, one {1 godz. temu} few {{count} godz. temu} many {{count} godz. temu} other {{count} godz. temu}}",
+  "@relativeTimeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeTimeDaysAgo": "{count, plural, one {1 dzień temu} few {{count} dni temu} many {{count} dni temu} other {{count} dnia temu}}",
+  "@relativeTimeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "shareEventMessage": "Sprawdź to wydarzenie w Locario: {title}\n\n{url}",
   "@shareEventMessage": {
     "placeholders": {
