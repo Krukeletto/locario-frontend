@@ -2666,6 +2666,180 @@ abstract class AppLocalizations {
   /// **'New messages from your chats'**
   String get notificationTypeChatMessageDesc;
 
+  /// No description provided for @onboardingWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Locario'**
+  String get onboardingWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Locario gathers local events in one place, so it is easier to find something nearby and return to saved plans.'**
+  String get onboardingWelcomeBody;
+
+  /// No description provided for @onboardingLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App language'**
+  String get onboardingLanguageTitle;
+
+  /// No description provided for @onboardingValueMapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Map and list'**
+  String get onboardingValueMapTitle;
+
+  /// No description provided for @onboardingValueMapBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse events on a map or in a compact list.'**
+  String get onboardingValueMapBody;
+
+  /// No description provided for @onboardingValueListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local discovery'**
+  String get onboardingValueListTitle;
+
+  /// No description provided for @onboardingValueListBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter events by categories, dates and area.'**
+  String get onboardingValueListBody;
+
+  /// No description provided for @onboardingValueSavedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved events'**
+  String get onboardingValueSavedTitle;
+
+  /// No description provided for @onboardingValueSavedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep interesting events and return to them later.'**
+  String get onboardingValueSavedBody;
+
+  /// No description provided for @onboardingPermissionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions without surprises'**
+  String get onboardingPermissionsTitle;
+
+  /// No description provided for @onboardingPermissionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can use the app without some permissions. When something is missing, we will show a clear message where it matters.'**
+  String get onboardingPermissionsBody;
+
+  /// No description provided for @onboardingPermissionLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get onboardingPermissionLocationTitle;
+
+  /// No description provided for @onboardingPermissionLocationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Helps show events closest to you and center the map.'**
+  String get onboardingPermissionLocationBody;
+
+  /// No description provided for @onboardingPermissionNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get onboardingPermissionNotificationsTitle;
+
+  /// No description provided for @onboardingPermissionNotificationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders about events, messages and important updates.'**
+  String get onboardingPermissionNotificationsBody;
+
+  /// No description provided for @onboardingPermissionPhotosTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos and media'**
+  String get onboardingPermissionPhotosTitle;
+
+  /// No description provided for @onboardingPermissionPhotosBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed only when you add photos to your profile, groups or events.'**
+  String get onboardingPermissionPhotosBody;
+
+  /// No description provided for @onboardingPermissionCalendarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get onboardingPermissionCalendarTitle;
+
+  /// No description provided for @onboardingPermissionCalendarBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed only when you add an event to your calendar.'**
+  String get onboardingPermissionCalendarBody;
+
+  /// No description provided for @onboardingGrantTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable key features'**
+  String get onboardingGrantTitle;
+
+  /// No description provided for @onboardingGrantBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Location and notifications are optional. If you decline, Locario will still work wherever it can.'**
+  String get onboardingGrantBody;
+
+  /// No description provided for @onboardingGrantLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant'**
+  String get onboardingGrantLocation;
+
+  /// No description provided for @onboardingGrantNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant'**
+  String get onboardingGrantNotifications;
+
+  /// No description provided for @onboardingDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All set'**
+  String get onboardingDoneTitle;
+
+  /// No description provided for @onboardingDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can start discovering events. You can change permissions and language later in settings.'**
+  String get onboardingDoneBody;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get onboardingBack;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get onboardingFinish;
+
   /// No description provided for @profileTitle.
   ///
   /// In en, this message translates to:
@@ -3175,6 +3349,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your request was not approved.'**
   String get profileOrganizerVerificationRejectedSubtitle;
+
+  /// No description provided for @permissionsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions'**
+  String get permissionsSectionTitle;
+
+  /// No description provided for @permissionsSectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check which system features are available to Locario.'**
+  String get permissionsSectionSubtitle;
+
+  /// No description provided for @permissionLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get permissionLocationTitle;
+
+  /// No description provided for @permissionLocationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby events and map centering.'**
+  String get permissionLocationSubtitle;
+
+  /// No description provided for @permissionNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get permissionNotificationsTitle;
+
+  /// No description provided for @permissionNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders, messages and updates.'**
+  String get permissionNotificationsSubtitle;
+
+  /// No description provided for @permissionPhotosTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos and media'**
+  String get permissionPhotosTitle;
+
+  /// No description provided for @permissionPhotosSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding photos to profiles, groups and events.'**
+  String get permissionPhotosSubtitle;
+
+  /// No description provided for @permissionCalendarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get permissionCalendarTitle;
+
+  /// No description provided for @permissionCalendarSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding events to your calendar.'**
+  String get permissionCalendarSubtitle;
+
+  /// No description provided for @permissionGrant.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant'**
+  String get permissionGrant;
+
+  /// No description provided for @permissionFix.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix'**
+  String get permissionFix;
+
+  /// No description provided for @permissionStatusGranted.
+  ///
+  /// In en, this message translates to:
+  /// **'Granted'**
+  String get permissionStatusGranted;
+
+  /// No description provided for @permissionStatusLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Limited'**
+  String get permissionStatusLimited;
+
+  /// No description provided for @permissionStatusMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission missing'**
+  String get permissionStatusMissing;
+
+  /// No description provided for @permissionStatusBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked in settings'**
+  String get permissionStatusBlocked;
+
+  /// No description provided for @permissionStatusUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable on this device'**
+  String get permissionStatusUnsupported;
+
+  /// No description provided for @permissionStatusContextual.
+  ///
+  /// In en, this message translates to:
+  /// **'Used contextually'**
+  String get permissionStatusContextual;
 
   /// No description provided for @savedTitle.
   ///

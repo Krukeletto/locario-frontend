@@ -11,10 +11,14 @@ import '../../app/locale/locale_scope.dart';
 import '../../app/theme/theme_scope.dart';
 import '../../shared/auth/auth_api.dart';
 import '../../shared/auth/auth_scope.dart';
+import '../../shared/permissions/app_permission_service.dart';
 import '../../shared/services/feedback_service.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, AppPermissionService? permissionService})
+    : _permissionService = permissionService;
+
+  final AppPermissionService? _permissionService;
 
   @override
   Widget build(BuildContext context) {
@@ -149,6 +153,11 @@ class SettingsScreen extends StatelessWidget {
                   ),
               ],
             ),
+          ),
+          const SizedBox(height: 14),
+          _PermissionSettingsSection(
+            permissionService:
+                _permissionService ?? DeviceAppPermissionService(),
           ),
           const SizedBox(height: 14),
           _SettingsSection(
@@ -639,6 +648,234 @@ class _NotificationToggle extends StatelessWidget {
         l10n.notificationTypeEventPublishedDesc,
       NotificationType.systemMessage => l10n.notificationTypeSystemMessageDesc,
       NotificationType.chatMessage => l10n.notificationTypeChatMessageDesc,
+    };
+  }
+}
+
+class _PermissionSettingsSection extends StatefulWidget {
+  const _PermissionSettingsSection({required this.permissionService});
+
+  final AppPermissionService permissionService;
+
+  @override
+  State<_PermissionSettingsSection> createState() =>
+      _PermissionSettingsSectionState();
+}
+
+class _PermissionSettingsSectionState
+    extends State<_PermissionSettingsSection> {
+  AppPermissionSnapshot? _snapshot;
+  bool _isLoading = true;
+  String? _busyKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    final snapshot = await widget.permissionService.loadStatus();
+    if (!mounted) return;
+    setState(() {
+      _snapshot = snapshot;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _run(String key, Future<void> Function() action) async {
+    if (_busyKey != null) return;
+    setState(() => _busyKey = key);
+    await action();
+    await _refresh();
+    if (mounted) {
+      setState(() => _busyKey = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final snapshot = _snapshot;
+
+    return _SettingsSection(
+      title: l10n.permissionsSectionTitle,
+      subtitle: l10n.permissionsSectionSubtitle,
+      child: _isLoading || snapshot == null
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : Column(
+              children: [
+                _PermissionRow(
+                  icon: Icons.my_location_rounded,
+                  title: l10n.permissionLocationTitle,
+                  subtitle: l10n.permissionLocationSubtitle,
+                  status: snapshot.location,
+                  isBusy: _busyKey == 'location',
+                  requestLabel: l10n.permissionGrant,
+                  onPressed: () => _run('location', () async {
+                    await widget.permissionService.requestLocation();
+                  }),
+                ),
+                const SizedBox(height: 12),
+                _PermissionRow(
+                  icon: Icons.notifications_active_rounded,
+                  title: l10n.permissionNotificationsTitle,
+                  subtitle: l10n.permissionNotificationsSubtitle,
+                  status: snapshot.notifications,
+                  isBusy: _busyKey == 'notifications',
+                  requestLabel: l10n.permissionGrant,
+                  onPressed: () => _run('notifications', () async {
+                    await widget.permissionService.requestNotifications();
+                  }),
+                ),
+                const SizedBox(height: 12),
+                _PermissionRow(
+                  icon: Icons.photo_library_rounded,
+                  title: l10n.permissionPhotosTitle,
+                  subtitle: l10n.permissionPhotosSubtitle,
+                  status: snapshot.photos,
+                  isBusy: _busyKey == 'photos',
+                  requestLabel: l10n.permissionFix,
+                  forceSettingsAction: true,
+                  onPressed: () => _run(
+                    'photos',
+                    () async => widget.permissionService.openAppSettings(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _PermissionRow(
+                  icon: Icons.calendar_month_rounded,
+                  title: l10n.permissionCalendarTitle,
+                  subtitle: l10n.permissionCalendarSubtitle,
+                  status: snapshot.calendar,
+                  isBusy: _busyKey == 'calendar',
+                  requestLabel: l10n.permissionFix,
+                  forceSettingsAction: true,
+                  onPressed: () => _run(
+                    'calendar',
+                    () async => widget.permissionService.openAppSettings(),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class _PermissionRow extends StatelessWidget {
+  const _PermissionRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.status,
+    required this.isBusy,
+    required this.requestLabel,
+    required this.onPressed,
+    this.forceSettingsAction = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final AppPermissionStatus status;
+  final bool isBusy;
+  final String requestLabel;
+  final Future<void> Function() onPressed;
+  final bool forceSettingsAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final granted =
+        status == AppPermissionStatus.granted ||
+        status == AppPermissionStatus.limited ||
+        status == AppPermissionStatus.unsupported;
+    final blocked =
+        status == AppPermissionStatus.permanentlyDenied ||
+        status == AppPermissionStatus.restricted;
+    final accent = granted
+        ? Colors.green
+        : blocked || forceSettingsAction
+        ? scheme.error
+        : scheme.onSurface.withValues(alpha: 0.58);
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: accent, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurface.withValues(alpha: 0.62),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _statusText(l10n, status),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: accent,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 10),
+        if (!granted)
+          FilledButton.tonal(
+            onPressed: isBusy ? null : onPressed,
+            child: isBusy
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(
+                    blocked || forceSettingsAction
+                        ? l10n.permissionFix
+                        : requestLabel,
+                  ),
+          ),
+      ],
+    );
+  }
+
+  String _statusText(AppLocalizations l10n, AppPermissionStatus status) {
+    return switch (status) {
+      AppPermissionStatus.granted => l10n.permissionStatusGranted,
+      AppPermissionStatus.limited => l10n.permissionStatusLimited,
+      AppPermissionStatus.denied => l10n.permissionStatusMissing,
+      AppPermissionStatus.permanentlyDenied => l10n.permissionStatusBlocked,
+      AppPermissionStatus.restricted => l10n.permissionStatusBlocked,
+      AppPermissionStatus.unsupported => l10n.permissionStatusContextual,
     };
   }
 }

@@ -67,8 +67,6 @@ class NotificationService {
     if (initialMessage != null) {
       _handleNotificationTap(initialMessage);
     }
-
-    _requestPermissionsAfterDelay();
   }
 
   static Future<void> subscribeToTopic(String topic) async {
@@ -85,24 +83,18 @@ class NotificationService {
   // Permissions
   // ---------------------------------------------------------------------------
 
-  static void _requestPermissionsAfterDelay() {
-    Future.delayed(const Duration(seconds: 2), () async {
-      if (defaultTargetPlatform == TargetPlatform.iOS) {
-        final messaging = FirebaseMessaging.instance;
-        await messaging.requestPermission(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
-      }
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        final androidImplementation = _localNotifications
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >();
-        await androidImplementation?.requestNotificationsPermission();
-      }
-    });
+  static Future<void> requestPermissions() async {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final messaging = FirebaseMessaging.instance;
+      await messaging.requestPermission(alert: true, badge: true, sound: true);
+    }
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      final androidImplementation = _localNotifications
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      await androidImplementation?.requestNotificationsPermission();
+    }
   }
 
   // ---------------------------------------------------------------------------

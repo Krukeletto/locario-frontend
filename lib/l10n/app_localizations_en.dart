@@ -1427,6 +1427,104 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationTypeChatMessageDesc => 'New messages from your chats';
 
   @override
+  String get onboardingWelcomeTitle => 'Welcome to Locario';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'Locario gathers local events in one place, so it is easier to find something nearby and return to saved plans.';
+
+  @override
+  String get onboardingLanguageTitle => 'App language';
+
+  @override
+  String get onboardingValueMapTitle => 'Map and list';
+
+  @override
+  String get onboardingValueMapBody =>
+      'Browse events on a map or in a compact list.';
+
+  @override
+  String get onboardingValueListTitle => 'Local discovery';
+
+  @override
+  String get onboardingValueListBody =>
+      'Filter events by categories, dates and area.';
+
+  @override
+  String get onboardingValueSavedTitle => 'Saved events';
+
+  @override
+  String get onboardingValueSavedBody =>
+      'Keep interesting events and return to them later.';
+
+  @override
+  String get onboardingPermissionsTitle => 'Permissions without surprises';
+
+  @override
+  String get onboardingPermissionsBody =>
+      'You can use the app without some permissions. When something is missing, we will show a clear message where it matters.';
+
+  @override
+  String get onboardingPermissionLocationTitle => 'Location';
+
+  @override
+  String get onboardingPermissionLocationBody =>
+      'Helps show events closest to you and center the map.';
+
+  @override
+  String get onboardingPermissionNotificationsTitle => 'Notifications';
+
+  @override
+  String get onboardingPermissionNotificationsBody =>
+      'Reminders about events, messages and important updates.';
+
+  @override
+  String get onboardingPermissionPhotosTitle => 'Photos and media';
+
+  @override
+  String get onboardingPermissionPhotosBody =>
+      'Needed only when you add photos to your profile, groups or events.';
+
+  @override
+  String get onboardingPermissionCalendarTitle => 'Calendar';
+
+  @override
+  String get onboardingPermissionCalendarBody =>
+      'Needed only when you add an event to your calendar.';
+
+  @override
+  String get onboardingGrantTitle => 'Enable key features';
+
+  @override
+  String get onboardingGrantBody =>
+      'Location and notifications are optional. If you decline, Locario will still work wherever it can.';
+
+  @override
+  String get onboardingGrantLocation => 'Grant';
+
+  @override
+  String get onboardingGrantNotifications => 'Grant';
+
+  @override
+  String get onboardingDoneTitle => 'All set';
+
+  @override
+  String get onboardingDoneBody =>
+      'You can start discovering events. You can change permissions and language later in settings.';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingBack => 'Back';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingFinish => 'Start';
+
+  @override
   String get profileTitle => 'Profile';
 
   @override
@@ -1704,6 +1802,63 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileOrganizerVerificationRejectedSubtitle =>
       'Your request was not approved.';
+
+  @override
+  String get permissionsSectionTitle => 'Permissions';
+
+  @override
+  String get permissionsSectionSubtitle =>
+      'Check which system features are available to Locario.';
+
+  @override
+  String get permissionLocationTitle => 'Location';
+
+  @override
+  String get permissionLocationSubtitle => 'Nearby events and map centering.';
+
+  @override
+  String get permissionNotificationsTitle => 'Notifications';
+
+  @override
+  String get permissionNotificationsSubtitle =>
+      'Reminders, messages and updates.';
+
+  @override
+  String get permissionPhotosTitle => 'Photos and media';
+
+  @override
+  String get permissionPhotosSubtitle =>
+      'Adding photos to profiles, groups and events.';
+
+  @override
+  String get permissionCalendarTitle => 'Calendar';
+
+  @override
+  String get permissionCalendarSubtitle => 'Adding events to your calendar.';
+
+  @override
+  String get permissionGrant => 'Grant';
+
+  @override
+  String get permissionFix => 'Fix';
+
+  @override
+  String get permissionStatusGranted => 'Granted';
+
+  @override
+  String get permissionStatusLimited => 'Limited';
+
+  @override
+  String get permissionStatusMissing => 'Permission missing';
+
+  @override
+  String get permissionStatusBlocked => 'Blocked in settings';
+
+  @override
+  String get permissionStatusUnsupported => 'Unavailable on this device';
+
+  @override
+  String get permissionStatusContextual => 'Used contextually';
 
   @override
   String get savedTitle => 'Saved';

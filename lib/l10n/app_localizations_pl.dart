@@ -1439,6 +1439,104 @@ class AppLocalizationsPl extends AppLocalizations {
       'Nowe wiadomości z Twoich czatów';
 
   @override
+  String get onboardingWelcomeTitle => 'Witaj w Locario';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'Locario zbiera lokalne wydarzenia w jednym miejscu, żeby łatwiej było znaleźć coś blisko Ciebie i wracać do zapisanych planów.';
+
+  @override
+  String get onboardingLanguageTitle => 'Język aplikacji';
+
+  @override
+  String get onboardingValueMapTitle => 'Mapa i lista';
+
+  @override
+  String get onboardingValueMapBody =>
+      'Przeglądaj wydarzenia na mapie albo w kompaktowej liście.';
+
+  @override
+  String get onboardingValueListTitle => 'Lokalne odkrywanie';
+
+  @override
+  String get onboardingValueListBody =>
+      'Filtruj wydarzenia po kategoriach, terminach i obszarze.';
+
+  @override
+  String get onboardingValueSavedTitle => 'Zapisane wydarzenia';
+
+  @override
+  String get onboardingValueSavedBody =>
+      'Zachowuj interesujące wydarzenia i wracaj do nich później.';
+
+  @override
+  String get onboardingPermissionsTitle => 'Uprawnienia bez niespodzianek';
+
+  @override
+  String get onboardingPermissionsBody =>
+      'Możesz korzystać z aplikacji bez części uprawnień. Gdy czegoś zabraknie, pokażemy jasny komunikat w miejscu, którego to dotyczy.';
+
+  @override
+  String get onboardingPermissionLocationTitle => 'Lokalizacja';
+
+  @override
+  String get onboardingPermissionLocationBody =>
+      'Pomaga pokazać wydarzenia najbliżej Ciebie i wycentrować mapę.';
+
+  @override
+  String get onboardingPermissionNotificationsTitle => 'Powiadomienia';
+
+  @override
+  String get onboardingPermissionNotificationsBody =>
+      'Przypomnienia o wydarzeniach, wiadomościach i ważnych aktualizacjach.';
+
+  @override
+  String get onboardingPermissionPhotosTitle => 'Zdjęcia i media';
+
+  @override
+  String get onboardingPermissionPhotosBody =>
+      'Potrzebne dopiero przy dodawaniu zdjęć do profilu, grup lub wydarzeń.';
+
+  @override
+  String get onboardingPermissionCalendarTitle => 'Kalendarz';
+
+  @override
+  String get onboardingPermissionCalendarBody =>
+      'Potrzebny dopiero, gdy dodajesz wydarzenie do swojego kalendarza.';
+
+  @override
+  String get onboardingGrantTitle => 'Włącz najważniejsze funkcje';
+
+  @override
+  String get onboardingGrantBody =>
+      'Lokalizacja i powiadomienia są opcjonalne. Jeśli odmówisz, Locario nadal będzie działać tam, gdzie może.';
+
+  @override
+  String get onboardingGrantLocation => 'Przyznaj';
+
+  @override
+  String get onboardingGrantNotifications => 'Przyznaj';
+
+  @override
+  String get onboardingDoneTitle => 'Gotowe';
+
+  @override
+  String get onboardingDoneBody =>
+      'Możesz zacząć odkrywać wydarzenia. Uprawnienia i język zmienisz później w ustawieniach.';
+
+  @override
+  String get onboardingNext => 'Dalej';
+
+  @override
+  String get onboardingBack => 'Wstecz';
+
+  @override
+  String get onboardingSkip => 'Pomiń';
+
+  @override
+  String get onboardingFinish => 'Zacznij';
+
+  @override
   String get profileTitle => 'Profil';
 
   @override
@@ -1719,6 +1817,64 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get profileOrganizerVerificationRejectedSubtitle =>
       'Twoja prośba nie została zatwierdzona.';
+
+  @override
+  String get permissionsSectionTitle => 'Uprawnienia';
+
+  @override
+  String get permissionsSectionSubtitle =>
+      'Sprawdź, które funkcje systemowe są dostępne dla Locario.';
+
+  @override
+  String get permissionLocationTitle => 'Lokalizacja';
+
+  @override
+  String get permissionLocationSubtitle =>
+      'Wydarzenia w pobliżu i centrowanie mapy.';
+
+  @override
+  String get permissionNotificationsTitle => 'Powiadomienia';
+
+  @override
+  String get permissionNotificationsSubtitle =>
+      'Przypomnienia, wiadomości i aktualizacje.';
+
+  @override
+  String get permissionPhotosTitle => 'Zdjęcia i media';
+
+  @override
+  String get permissionPhotosSubtitle =>
+      'Dodawanie zdjęć do profilu, grup i wydarzeń.';
+
+  @override
+  String get permissionCalendarTitle => 'Kalendarz';
+
+  @override
+  String get permissionCalendarSubtitle => 'Dodawanie wydarzeń do kalendarza.';
+
+  @override
+  String get permissionGrant => 'Przyznaj';
+
+  @override
+  String get permissionFix => 'Napraw';
+
+  @override
+  String get permissionStatusGranted => 'Przyznane';
+
+  @override
+  String get permissionStatusLimited => 'Ograniczone';
+
+  @override
+  String get permissionStatusMissing => 'Brak uprawnienia';
+
+  @override
+  String get permissionStatusBlocked => 'Zablokowane w ustawieniach';
+
+  @override
+  String get permissionStatusUnsupported => 'Niedostępne na tym urządzeniu';
+
+  @override
+  String get permissionStatusContextual => 'Używane kontekstowo';
 
   @override
   String get savedTitle => 'Zapisane';

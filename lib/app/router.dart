@@ -12,6 +12,8 @@ import '../features/groups/group_form_screen.dart';
 import '../features/hub/create_event/create_event_screen.dart';
 import '../features/hub/hub_placeholder_screen.dart';
 import '../features/inbox/inbox_screen.dart';
+import '../features/onboarding/onboarding_controller.dart';
+import '../features/onboarding/onboarding_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
 import '../features/profile/event_history_screen.dart';
 import '../features/profile/organizer_events_screen.dart';
@@ -146,20 +148,32 @@ Page<void> _trackedNoTransitionPage({
 GoRouter createAppRouter({
   required SessionController sessionController,
   required LegalController legalController,
+  required OnboardingController onboardingController,
 }) {
   final navigationHistory = NavigationHistoryController();
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/explore',
-    refreshListenable: Listenable.merge([sessionController, legalController]),
+    refreshListenable: Listenable.merge([
+      sessionController,
+      legalController,
+      onboardingController,
+    ]),
     redirect: (context, state) {
       final normalizedLocation = normalizeIncomingLocation(state.uri);
 
-      if (sessionController.isLoading) {
+      if (sessionController.isLoading || onboardingController.isLoading) {
         return null;
       }
 
       final location = normalizedLocation ?? state.uri.path;
+      if (!onboardingController.isCompleted && location != '/onboarding') {
+        return '/onboarding';
+      }
+      if (onboardingController.isCompleted && location == '/onboarding') {
+        return '/explore';
+      }
+
       if (normalizedLocation != null && normalizedLocation != state.uri.path) {
         if (!sessionController.isAuthenticated && _requiresAuth(location)) {
           return _loginRedirect(
@@ -215,6 +229,12 @@ GoRouter createAppRouter({
       return null;
     },
     routes: [
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/onboarding',
+        pageBuilder: (context, state) =>
+            const NoTransitionPage<void>(child: OnboardingScreen()),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           final currentSection = state.uri.pathSegments.isNotEmpty

@@ -11,7 +11,10 @@ void main() {
   });
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({
+      'app.onboarding_completed': true,
+      'app.locale': 'pl',
+    });
   });
 
   testWidgets('LocarioApp renders main bottom navigation tabs', (
