@@ -21,7 +21,7 @@ void main() {
       expect(controller.isLocating, isFalse);
     });
 
-    test('sets permissionDenied when location permission is denied', () async {
+    test('does not request permission during initial location load', () async {
       final service = FakeLocationService(
         serviceEnabled: true,
         checkPermissionResult: LocationPermission.denied,
@@ -38,6 +38,25 @@ void main() {
       expect(controller.currentLocation, isNull);
       expect(controller.mapCenter, controller.fallbackCenter);
       expect(controller.isLocating, isFalse);
+      expect(service.requestPermissionCallCount, 0);
+    });
+
+    test('requests permission only when explicitly asked', () async {
+      final service = FakeLocationService(
+        serviceEnabled: true,
+        checkPermissionResult: LocationPermission.denied,
+        requestPermissionResult: LocationPermission.whileInUse,
+        currentLocation: const LatLng(52.2297, 21.0122),
+      );
+      final controller = ExploreMapViewModel(
+        locationService: service,
+        fallbackCenter: const LatLng(0, 0),
+      );
+
+      await controller.requestLocationPermission();
+
+      expect(controller.status, ExploreMapStatus.ready);
+      expect(controller.currentLocation, const LatLng(52.2297, 21.0122));
       expect(service.requestPermissionCallCount, 1);
     });
 

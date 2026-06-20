@@ -33,6 +33,7 @@ class MapWidget extends StatefulWidget {
     this.searchRadiusCenter,
     this.searchRadiusMeters,
     this.showSearchRadiusOverlay = true,
+    this.requireLocation = true,
   });
 
   final ExploreMapViewModel controller;
@@ -49,6 +50,7 @@ class MapWidget extends StatefulWidget {
   final LatLng? searchRadiusCenter;
   final int? searchRadiusMeters;
   final bool showSearchRadiusOverlay;
+  final bool requireLocation;
 
   @override
   State<MapWidget> createState() => _MapWidgetState();
@@ -694,7 +696,8 @@ class _MapWidgetState extends State<MapWidget> {
             final isStyleLoading =
                 _supportsMapLibre && !styleLoadFailed && styleJson == null;
             final isWaitingForStartup =
-                isStyleLoading || controller.isInitialLoading;
+                isStyleLoading ||
+                (widget.requireLocation && controller.isInitialLoading);
             final showStartupLoading =
                 !_hasCompletedStartupLoading && isWaitingForStartup;
 
@@ -707,6 +710,14 @@ class _MapWidgetState extends State<MapWidget> {
             }
 
             _hasCompletedStartupLoading = true;
+            if (widget.requireLocation &&
+                currentLocation == null &&
+                !controller.isLocating &&
+                (controller.status == ExploreMapStatus.permissionDenied ||
+                    controller.status == ExploreMapStatus.serviceDisabled)) {
+              return _MapLocationRequiredView(controller: controller);
+            }
+
             return Stack(
               children: [
                 _buildMapSurface(
@@ -736,7 +747,8 @@ class _MapWidgetState extends State<MapWidget> {
                       message: l10n.mapStyleLoadFailed('$styleLoadError'),
                     ),
                   )
-                else if (controller.status != ExploreMapStatus.ready &&
+                else if (widget.requireLocation &&
+                    controller.status != ExploreMapStatus.ready &&
                     controller.message != null &&
                     !controller.isLocating)
                   Positioned(
@@ -862,6 +874,92 @@ class _StartupLoadingView extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MapLocationRequiredView extends StatelessWidget {
+  const _MapLocationRequiredView({required this.controller});
+
+  final ExploreMapViewModel controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final isBlocked =
+        controller.message == ExploreMapMessage.permissionDeniedForever;
+    final isServiceDisabled =
+        controller.status == ExploreMapStatus.serviceDisabled;
+    final canOpenSettings = isBlocked && controller.canOpenAppSettings;
+    final canOpenLocationSettings =
+        isServiceDisabled && controller.canOpenLocationSettings;
+
+    return ColoredBox(
+      color: scheme.surfaceContainerLowest,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: scheme.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: Icon(
+                    Icons.my_location_rounded,
+                    color: scheme.primary,
+                    size: 30,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  l10n.mapLocationRequiredTitle,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: scheme.onSurface,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  isServiceDisabled
+                      ? l10n.mapServiceDisabled
+                      : l10n.mapLocationRequiredSubtitle,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.68),
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                FilledButton.icon(
+                  onPressed: canOpenLocationSettings
+                      ? controller.openLocationSettings
+                      : canOpenSettings
+                      ? controller.openAppSettings
+                      : controller.requestLocationPermission,
+                  icon: const Icon(Icons.location_on_rounded),
+                  label: Text(
+                    canOpenLocationSettings
+                        ? l10n.mapLocationSettings
+                        : canOpenSettings
+                        ? l10n.mapAppSettings
+                        : l10n.mapGrantLocation,
                   ),
                 ),
               ],
@@ -1095,7 +1193,7 @@ class _MapMessageBanner extends StatelessWidget {
             spacing: 8,
             children: [
               TextButton(
-                onPressed: controller.refreshLocation,
+                onPressed: controller.requestLocationPermission,
                 child: Text(l10n.mapRetry),
               ),
               if (controller.status == ExploreMapStatus.permissionDenied &&

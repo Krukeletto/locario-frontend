@@ -23,6 +23,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _isCompleting = false;
   bool _isRequestingLocation = false;
   bool _isRequestingNotifications = false;
+  bool _hasLoadedPermissions = false;
   AppPermissionSnapshot? _permissions;
 
   static const _lastStep = 3;
@@ -32,10 +33,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.initState();
     _permissionService =
         widget._permissionService ?? DeviceAppPermissionService();
-    _loadPermissions();
   }
 
   Future<void> _loadPermissions() async {
+    if (_hasLoadedPermissions) return;
+    _hasLoadedPermissions = true;
+    final permissions = await _permissionService.loadStatus();
+    if (!mounted) return;
+    setState(() => _permissions = permissions);
+  }
+
+  Future<void> _refreshPermissions() async {
     final permissions = await _permissionService.loadStatus();
     if (!mounted) return;
     setState(() => _permissions = permissions);
@@ -45,7 +53,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (_isRequestingLocation) return;
     setState(() => _isRequestingLocation = true);
     await _permissionService.requestLocation();
-    await _loadPermissions();
+    await _refreshPermissions();
     if (mounted) {
       setState(() => _isRequestingLocation = false);
     }
@@ -55,7 +63,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (_isRequestingNotifications) return;
     setState(() => _isRequestingNotifications = true);
     await _permissionService.requestNotifications();
-    await _loadPermissions();
+    await _refreshPermissions();
     if (mounted) {
       setState(() => _isRequestingNotifications = false);
     }
@@ -63,7 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _openSettingsAndRefresh() async {
     await _permissionService.openAppSettings();
-    await _loadPermissions();
+    await _refreshPermissions();
   }
 
   Future<void> _complete() async {
@@ -80,7 +88,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       return;
     }
 
-    setState(() => _step += 1);
+    final nextStep = _step + 1;
+    setState(() => _step = nextStep);
+    if (nextStep == 2) {
+      _loadPermissions();
+    }
   }
 
   void _back() {

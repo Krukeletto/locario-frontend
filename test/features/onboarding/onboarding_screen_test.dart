@@ -14,6 +14,7 @@ import '../../test_helpers/fake_app_settings_store.dart';
 void main() {
   testWidgets('saves completion only after final step', (tester) async {
     final settingsStore = FakeAppSettingsStore();
+    final permissionService = _FakePermissionService();
     final onboardingController = OnboardingController(
       settingsStore: settingsStore,
     );
@@ -23,16 +24,22 @@ void main() {
       _buildOnboardingTestApp(
         onboardingController: onboardingController,
         settingsStore: settingsStore,
+        permissionService: permissionService,
       ),
     );
     await tester.pumpAndSettle();
 
     expect(await settingsStore.loadOnboardingCompleted(), isFalse);
+    expect(permissionService.loadStatusCount, 0);
 
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
+    expect(permissionService.loadStatusCount, 0);
+
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
+    expect(permissionService.loadStatusCount, 1);
+
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
 
@@ -83,6 +90,7 @@ Widget _buildOnboardingTestApp({
   required OnboardingController onboardingController,
   required FakeAppSettingsStore settingsStore,
   LocaleController? localeController,
+  AppPermissionService? permissionService,
   Locale locale = const Locale('en'),
 }) {
   final effectiveLocaleController =
@@ -92,8 +100,9 @@ Widget _buildOnboardingTestApp({
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) =>
-            OnboardingScreen(permissionService: _FakePermissionService()),
+        builder: (context, state) => OnboardingScreen(
+          permissionService: permissionService ?? _FakePermissionService(),
+        ),
       ),
       GoRoute(
         path: '/explore',
@@ -117,8 +126,11 @@ Widget _buildOnboardingTestApp({
 }
 
 class _FakePermissionService implements AppPermissionService {
+  int loadStatusCount = 0;
+
   @override
   Future<AppPermissionSnapshot> loadStatus() async {
+    loadStatusCount++;
     return const AppPermissionSnapshot(
       location: AppPermissionStatus.denied,
       notifications: AppPermissionStatus.denied,

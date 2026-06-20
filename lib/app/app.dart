@@ -86,6 +86,7 @@ class _LocarioAppState extends State<LocarioApp> {
   late final GoRouter _router;
   late final NotificationsApi _notificationsApi;
   late final NotificationController _notificationController;
+  bool _hasInitializedNotifications = false;
 
   @override
   void initState() {
@@ -166,15 +167,14 @@ class _LocarioAppState extends State<LocarioApp> {
     _joinedEventsController.load();
     _sessionController.load();
     _sessionController.addListener(_onSessionChanged);
+    _onboardingController.addListener(_onOnboardingChanged);
     _legalController.load();
-    _onboardingController.load();
+    _onboardingController.load().then((_) {
+      if (!mounted) return;
+      _initNotificationsIfAllowed();
+    });
     _notificationController.loadHistory();
     _notificationController.loadPreferences();
-
-    NotificationService.init(
-      controller: _notificationController,
-      router: _router,
-    );
   }
 
   void _onSessionChanged() {
@@ -188,9 +188,26 @@ class _LocarioAppState extends State<LocarioApp> {
     }
   }
 
+  void _onOnboardingChanged() {
+    _initNotificationsIfAllowed();
+  }
+
+  void _initNotificationsIfAllowed() {
+    if (_hasInitializedNotifications || !_onboardingController.isCompleted) {
+      return;
+    }
+
+    _hasInitializedNotifications = true;
+    NotificationService.init(
+      controller: _notificationController,
+      router: _router,
+    );
+  }
+
   @override
   void dispose() {
     _sessionController.removeListener(_onSessionChanged);
+    _onboardingController.removeListener(_onOnboardingChanged);
     _localeController.dispose();
     _themeController.dispose();
     _categoryController.dispose();

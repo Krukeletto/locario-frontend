@@ -19,6 +19,7 @@ import 'map_view_model.dart';
 import 'models.dart';
 import 'widgets/advanced_filter_sheet.dart';
 import 'widgets/area_picker.dart';
+import 'widgets/explore_map_area_picker_screen.dart';
 import 'widgets/header.dart';
 import 'widgets/list_view.dart';
 import 'widgets/map_view.dart';
@@ -367,6 +368,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return centerChanged || radiusChanged;
   }
 
+  bool get _showManualAreaPrompt {
+    if (_areaController.selectionMode !=
+        ExploreAreaSelectionMode.currentLocation) {
+      return false;
+    }
+    return _mapViewModel.currentLocation == null &&
+        (_mapViewModel.status == ExploreMapStatus.permissionDenied ||
+            _mapViewModel.status == ExploreMapStatus.serviceDisabled);
+  }
+
   Future<void> _handleFilterPressed() async {
     final userGroups = GroupScope.maybeOf(context)?.myGroups ?? [];
     final result = await showModalBottomSheet<ExploreAdvancedFilterResult>(
@@ -384,11 +395,104 @@ class _ExploreScreenState extends State<ExploreScreen> {
     if (mounted && result != null) {
       _exploreController.updateAdvancedFilters(result.filters);
       if (result.shouldPickOnMap) {
-        final headerController =
-            _activeHeaderController ?? _internalHeaderController;
-        headerController.setSelectedView(ExploreContentView.map);
-        _areaController.startMapPicking();
+        await _openMapAreaPicker();
       }
+    }
+  }
+
+  Future<void> _handleManualAreaPressed() async {
+    _dismissSearchFocus();
+    final action = await showModalBottomSheet<ExploreAreaSelectionAction>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => ExploreAreaSelectionSheet(
+        title: AppLocalizations.of(context).areaPickerTitle,
+        subtitle: AppLocalizations.of(context).areaPickerSubtitle,
+        onActionSelected: Navigator.of(context).pop,
+      ),
+    );
+
+    if (!mounted || action == null) {
+      return;
+    }
+
+    await _handleAreaSelectionAction(action);
+  }
+
+  Future<void> _handleAreaSelectionAction(
+    ExploreAreaSelectionAction action,
+  ) async {
+    switch (action) {
+      case ExploreAreaSelectionAction.currentLocation:
+        _areaController.selectCurrentLocation();
+        await _mapViewModel.requestLocationPermission();
+      case ExploreAreaSelectionAction.enterAddress:
+        await _handleAddressAreaSelection();
+      case ExploreAreaSelectionAction.pickOnMap:
+        await _openMapAreaPicker();
+    }
+  }
+
+  Future<void> _openMapAreaPicker() async {
+    final selectedCenter = await Navigator.of(context, rootNavigator: true)
+        .push<LatLng>(
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (context) => ExploreMapAreaPickerScreen(
+              controller: _mapViewModel,
+              initialCenter:
+                  _mapViewModel.currentLocation ??
+                  const LatLng(51.7592, 19.4550),
+              styleRepository: _styleRepository,
+            ),
+          ),
+        );
+
+    if (!mounted || selectedCenter == null) {
+      return;
+    }
+
+    _areaController.searchInArea(selectedCenter);
+    _mapViewModel.setPreferredMapCenter(selectedCenter);
+    _searchBaselineLocation = selectedCenter;
+    _lastSearchedLocation = selectedCenter;
+    _appliedMapSearchRadiusMeters = _pendingMapSearchRadiusMeters;
+    _syncControllerParams();
+    _markCurrentAreaAsSearched(force: true);
+    _loadEvents(forceRefresh: true);
+  }
+
+  Future<void> _handleAddressAreaSelection() async {
+    final address = await showDialog<String>(
+      context: context,
+      builder: (context) => const ExploreAddressInputDialog(),
+    );
+
+    if (!mounted || address == null || address.trim().isEmpty) {
+      return;
+    }
+
+    final result = await _areaController.selectAddress(address.trim());
+    if (!mounted) {
+      return;
+    }
+
+    switch (result.status) {
+      case ExploreAddressLookupStatus.success:
+        _markCurrentAreaAsSearched(force: true);
+        _loadEvents(forceRefresh: true);
+      case ExploreAddressLookupStatus.notFound:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).areaAddressNotFound),
+          ),
+        );
+      case ExploreAddressLookupStatus.error:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).areaAddressLookupFailed),
+          ),
+        );
     }
   }
 
@@ -582,11 +686,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         _exploreController.updateSort(sort);
                       },
                       onSortOrderToggled: _exploreController.toggleSortOrder,
+                      onManualAreaPressed: _handleManualAreaPressed,
                       onEventTap: (event) {
                         _dismissSearchFocus();
                         _handleEventTap(event);
                       },
                       savedEventsController: savedEventsController,
+                      showManualAreaPrompt: _showManualAreaPrompt,
                     );
                   },
                 )
@@ -609,10 +715,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     _exploreController.updateSort(sort);
                   },
                   onSortOrderToggled: _exploreController.toggleSortOrder,
+                  onManualAreaPressed: _handleManualAreaPressed,
                   onEventTap: (event) {
                     _dismissSearchFocus();
                     _handleEventTap(event);
                   },
+                  showManualAreaPrompt: _showManualAreaPrompt,
                 ),
             ],
           );

@@ -16,6 +16,7 @@ class ExploreMapView extends StatelessWidget {
     required this.referenceLocation,
     this.searchRadiusMeters,
     this.showSearchRadiusOverlay = true,
+    this.requireLocation = true,
     this.onCameraCenterChanged,
     this.onVisibleRadiusChanged,
   });
@@ -27,6 +28,7 @@ class ExploreMapView extends StatelessWidget {
   final LatLng referenceLocation;
   final int? searchRadiusMeters;
   final bool showSearchRadiusOverlay;
+  final bool requireLocation;
   final ValueChanged<LatLng>? onCameraCenterChanged;
   final ValueChanged<int>? onVisibleRadiusChanged;
 
@@ -43,6 +45,7 @@ class ExploreMapView extends StatelessWidget {
         searchRadiusCenter: referenceLocation,
         searchRadiusMeters: searchRadiusMeters,
         showSearchRadiusOverlay: showSearchRadiusOverlay,
+        requireLocation: requireLocation,
         styleRepository: styleRepository,
         onCameraCenterChanged: onCameraCenterChanged,
         onVisibleRadiusChanged: onVisibleRadiusChanged,

@@ -445,6 +445,16 @@ class AppLocalizationsPl extends AppLocalizations {
       'Spróbuj zmienić obszar albo wróć później.';
 
   @override
+  String get exploreManualAreaPromptTitle => 'Wybierz obszar ręcznie';
+
+  @override
+  String get exploreManualAreaPromptSubtitle =>
+      'Nie mamy dostępu do Twojej lokalizacji, więc nie możemy dobrać wydarzeń najbliżej Ciebie. Możesz wpisać adres albo wskazać obszar w filtrach.';
+
+  @override
+  String get exploreManualAreaPromptAction => 'Wybierz obszar ręcznie';
+
+  @override
   String get exploreRetryButton => 'Spróbuj ponownie';
 
   @override
@@ -1470,7 +1480,7 @@ class AppLocalizationsPl extends AppLocalizations {
       'Zachowuj interesujące wydarzenia i wracaj do nich później.';
 
   @override
-  String get onboardingPermissionsTitle => 'Uprawnienia bez niespodzianek';
+  String get onboardingPermissionsTitle => 'Uprawnienia';
 
   @override
   String get onboardingPermissionsBody =>
@@ -2109,6 +2119,16 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get mapRetry => 'Ponów';
+
+  @override
+  String get mapGrantLocation => 'Przyznaj lokalizację';
+
+  @override
+  String get mapLocationRequiredTitle => 'Mapa potrzebuje lokalizacji';
+
+  @override
+  String get mapLocationRequiredSubtitle =>
+      'Przyznaj dostęp do lokalizacji, aby korzystać z mapy. Z listy wydarzeń możesz korzystać dalej i ręcznie wybrać obszar w filtrach.';
 
   @override
   String get mapAppSettings => 'Ustawienia aplikacji';

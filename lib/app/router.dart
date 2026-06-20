@@ -153,7 +153,7 @@ GoRouter createAppRouter({
   final navigationHistory = NavigationHistoryController();
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/explore',
+    initialLocation: '/onboarding',
     refreshListenable: Listenable.merge([
       sessionController,
       legalController,
@@ -162,7 +162,7 @@ GoRouter createAppRouter({
     redirect: (context, state) {
       final normalizedLocation = normalizeIncomingLocation(state.uri);
 
-      if (sessionController.isLoading || onboardingController.isLoading) {
+      if (onboardingController.isLoading) {
         return null;
       }
 
@@ -172,6 +172,10 @@ GoRouter createAppRouter({
       }
       if (onboardingController.isCompleted && location == '/onboarding') {
         return '/explore';
+      }
+
+      if (sessionController.isLoading) {
+        return null;
       }
 
       if (normalizedLocation != null && normalizedLocation != state.uri.path) {

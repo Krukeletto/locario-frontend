@@ -442,6 +442,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreEmptySubtitle => 'Try a different area or come back later.';
 
   @override
+  String get exploreManualAreaPromptTitle => 'Choose an area manually';
+
+  @override
+  String get exploreManualAreaPromptSubtitle =>
+      'Locario cannot access your location, so it cannot pick nearby events for you. You can enter an address or choose an area in filters.';
+
+  @override
+  String get exploreManualAreaPromptAction => 'Choose area manually';
+
+  @override
   String get exploreRetryButton => 'Retry';
 
   @override
@@ -1458,7 +1468,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Keep interesting events and return to them later.';
 
   @override
-  String get onboardingPermissionsTitle => 'Permissions without surprises';
+  String get onboardingPermissionsTitle => 'Permissions';
 
   @override
   String get onboardingPermissionsBody =>
@@ -2086,6 +2096,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapRetry => 'Retry';
+
+  @override
+  String get mapGrantLocation => 'Grant location';
+
+  @override
+  String get mapLocationRequiredTitle => 'The map needs location';
+
+  @override
+  String get mapLocationRequiredSubtitle =>
+      'Grant location access to use the map. You can still use the event list and choose an area manually in filters.';
 
   @override
   String get mapAppSettings => 'App settings';

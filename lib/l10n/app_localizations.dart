@@ -878,6 +878,24 @@ abstract class AppLocalizations {
   /// **'Try a different area or come back later.'**
   String get exploreEmptySubtitle;
 
+  /// No description provided for @exploreManualAreaPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an area manually'**
+  String get exploreManualAreaPromptTitle;
+
+  /// No description provided for @exploreManualAreaPromptSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Locario cannot access your location, so it cannot pick nearby events for you. You can enter an address or choose an area in filters.'**
+  String get exploreManualAreaPromptSubtitle;
+
+  /// No description provided for @exploreManualAreaPromptAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose area manually'**
+  String get exploreManualAreaPromptAction;
+
   /// No description provided for @exploreRetryButton.
   ///
   /// In en, this message translates to:
@@ -2723,7 +2741,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingPermissionsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Permissions without surprises'**
+  /// **'Permissions'**
   String get onboardingPermissionsTitle;
 
   /// No description provided for @onboardingPermissionsBody.
@@ -3847,6 +3865,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get mapRetry;
+
+  /// No description provided for @mapGrantLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant location'**
+  String get mapGrantLocation;
+
+  /// No description provided for @mapLocationRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The map needs location'**
+  String get mapLocationRequiredTitle;
+
+  /// No description provided for @mapLocationRequiredSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant location access to use the map. You can still use the event list and choose an area manually in filters.'**
+  String get mapLocationRequiredSubtitle;
 
   /// No description provided for @mapAppSettings.
   ///

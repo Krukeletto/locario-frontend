@@ -39,7 +39,7 @@ void main() {
       },
     );
 
-    testWidgets('shows error banner when controller resolves to an error', (
+    testWidgets('shows empty map state when location service is disabled', (
       tester,
     ) async {
       final controller = ExploreMapViewModel(
@@ -51,12 +51,33 @@ void main() {
       await tester.pumpWidget(_buildTestApp(controller));
       await tester.pump();
 
-      expect(find.byKey(const Key('map-message-banner')), findsOneWidget);
+      expect(find.byKey(const Key('map-message-banner')), findsNothing);
       expect(find.byType(FloatingActionButton), findsNothing);
       expect(
         find.text('Enable location services to see your position.'),
         findsOneWidget,
       );
+      expect(find.text('Location settings'), findsOneWidget);
+    });
+
+    testWidgets('renders fallback map when location is optional', (
+      tester,
+    ) async {
+      final controller = ExploreMapViewModel(
+        locationService: FakeLocationService(serviceEnabled: false),
+        fallbackCenter: const LatLng(51.7592, 19.4550),
+      );
+
+      await controller.loadInitialLocation();
+      await tester.pumpWidget(
+        _buildTestApp(controller, requireLocation: false),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('The map needs location'), findsNothing);
+      expect(find.byKey(const Key('map-message-banner')), findsNothing);
+      expect(find.byType(MapWidget), findsOneWidget);
+      expect(controller.mapCenter, const LatLng(51.7592, 19.4550));
     });
 
     testWidgets('renders without crash when current location exists', (
@@ -140,7 +161,10 @@ void main() {
   });
 }
 
-Widget _buildTestApp(ExploreMapViewModel controller) {
+Widget _buildTestApp(
+  ExploreMapViewModel controller, {
+  bool requireLocation = true,
+}) {
   return buildLocalizedTestApp(
     home: Scaffold(
       body: MapWidget(
@@ -151,6 +175,7 @@ Widget _buildTestApp(ExploreMapViewModel controller) {
           inlineStyleJson: _testStyleJson,
         ),
         overlayPadding: const EdgeInsets.only(top: 12, bottom: 24),
+        requireLocation: requireLocation,
       ),
     ),
   );
