@@ -232,9 +232,6 @@ class CreateEventController extends ChangeNotifier {
     final images = [..._state.selectedImages];
     if (oldIndex < 0 || oldIndex >= images.length) return;
     if (newIndex < 0 || newIndex > images.length) return;
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
     final moved = images.removeAt(oldIndex);
     images.insert(newIndex, moved);
     _state = _state.copyWith(selectedImages: images);
