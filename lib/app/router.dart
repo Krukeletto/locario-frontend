@@ -145,6 +145,42 @@ Page<void> _trackedNoTransitionPage({
   );
 }
 
+Page<void> _trackedEventDetailsPage({
+  required NavigationHistoryController controller,
+  required String location,
+  required bool rememberAsSafe,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    transitionDuration: const Duration(milliseconds: 240),
+    reverseTransitionDuration: const Duration(milliseconds: 180),
+    child: RouteHistoryReporter(
+      controller: controller,
+      location: location,
+      rememberAsSafe: rememberAsSafe,
+      child: child,
+    ),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+
+      return FadeTransition(
+        opacity: curvedAnimation,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.06, 0),
+            end: Offset.zero,
+          ).animate(curvedAnimation),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 GoRouter createAppRouter({
   required SessionController sessionController,
   required LegalController legalController,
@@ -449,7 +485,7 @@ GoRouter createAppRouter({
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/events/:eventId',
-        pageBuilder: (context, state) => _trackedNoTransitionPage(
+        pageBuilder: (context, state) => _trackedEventDetailsPage(
           controller: navigationHistory,
           location: state.uri.toString(),
           rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),

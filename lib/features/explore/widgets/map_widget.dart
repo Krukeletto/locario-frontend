@@ -1288,13 +1288,6 @@ class _EventMarkerBadge extends StatelessWidget {
           decoration: BoxDecoration(
             color: backgroundColor,
             shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: theme.shadowColor,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
           child: Icon(icon, color: themeColors.onScrim, size: 22),
         ),
@@ -1318,16 +1311,7 @@ class _EventMarkerImageBadge extends StatelessWidget {
         child: Container(
           width: 44,
           height: 44,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: theme.shadowColor,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+          decoration: const BoxDecoration(shape: BoxShape.circle),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(22),
             child: Image.network(
