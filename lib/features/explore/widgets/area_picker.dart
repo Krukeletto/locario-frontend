@@ -15,17 +15,30 @@ class ExploreAddressInputDialog extends StatefulWidget {
 
 class _ExploreAddressInputDialogState extends State<ExploreAddressInputDialog> {
   late final TextEditingController _controller;
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialValue ?? '');
+    _focusNode = FocusNode();
   }
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _cancel() {
+    _focusNode.unfocus();
+    Navigator.of(context).pop();
+  }
+
+  void _submit(String value) {
+    _focusNode.unfocus();
+    Navigator.of(context).pop(value.trim());
   }
 
   @override
@@ -37,6 +50,7 @@ class _ExploreAddressInputDialogState extends State<ExploreAddressInputDialog> {
       title: Text(l10n.areaAddressDialogTitle),
       content: TextField(
         controller: _controller,
+        focusNode: _focusNode,
         autofocus: true,
         textInputAction: TextInputAction.done,
         decoration: InputDecoration(
@@ -48,15 +62,12 @@ class _ExploreAddressInputDialogState extends State<ExploreAddressInputDialog> {
             borderSide: BorderSide.none,
           ),
         ),
-        onSubmitted: (value) => Navigator.of(context).pop(value.trim()),
+        onSubmitted: _submit,
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.areaDialogCancel),
-        ),
+        TextButton(onPressed: _cancel, child: Text(l10n.areaDialogCancel)),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          onPressed: () => _submit(_controller.text),
           child: Text(l10n.areaDialogConfirm),
         ),
       ],

@@ -91,12 +91,16 @@ class EventMedia {
     required this.url,
     required this.type,
     this.sortOrder = 0,
+    this.thumbnailUrl,
+    this.pinUrl,
   });
 
   final String id;
   final String url;
   final MediaType type;
   final int sortOrder;
+  final String? thumbnailUrl;
+  final String? pinUrl;
 
   factory EventMedia.fromJson(Map<String, dynamic> json) {
     return EventMedia(
@@ -104,6 +108,8 @@ class EventMedia {
       url: (json['url'] as String?) ?? '',
       type: MediaType.fromString(json['type'] as String?),
       sortOrder: json['sortOrder'] as int? ?? 0,
+      thumbnailUrl: _normalizedString(json['thumbnailUrl']),
+      pinUrl: _normalizedString(json['pinUrl']),
     );
   }
 
@@ -113,8 +119,14 @@ class EventMedia {
       'url': url,
       'type': type.toJson(),
       'sortOrder': sortOrder,
+      if (thumbnailUrl != null) 'thumbnailUrl': thumbnailUrl,
+      if (pinUrl != null) 'pinUrl': pinUrl,
     };
   }
+
+  String get previewUrl => thumbnailUrl ?? url;
+
+  String get compactUrl => pinUrl ?? thumbnailUrl ?? url;
 }
 
 class EventGroupSummary {
@@ -306,7 +318,14 @@ class ExploreEvent {
     final description = _normalizedString(json['description']);
     final startsAtRaw =
         _normalizedString(json['startAt']) ??
+        _normalizedString(json['startsAt']) ??
+        _normalizedString(json['StartAt']) ??
+        _normalizedString(json['StartsAt']) ??
         _normalizedString(json['startDate']);
+    final startsAt = _parseDateTime(startsAtRaw);
+    if (startsAt == null) {
+      throw FormatException('Missing or invalid event start date', json['id']);
+    }
     final latitude = (json['latitude'] as num?)?.toDouble();
     final longitude = (json['longitude'] as num?)?.toDouble();
     final location = LatLng(latitude ?? 0, longitude ?? 0);
@@ -321,8 +340,13 @@ class ExploreEvent {
       categories: _categoriesFromJson(json['categories']),
       media: _mediaFromJson(json['media']),
       thumbnailUrl: _normalizedString(json['thumbnailUrl']),
-      startsAt: DateTime.tryParse(startsAtRaw ?? '') ?? DateTime.now().toUtc(),
-      endsAt: _parseDateTime(json['endAt']) ?? _parseDateTime(json['endDate']),
+      startsAt: startsAt,
+      endsAt:
+          _parseDateTime(json['endAt']) ??
+          _parseDateTime(json['endsAt']) ??
+          _parseDateTime(json['EndAt']) ??
+          _parseDateTime(json['EndsAt']) ??
+          _parseDateTime(json['endDate']),
       trendingScore: json['trendingScore'] as int? ?? 0,
       venue: address == null || address.isEmpty
           ? (fallbackVenue ?? _formatCoordinates(location))
@@ -438,7 +462,7 @@ class ExploreEvent {
     final firstImage = media
         .where((m) => m.type == MediaType.image)
         .firstOrNull;
-    return firstImage?.url;
+    return firstImage?.previewUrl;
   }
 
   static const Distance _distance = Distance();

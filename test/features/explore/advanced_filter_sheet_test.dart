@@ -51,6 +51,44 @@ void main() {
       expect(saveButtonAfterInput.onPressed, isNotNull);
     });
 
+    testWidgets('keyboard done keeps save dialog open without crashing', (
+      tester,
+    ) async {
+      final repository = _RecordingSavedFiltersRepository();
+      final controller = SavedFiltersController(repository: repository);
+
+      await tester.pumpWidget(
+        buildLocalizedTestApp(
+          home: SavedFiltersScope(
+            controller: controller,
+            child: Scaffold(
+              body: ExploreAdvancedFilterSheet(
+                initialFilters: const ExploreAdvancedFilters(),
+                areaController: ExploreAreaController(),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, 'Save').first);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'My filter');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(repository.savedFilters, isEmpty);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(repository.savedFilters.single.name, 'My filter');
+    });
+
     testWidgets(
       'clear action is disabled for default filters and enables after change',
       (tester) async {
@@ -101,4 +139,34 @@ class _NoopSavedFiltersRepository implements SavedFiltersRepository {
 
   @override
   Future<void> update(SavedFilter filter) async {}
+}
+
+class _RecordingSavedFiltersRepository implements SavedFiltersRepository {
+  final List<SavedFilter> savedFilters = [];
+
+  @override
+  Future<void> clear() async {
+    savedFilters.clear();
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    savedFilters.removeWhere((filter) => filter.id == id);
+  }
+
+  @override
+  Future<List<SavedFilter>> loadAll() async => savedFilters;
+
+  @override
+  Future<void> save(SavedFilter filter) async {
+    savedFilters.add(filter);
+  }
+
+  @override
+  Future<void> update(SavedFilter filter) async {
+    final index = savedFilters.indexWhere((item) => item.id == filter.id);
+    if (index >= 0) {
+      savedFilters[index] = filter;
+    }
+  }
 }

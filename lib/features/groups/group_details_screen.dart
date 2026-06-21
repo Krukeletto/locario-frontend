@@ -869,18 +869,36 @@ class _PostComposerDialog extends StatefulWidget {
 
 class _PostComposerDialogState extends State<_PostComposerDialog> {
   late final TextEditingController _controller;
+  late final FocusNode _focusNode;
   final List<_PickedImage> _pickedImages = [];
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialValue);
+    _focusNode = FocusNode();
   }
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _cancel() {
+    _focusNode.unfocus();
+    Navigator.of(context).pop();
+  }
+
+  void _submit() {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
+    _focusNode.unfocus();
+    Navigator.of(context).pop(
+      _PostComposerResult(content: text, pickedImages: List.of(_pickedImages)),
+    );
   }
 
   Future<void> _pickImages() async {
@@ -921,6 +939,7 @@ class _PostComposerDialogState extends State<_PostComposerDialog> {
             children: [
               TextField(
                 controller: _controller,
+                focusNode: _focusNode,
                 maxLines: 6,
                 maxLength: 10000,
                 decoration: InputDecoration(
@@ -1008,23 +1027,8 @@ class _PostComposerDialogState extends State<_PostComposerDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(widget.cancelLabel),
-        ),
-        FilledButton(
-          onPressed: () {
-            final text = _controller.text.trim();
-            if (text.isEmpty) return;
-            Navigator.of(context).pop(
-              _PostComposerResult(
-                content: text,
-                pickedImages: List.of(_pickedImages),
-              ),
-            );
-          },
-          child: Text(widget.confirmLabel),
-        ),
+        TextButton(onPressed: _cancel, child: Text(widget.cancelLabel)),
+        FilledButton(onPressed: _submit, child: Text(widget.confirmLabel)),
       ],
     );
   }
@@ -1042,19 +1046,42 @@ class _GroupReportDialog extends StatefulWidget {
 class _GroupReportDialogState extends State<_GroupReportDialog> {
   late final TextEditingController _reasonController;
   late final TextEditingController _descriptionController;
+  late final FocusNode _reasonFocusNode;
+  late final FocusNode _descriptionFocusNode;
 
   @override
   void initState() {
     super.initState();
     _reasonController = TextEditingController();
     _descriptionController = TextEditingController();
+    _reasonFocusNode = FocusNode();
+    _descriptionFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
+    _reasonFocusNode.dispose();
+    _descriptionFocusNode.dispose();
     _reasonController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _cancel() {
+    _reasonFocusNode.unfocus();
+    _descriptionFocusNode.unfocus();
+    Navigator.of(context).pop();
+  }
+
+  void _submit() {
+    _reasonFocusNode.unfocus();
+    _descriptionFocusNode.unfocus();
+    Navigator.of(context).pop((
+      _reasonController.text.trim(),
+      _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim(),
+    ));
   }
 
   @override
@@ -1068,13 +1095,17 @@ class _GroupReportDialogState extends State<_GroupReportDialog> {
           children: [
             TextField(
               controller: _reasonController,
+              focusNode: _reasonFocusNode,
+              textInputAction: TextInputAction.next,
               decoration: InputDecoration(
                 labelText: l10n.groupsReportReasonLabel,
               ),
+              onSubmitted: (_) => _descriptionFocusNode.requestFocus(),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _descriptionController,
+              focusNode: _descriptionFocusNode,
               maxLines: 4,
               decoration: InputDecoration(
                 labelText: l10n.groupsReportDescriptionLabel,
@@ -1085,20 +1116,10 @@ class _GroupReportDialogState extends State<_GroupReportDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _cancel,
           child: Text(l10n.profileBecomeOrganizerDialogCancel),
         ),
-        FilledButton(
-          onPressed: () {
-            Navigator.of(context).pop((
-              _reasonController.text.trim(),
-              _descriptionController.text.trim().isEmpty
-                  ? null
-                  : _descriptionController.text.trim(),
-            ));
-          },
-          child: Text(l10n.groupsReportSubmit),
-        ),
+        FilledButton(onPressed: _submit, child: Text(l10n.groupsReportSubmit)),
       ],
     );
   }

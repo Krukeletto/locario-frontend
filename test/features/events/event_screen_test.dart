@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'package:locario/features/events/joined_events_controller.dart';
@@ -25,6 +26,8 @@ import 'package:locario/features/saved/saved_events_controller.dart';
 import 'package:locario/features/saved/saved_events_repository.dart';
 import 'package:locario/features/saved/saved_events_scope.dart';
 import 'package:locario/shared/services/calendar_service.dart';
+import 'package:locario/shared/services/l10n_service.dart';
+import 'package:locario/l10n/app_localizations.dart';
 
 import '../../test_helpers/fake_event_repository.dart';
 import '../../test_helpers/test_app.dart';
@@ -308,6 +311,75 @@ void main() {
 
       expect(calendarService.addedEvent?.id, _futureEvent().id);
     });
+
+    testWidgets(
+      'redirects unauthenticated join back to the event after login',
+      (tester) async {
+        const eventId = '11111111-1111-1111-1111-111111111111';
+        final authController = _UnauthenticatedSessionController();
+        final joinedController = _FakeJoinedEventsController(authController);
+        final detailController = _createDetailController(
+          eventDetails: _futureEvent(),
+        );
+        Uri? loginUri;
+        final router = GoRouter(
+          initialLocation: '/events/$eventId',
+          routes: [
+            GoRoute(
+              path: '/events/:eventId',
+              builder: (context, state) => AuthScope(
+                controller: authController,
+                child: JoinedEventsScope(
+                  controller: joinedController,
+                  child: EventDetailScope(
+                    controller: detailController,
+                    child: ReviewScope(
+                      controller: _stubReviewController(),
+                      child: EventScreen(
+                        eventId: state.pathParameters['eventId'],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            GoRoute(
+              path: '/auth/login',
+              builder: (context, state) {
+                loginUri = state.uri;
+                return const Scaffold(body: Text('Login'));
+              },
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          MaterialApp.router(
+            locale: const Locale('en'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            routerConfig: router,
+            builder: (context, child) {
+              L10nService.init(AppLocalizations.of(context));
+              return child!;
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(find.text('Join'), 300);
+        await tester.pumpAndSettle();
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Join'))
+            .onPressed!();
+        await tester.pumpAndSettle();
+
+        expect(loginUri?.path, '/auth/login');
+        expect(loginUri?.queryParameters['from'], '/events/$eventId');
+        expect(loginUri?.queryParameters['target'], '/events/$eventId');
+        expect(find.text('Login'), findsOneWidget);
+      },
+    );
 
     testWidgets('shows edit action for the event author', (tester) async {
       final authController = _AuthenticatedSessionController();

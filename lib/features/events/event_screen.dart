@@ -90,15 +90,21 @@ class _EventScreenState extends State<EventScreen> {
   }
 
   Future<void> _joinEvent(ExploreEvent event) async {
-    final joinedController = JoinedEventsScope.maybeOf(context);
-    if (joinedController == null) return;
-
     final auth = AuthScope.maybeOf(context);
     if (auth == null || !auth.isAuthenticated) {
       if (!mounted) return;
-      await context.push('/auth/login');
+      final eventLocation = '/events/${event.id}';
+      await context.push(
+        Uri(
+          path: '/auth/login',
+          queryParameters: {'from': eventLocation, 'target': eventLocation},
+        ).toString(),
+      );
       return;
     }
+
+    final joinedController = JoinedEventsScope.maybeOf(context);
+    if (joinedController == null) return;
 
     setState(() => _isJoinLoading = true);
 

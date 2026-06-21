@@ -303,6 +303,8 @@ class _HistoryEventCard extends StatelessWidget {
                                 width: 52,
                                 height: 52,
                                 fit: BoxFit.cover,
+                                memCacheWidth: 160,
+                                memCacheHeight: 160,
                                 placeholder: (context, url) => Container(
                                   width: 52,
                                   height: 52,

@@ -97,8 +97,6 @@ class _ExploreAdvancedFilterSheetState
     final savedFiltersController = SavedFiltersScope.maybeOf(context);
     if (savedFiltersController == null) return;
 
-    final nameController = TextEditingController();
-    var notificationsEnabled = false;
     var useCurrentLocation = true;
     LatLng? savedLocation;
 
@@ -111,119 +109,31 @@ class _ExploreAdvancedFilterSheetState
       useCurrentLocation = false;
     }
 
-    try {
-      final result = await showDialog<bool>(
-        context: context,
-        builder: (dialogContext) {
-          return StatefulBuilder(
-            builder: (context, setDialogState) {
-              return AlertDialog(
-                title: Text(l10n.savedFiltersSaveDialogTitle),
-                content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        controller: nameController,
-                        onChanged: (_) => setDialogState(() {}),
-                        decoration: InputDecoration(
-                          hintText: l10n.savedFiltersNameHint,
-                          border: const OutlineInputBorder(),
-                        ),
-                        autofocus: true,
-                      ),
-                      if (savedLocation != null) ...[
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.savedFiltersLocationLabel,
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        const SizedBox(height: 8),
-                        SegmentedButton<bool>(
-                          segments: [
-                            ButtonSegment(
-                              value: true,
-                              label: Text(l10n.savedFiltersUseCurrentLocation),
-                              icon: const Icon(
-                                Icons.my_location_rounded,
-                                size: 16,
-                              ),
-                            ),
-                            ButtonSegment(
-                              value: false,
-                              label: Text(l10n.savedFiltersUseSavedLocation),
-                              icon: const Icon(
-                                Icons.location_on_rounded,
-                                size: 16,
-                              ),
-                            ),
-                          ],
-                          selected: {useCurrentLocation},
-                          onSelectionChanged: (selected) {
-                            setDialogState(() {
-                              useCurrentLocation = selected.first;
-                            });
-                          },
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Text(l10n.savedFilterNotificationsLabel),
-                          const Spacer(),
-                          Switch(
-                            value: notificationsEnabled,
-                            onChanged: (value) {
-                              setDialogState(() {
-                                notificationsEnabled = value;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(false),
-                    child: Text(l10n.savedFiltersCancel),
-                  ),
-                  FilledButton(
-                    onPressed: nameController.text.trim().isEmpty
-                        ? null
-                        : () => Navigator.of(dialogContext).pop(true),
-                    child: Text(l10n.savedFiltersSaveAction),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
+    final result = await showDialog<_SaveFilterDialogResult>(
+      context: context,
+      builder: (dialogContext) => _SaveFilterDialog(
+        savedLocation: savedLocation,
+        initialUseCurrentLocation: useCurrentLocation,
+      ),
+    );
 
-      if (result != true || !context.mounted) return;
-      if (nameController.text.trim().isEmpty) return;
+    if (result == null || !mounted) return;
 
-      await savedFiltersController.saveFilter(
-        name: nameController.text.trim(),
-        filters: _filters,
-        location: useCurrentLocation ? null : savedLocation,
-        useCurrentLocation: useCurrentLocation,
-        notificationsEnabled: notificationsEnabled,
-      );
+    await savedFiltersController.saveFilter(
+      name: result.name,
+      filters: _filters,
+      location: result.useCurrentLocation ? null : savedLocation,
+      useCurrentLocation: result.useCurrentLocation,
+      notificationsEnabled: result.notificationsEnabled,
+    );
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.savedFiltersSaveConfirmation),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } finally {
-      nameController.dispose();
-    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.savedFiltersSaveConfirmation),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   void _onPickOnMap() {
@@ -884,6 +794,151 @@ class _CompactSurface extends StatelessWidget {
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: child,
+    );
+  }
+}
+
+class _SaveFilterDialogResult {
+  const _SaveFilterDialogResult({
+    required this.name,
+    required this.useCurrentLocation,
+    required this.notificationsEnabled,
+  });
+
+  final String name;
+  final bool useCurrentLocation;
+  final bool notificationsEnabled;
+}
+
+class _SaveFilterDialog extends StatefulWidget {
+  const _SaveFilterDialog({
+    required this.savedLocation,
+    required this.initialUseCurrentLocation,
+  });
+
+  final LatLng? savedLocation;
+  final bool initialUseCurrentLocation;
+
+  @override
+  State<_SaveFilterDialog> createState() => _SaveFilterDialogState();
+}
+
+class _SaveFilterDialogState extends State<_SaveFilterDialog> {
+  late final TextEditingController _nameController;
+  late final FocusNode _nameFocusNode;
+  late bool _useCurrentLocation;
+  bool _notificationsEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+    _nameFocusNode = FocusNode();
+    _useCurrentLocation = widget.initialUseCurrentLocation;
+  }
+
+  @override
+  void dispose() {
+    _nameFocusNode.dispose();
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _cancel() {
+    _nameFocusNode.unfocus();
+    Navigator.of(context).pop();
+  }
+
+  void _save() {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+
+    _nameFocusNode.unfocus();
+    Navigator.of(context).pop(
+      _SaveFilterDialogResult(
+        name: name,
+        useCurrentLocation: _useCurrentLocation,
+        notificationsEnabled: _notificationsEnabled,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return AlertDialog(
+      title: Text(l10n.savedFiltersSaveDialogTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _nameController,
+              focusNode: _nameFocusNode,
+              onChanged: (_) => setState(() {}),
+              onSubmitted: (_) => _nameFocusNode.unfocus(),
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(
+                hintText: l10n.savedFiltersNameHint,
+                border: const OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+            if (widget.savedLocation != null) ...[
+              const SizedBox(height: 16),
+              Text(
+                l10n.savedFiltersLocationLabel,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              SegmentedButton<bool>(
+                segments: [
+                  ButtonSegment(
+                    value: true,
+                    label: Text(l10n.savedFiltersUseCurrentLocation),
+                    icon: const Icon(Icons.my_location_rounded, size: 16),
+                  ),
+                  ButtonSegment(
+                    value: false,
+                    label: Text(l10n.savedFiltersUseSavedLocation),
+                    icon: const Icon(Icons.location_on_rounded, size: 16),
+                  ),
+                ],
+                selected: {_useCurrentLocation},
+                onSelectionChanged: (selected) {
+                  setState(() {
+                    _useCurrentLocation = selected.first;
+                  });
+                },
+              ),
+            ],
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Text(l10n.savedFilterNotificationsLabel),
+                const Spacer(),
+                Switch(
+                  value: _notificationsEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _notificationsEnabled = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: _cancel, child: Text(l10n.savedFiltersCancel)),
+        FilledButton(
+          onPressed: _nameController.text.trim().isEmpty ? null : _save,
+          child: Text(l10n.savedFiltersSaveAction),
+        ),
+      ],
     );
   }
 }

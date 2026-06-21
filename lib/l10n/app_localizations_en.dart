@@ -1479,7 +1479,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingPermissionLocationBody =>
-      'Helps show events closest to you and center the map.';
+      'Helps show events closest to you.';
 
   @override
   String get onboardingPermissionNotificationsTitle => 'Notifications';

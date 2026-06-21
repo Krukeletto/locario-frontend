@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
@@ -70,6 +71,8 @@ class _MapWidgetState extends State<MapWidget> {
   late Future<String> _styleFuture;
   int _styleRevision = 0;
   bool _hasCompletedStartupLoading = false;
+  bool _hasUserMovedCamera = false;
+  bool _hasAutoCenteredOnResolvedLocation = false;
   final MapStyleCoordinator _styleCoordinator = MapStyleCoordinator();
   final MapCameraSync _cameraSync = MapCameraSync();
 
@@ -99,6 +102,8 @@ class _MapWidgetState extends State<MapWidget> {
     _styleCoordinator.reset();
     _cameraSync.reset();
     _isUserLocationVisible = null;
+    _hasUserMovedCamera = false;
+    _hasAutoCenteredOnResolvedLocation = false;
 
     if (_supportsMapLibre && _mapController != null) {
       _applyStyleToExistingMap(nextStyleFuture, nextStyleRevision);
@@ -163,6 +168,8 @@ class _MapWidgetState extends State<MapWidget> {
     oldWidget.controller.removeListener(_handleControllerChanged);
     widget.controller.addListener(_handleControllerChanged);
     _cameraSync.reset();
+    _hasUserMovedCamera = false;
+    _hasAutoCenteredOnResolvedLocation = false;
     _handleControllerChanged();
   }
 
@@ -187,7 +194,20 @@ class _MapWidgetState extends State<MapWidget> {
       return;
     }
 
-    _moveTo(command.center, command.zoom);
+    final shouldAutoCenterResolvedLocation =
+        currentLocation != null &&
+        _sameLocation(command.center, currentLocation) &&
+        !_hasAutoCenteredOnResolvedLocation &&
+        !_hasUserMovedCamera;
+
+    _moveTo(
+      command.center,
+      command.zoom,
+      animate: shouldAutoCenterResolvedLocation,
+    );
+    if (shouldAutoCenterResolvedLocation) {
+      _hasAutoCenteredOnResolvedLocation = true;
+    }
     _cameraSync.markSynced(command.center);
     if (currentLocation != null &&
         _sameLocation(command.center, currentLocation)) {
@@ -426,6 +446,7 @@ class _MapWidgetState extends State<MapWidget> {
       return;
     }
 
+    _hasAutoCenteredOnResolvedLocation = true;
     widget.controller.setPreferredMapCenter(location);
     _moveTo(location, _cameraSync.userLocationZoom, animate: true);
   }
@@ -457,6 +478,10 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   void _handleMapEvent(MapEvent event) {
+    if (event is MapEventStartMoveCamera &&
+        event.reason == CameraChangeReason.apiGesture) {
+      _hasUserMovedCamera = true;
+    }
     if (event is MapEventClick) {
       _handleMapTap(event.screenPoint);
     }
@@ -695,9 +720,7 @@ class _MapWidgetState extends State<MapWidget> {
             final styleLoadError = styleSnapshot.error;
             final isStyleLoading =
                 _supportsMapLibre && !styleLoadFailed && styleJson == null;
-            final isWaitingForStartup =
-                isStyleLoading ||
-                (widget.requireLocation && controller.isInitialLoading);
+            final isWaitingForStartup = isStyleLoading;
             final showStartupLoading =
                 !_hasCompletedStartupLoading && isWaitingForStartup;
 
@@ -1314,12 +1337,14 @@ class _EventMarkerImageBadge extends StatelessWidget {
           decoration: const BoxDecoration(shape: BoxShape.circle),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(22),
-            child: Image.network(
-              imageUrl,
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
               width: 44,
               height: 44,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Container(
+              memCacheWidth: 128,
+              memCacheHeight: 128,
+              errorWidget: (_, _, _) => Container(
                 color: theme.colorScheme.surfaceContainerHigh,
                 child: Icon(
                   Icons.place_rounded,

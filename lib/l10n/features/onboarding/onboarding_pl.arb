@@ -12,7 +12,7 @@
   "onboardingPermissionsTitle": "Uprawnienia",
   "onboardingPermissionsBody": "Możesz korzystać z aplikacji bez części uprawnień. Gdy czegoś zabraknie, pokażemy jasny komunikat w miejscu, którego to dotyczy.",
   "onboardingPermissionLocationTitle": "Lokalizacja",
-  "onboardingPermissionLocationBody": "Pomaga pokazać wydarzenia najbliżej Ciebie i wycentrować mapę.",
+  "onboardingPermissionLocationBody": "Pomaga pokazać wydarzenia najbliżej Ciebie.",
   "onboardingPermissionNotificationsTitle": "Powiadomienia",
   "onboardingPermissionNotificationsBody": "Przypomnienia o wydarzeniach, wiadomościach i ważnych aktualizacjach.",
   "onboardingPermissionPhotosTitle": "Zdjęcia i media",

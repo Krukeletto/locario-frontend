@@ -2759,7 +2759,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingPermissionLocationBody.
   ///
   /// In en, this message translates to:
-  /// **'Helps show events closest to you and center the map.'**
+  /// **'Helps show events closest to you.'**
   String get onboardingPermissionLocationBody;
 
   /// No description provided for @onboardingPermissionNotificationsTitle.

@@ -461,6 +461,11 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
     FeedbackService.showError(FeedbackMessage.changePasswordFailed);
   }
 
+  void _cancel() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -546,7 +551,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+          onPressed: _isSubmitting ? null : _cancel,
           child: Text(l10n.settingsChangePasswordCancel),
         ),
         FilledButton(

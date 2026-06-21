@@ -12,7 +12,7 @@
   "onboardingPermissionsTitle": "Permissions",
   "onboardingPermissionsBody": "You can use the app without some permissions. When something is missing, we will show a clear message where it matters.",
   "onboardingPermissionLocationTitle": "Location",
-  "onboardingPermissionLocationBody": "Helps show events closest to you and center the map.",
+  "onboardingPermissionLocationBody": "Helps show events closest to you.",
   "onboardingPermissionNotificationsTitle": "Notifications",
   "onboardingPermissionNotificationsBody": "Reminders about events, messages and important updates.",
   "onboardingPermissionPhotosTitle": "Photos and media",
