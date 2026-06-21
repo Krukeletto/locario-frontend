@@ -681,8 +681,7 @@ class _SelectedImagesList extends StatelessWidget {
         buildDefaultDragHandles: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: images.length,
-        // ignore: deprecated_member_use
-        onReorder: onReorder,
+        onReorderItem: onReorder,
         itemBuilder: (context, index) {
           final image = images[index];
           final isPrimary = index == 0;
