@@ -77,6 +77,22 @@ UserProfile _sampleProfile() {
   );
 }
 
+UserProfile _sampleProfileWithLinks() {
+  return UserProfile(
+    id: 'u1',
+    username: 'tester',
+    email: 'tester@example.com',
+    hasPassword: true,
+    avatarUrl: null,
+    bio: 'Existing bio',
+    websiteUrl: 'https://example.com',
+    instagramUrl: 'https://instagram.com/tester',
+    facebookUrl: 'https://facebook.com/tester',
+    createdAt: DateTime.utc(2026, 5, 1),
+    eventRegistrations: const [],
+  );
+}
+
 Future<SessionController> _createSessionController({
   required AuthApi api,
   AuthTokens? tokens,
@@ -240,5 +256,72 @@ void main() {
 
     // SnackBar success message
     expect(find.text('Profile updated.'), findsOneWidget);
+  });
+
+  testWidgets('allows clearing optional profile fields', (tester) async {
+    late UpdateProfileRequest capturedRequest;
+    final api = _FakeAuthApi(
+      onFetchProfile: (_, _) async => _sampleProfileWithLinks(),
+      onUpdateProfile: (accessToken, request, tokenType) async {
+        capturedRequest = request;
+        return UserProfile(
+          id: 'u1',
+          username: request.username,
+          email: request.email,
+          hasPassword: true,
+          avatarUrl: null,
+          bio: request.bio.isEmpty ? null : request.bio,
+          websiteUrl: request.websiteUrl.isEmpty ? null : request.websiteUrl,
+          instagramUrl: request.instagramUrl.isEmpty
+              ? null
+              : request.instagramUrl,
+          facebookUrl: request.facebookUrl.isEmpty ? null : request.facebookUrl,
+          createdAt: DateTime.utc(2026, 5, 1),
+          eventRegistrations: const [],
+        );
+      },
+    );
+
+    final tokens = AuthTokens(
+      accessToken: 'access',
+      refreshToken: 'refresh',
+      tokenType: 'Bearer',
+      expiresAt: DateTime.utc(2099),
+    );
+
+    final controller = await _createSessionController(api: api, tokens: tokens);
+
+    await tester.pumpWidget(
+      AuthScope(
+        controller: controller,
+        child: buildLocalizedTestApp(home: const EditProfileScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Existing bio'), findsOneWidget);
+    expect(find.text('https://example.com'), findsWidgets);
+
+    await tester.enterText(find.byType(TextFormField).at(1), '');
+    await tester.ensureVisible(find.byKey(const Key('edit-profile-website')));
+    await tester.pump();
+    await tester.enterText(find.byKey(const Key('edit-profile-website')), '');
+    await tester.ensureVisible(
+      find.byKey(const Key('edit-profile-instagram')),
+    );
+    await tester.pump();
+    await tester.enterText(find.byKey(const Key('edit-profile-instagram')), '');
+    await tester.ensureVisible(find.byKey(const Key('edit-profile-facebook')));
+    await tester.pump();
+    await tester.enterText(find.byKey(const Key('edit-profile-facebook')), '');
+
+    await tester.tap(find.text('Save changes'));
+    await tester.pumpAndSettle();
+
+    expect(capturedRequest.username, 'tester');
+    expect(capturedRequest.bio, isEmpty);
+    expect(capturedRequest.websiteUrl, isEmpty);
+    expect(capturedRequest.instagramUrl, isEmpty);
+    expect(capturedRequest.facebookUrl, isEmpty);
   });
 }
