@@ -242,7 +242,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return;
       }
       FeedbackService.showSuccess(FeedbackMessage.profileUpdateSuccess);
-      Navigator.of(context).maybePop();
+      await Navigator.of(this.context).maybePop();
     } catch (error) {
       if (!mounted) {
         return;
