@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:locario/l10n/app_localizations.dart';
 
@@ -33,11 +34,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Uint8List? _avatarBytes;
   String? _avatarFileName;
 
+  String? _usernameError;
   String? _websiteError;
   String? _instagramError;
   String? _facebookError;
 
   bool _isSubmitting = false;
+  String? _initializedProfileId;
+
+  static final RegExp _usernameRegex = RegExp(r'^[a-zA-Z0-9._-]+$');
 
   @override
   void dispose() {
@@ -49,9 +54,53 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
-  String _resolveValue(String value, String fallback) {
+  void _initializeFields(UserProfile? profile) {
+    if (profile == null || _initializedProfileId == profile.id) {
+      return;
+    }
+
+    _initializedProfileId = profile.id;
+    _usernameController.text = profile.username;
+    _bioController.text = profile.bio ?? '';
+    _websiteController.text = profile.websiteUrl ?? '';
+    _instagramController.text = profile.instagramUrl ?? '';
+    _facebookController.text = profile.facebookUrl ?? '';
+  }
+
+  String _trimmedValue(String value) {
+    return value.trim();
+  }
+
+  String _resolveRequiredValue(String value, String fallback) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? fallback : trimmed;
+  }
+
+  Future<void> _returnToProfile() async {
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      router.go('/profile');
+      return;
+    }
+
+    await Navigator.of(context).maybePop();
+  }
+
+  String? _validateUsername(String value, AppLocalizations l10n) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return l10n.authValidationUsernameRequired;
+    }
+    if (trimmed.length < 3) {
+      return l10n.authValidationUsernameMin3;
+    }
+    if (trimmed.length > 100) {
+      return l10n.editProfileUsernameMax100Error;
+    }
+    if (!_usernameRegex.hasMatch(trimmed)) {
+      return l10n.authValidationUsernameAllowed;
+    }
+    return null;
   }
 
   String? _validateUrl(
@@ -122,6 +171,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
+    final usernameError = _validateUsername(_usernameController.text, l10n);
     final websiteError = _validateUrl(
       _websiteController.text,
       httpsError: l10n.editProfileLinkHttpsError,
@@ -140,12 +190,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
 
     setState(() {
+      _usernameError = usernameError;
       _websiteError = websiteError;
       _instagramError = instagramError;
       _facebookError = facebookError;
     });
 
-    if (websiteError != null ||
+    if (usernameError != null ||
+        websiteError != null ||
         instagramError != null ||
         facebookError != null) {
       return;
@@ -207,22 +259,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       final request = UpdateProfileRequest(
-        username: _resolveValue(_usernameController.text, profile.username),
+        username: _resolveRequiredValue(
+          _usernameController.text,
+          profile.username,
+        ),
         email: profile.email,
         avatarUrl: avatarUrl,
-        bio: _resolveValue(_bioController.text, profile.bio ?? ''),
-        websiteUrl: _resolveValue(
-          _websiteController.text,
-          profile.websiteUrl ?? '',
-        ),
-        instagramUrl: _resolveValue(
-          _instagramController.text,
-          profile.instagramUrl ?? '',
-        ),
-        facebookUrl: _resolveValue(
-          _facebookController.text,
-          profile.facebookUrl ?? '',
-        ),
+        bio: _trimmedValue(_bioController.text),
+        websiteUrl: _trimmedValue(_websiteController.text),
+        instagramUrl: _trimmedValue(_instagramController.text),
+        facebookUrl: _trimmedValue(_facebookController.text),
       );
 
       await sessionController.updateProfile(request: request);
@@ -230,6 +276,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return;
       }
       FeedbackService.showSuccess(FeedbackMessage.profileUpdateSuccess);
+      await _returnToProfile();
     } catch (error) {
       if (!mounted) {
         return;
@@ -321,28 +368,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final l10n = AppLocalizations.of(context);
     final sessionController = AuthScope.of(context);
     final profile = sessionController.profile;
+    _initializeFields(profile);
     final canSubmit =
         !_isSubmitting && !sessionController.isBusy && profile != null;
-    final fallbackHintStyle = theme.textTheme.bodyMedium?.copyWith(
-      color: scheme.onSurface.withValues(alpha: 0.7),
-    );
-    final valueHintStyle = theme.textTheme.bodyMedium?.copyWith(
-      color: scheme.onSurface.withValues(alpha: 0.86),
-    );
-
-    String placeholderOrValue(String? value, String fallback) {
-      final trimmed = value?.trim() ?? '';
-      return trimmed.isEmpty ? fallback : trimmed;
-    }
-
-    TextStyle? hintStyleFor(String? value) {
-      final trimmed = value?.trim() ?? '';
-      return trimmed.isEmpty ? fallbackHintStyle : valueHintStyle;
-    }
 
     InputDecoration buildFieldDecoration({
       required String hintText,
-      TextStyle? hintStyle,
       String? errorText,
     }) {
       final isDark = theme.brightness == Brightness.dark;
@@ -351,7 +382,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           : scheme.surfaceContainerHighest.withValues(alpha: 0.3);
       return InputDecoration(
         hintText: hintText,
-        hintStyle: hintStyle,
+        hintStyle: theme.textTheme.bodyMedium?.copyWith(
+          color: scheme.onSurface.withValues(alpha: 0.38),
+          fontStyle: FontStyle.italic,
+        ),
         errorText: errorText,
         filled: true,
         fillColor: fillColor,
@@ -442,13 +476,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           TextFormField(
             controller: _usernameController,
             decoration: buildFieldDecoration(
-              hintText: placeholderOrValue(
-                profile?.username,
-                l10n.editProfileUsernamePlaceholder,
-              ),
-              hintStyle: hintStyleFor(profile?.username),
+              hintText: l10n.editProfileUsernamePlaceholder,
+              errorText: _usernameError,
             ),
             textInputAction: TextInputAction.next,
+            onChanged: (_) {
+              if (_usernameError != null) {
+                setState(() {
+                  _usernameError = null;
+                });
+              }
+            },
           ),
           const SizedBox(height: 16),
           fieldLabel(l10n.editProfileBioLabel),
@@ -456,11 +494,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           TextFormField(
             controller: _bioController,
             decoration: buildFieldDecoration(
-              hintText: placeholderOrValue(
-                profile?.bio,
-                l10n.editProfileBioPlaceholder,
-              ),
-              hintStyle: hintStyleFor(profile?.bio),
+              hintText: l10n.editProfileBioPlaceholder,
             ),
             maxLength: 160,
             maxLines: 4,
@@ -473,11 +507,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             controller: _websiteController,
             key: const Key('edit-profile-website'),
             decoration: buildFieldDecoration(
-              hintText: placeholderOrValue(
-                profile?.websiteUrl,
-                l10n.editProfileWebsitePlaceholder,
-              ),
-              hintStyle: hintStyleFor(profile?.websiteUrl),
+              hintText: l10n.editProfileWebsitePlaceholder,
               errorText: _websiteError,
             ),
             keyboardType: TextInputType.url,
@@ -497,11 +527,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             controller: _instagramController,
             key: const Key('edit-profile-instagram'),
             decoration: buildFieldDecoration(
-              hintText: placeholderOrValue(
-                profile?.instagramUrl,
-                l10n.editProfileInstagramPlaceholder,
-              ),
-              hintStyle: hintStyleFor(profile?.instagramUrl),
+              hintText: l10n.editProfileInstagramPlaceholder,
               errorText: _instagramError,
             ),
             keyboardType: TextInputType.url,
@@ -521,11 +547,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             controller: _facebookController,
             key: const Key('edit-profile-facebook'),
             decoration: buildFieldDecoration(
-              hintText: placeholderOrValue(
-                profile?.facebookUrl,
-                l10n.editProfileFacebookPlaceholder,
-              ),
-              hintStyle: hintStyleFor(profile?.facebookUrl),
+              hintText: l10n.editProfileFacebookPlaceholder,
               errorText: _facebookError,
             ),
             keyboardType: TextInputType.url,

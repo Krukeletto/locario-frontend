@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:locario/features/explore/explore_area_controller.dart';
 import 'package:locario/features/explore/explore_controller.dart';
@@ -121,6 +122,48 @@ void main() {
 
       expect(find.text('No events found'), findsNothing);
     });
+
+    testWidgets(
+      'shows manual area prompt in list view when location permission is denied',
+      (tester) async {
+        final headerController = ShellHeaderController()
+          ..setSelectedView(ExploreContentView.list);
+
+        await tester.pumpWidget(
+          buildLocalizedTestApp(
+            home: ExploreScreen(
+              controller: ExploreController(
+                eventRepository: FakeEventRepository(events: const []),
+              ),
+              mapViewModel: ExploreMapViewModel(
+                locationService: FakeLocationService(
+                  checkPermissionResult: LocationPermission.denied,
+                ),
+                fallbackCenter: const LatLng(0, 0),
+              ),
+              areaController: ExploreAreaController(),
+              headerController: headerController,
+              styleRepository: const MapStyleRepository(
+                inlineStyleJson: _testStyleJson,
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        expect(find.text('Choose an area manually'), findsOneWidget);
+        expect(find.text('Choose area manually'), findsOneWidget);
+
+        await tester.tap(
+          find.widgetWithText(FilledButton, 'Choose area manually'),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Choose area'), findsOneWidget);
+        expect(find.text('Enter address'), findsOneWidget);
+      },
+    );
 
     testWidgets('shows search-this-area button after moving the map', (
       tester,

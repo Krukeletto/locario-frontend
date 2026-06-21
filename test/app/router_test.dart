@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:locario/app/router.dart';
+import 'package:locario/app/locale/locale_controller.dart';
+import 'package:locario/app/locale/locale_scope.dart';
 import 'package:locario/features/auth/login_screen.dart';
 import 'package:locario/features/chat/chat_screen.dart';
 import 'package:locario/features/legals/legal_acceptance_store.dart';
 import 'package:locario/features/legals/legal_controller.dart';
 import 'package:locario/features/legals/legal_versions.dart';
+import 'package:locario/features/onboarding/onboarding_controller.dart';
+import 'package:locario/features/onboarding/onboarding_screen.dart';
+import 'package:locario/features/onboarding/onboarding_scope.dart';
 import 'package:locario/features/profile/profile_screen.dart';
 import 'package:locario/features/saved/saved_screen.dart';
 import 'package:locario/features/saved/saved_events_controller.dart';
@@ -21,6 +26,8 @@ import 'package:locario/shared/auth/auth_repository.dart';
 import 'package:locario/shared/auth/auth_scope.dart';
 import 'package:locario/shared/auth/session_controller.dart';
 import 'package:locario/l10n/app_localizations.dart';
+
+import '../test_helpers/fake_app_settings_store.dart';
 
 void main() {
   group('normalizeIncomingLocation', () {
@@ -60,9 +67,11 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final sessionController = await _createSessionController();
       final legalController = _createLegalController(sessionController);
+      final onboardingController = await _createOnboardingController();
       final router = createAppRouter(
         sessionController: sessionController,
         legalController: legalController,
+        onboardingController: onboardingController,
       );
 
       await tester.pumpWidget(
@@ -100,9 +109,11 @@ void main() {
         SharedPreferences.setMockInitialValues({});
         final sessionController = await _createSessionController();
         final legalController = _createLegalController(sessionController);
+        final onboardingController = await _createOnboardingController();
         final router = createAppRouter(
           sessionController: sessionController,
           legalController: legalController,
+          onboardingController: onboardingController,
         );
 
         await tester.pumpWidget(
@@ -171,9 +182,11 @@ void main() {
         authenticated: true,
       );
       final legalController = _createLegalController(sessionController);
+      final onboardingController = await _createOnboardingController();
       final router = createAppRouter(
         sessionController: sessionController,
         legalController: legalController,
+        onboardingController: onboardingController,
       );
 
       await tester.pumpWidget(
@@ -223,9 +236,11 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final sessionController = await _createSessionController();
       final legalController = _createLegalController(sessionController);
+      final onboardingController = await _createOnboardingController();
       final router = createAppRouter(
         sessionController: sessionController,
         legalController: legalController,
+        onboardingController: onboardingController,
       );
 
       await tester.pumpWidget(
@@ -277,9 +292,11 @@ void main() {
         role: 'user',
       );
       final legalController = _createLegalController(sessionController);
+      final onboardingController = await _createOnboardingController();
       final router = createAppRouter(
         sessionController: sessionController,
         legalController: legalController,
+        onboardingController: onboardingController,
       );
 
       await tester.pumpWidget(
@@ -309,6 +326,48 @@ void main() {
 
       expect(router.routerDelegate.currentConfiguration.uri.path, '/profile');
       expect(find.byType(ProfileScreen), findsOneWidget);
+    });
+
+    testWidgets('redirects first launch to onboarding', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final sessionController = await _createSessionController();
+      final legalController = _createLegalController(sessionController);
+      final onboardingController = await _createOnboardingController(
+        completed: false,
+      );
+      final localeController = LocaleController(
+        settingsStore: FakeAppSettingsStore(),
+        initialLocale: const Locale('en'),
+      );
+      final router = createAppRouter(
+        sessionController: sessionController,
+        legalController: legalController,
+        onboardingController: onboardingController,
+      );
+
+      await tester.pumpWidget(
+        OnboardingScope(
+          controller: onboardingController,
+          child: LocaleScope(
+            controller: localeController,
+            child: MaterialApp.router(
+              locale: const Locale('en'),
+              supportedLocales: AppLocalizations.supportedLocales,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              routerConfig: router,
+            ),
+          ),
+        ),
+      );
+
+      router.go('/explore');
+      await tester.pumpAndSettle();
+
+      expect(
+        router.routerDelegate.currentConfiguration.uri.path,
+        '/onboarding',
+      );
+      expect(find.byType(OnboardingScreen), findsOneWidget);
     });
   });
 }
@@ -450,5 +509,15 @@ LegalController _createLegalController(SessionController sessionController) {
     sessionController: sessionController,
   );
   controller.load();
+  return controller;
+}
+
+Future<OnboardingController> _createOnboardingController({
+  bool completed = true,
+}) async {
+  final controller = OnboardingController(
+    settingsStore: FakeAppSettingsStore(initialOnboardingCompleted: completed),
+  );
+  await controller.load();
   return controller;
 }

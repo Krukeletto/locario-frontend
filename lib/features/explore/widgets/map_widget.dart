@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:locario/l10n/app_localizations.dart';
@@ -33,6 +34,7 @@ class MapWidget extends StatefulWidget {
     this.searchRadiusCenter,
     this.searchRadiusMeters,
     this.showSearchRadiusOverlay = true,
+    this.requireLocation = true,
   });
 
   final ExploreMapViewModel controller;
@@ -49,6 +51,7 @@ class MapWidget extends StatefulWidget {
   final LatLng? searchRadiusCenter;
   final int? searchRadiusMeters;
   final bool showSearchRadiusOverlay;
+  final bool requireLocation;
 
   @override
   State<MapWidget> createState() => _MapWidgetState();
@@ -68,6 +71,8 @@ class _MapWidgetState extends State<MapWidget> {
   late Future<String> _styleFuture;
   int _styleRevision = 0;
   bool _hasCompletedStartupLoading = false;
+  bool _hasUserMovedCamera = false;
+  bool _hasAutoCenteredOnResolvedLocation = false;
   final MapStyleCoordinator _styleCoordinator = MapStyleCoordinator();
   final MapCameraSync _cameraSync = MapCameraSync();
 
@@ -97,6 +102,8 @@ class _MapWidgetState extends State<MapWidget> {
     _styleCoordinator.reset();
     _cameraSync.reset();
     _isUserLocationVisible = null;
+    _hasUserMovedCamera = false;
+    _hasAutoCenteredOnResolvedLocation = false;
 
     if (_supportsMapLibre && _mapController != null) {
       _applyStyleToExistingMap(nextStyleFuture, nextStyleRevision);
@@ -161,6 +168,8 @@ class _MapWidgetState extends State<MapWidget> {
     oldWidget.controller.removeListener(_handleControllerChanged);
     widget.controller.addListener(_handleControllerChanged);
     _cameraSync.reset();
+    _hasUserMovedCamera = false;
+    _hasAutoCenteredOnResolvedLocation = false;
     _handleControllerChanged();
   }
 
@@ -185,7 +194,20 @@ class _MapWidgetState extends State<MapWidget> {
       return;
     }
 
-    _moveTo(command.center, command.zoom);
+    final shouldAutoCenterResolvedLocation =
+        currentLocation != null &&
+        _sameLocation(command.center, currentLocation) &&
+        !_hasAutoCenteredOnResolvedLocation &&
+        !_hasUserMovedCamera;
+
+    _moveTo(
+      command.center,
+      command.zoom,
+      animate: shouldAutoCenterResolvedLocation,
+    );
+    if (shouldAutoCenterResolvedLocation) {
+      _hasAutoCenteredOnResolvedLocation = true;
+    }
     _cameraSync.markSynced(command.center);
     if (currentLocation != null &&
         _sameLocation(command.center, currentLocation)) {
@@ -424,6 +446,7 @@ class _MapWidgetState extends State<MapWidget> {
       return;
     }
 
+    _hasAutoCenteredOnResolvedLocation = true;
     widget.controller.setPreferredMapCenter(location);
     _moveTo(location, _cameraSync.userLocationZoom, animate: true);
   }
@@ -455,6 +478,10 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   void _handleMapEvent(MapEvent event) {
+    if (event is MapEventStartMoveCamera &&
+        event.reason == CameraChangeReason.apiGesture) {
+      _hasUserMovedCamera = true;
+    }
     if (event is MapEventClick) {
       _handleMapTap(event.screenPoint);
     }
@@ -693,8 +720,7 @@ class _MapWidgetState extends State<MapWidget> {
             final styleLoadError = styleSnapshot.error;
             final isStyleLoading =
                 _supportsMapLibre && !styleLoadFailed && styleJson == null;
-            final isWaitingForStartup =
-                isStyleLoading || controller.isInitialLoading;
+            final isWaitingForStartup = isStyleLoading;
             final showStartupLoading =
                 !_hasCompletedStartupLoading && isWaitingForStartup;
 
@@ -707,6 +733,14 @@ class _MapWidgetState extends State<MapWidget> {
             }
 
             _hasCompletedStartupLoading = true;
+            if (widget.requireLocation &&
+                currentLocation == null &&
+                !controller.isLocating &&
+                (controller.status == ExploreMapStatus.permissionDenied ||
+                    controller.status == ExploreMapStatus.serviceDisabled)) {
+              return _MapLocationRequiredView(controller: controller);
+            }
+
             return Stack(
               children: [
                 _buildMapSurface(
@@ -736,7 +770,8 @@ class _MapWidgetState extends State<MapWidget> {
                       message: l10n.mapStyleLoadFailed('$styleLoadError'),
                     ),
                   )
-                else if (controller.status != ExploreMapStatus.ready &&
+                else if (widget.requireLocation &&
+                    controller.status != ExploreMapStatus.ready &&
                     controller.message != null &&
                     !controller.isLocating)
                   Positioned(
@@ -862,6 +897,92 @@ class _StartupLoadingView extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MapLocationRequiredView extends StatelessWidget {
+  const _MapLocationRequiredView({required this.controller});
+
+  final ExploreMapViewModel controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final isBlocked =
+        controller.message == ExploreMapMessage.permissionDeniedForever;
+    final isServiceDisabled =
+        controller.status == ExploreMapStatus.serviceDisabled;
+    final canOpenSettings = isBlocked && controller.canOpenAppSettings;
+    final canOpenLocationSettings =
+        isServiceDisabled && controller.canOpenLocationSettings;
+
+    return ColoredBox(
+      color: scheme.surfaceContainerLowest,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: scheme.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: Icon(
+                    Icons.my_location_rounded,
+                    color: scheme.primary,
+                    size: 30,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  l10n.mapLocationRequiredTitle,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: scheme.onSurface,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  isServiceDisabled
+                      ? l10n.mapServiceDisabled
+                      : l10n.mapLocationRequiredSubtitle,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.68),
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                FilledButton.icon(
+                  onPressed: canOpenLocationSettings
+                      ? controller.openLocationSettings
+                      : canOpenSettings
+                      ? controller.openAppSettings
+                      : controller.requestLocationPermission,
+                  icon: const Icon(Icons.location_on_rounded),
+                  label: Text(
+                    canOpenLocationSettings
+                        ? l10n.mapLocationSettings
+                        : canOpenSettings
+                        ? l10n.mapAppSettings
+                        : l10n.mapGrantLocation,
                   ),
                 ),
               ],
@@ -1095,7 +1216,7 @@ class _MapMessageBanner extends StatelessWidget {
             spacing: 8,
             children: [
               TextButton(
-                onPressed: controller.refreshLocation,
+                onPressed: controller.requestLocationPermission,
                 child: Text(l10n.mapRetry),
               ),
               if (controller.status == ExploreMapStatus.permissionDenied &&
@@ -1190,13 +1311,6 @@ class _EventMarkerBadge extends StatelessWidget {
           decoration: BoxDecoration(
             color: backgroundColor,
             shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: theme.shadowColor,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
           child: Icon(icon, color: themeColors.onScrim, size: 22),
         ),
@@ -1220,24 +1334,17 @@ class _EventMarkerImageBadge extends StatelessWidget {
         child: Container(
           width: 44,
           height: 44,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: theme.shadowColor,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+          decoration: const BoxDecoration(shape: BoxShape.circle),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(22),
-            child: Image.network(
-              imageUrl,
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
               width: 44,
               height: 44,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Container(
+              memCacheWidth: 128,
+              memCacheHeight: 128,
+              errorWidget: (_, _, _) => Container(
                 color: theme.colorScheme.surfaceContainerHigh,
                 child: Icon(
                   Icons.place_rounded,

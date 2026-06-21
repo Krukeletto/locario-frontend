@@ -12,6 +12,8 @@ import '../features/groups/group_form_screen.dart';
 import '../features/hub/create_event/create_event_screen.dart';
 import '../features/hub/hub_placeholder_screen.dart';
 import '../features/inbox/inbox_screen.dart';
+import '../features/onboarding/onboarding_controller.dart';
+import '../features/onboarding/onboarding_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
 import '../features/profile/event_history_screen.dart';
 import '../features/profile/organizer_events_screen.dart';
@@ -143,23 +145,75 @@ Page<void> _trackedNoTransitionPage({
   );
 }
 
+Page<void> _trackedEventDetailsPage({
+  required NavigationHistoryController controller,
+  required String location,
+  required bool rememberAsSafe,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    transitionDuration: const Duration(milliseconds: 240),
+    reverseTransitionDuration: const Duration(milliseconds: 180),
+    child: RouteHistoryReporter(
+      controller: controller,
+      location: location,
+      rememberAsSafe: rememberAsSafe,
+      child: child,
+    ),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+
+      return FadeTransition(
+        opacity: curvedAnimation,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.06, 0),
+            end: Offset.zero,
+          ).animate(curvedAnimation),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 GoRouter createAppRouter({
   required SessionController sessionController,
   required LegalController legalController,
+  required OnboardingController onboardingController,
 }) {
   final navigationHistory = NavigationHistoryController();
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/explore',
-    refreshListenable: Listenable.merge([sessionController, legalController]),
+    initialLocation: '/onboarding',
+    refreshListenable: Listenable.merge([
+      sessionController,
+      legalController,
+      onboardingController,
+    ]),
     redirect: (context, state) {
       final normalizedLocation = normalizeIncomingLocation(state.uri);
+
+      if (onboardingController.isLoading) {
+        return null;
+      }
+
+      final location = normalizedLocation ?? state.uri.path;
+      if (!onboardingController.isCompleted && location != '/onboarding') {
+        return '/onboarding';
+      }
+      if (onboardingController.isCompleted && location == '/onboarding') {
+        return '/explore';
+      }
 
       if (sessionController.isLoading) {
         return null;
       }
 
-      final location = normalizedLocation ?? state.uri.path;
       if (normalizedLocation != null && normalizedLocation != state.uri.path) {
         if (!sessionController.isAuthenticated && _requiresAuth(location)) {
           return _loginRedirect(
@@ -215,6 +269,12 @@ GoRouter createAppRouter({
       return null;
     },
     routes: [
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/onboarding',
+        pageBuilder: (context, state) =>
+            const NoTransitionPage<void>(child: OnboardingScreen()),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           final currentSection = state.uri.pathSegments.isNotEmpty
@@ -425,7 +485,7 @@ GoRouter createAppRouter({
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/events/:eventId',
-        pageBuilder: (context, state) => _trackedNoTransitionPage(
+        pageBuilder: (context, state) => _trackedEventDetailsPage(
           controller: navigationHistory,
           location: state.uri.toString(),
           rememberAsSafe: _shouldRememberAsSafeLocation(state.uri.path),

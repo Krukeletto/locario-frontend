@@ -50,6 +50,8 @@ import '../shared/notifications/shared_prefs_notification_preferences_store.dart
 import '../features/legals/legal_controller.dart';
 import '../features/legals/legal_scope.dart';
 import '../features/legals/shared_prefs_legal_acceptance_store.dart';
+import '../features/onboarding/onboarding_controller.dart';
+import '../features/onboarding/onboarding_scope.dart';
 
 class LocarioApp extends StatefulWidget {
   const LocarioApp({super.key});
@@ -80,9 +82,11 @@ class _LocarioAppState extends State<LocarioApp> {
   late final JoinedEventsController _joinedEventsController;
   late final SessionController _sessionController;
   late final LegalController _legalController;
+  late final OnboardingController _onboardingController;
   late final GoRouter _router;
   late final NotificationsApi _notificationsApi;
   late final NotificationController _notificationController;
+  bool _hasInitializedNotifications = false;
 
   @override
   void initState() {
@@ -124,9 +128,11 @@ class _LocarioAppState extends State<LocarioApp> {
       store: const SharedPrefsLegalAcceptanceStore(),
       sessionController: _sessionController,
     );
+    _onboardingController = OnboardingController(settingsStore: _settingsStore);
     _router = createAppRouter(
       sessionController: _sessionController,
       legalController: _legalController,
+      onboardingController: _onboardingController,
     );
     _localeController = LocaleController(settingsStore: _settingsStore);
     _themeController = ThemeController(settingsStore: _settingsStore);
@@ -161,14 +167,14 @@ class _LocarioAppState extends State<LocarioApp> {
     _joinedEventsController.load();
     _sessionController.load();
     _sessionController.addListener(_onSessionChanged);
+    _onboardingController.addListener(_onOnboardingChanged);
     _legalController.load();
+    _onboardingController.load().then((_) {
+      if (!mounted) return;
+      _initNotificationsIfAllowed();
+    });
     _notificationController.loadHistory();
     _notificationController.loadPreferences();
-
-    NotificationService.init(
-      controller: _notificationController,
-      router: _router,
-    );
   }
 
   void _onSessionChanged() {
@@ -182,9 +188,26 @@ class _LocarioAppState extends State<LocarioApp> {
     }
   }
 
+  void _onOnboardingChanged() {
+    _initNotificationsIfAllowed();
+  }
+
+  void _initNotificationsIfAllowed() {
+    if (_hasInitializedNotifications || !_onboardingController.isCompleted) {
+      return;
+    }
+
+    _hasInitializedNotifications = true;
+    NotificationService.init(
+      controller: _notificationController,
+      router: _router,
+    );
+  }
+
   @override
   void dispose() {
     _sessionController.removeListener(_onSessionChanged);
+    _onboardingController.removeListener(_onOnboardingChanged);
     _localeController.dispose();
     _themeController.dispose();
     _categoryController.dispose();
@@ -195,6 +218,7 @@ class _LocarioAppState extends State<LocarioApp> {
     _savedFiltersController.dispose();
     _joinedEventsController.dispose();
     _legalController.dispose();
+    _onboardingController.dispose();
     _sessionController.dispose();
     _notificationController.dispose();
     _cacheService.dispose();
@@ -217,69 +241,75 @@ class _LocarioAppState extends State<LocarioApp> {
                 controller: _reviewController,
                 child: LegalScope(
                   controller: _legalController,
-                  child: SavedEventsScope(
-                    controller: _savedEventsController,
-                    child: SavedFiltersScope(
-                      controller: _savedFiltersController,
-                      child: JoinedEventsScope(
-                        controller: _joinedEventsController,
-                        child: NotificationScope(
-                          controller: _notificationController,
-                          child: LocaleScope(
-                            controller: _localeController,
-                            child: ThemeScope(
-                              controller: _themeController,
-                              child: AnimatedBuilder(
-                                animation: Listenable.merge([
-                                  _localeController,
-                                  _themeController,
-                                  _categoryController,
-                                  _savedEventsController,
-                                  _notificationController,
-                                ]),
-                                builder: (context, _) {
-                                  return MaterialApp.router(
-                                    scaffoldMessengerKey:
-                                        rootScaffoldMessengerKey,
-                                    onGenerateTitle: (context) =>
-                                        AppLocalizations.of(context).appTitle,
-                                    debugShowCheckedModeBanner: false,
-                                    theme: buildLightAppTheme(),
-                                    darkTheme: buildDarkAppTheme(),
-                                    themeMode: _themeController.themeMode,
-                                    routerConfig: _router,
-                                    locale: _localeController.locale,
-                                    supportedLocales:
-                                        AppLocalizations.supportedLocales,
-                                    localizationsDelegates: const [
-                                      AppLocalizations.delegate,
-                                      GlobalMaterialLocalizations.delegate,
-                                      GlobalWidgetsLocalizations.delegate,
-                                      GlobalCupertinoLocalizations.delegate,
-                                    ],
-                                    builder: (context, child) {
-                                      final l10n = AppLocalizations.of(context);
-                                      L10nService.update(l10n);
-                                      return child!;
-                                    },
-                                    localeResolutionCallback:
-                                        (locale, supportedLocales) {
-                                          if (locale == null) {
-                                            return const Locale('pl');
-                                          }
-
-                                          for (final supportedLocale
-                                              in supportedLocales) {
-                                            if (supportedLocale.languageCode ==
-                                                locale.languageCode) {
-                                              return supportedLocale;
+                  child: OnboardingScope(
+                    controller: _onboardingController,
+                    child: SavedEventsScope(
+                      controller: _savedEventsController,
+                      child: SavedFiltersScope(
+                        controller: _savedFiltersController,
+                        child: JoinedEventsScope(
+                          controller: _joinedEventsController,
+                          child: NotificationScope(
+                            controller: _notificationController,
+                            child: LocaleScope(
+                              controller: _localeController,
+                              child: ThemeScope(
+                                controller: _themeController,
+                                child: AnimatedBuilder(
+                                  animation: Listenable.merge([
+                                    _localeController,
+                                    _themeController,
+                                    _categoryController,
+                                    _savedEventsController,
+                                    _notificationController,
+                                  ]),
+                                  builder: (context, _) {
+                                    return MaterialApp.router(
+                                      scaffoldMessengerKey:
+                                          rootScaffoldMessengerKey,
+                                      onGenerateTitle: (context) =>
+                                          AppLocalizations.of(context).appTitle,
+                                      debugShowCheckedModeBanner: false,
+                                      theme: buildLightAppTheme(),
+                                      darkTheme: buildDarkAppTheme(),
+                                      themeMode: _themeController.themeMode,
+                                      routerConfig: _router,
+                                      locale: _localeController.locale,
+                                      supportedLocales:
+                                          AppLocalizations.supportedLocales,
+                                      localizationsDelegates: const [
+                                        AppLocalizations.delegate,
+                                        GlobalMaterialLocalizations.delegate,
+                                        GlobalWidgetsLocalizations.delegate,
+                                        GlobalCupertinoLocalizations.delegate,
+                                      ],
+                                      builder: (context, child) {
+                                        final l10n = AppLocalizations.of(
+                                          context,
+                                        );
+                                        L10nService.update(l10n);
+                                        return child!;
+                                      },
+                                      localeResolutionCallback:
+                                          (locale, supportedLocales) {
+                                            if (locale == null) {
+                                              return const Locale('pl');
                                             }
-                                          }
 
-                                          return const Locale('pl');
-                                        },
-                                  );
-                                },
+                                            for (final supportedLocale
+                                                in supportedLocales) {
+                                              if (supportedLocale
+                                                      .languageCode ==
+                                                  locale.languageCode) {
+                                                return supportedLocale;
+                                              }
+                                            }
+
+                                            return const Locale('pl');
+                                          },
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           ),

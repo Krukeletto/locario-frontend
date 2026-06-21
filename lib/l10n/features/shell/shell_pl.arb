@@ -16,6 +16,9 @@
     }
   },
   "mapRetry": "Ponów",
+  "mapGrantLocation": "Przyznaj lokalizację",
+  "mapLocationRequiredTitle": "Mapa potrzebuje lokalizacji",
+  "mapLocationRequiredSubtitle": "Przyznaj dostęp do lokalizacji, aby korzystać z mapy. Z listy wydarzeń możesz korzystać dalej i ręcznie wybrać obszar w filtrach.",
   "mapAppSettings": "Ustawienia aplikacji",
   "mapLocationSettings": "Ustawienia lokalizacji",
   "mapServiceDisabled": "Włącz usługi lokalizacji, aby zobaczyć swoją pozycję.",

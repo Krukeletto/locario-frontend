@@ -7,6 +7,7 @@ import 'package:locario/features/auth/register_screen.dart';
 import 'package:locario/features/legals/legal_acceptance_store.dart';
 import 'package:locario/features/legals/legal_controller.dart';
 import 'package:locario/features/legals/legal_versions.dart';
+import 'package:locario/features/onboarding/onboarding_controller.dart';
 import 'package:locario/features/profile/profile_screen.dart';
 import 'package:locario/l10n/app_localizations.dart';
 import 'package:locario/shared/auth/auth_api.dart';
@@ -18,6 +19,7 @@ import 'package:locario/shared/services/feedback_service.dart';
 import 'package:locario/shared/services/l10n_service.dart';
 
 import '../../test_helpers/test_app.dart';
+import '../../test_helpers/fake_app_settings_store.dart';
 
 class MemoryAuthStorage implements AuthTokenStorage {
   AuthTokens? stored;
@@ -161,14 +163,24 @@ LegalController _createLegalController(SessionController sessionController) {
   return controller;
 }
 
+Future<OnboardingController> _createOnboardingController() async {
+  final controller = OnboardingController(
+    settingsStore: FakeAppSettingsStore(initialOnboardingCompleted: true),
+  );
+  await controller.load();
+  return controller;
+}
+
 Future<GoRouter> _pumpRouterApp(
   WidgetTester tester, {
   required SessionController sessionController,
 }) async {
   final legalController = _createLegalController(sessionController);
+  final onboardingController = await _createOnboardingController();
   final router = createAppRouter(
     sessionController: sessionController,
     legalController: legalController,
+    onboardingController: onboardingController,
   );
 
   await tester.pumpWidget(

@@ -35,7 +35,13 @@ class _EventGalleryState extends State<EventGallery> {
         .toList();
     final thumb = widget.thumbnailUrl;
     if (thumb != null && thumb.isNotEmpty) {
-      final alreadyPresent = images.any((m) => m.url == thumb);
+      final alreadyPresent = images.any(
+        (m) =>
+            m.url == thumb ||
+            m.thumbnailUrl == thumb ||
+            m.pinUrl == thumb ||
+            m.previewUrl == thumb,
+      );
       if (!alreadyPresent) {
         images.insert(
           0,
@@ -72,8 +78,10 @@ class _EventGalleryState extends State<EventGallery> {
                 );
               },
               child: CachedNetworkImage(
-                imageUrl: images[index].url,
+                imageUrl: images[index].previewUrl,
                 fit: BoxFit.cover,
+                memCacheWidth: 900,
+                memCacheHeight: 900,
                 placeholder: (context, url) => Container(
                   color: scheme.surfaceContainerLow,
                   child: const Center(

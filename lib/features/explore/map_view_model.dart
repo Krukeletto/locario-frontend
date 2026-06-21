@@ -75,12 +75,22 @@ class ExploreMapViewModel extends ChangeNotifier {
   }
 
   Future<void> refreshLocation() {
+    return _loadLocation(requestPermission: false);
+  }
+
+  Future<void> requestLocationPermission() {
+    return _loadLocation(requestPermission: true);
+  }
+
+  Future<void> _loadLocation({required bool requestPermission}) {
     final currentLoad = _pendingLoad;
     if (currentLoad != null) {
       return currentLoad;
     }
 
-    final future = _refreshLocationInternal();
+    final future = _refreshLocationInternal(
+      requestPermission: requestPermission,
+    );
     _pendingLoad = future;
 
     return future.whenComplete(() {
@@ -106,7 +116,9 @@ class ExploreMapViewModel extends ChangeNotifier {
     await _locationService.openLocationSettings();
   }
 
-  Future<void> _refreshLocationInternal() async {
+  Future<void> _refreshLocationInternal({
+    required bool requestPermission,
+  }) async {
     _setState(status: _status, message: null, isLocating: true);
 
     try {
@@ -120,10 +132,9 @@ class ExploreMapViewModel extends ChangeNotifier {
         return;
       }
 
-      var permission = await _locationService.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await _locationService.requestPermission();
-      }
+      final permission = await _resolvePermission(
+        requestPermission: requestPermission,
+      );
 
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
@@ -132,6 +143,15 @@ class ExploreMapViewModel extends ChangeNotifier {
           message: permission == LocationPermission.deniedForever
               ? ExploreMapMessage.permissionDeniedForever
               : ExploreMapMessage.permissionDenied,
+          isLocating: false,
+        );
+        return;
+      }
+
+      if (permission == LocationPermission.unableToDetermine) {
+        _setState(
+          status: ExploreMapStatus.error,
+          message: ExploreMapMessage.unableLoadLocation,
           isLocating: false,
         );
         return;
@@ -197,6 +217,16 @@ class ExploreMapViewModel extends ChangeNotifier {
         isLocating: false,
       );
     }
+  }
+
+  Future<LocationPermission> _resolvePermission({
+    required bool requestPermission,
+  }) async {
+    final permission = await _locationService.checkPermission();
+    if (permission == LocationPermission.denied && requestPermission) {
+      return _locationService.requestPermission();
+    }
+    return permission;
   }
 
   Future<LatLng?> _loadLastKnownLocation() async {

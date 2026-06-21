@@ -20,9 +20,11 @@ class ExploreListView extends StatelessWidget {
     required this.isSearchActive,
     required this.onSortChanged,
     required this.onSortOrderToggled,
+    required this.onManualAreaPressed,
     this.onSortOpened,
     required this.onEventTap,
     this.savedEventsController,
+    this.showManualAreaPrompt = false,
   });
 
   final List<ExploreEvent> events;
@@ -33,9 +35,11 @@ class ExploreListView extends StatelessWidget {
   final bool isSearchActive;
   final ValueChanged<ExploreSortOption> onSortChanged;
   final VoidCallback onSortOrderToggled;
+  final VoidCallback onManualAreaPressed;
   final VoidCallback? onSortOpened;
   final ValueChanged<ExploreEvent> onEventTap;
   final SavedEventsController? savedEventsController;
+  final bool showManualAreaPrompt;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +54,7 @@ class ExploreListView extends StatelessWidget {
         children: [
           if (!hideToolbar)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
               child: _ListToolbar(
                 eventsCount: events.length,
                 selectedFilterSummary: selectedFilterSummary,
@@ -63,42 +67,114 @@ class ExploreListView extends StatelessWidget {
               ),
             ),
           Expanded(
-            child: ListView.separated(
-              key: const Key('explore-event-list'),
-              padding: EdgeInsets.fromLTRB(16, hideToolbar ? 12 : 8, 16, 20),
-              itemCount: events.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final event = events[index];
-                final controller = savedEventsController;
+            child: events.isEmpty && showManualAreaPrompt
+                ? _ManualAreaPrompt(onPressed: onManualAreaPressed)
+                : ListView.separated(
+                    key: const Key('explore-event-list'),
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      hideToolbar ? 12 : 8,
+                      16,
+                      20,
+                    ),
+                    itemCount: events.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final event = events[index];
+                      final controller = savedEventsController;
 
-                return EventListCard(
-                  event: event,
-                  referenceLocation: referenceLocation,
-                  showDistance: true,
-                  actionIcon: Icons.bookmark_add_outlined,
-                  activeActionIcon: Icons.bookmark_rounded,
-                  actionTooltip: l10n.savedSaveActionTooltip,
-                  activeActionTooltip: l10n.savedRemoveActionTooltip,
-                  isActionActive: controller?.isSaved(event.id) ?? false,
-                  onTap: () => onEventTap(event),
-                  onActionPressed: controller == null
-                      ? null
-                      : () {
-                          unawaited(
-                            _toggleSaved(
-                              context: context,
-                              controller: controller,
-                              event: event,
-                            ),
-                          );
-                        },
-                );
-              },
-            ),
+                      return EventListCard(
+                        event: event,
+                        referenceLocation: referenceLocation,
+                        showDistance: true,
+                        actionIcon: Icons.bookmark_add_outlined,
+                        activeActionIcon: Icons.bookmark_rounded,
+                        actionTooltip: l10n.savedSaveActionTooltip,
+                        activeActionTooltip: l10n.savedRemoveActionTooltip,
+                        isActionActive: controller?.isSaved(event.id) ?? false,
+                        onTap: () => onEventTap(event),
+                        onActionPressed: controller == null
+                            ? null
+                            : () {
+                                unawaited(
+                                  _toggleSaved(
+                                    context: context,
+                                    controller: controller,
+                                    event: event,
+                                  ),
+                                );
+                              },
+                      );
+                    },
+                  ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ManualAreaPrompt extends StatelessWidget {
+  const _ManualAreaPrompt({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context);
+
+    return ListView(
+      key: const Key('explore-manual-area-prompt'),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+      children: [
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: Column(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Icon(
+                    Icons.edit_location_alt_rounded,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.exploreManualAreaPromptTitle,
+                  textAlign: TextAlign.center,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.exploreManualAreaPromptSubtitle,
+                  textAlign: TextAlign.center,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                FilledButton.icon(
+                  onPressed: onPressed,
+                  icon: const Icon(Icons.tune_rounded),
+                  label: Text(l10n.exploreManualAreaPromptAction),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -151,65 +227,77 @@ class _ListToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context);
+    final title = selectedFilterSummary == allFilterLabel
+        ? l10n.exploreNearbyEvents
+        : l10n.exploreNearbyWithFilter(selectedFilterSummary);
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(22),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.15)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            selectedFilterSummary == allFilterLabel
-                ? l10n.exploreNearbyEvents
-                : l10n.exploreNearbyWithFilter(selectedFilterSummary),
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.3,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.format_list_bulleted_rounded,
+                      size: 14,
+                      color: colorScheme.primary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      l10n.resultsCount(eventsCount),
+                      style: textTheme.labelLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Spacer(),
-              IconButton.filledTonal(
-                onPressed: onSortOrderToggled,
-                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                padding: EdgeInsets.zero,
-                icon: AnimatedRotation(
-                  duration: const Duration(milliseconds: 200),
-                  turns: sortAscending ? 0 : 0.5,
-                  child: const Icon(Icons.sort_rounded, size: 20),
-                ),
-              ),
-              const SizedBox(width: 8),
-              _SortMenu(
-                selectedSort: selectedSort,
-                onOpened: onSortOpened,
-                onSortChanged: onSortChanged,
-              ),
-            ],
+          const SizedBox(width: 12),
+          IconButton.filledTonal(
+            onPressed: onSortOrderToggled,
+            constraints: const BoxConstraints(minWidth: 38, minHeight: 38),
+            padding: EdgeInsets.zero,
+            style: IconButton.styleFrom(
+              backgroundColor: colorScheme.primary.withValues(alpha: 0.10),
+              foregroundColor: colorScheme.primary,
+            ),
+            icon: AnimatedRotation(
+              duration: const Duration(milliseconds: 200),
+              turns: sortAscending ? 0 : 0.5,
+              child: const Icon(Icons.sort_rounded, size: 19),
+            ),
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Icon(
-                Icons.format_list_bulleted_rounded,
-                size: 14,
-                color: colorScheme.primary,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                l10n.resultsCount(eventsCount),
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+          const SizedBox(width: 8),
+          _SortMenu(
+            selectedSort: selectedSort,
+            onOpened: onSortOpened,
+            onSortChanged: onSortChanged,
           ),
         ],
       ),
@@ -275,11 +363,14 @@ class _SortMenu extends StatelessWidget {
           .toList(),
       child: Container(
         key: const Key('explore-sort-button'),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        constraints: const BoxConstraints(minHeight: 38),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: colorScheme.outlineVariant),
+          color: colorScheme.surface.withValues(alpha: 0.92),
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.38),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

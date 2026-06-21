@@ -14,6 +14,7 @@ import 'package:locario/shared/notifications/notification_controller.dart';
 import 'package:locario/shared/notifications/notification_scope.dart';
 import 'package:locario/shared/notifications/shared_prefs_notification_history_repository.dart';
 import 'package:locario/shared/notifications/shared_prefs_notification_preferences_store.dart';
+import 'package:locario/shared/permissions/app_permission_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../test_helpers/fake_app_settings_store.dart';
@@ -141,5 +142,89 @@ void main() {
 
       expect(themeController.themeMode, ThemeMode.dark);
     });
+
+    testWidgets('renders permission section and requests missing permission', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final localeController = LocaleController(
+        settingsStore: FakeAppSettingsStore(),
+      );
+      final themeController = ThemeController(
+        settingsStore: FakeAppSettingsStore(),
+      );
+      final notificationController = NotificationController(
+        historyRepository: const SharedPrefsNotificationHistoryRepository(),
+        preferencesStore: const SharedPrefsNotificationPreferencesStore(),
+      );
+      final permissionService = _FakePermissionService();
+
+      final sessionController = SessionController(
+        authRepository: AuthRepository(
+          api: AuthApi(),
+          storage: _MemoryAuthStorage(),
+        ),
+      );
+      await sessionController.load();
+
+      await tester.pumpWidget(
+        NotificationScope(
+          controller: notificationController,
+          child: LocaleScope(
+            controller: localeController,
+            child: ThemeScope(
+              controller: themeController,
+              child: AuthScope(
+                controller: sessionController,
+                child: buildLocalizedTestApp(
+                  locale: const Locale('pl'),
+                  home: SettingsScreen(permissionService: permissionService),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Brak uprawnienia'), findsWidgets);
+
+      await tester.tap(find.text('Przyznaj').first);
+      await tester.pumpAndSettle();
+
+      expect(permissionService.locationRequestCount, 1);
+    });
   });
+}
+
+class _FakePermissionService implements AppPermissionService {
+  int locationRequestCount = 0;
+
+  @override
+  Future<AppPermissionSnapshot> loadStatus() async {
+    return const AppPermissionSnapshot(
+      location: AppPermissionStatus.denied,
+      notifications: AppPermissionStatus.granted,
+      photos: AppPermissionStatus.denied,
+      calendar: AppPermissionStatus.granted,
+    );
+  }
+
+  @override
+  Future<bool> openAppSettings() async => true;
+
+  @override
+  Future<AppPermissionStatus> requestLocation() async {
+    locationRequestCount++;
+    return AppPermissionStatus.granted;
+  }
+
+  @override
+  Future<AppPermissionStatus> requestNotifications() async {
+    return AppPermissionStatus.granted;
+  }
 }

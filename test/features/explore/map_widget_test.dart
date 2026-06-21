@@ -12,34 +12,35 @@ import '../../test_helpers/test_app.dart';
 
 void main() {
   group('MapWidget', () {
-    testWidgets(
-      'does not show an error banner while location is still resolving',
-      (tester) async {
-        final currentLocationCompleter = Completer<LatLng?>();
-        final controller = ExploreMapViewModel(
-          locationService: FakeLocationService(
-            currentLocationCompleter: currentLocationCompleter,
-          ),
-          fallbackCenter: const LatLng(0, 0),
-        );
+    testWidgets('renders map while location is still resolving', (
+      tester,
+    ) async {
+      final currentLocationCompleter = Completer<LatLng?>();
+      final controller = ExploreMapViewModel(
+        locationService: FakeLocationService(
+          currentLocationCompleter: currentLocationCompleter,
+        ),
+        fallbackCenter: const LatLng(0, 0),
+      );
 
-        final loadFuture = controller.loadInitialLocation();
-        await tester.pumpWidget(_buildTestApp(controller));
-        await tester.pump();
+      final loadFuture = controller.loadInitialLocation();
+      await tester.pumpWidget(_buildTestApp(controller));
+      await tester.pump();
 
-        expect(find.byKey(const Key('map-startup-loading')), findsOneWidget);
+      expect(find.byKey(const Key('map-startup-loading')), findsNothing);
+      expect(find.byType(MapWidget), findsOneWidget);
+      expect(find.byKey(const Key('map-message-banner')), findsNothing);
 
-        currentLocationCompleter.complete(const LatLng(52.2297, 21.0122));
-        await loadFuture;
-        await tester.pumpAndSettle();
+      currentLocationCompleter.complete(const LatLng(52.2297, 21.0122));
+      await loadFuture;
+      await tester.pumpAndSettle();
 
-        expect(find.byKey(const Key('map-startup-loading')), findsNothing);
-        expect(find.byType(MapWidget), findsOneWidget);
-        expect(find.byKey(const Key('map-message-banner')), findsNothing);
-      },
-    );
+      expect(find.byKey(const Key('map-startup-loading')), findsNothing);
+      expect(find.byType(MapWidget), findsOneWidget);
+      expect(find.byKey(const Key('map-message-banner')), findsNothing);
+    });
 
-    testWidgets('shows error banner when controller resolves to an error', (
+    testWidgets('shows empty map state when location service is disabled', (
       tester,
     ) async {
       final controller = ExploreMapViewModel(
@@ -51,12 +52,33 @@ void main() {
       await tester.pumpWidget(_buildTestApp(controller));
       await tester.pump();
 
-      expect(find.byKey(const Key('map-message-banner')), findsOneWidget);
+      expect(find.byKey(const Key('map-message-banner')), findsNothing);
       expect(find.byType(FloatingActionButton), findsNothing);
       expect(
         find.text('Enable location services to see your position.'),
         findsOneWidget,
       );
+      expect(find.text('Location settings'), findsOneWidget);
+    });
+
+    testWidgets('renders fallback map when location is optional', (
+      tester,
+    ) async {
+      final controller = ExploreMapViewModel(
+        locationService: FakeLocationService(serviceEnabled: false),
+        fallbackCenter: const LatLng(51.7592, 19.4550),
+      );
+
+      await controller.loadInitialLocation();
+      await tester.pumpWidget(
+        _buildTestApp(controller, requireLocation: false),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('The map needs location'), findsNothing);
+      expect(find.byKey(const Key('map-message-banner')), findsNothing);
+      expect(find.byType(MapWidget), findsOneWidget);
+      expect(controller.mapCenter, const LatLng(51.7592, 19.4550));
     });
 
     testWidgets('renders without crash when current location exists', (
@@ -120,7 +142,7 @@ void main() {
       await tester.pumpWidget(_buildTestApp(controller));
       await tester.pump();
 
-      expect(find.byKey(const Key('map-startup-loading')), findsOneWidget);
+      expect(find.byKey(const Key('map-startup-loading')), findsNothing);
 
       await tester.pump(const Duration(seconds: 1));
       await loadFuture;
@@ -140,7 +162,10 @@ void main() {
   });
 }
 
-Widget _buildTestApp(ExploreMapViewModel controller) {
+Widget _buildTestApp(
+  ExploreMapViewModel controller, {
+  bool requireLocation = true,
+}) {
   return buildLocalizedTestApp(
     home: Scaffold(
       body: MapWidget(
@@ -151,6 +176,7 @@ Widget _buildTestApp(ExploreMapViewModel controller) {
           inlineStyleJson: _testStyleJson,
         ),
         overlayPadding: const EdgeInsets.only(top: 12, bottom: 24),
+        requireLocation: requireLocation,
       ),
     ),
   );

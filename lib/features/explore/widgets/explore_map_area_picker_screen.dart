@@ -1,58 +1,61 @@
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart' show LatLng;
+import 'package:latlong2/latlong.dart';
 import 'package:locario/l10n/app_localizations.dart';
 
-import '../../../shared/location/location_service.dart';
 import '../../../shared/map/style_repository.dart';
-import '../../explore/map_view_model.dart';
-import '../../explore/widgets/area_picker.dart';
-import '../../explore/widgets/map_widget.dart';
+import '../map_view_model.dart';
+import 'area_picker.dart';
+import 'map_widget.dart';
 
-class EventMapPickerScreen extends StatefulWidget {
-  const EventMapPickerScreen({
+class ExploreMapAreaPickerScreen extends StatefulWidget {
+  const ExploreMapAreaPickerScreen({
     super.key,
-    required this.locationService,
-    this.initialCenter,
+    required this.controller,
+    required this.initialCenter,
     this.styleRepository = const MapStyleRepository(),
   });
 
-  final LocationService locationService;
-  final LatLng? initialCenter;
+  final ExploreMapViewModel controller;
+  final LatLng initialCenter;
   final MapStyleRepository styleRepository;
 
   @override
-  State<EventMapPickerScreen> createState() => _EventMapPickerScreenState();
+  State<ExploreMapAreaPickerScreen> createState() =>
+      _ExploreMapAreaPickerScreenState();
 }
 
-class _EventMapPickerScreenState extends State<EventMapPickerScreen> {
-  late final ExploreMapViewModel _controller;
-  bool _isDisposed = false;
+class _ExploreMapAreaPickerScreenState
+    extends State<ExploreMapAreaPickerScreen> {
+  bool _confirmed = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = ExploreMapViewModel(
-      locationService: widget.locationService,
-      fallbackCenter: widget.initialCenter ?? const LatLng(0, 0),
-    );
-    if (widget.initialCenter != null) {
-      _controller.setPreferredMapCenter(widget.initialCenter);
-    }
-    _controller.loadInitialLocation();
+    widget.controller.setPreferredMapCenter(widget.initialCenter);
   }
 
   @override
   void dispose() {
-    _isDisposed = true;
-    _controller.dispose();
+    if (!_confirmed) {
+      widget.controller.setPreferredMapCenter(widget.initialCenter);
+    }
     super.dispose();
   }
 
   void _handleCameraCenterChanged(LatLng center) {
-    if (!mounted || _isDisposed) {
+    if (!mounted) {
       return;
     }
-    _controller.setPreferredMapCenter(center);
+    widget.controller.setPreferredMapCenter(center);
+  }
+
+  void _cancel() {
+    Navigator.of(context).maybePop();
+  }
+
+  void _confirm() {
+    _confirmed = true;
+    Navigator.of(context).pop(widget.controller.mapCenter);
   }
 
   @override
@@ -65,7 +68,7 @@ class _EventMapPickerScreenState extends State<EventMapPickerScreen> {
       body: Stack(
         children: [
           MapWidget(
-            controller: _controller,
+            controller: widget.controller,
             styleRepository: widget.styleRepository,
             events: const [],
             onEventTap: (_) {},
@@ -75,6 +78,7 @@ class _EventMapPickerScreenState extends State<EventMapPickerScreen> {
             attributionPadding: const EdgeInsets.only(right: 8, bottom: 8),
             recenterAlignment: Alignment.topRight,
             recenterPadding: const EdgeInsets.only(right: 16, top: 80),
+            showSearchRadiusOverlay: false,
             requireLocation: false,
           ),
           SafeArea(
@@ -86,7 +90,8 @@ class _EventMapPickerScreenState extends State<EventMapPickerScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
+                  tooltip: l10n.areaDialogCancel,
+                  onPressed: _cancel,
                   icon: const Icon(Icons.close_rounded),
                 ),
               ),
@@ -97,8 +102,8 @@ class _EventMapPickerScreenState extends State<EventMapPickerScreen> {
             subtitle: l10n.areaPickOnMapSubtitle,
             cancelLabel: l10n.areaDialogCancel,
             confirmLabel: l10n.areaPickOnMapConfirm,
-            onCancel: () => Navigator.of(context).maybePop(),
-            onConfirm: () => Navigator.of(context).pop(_controller.mapCenter),
+            onCancel: _cancel,
+            onConfirm: _confirm,
           ),
         ],
       ),

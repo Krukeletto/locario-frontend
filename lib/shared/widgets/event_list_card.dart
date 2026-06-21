@@ -74,6 +74,8 @@ class EventListCard extends StatelessWidget {
                     width: 54,
                     height: 54,
                     fit: BoxFit.cover,
+                    memCacheWidth: 160,
+                    memCacheHeight: 160,
                     placeholder: (context, url) => Container(
                       width: 54,
                       height: 54,

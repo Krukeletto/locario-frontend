@@ -6,11 +6,14 @@ abstract class AppSettingsStore {
   Future<void> saveLocale(Locale locale);
   Future<ThemeMode?> loadThemeMode();
   Future<void> saveThemeMode(ThemeMode themeMode);
+  Future<bool> loadOnboardingCompleted();
+  Future<void> saveOnboardingCompleted(bool completed);
 }
 
 class SharedPreferencesAppSettingsStore implements AppSettingsStore {
   static const _localeKey = 'app.locale';
   static const _themeModeKey = 'app.theme_mode';
+  static const _onboardingCompletedKey = 'app.onboarding_completed';
 
   const SharedPreferencesAppSettingsStore();
 
@@ -51,5 +54,15 @@ class SharedPreferencesAppSettingsStore implements AppSettingsStore {
       ThemeMode.system => 'system',
     };
     await (await _preferences).setString(_themeModeKey, value);
+  }
+
+  @override
+  Future<bool> loadOnboardingCompleted() async {
+    return (await _preferences).getBool(_onboardingCompletedKey) ?? false;
+  }
+
+  @override
+  Future<void> saveOnboardingCompleted(bool completed) async {
+    await (await _preferences).setBool(_onboardingCompletedKey, completed);
   }
 }

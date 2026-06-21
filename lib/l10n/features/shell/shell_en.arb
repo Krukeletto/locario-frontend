@@ -16,6 +16,9 @@
     }
   },
   "mapRetry": "Retry",
+  "mapGrantLocation": "Grant location",
+  "mapLocationRequiredTitle": "The map needs location",
+  "mapLocationRequiredSubtitle": "Grant location access to use the map. You can still use the event list and choose an area manually in filters.",
   "mapAppSettings": "App settings",
   "mapLocationSettings": "Location settings",
   "mapServiceDisabled": "Enable location services to see your position.",
