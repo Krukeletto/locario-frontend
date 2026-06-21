@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:locario/features/profile/edit_profile_screen.dart';
+import 'package:locario/l10n/app_localizations.dart';
 import 'package:locario/shared/auth/auth_api.dart';
 import 'package:locario/shared/auth/auth_models.dart';
 import 'package:locario/shared/auth/auth_repository.dart';
 import 'package:locario/shared/auth/session_controller.dart';
 import 'package:locario/shared/auth/auth_scope.dart';
 import 'package:locario/shared/auth/auth_repository.dart' as repo;
+import 'package:locario/shared/services/feedback_service.dart';
+import 'package:locario/shared/services/l10n_service.dart';
 
 import '../../test_helpers/test_app.dart';
 
@@ -107,6 +111,68 @@ Future<SessionController> _createSessionController({
 }
 
 void main() {
+  setUp(FeedbackService.resetForTests);
+
+  testWidgets('returns to profile route after successful submit', (
+    tester,
+  ) async {
+    final api = _FakeAuthApi(
+      onFetchProfile: (_, _) async => _sampleProfile(),
+      onUpdateProfile: (accessToken, request, tokenType) async =>
+          _sampleProfile(),
+    );
+
+    final tokens = AuthTokens(
+      accessToken: 'access',
+      refreshToken: 'refresh',
+      tokenType: 'Bearer',
+      expiresAt: DateTime.utc(2099),
+    );
+
+    final controller = await _createSessionController(api: api, tokens: tokens);
+    final router = GoRouter(
+      initialLocation: '/profile/edit',
+      routes: [
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const Scaffold(body: Text('Profile')),
+          routes: [
+            GoRoute(
+              path: 'edit',
+              builder: (context, state) => const EditProfileScreen(),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      AuthScope(
+        controller: controller,
+        child: MaterialApp.router(
+          scaffoldMessengerKey: rootScaffoldMessengerKey,
+          locale: const Locale('en'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          routerConfig: router,
+          builder: (context, child) {
+            L10nService.init(AppLocalizations.of(context));
+            return child!;
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pump();
+    tester.widget<FilledButton>(find.byType(FilledButton)).onPressed!();
+    await tester.pumpAndSettle();
+
+    expect(router.routerDelegate.currentConfiguration.uri.path, '/profile');
+    expect(find.text('Profile'), findsOneWidget);
+  });
+
   testWidgets('validates username before profile submit', (tester) async {
     var updateCalls = 0;
     final api = _FakeAuthApi(

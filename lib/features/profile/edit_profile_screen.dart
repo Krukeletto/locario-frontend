@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:locario/l10n/app_localizations.dart';
 
@@ -73,6 +74,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String _resolveRequiredValue(String value, String fallback) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? fallback : trimmed;
+  }
+
+  Future<void> _returnToProfile() async {
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      router.go('/profile');
+      return;
+    }
+
+    await Navigator.of(context).maybePop();
   }
 
   String? _validateUsername(String value, AppLocalizations l10n) {
@@ -265,7 +276,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return;
       }
       FeedbackService.showSuccess(FeedbackMessage.profileUpdateSuccess);
-      await Navigator.of(this.context).maybePop();
+      await _returnToProfile();
     } catch (error) {
       if (!mounted) {
         return;
