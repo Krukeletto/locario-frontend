@@ -1715,6 +1715,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editProfileUsernamePlaceholder => 'Your username';
 
   @override
+  String get editProfileUsernameMax100Error =>
+      'Username must be at most 100 characters';
+
+  @override
   String get editProfileBioLabel => 'BIO';
 
   @override
@@ -1724,7 +1728,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editProfileWebsiteLabel => 'WEBSITE';
 
   @override
-  String get editProfileWebsitePlaceholder => 'https://example.com';
+  String get editProfileWebsitePlaceholder => 'Website URL';
 
   @override
   String get editProfileInstagramLabel => 'INSTAGRAM';

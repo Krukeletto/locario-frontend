@@ -107,6 +107,56 @@ Future<SessionController> _createSessionController({
 }
 
 void main() {
+  testWidgets('validates username before profile submit', (tester) async {
+    var updateCalls = 0;
+    final api = _FakeAuthApi(
+      onFetchProfile: (_, _) async => _sampleProfile(),
+      onUpdateProfile: (accessToken, request, tokenType) async {
+        updateCalls++;
+        return _sampleProfile();
+      },
+    );
+
+    final tokens = AuthTokens(
+      accessToken: 'access',
+      refreshToken: 'refresh',
+      tokenType: 'Bearer',
+      expiresAt: DateTime.utc(2099),
+    );
+
+    final controller = await _createSessionController(api: api, tokens: tokens);
+
+    await tester.pumpWidget(
+      AuthScope(
+        controller: controller,
+        child: buildLocalizedTestApp(home: const EditProfileScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).first, '');
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pump();
+    tester.widget<FilledButton>(find.byType(FilledButton)).onPressed!();
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, 500));
+    await tester.pump();
+
+    expect(find.text('Enter username'), findsOneWidget);
+    expect(updateCalls, 0);
+
+    await tester.enterText(find.byType(TextFormField).first, 'ab');
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pump();
+    tester.widget<FilledButton>(find.byType(FilledButton)).onPressed!();
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, 500));
+    await tester.pump();
+
+    expect(find.text('Username must be at least 3 characters'), findsOneWidget);
+    expect(updateCalls, 0);
+  });
+
   testWidgets('shows validation errors for links', (tester) async {
     final api = _FakeAuthApi(onFetchProfile: (_, _) async => _sampleProfile());
 
@@ -306,9 +356,7 @@ void main() {
     await tester.ensureVisible(find.byKey(const Key('edit-profile-website')));
     await tester.pump();
     await tester.enterText(find.byKey(const Key('edit-profile-website')), '');
-    await tester.ensureVisible(
-      find.byKey(const Key('edit-profile-instagram')),
-    );
+    await tester.ensureVisible(find.byKey(const Key('edit-profile-instagram')));
     await tester.pump();
     await tester.enterText(find.byKey(const Key('edit-profile-instagram')), '');
     await tester.ensureVisible(find.byKey(const Key('edit-profile-facebook')));

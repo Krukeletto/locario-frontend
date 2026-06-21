@@ -3188,6 +3188,12 @@ abstract class AppLocalizations {
   /// **'Your username'**
   String get editProfileUsernamePlaceholder;
 
+  /// No description provided for @editProfileUsernameMax100Error.
+  ///
+  /// In en, this message translates to:
+  /// **'Username must be at most 100 characters'**
+  String get editProfileUsernameMax100Error;
+
   /// No description provided for @editProfileBioLabel.
   ///
   /// In en, this message translates to:
@@ -3209,7 +3215,7 @@ abstract class AppLocalizations {
   /// No description provided for @editProfileWebsitePlaceholder.
   ///
   /// In en, this message translates to:
-  /// **'https://example.com'**
+  /// **'Website URL'**
   String get editProfileWebsitePlaceholder;
 
   /// No description provided for @editProfileInstagramLabel.

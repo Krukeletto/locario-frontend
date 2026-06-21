@@ -33,12 +33,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Uint8List? _avatarBytes;
   String? _avatarFileName;
 
+  String? _usernameError;
   String? _websiteError;
   String? _instagramError;
   String? _facebookError;
 
   bool _isSubmitting = false;
   String? _initializedProfileId;
+
+  static final RegExp _usernameRegex = RegExp(r'^[a-zA-Z0-9._-]+$');
 
   @override
   void dispose() {
@@ -70,6 +73,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String _resolveRequiredValue(String value, String fallback) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? fallback : trimmed;
+  }
+
+  String? _validateUsername(String value, AppLocalizations l10n) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return l10n.authValidationUsernameRequired;
+    }
+    if (trimmed.length < 3) {
+      return l10n.authValidationUsernameMin3;
+    }
+    if (trimmed.length > 100) {
+      return l10n.editProfileUsernameMax100Error;
+    }
+    if (!_usernameRegex.hasMatch(trimmed)) {
+      return l10n.authValidationUsernameAllowed;
+    }
+    return null;
   }
 
   String? _validateUrl(
@@ -140,6 +160,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
+    final usernameError = _validateUsername(_usernameController.text, l10n);
     final websiteError = _validateUrl(
       _websiteController.text,
       httpsError: l10n.editProfileLinkHttpsError,
@@ -158,12 +179,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
 
     setState(() {
+      _usernameError = usernameError;
       _websiteError = websiteError;
       _instagramError = instagramError;
       _facebookError = facebookError;
     });
 
-    if (websiteError != null ||
+    if (usernameError != null ||
+        websiteError != null ||
         instagramError != null ||
         facebookError != null) {
       return;
@@ -348,6 +371,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           : scheme.surfaceContainerHighest.withValues(alpha: 0.3);
       return InputDecoration(
         hintText: hintText,
+        hintStyle: theme.textTheme.bodyMedium?.copyWith(
+          color: scheme.onSurface.withValues(alpha: 0.38),
+          fontStyle: FontStyle.italic,
+        ),
         errorText: errorText,
         filled: true,
         fillColor: fillColor,
@@ -439,8 +466,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             controller: _usernameController,
             decoration: buildFieldDecoration(
               hintText: l10n.editProfileUsernamePlaceholder,
+              errorText: _usernameError,
             ),
             textInputAction: TextInputAction.next,
+            onChanged: (_) {
+              if (_usernameError != null) {
+                setState(() {
+                  _usernameError = null;
+                });
+              }
+            },
           ),
           const SizedBox(height: 16),
           fieldLabel(l10n.editProfileBioLabel),
