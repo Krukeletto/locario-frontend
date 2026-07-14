@@ -54,7 +54,11 @@ class _OrganizerReviewsScreenState extends State<OrganizerReviewsScreen> {
 
     if (_hasLoaded) return;
     _hasLoaded = true;
-    ReviewScope.of(context).loadOrganizerReviews(profile.id);
+    final profileId = profile.id;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ReviewScope.of(context).loadOrganizerReviews(profileId);
+    });
   }
 
   @override
