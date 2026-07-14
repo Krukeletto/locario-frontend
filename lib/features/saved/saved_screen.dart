@@ -407,8 +407,7 @@ class _SavedFiltersTab extends StatelessWidget {
               onTap: () async {
                 await savedFiltersController.loadFilterToExplore(savedFilter);
                 if (!context.mounted) return;
-                final shell = StatefulNavigationShell.of(context);
-                shell.goBranch(0);
+                context.go('/explore');
               },
               onDelete: () async {
                 await savedFiltersController.deleteFilter(savedFilter.id);
